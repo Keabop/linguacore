@@ -11,6 +11,9 @@ import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, Part
 import type { CEFRLevel, UnitProgress } from '../lib/db';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import LevelBadge from '../components/ui/LevelBadge';
+import PageLoader from '../components/PageLoader';
+import DBErrorCard from '../components/DBErrorCard';
+import { seedDatabase } from '../lib/seed';
 
 export default function Dashboard() {
     const { t } = useTranslation();
@@ -57,10 +60,10 @@ export default function Dashboard() {
     const firstIncompleteUnit = levelUnits?.find(u => unitProgressMap.get(u.id)?.completedAt == null) ?? null;
     const allUnitsCompleted = unitsTotal > 0 && unitsCompleted === unitsTotal;
 
-    // Level-up is now handled exclusively through the Level Assessment page.
-    // The LevelUpModal is kept for when the assessment page triggers it.
-
-    if (!user) return null;
+    // Loading state: user query hasn't resolved yet
+    if (user === undefined) return <PageLoader />;
+    // Data missing (DB cleared/corrupt)
+    if (user === null) return <DBErrorCard onReset={() => seedDatabase().then(() => window.location.reload())} />;
 
 
 

@@ -6,26 +6,30 @@ import { chat } from './agents/conversation-tutor.js';
 import { evaluateWriting } from './agents/writing-evaluator.js';
 import type { AgentType } from './lib/gemini.js';
 
-const CORS_HEADERS = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-};
+const ALLOWED_ORIGINS = [
+    'https://linguacore-zeta.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:4173',
+];
+
+function getCorsOrigin(req: VercelRequest): string {
+    const origin = req.headers.origin ?? '';
+    return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // Handle CORS preflight
+    const corsOrigin = getCorsOrigin(req);
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
     if (req.method === 'OPTIONS') {
-        return res.status(200).json({});
+        return res.status(200).end();
     }
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
-
-    // Set CORS headers
-    Object.entries(CORS_HEADERS).forEach(([key, value]) => {
-        res.setHeader(key, value);
-    });
 
     try {
         const { agent, params } = req.body as { agent: AgentType; params: any };

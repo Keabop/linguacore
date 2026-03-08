@@ -9,6 +9,7 @@ import ErrorCorrection from './ErrorCorrection';
 import FreeWriting from './FreeWriting';
 import ParagraphCompletion from './ParagraphCompletion';
 import WritingFeedback from './WritingFeedback';
+import AIErrorCard from '../AIErrorCard';
 
 interface Props {
     prompts: WritingPrompt[];
@@ -130,9 +131,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
 
             {/* Error message */}
             {error && (
-                <div className="bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 text-sm text-accent-red">
-                    {error}
-                </div>
+                <AIErrorCard error={error} onRetry={() => setError(null)} />
             )}
 
             {/* Content */}

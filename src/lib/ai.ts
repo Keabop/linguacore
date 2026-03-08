@@ -2,19 +2,42 @@ import type { CEFRLevel, Story, Vocabulary } from './db';
 
 const API_BASE = '/api/orchestrator';
 
-async function callAgent<T>(agent: string, params: Record<string, any>): Promise<T> {
-    const response = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent, params }),
-    });
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-        throw new Error(error.message || `Agent ${agent} failed with status ${response.status}`);
+async function retry<T>(
+    fn: () => Promise<T>,
+    maxAttempts = 3,
+    baseDelay = 1000,
+): Promise<T> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            return await fn();
+        } catch (error: any) {
+            const isLast = attempt === maxAttempts - 1;
+            const status = error.status as number | undefined;
+            const isRetryable = !status || status >= 500 || status === 429;
+            if (isLast || !isRetryable) throw error;
+            await new Promise(r => setTimeout(r, baseDelay * Math.pow(2, attempt)));
+        }
     }
+    throw new Error('Unreachable');
+}
 
-    return response.json();
+async function callAgent<T>(agent: string, params: Record<string, any>): Promise<T> {
+    return retry(async () => {
+        const response = await fetch(API_BASE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agent, params }),
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({ message: 'Unknown error' }));
+            const err = new Error(data.message || `Agent ${agent} failed: ${response.status}`);
+            (err as any).status = response.status;
+            throw err;
+        }
+
+        return response.json();
+    });
 }
 
 // ===== Story Generator =====

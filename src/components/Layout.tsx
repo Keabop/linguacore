@@ -6,6 +6,7 @@ import { useCards } from '../hooks/useCards';
 import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
+import OfflineBanner from './OfflineBanner';
 
 const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/', icon: Home, labelKey: 'nav.home' },
@@ -71,6 +72,7 @@ export default function Layout() {
             {/* ===== MAIN CONTENT ===== */}
             <div className="main-content">
                 <div className="main-content-inner">
+                    <OfflineBanner />
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
