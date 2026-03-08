@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
 
-export type AgentType = 'story-generator' | 'vocab-enricher' | 'exercise-creator' | 'conversation-tutor';
+export type AgentType = 'story-generator' | 'vocab-enricher' | 'exercise-creator' | 'conversation-tutor' | 'writing-evaluator';
 
 // Models to try in order — if one is overloaded, fall back to the next
 const MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-pro'];

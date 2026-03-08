@@ -11,6 +11,7 @@ const Stats = lazy(() => import('./pages/Stats'));
 const ConversationTutor = lazy(() => import('./pages/ConversationTutor'));
 const LearningPath = lazy(() => import('./pages/LearningPath'));
 const UnitFlow = lazy(() => import('./pages/UnitFlow'));
+const Practice = lazy(() => import('./pages/Practice'));
 
 function PageLoader() {
     return (
@@ -33,6 +34,7 @@ export default function App() {
                     <Route path="/chat" element={<Suspense fallback={<PageLoader />}><ConversationTutor /></Suspense>} />
                     <Route path="/path" element={<Suspense fallback={<PageLoader />}><LearningPath /></Suspense>} />
                     <Route path="/path/:unitId" element={<Suspense fallback={<PageLoader />}><UnitFlow /></Suspense>} />
+                    <Route path="/practice" element={<Suspense fallback={<PageLoader />}><Practice /></Suspense>} />
                 </Route>
             </Routes>
             <Toaster

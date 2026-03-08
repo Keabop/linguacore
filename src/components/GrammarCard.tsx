@@ -34,6 +34,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     storyCompleted: false,
                     vocabReviewed: false,
                     exercisesScore: 0,
+                    outputCompleted: false,
                     checkpointPassed: false,
                 });
             }
@@ -80,7 +81,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
             </div>
 
             {/* Main card */}
-            <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-6">
+            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-7">
                 {/* Explanation (HTML content) */}
                 <div
                     className="grammar-explanation text-text-secondary text-[0.9375rem] leading-relaxed"
@@ -106,7 +107,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                                         initial={{ opacity: 0, x: -8 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.15 + i * 0.06 }}
-                                        className="bg-bg-app/60 border border-border rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"
+                                        className="bg-bg-app/60 border border-border rounded-xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3"
                                     >
                                         <span className="font-bold text-accent-blue text-[0.9375rem]">
                                             {english}
@@ -158,7 +159,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                 transition={{ delay: 0.4 }}
                 onClick={handleUnderstood}
                 disabled={saving}
-                className="w-full bg-primary text-bg-app font-bold py-3 rounded-xl transition-all active:scale-[0.98] hover:bg-primary-dark disabled:opacity-50"
+                className="w-full bg-primary text-bg-app font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:bg-primary-dark disabled:opacity-50"
             >
                 {saving ? t('common.loading') : t('grammar.understood')}
             </motion.button>
@@ -169,8 +170,8 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                 .grammar-explanation h4 {
                     color: var(--color-text);
                     font-weight: 700;
-                    margin-top: 1rem;
-                    margin-bottom: 0.5rem;
+                    margin-top: 1.25rem;
+                    margin-bottom: 0.625rem;
                 }
                 .grammar-explanation h3 {
                     font-size: 1.0625rem;
@@ -179,15 +180,15 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     font-size: 0.9375rem;
                 }
                 .grammar-explanation p {
-                    margin-bottom: 0.75rem;
+                    margin-bottom: 0.875rem;
                 }
                 .grammar-explanation ul,
                 .grammar-explanation ol {
-                    padding-left: 1.25rem;
-                    margin-bottom: 0.75rem;
+                    padding-left: 1.5rem;
+                    margin-bottom: 0.875rem;
                 }
                 .grammar-explanation li {
-                    margin-bottom: 0.25rem;
+                    margin-bottom: 0.375rem;
                 }
                 .grammar-explanation strong,
                 .grammar-explanation b {

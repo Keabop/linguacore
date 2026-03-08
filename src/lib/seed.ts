@@ -60,4 +60,25 @@ export async function seedDatabase(): Promise<void> {
         await db.grammarExercises.bulkAdd([...a1Exercises, ...a2Exercises, ...b1Exercises, ...b2Exercises]);
         console.log('✅ Curriculum seeded successfully (A1-B2)');
     }
+
+    // Seed output prompts (writing + speaking) — separate check for existing users
+    const writingPromptCount = await db.writingPrompts.count();
+    if (writingPromptCount === 0) {
+        const {
+            a1WritingPrompts, a1SpeakingPrompts,
+            a2WritingPrompts, a2SpeakingPrompts,
+            b1WritingPrompts, b1SpeakingPrompts,
+            b2WritingPrompts, b2SpeakingPrompts,
+        } = await import('../data/output');
+
+        await db.writingPrompts.bulkAdd([
+            ...a1WritingPrompts, ...a2WritingPrompts,
+            ...b1WritingPrompts, ...b2WritingPrompts,
+        ]);
+        await db.speakingPrompts.bulkAdd([
+            ...a1SpeakingPrompts, ...a2SpeakingPrompts,
+            ...b1SpeakingPrompts, ...b2SpeakingPrompts,
+        ]);
+        console.log('✅ Output prompts seeded successfully (A1-B2)');
+    }
 }

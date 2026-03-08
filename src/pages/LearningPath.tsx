@@ -101,7 +101,7 @@ export default function LearningPath() {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             {/* Level Header */}
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
@@ -219,7 +219,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
     return (
         <motion.div
             variants={itemVariants}
-            className={`relative mb-4 last:mb-0 ${isLocked ? 'opacity-50' : ''}`}
+            className={`relative mb-6 last:mb-0 ${isLocked ? 'opacity-50' : ''}`}
         >
             {/* Timeline node */}
             <div
@@ -241,7 +241,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
             <div
                 onClick={onClick}
                 className={`
-                    bg-bg-card border rounded-2xl p-5
+                    bg-bg-card border rounded-2xl p-6
                     transition-all duration-200
                     ${cardBorder}
                     ${!isLocked ? 'cursor-pointer hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5' : 'cursor-not-allowed'}
@@ -249,7 +249,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
             >
                 <div className="flex items-start justify-between gap-3">
                     {/* Left: content */}
-                    <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex-1 min-w-0 space-y-3">
                         {/* Unit number + assessment badge */}
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <span className={`

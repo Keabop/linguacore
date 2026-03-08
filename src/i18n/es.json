@@ -5,7 +5,8 @@
     "chat": "Tutor IA",
     "review": "Repasar",
     "stats": "Estadísticas",
-    "path": "Ruta de Aprendizaje"
+    "path": "Ruta de Aprendizaje",
+    "practice": "Práctica"
   },
   "dashboard": {
     "greeting": "¡Hola!",

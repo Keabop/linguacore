@@ -152,6 +152,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 storyCompleted: true,
                 vocabReviewed: true,
                 exercisesScore: finalScore,
+                outputCompleted: true,
                 checkpointPassed: true,
                 completedAt: new Date(),
             });
