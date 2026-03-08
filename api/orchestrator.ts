@@ -35,6 +35,19 @@ async function authenticate(req: VercelRequest): Promise<string | null> {
     return user.id;
 }
 
+/** Simple in-memory rate limiter (resets on cold start) */
+const hits = new Map<string, number[]>();
+const WINDOW_MS = 60_000;
+const MAX_REQUESTS = 30;
+
+function isRateLimited(ip: string): boolean {
+    const now = Date.now();
+    const timestamps = hits.get(ip)?.filter(t => now - t < WINDOW_MS) ?? [];
+    timestamps.push(now);
+    hits.set(ip, timestamps);
+    return timestamps.length > MAX_REQUESTS;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const corsOrigin = getCorsOrigin(req);
     res.setHeader('Access-Control-Allow-Origin', corsOrigin);
@@ -47,6 +60,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Rate limit by IP
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? 'unknown';
+    if (isRateLimited(ip)) {
+        return res.status(429).json({ error: 'Too many requests. Try again later.' });
     }
 
     // Authenticate — require valid Supabase JWT
