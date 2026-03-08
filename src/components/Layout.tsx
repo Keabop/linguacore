@@ -32,7 +32,7 @@ export default function Layout() {
             <aside className="sidebar-nav">
                 {/* Logo */}
                 <div className="flex items-center gap-3 mb-10 px-2">
-                    <Brain className="w-7 h-7 text-white" />
+                    <img src="/logo.png" alt="LinguaCore" className="w-7 h-7 rounded-lg object-cover" />
                     <span className="text-xl font-extrabold text-white tracking-tight">LinguaCore</span>
                 </div>
 
