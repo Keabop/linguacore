@@ -1,69 +1,78 @@
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { db } from '../lib/db';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
 import LevelUpModal from '../components/ui/LevelUpModal';
 import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, PartyPopper } from 'lucide-react';
-import type { CEFRLevel, UnitProgress } from '../lib/db';
+import type { CEFRLevel } from '../lib/db';
+import type { ReadStoryRow, UnitProgressRow } from '../lib/database.types';
+import { allStories, getUnitsByLevel } from '../data';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
 import DBErrorCard from '../components/DBErrorCard';
-import { seedDatabase } from '../lib/seed';
 
 export default function Dashboard() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { user, progressInfo } = useLevelProgression();
     const { dueCards, totalCards } = useCards();
+    const { user: authUser } = useAuth();
     const [showLevelUp, setShowLevelUp] = useState(false);
     const [newLevel, setNewLevel] = useState<CEFRLevel>('A2');
 
-    const stories = useLiveQuery(() => db.stories.toArray());
-    const readStories = useLiveQuery(() => db.readStories.toArray());
+    const stories = allStories;
+    const { data: readStories } = useQuery({
+        queryKey: ['readStories', authUser?.id],
+        queryFn: async () => {
+            const { data } = await supabase.from('read_stories').select('*');
+            return (data ?? []) as ReadStoryRow[];
+        },
+        enabled: !!authUser?.id,
+    });
 
-    const recommended = stories?.filter(s => {
+    const recommended = allStories.filter(s => {
         const isUnlocked = user?.unlockedLevels.includes(s.level);
-        const isRead = readStories?.some(r => r.storyId === s.id);
+        const isRead = readStories?.some(r => r.story_id === s.id);
         return isUnlocked && !isRead;
     }).slice(0, 4);
 
     // Continue Learning: fetch units for current level
     const currentLevel = progressInfo?.currentLevel ?? 'A1';
-    const levelUnits = useLiveQuery(
-        () => db.units.where('level').equals(currentLevel).sortBy('unitNumber'),
-        [currentLevel],
-    );
-    const levelUnitProgress = useLiveQuery(
-        async () => {
+    const levelUnits = getUnitsByLevel(currentLevel);
+    const { data: levelUnitProgress } = useQuery({
+        queryKey: ['unitProgress', currentLevel, authUser?.id],
+        queryFn: async () => {
             if (!levelUnits || levelUnits.length === 0) return [];
             const ids = levelUnits.map(u => u.id);
-            return db.unitProgress.where('unitId').anyOf(ids).toArray();
+            const { data } = await supabase.from('unit_progress').select('*').in('unit_id', ids);
+            return (data ?? []) as UnitProgressRow[];
         },
-        [levelUnits],
-    );
+        enabled: !!authUser?.id && levelUnits.length > 0,
+    });
 
     // Compute first incomplete unit and progress counts
-    const unitProgressMap = new globalThis.Map<string, UnitProgress>();
+    const unitProgressMap = new globalThis.Map<string, any>();
     if (levelUnitProgress) {
         for (const p of levelUnitProgress) {
-            unitProgressMap.set(p.unitId, p);
+            unitProgressMap.set(p.unit_id, p);
         }
     }
 
-    const unitsCompleted = levelUnits?.filter(u => unitProgressMap.get(u.id)?.completedAt != null).length ?? 0;
+    const unitsCompleted = levelUnits?.filter(u => unitProgressMap.get(u.id)?.completed_at != null).length ?? 0;
     const unitsTotal = levelUnits?.length ?? 0;
-    const firstIncompleteUnit = levelUnits?.find(u => unitProgressMap.get(u.id)?.completedAt == null) ?? null;
+    const firstIncompleteUnit = levelUnits?.find(u => unitProgressMap.get(u.id)?.completed_at == null) ?? null;
     const allUnitsCompleted = unitsTotal > 0 && unitsCompleted === unitsTotal;
 
     // Loading state: user query hasn't resolved yet
-    if (user === undefined) return <PageLoader />;
+    if (!user && !progressInfo) return <PageLoader />;
     // Data missing (DB cleared/corrupt)
-    if (user === null) return <DBErrorCard onReset={() => seedDatabase().then(() => window.location.reload())} />;
+    if (user === null) return <DBErrorCard onReset={() => window.location.reload()} />;
 
 
 
@@ -178,7 +187,7 @@ export default function Dashboard() {
                 transition={{ delay: 0.15 }}
                 className="grid grid-cols-3 gap-6 lg:hidden"
             >
-                <QuickStat icon={<Flame className="w-5 h-5" />} value={user.streak} label={t('dashboard.streak')} color="text-accent-orange" />
+                <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} color="text-accent-orange" />
                 <QuickStat icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('dashboard.totalCards')} color="text-accent-blue" />
                 <QuickStat icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-accent-purple" />
             </motion.div>

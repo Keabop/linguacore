@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, type Card, type Vocabulary } from '../lib/db';
+import { type Card, type Vocabulary } from '../lib/db';
+import { getVocab } from '../data';
 import { useCards } from '../hooks/useCards';
 import { Rating } from '../lib/fsrs';
 import ReviewModeSelector, { type ReviewMode } from '../components/ReviewModeSelector';
@@ -28,10 +28,7 @@ export default function ReviewSession() {
     }
 
     const currentCard = dueCards[0] as Card | undefined;
-    const currentVocab = useLiveQuery(
-        () => (currentCard ? db.vocabulary.get(currentCard.wordId) : undefined),
-        [currentCard?.wordId]
-    );
+    const currentVocab = currentCard ? getVocab(currentCard.wordId) : undefined;
 
     const handleResult = useCallback(async (correct: boolean) => {
         if (!currentCard) return;

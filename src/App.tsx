@@ -1,11 +1,13 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sileo';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
+import { useAuth } from './lib/AuthContext';
 import type { ReactNode } from 'react';
 
+const Auth = lazy(() => import('./pages/Auth'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const StoryList = lazy(() => import('./pages/StoryList'));
 const StoryReader = lazy(() => import('./pages/StoryReader'));
@@ -27,11 +29,22 @@ function SafeRoute({ children }: { children: ReactNode }) {
     );
 }
 
+function RequireAuth({ children }: { children: ReactNode }) {
+    const { user, loading } = useAuth();
+    if (loading) return <PageLoader />;
+    if (!user) return <Navigate to="/auth" replace />;
+    return <>{children}</>;
+}
+
 export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route element={<Layout />}>
+                {/* Public route */}
+                <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
+
+                {/* Protected routes */}
+                <Route element={<RequireAuth><Layout /></RequireAuth>}>
                     <Route path="/" element={<SafeRoute><Dashboard /></SafeRoute>} />
                     <Route path="/learn" element={<SafeRoute><StoryList /></SafeRoute>} />
                     <Route path="/learn/:storyId" element={<SafeRoute><StoryReader /></SafeRoute>} />

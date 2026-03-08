@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { PenLine, Mic, Sparkles, Loader2 } from 'lucide-react';
 import AIErrorCard from '../components/AIErrorCard';
-import { db } from '../lib/db';
 import type { CEFRLevel } from '../lib/db';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { evaluateWriting } from '../lib/ai';

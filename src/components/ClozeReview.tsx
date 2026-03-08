@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { type Card, type Vocabulary, db } from '../lib/db';
-import { useLiveQuery } from 'dexie-react-hooks';
+import { type Card, type Vocabulary } from '../lib/db';
+import { getStory } from '../data';
 import { Lightbulb, Check, X, ArrowRight } from 'lucide-react';
 
 interface Props {
@@ -42,10 +42,7 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
     const [showHint, setShowHint] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const story = useLiveQuery(
-        () => db.stories.get(card.storyId),
-        [card.storyId]
-    );
+    const story = getStory(card.storyId);
 
     const clozeData = useMemo(() => {
         if (story) {

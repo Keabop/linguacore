@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../lib/db';
+import { useLevelProgression } from '../hooks/useLevelProgression';
 import { chatWithTutor, type ConversationMessage, type ConversationResponse } from '../lib/ai';
 import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +18,7 @@ interface ChatBubble {
 export default function ConversationTutor() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const user = useLiveQuery(() => db.users.toCollection().first());
+    const { user } = useLevelProgression();
 
     const [messages, setMessages] = useState<ChatBubble[]>([]);
     const [apiMessages, setApiMessages] = useState<ConversationMessage[]>([]);

@@ -9,8 +9,12 @@ import {
     CheckCircle2,
     XCircle,
 } from 'lucide-react';
-import { db } from '../lib/db';
 import type { CEFRLevel, GrammarExercise, Unit } from '../lib/db';
+import type { Profile } from '../lib/database.types';
+import { getExercisesByLevel, getUnitsByLevel } from '../data';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
 
 interface LevelAssessmentProps {
@@ -102,6 +106,8 @@ function selectExercises(allExercises: GrammarExercise[], assessmentUnitId: stri
 
 export default function LevelAssessment({ level, unitId, onComplete }: LevelAssessmentProps) {
     const { t } = useTranslation();
+    const { user: authUser } = useAuth();
+    const qc = useQueryClient();
     const [state, setState] = useState<AssessmentState>('intro');
     const [exercises, setExercises] = useState<GrammarExercise[]>([]);
     const [score, setScore] = useState(0);
@@ -111,15 +117,9 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
     const loadExercises = useCallback(async () => {
         setState('loading');
         try {
-            // Fetch all exercises for this level
-            const allExercises = await db.grammarExercises.toArray();
-            // Get all units for this level to know which exercises belong
-            const levelUnits = await db.units.where('level').equals(level).toArray();
-            const levelUnitIds = new Set(levelUnits.map(u => u.id));
-
-            // Filter to only exercises from units belonging to this level
-            const levelExercises = allExercises.filter(e => levelUnitIds.has(e.unitId));
-            const selected = selectExercises(levelExercises, unitId);
+            // Fetch all exercises for this level from static data
+            const allExercises = getExercisesByLevel(level);
+            const selected = selectExercises(allExercises, unitId);
 
             if (selected.length === 0) {
                 setState('error');
@@ -137,39 +137,43 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
         setScore(finalScore);
 
         // Save assessment record
-        await db.levelAssessments.add({
+        await supabase.from('level_assessments').insert({
+            user_id: authUser!.id,
             level,
             score: finalScore,
             passed: finalScore >= PASS_THRESHOLD,
-            attemptedAt: new Date(),
+            attempted_at: new Date().toISOString(),
         });
 
         if (finalScore >= PASS_THRESHOLD) {
             // Mark assessment unit as completed
-            await db.unitProgress.add({
-                unitId,
-                grammarCardRead: true,
-                storyCompleted: true,
-                vocabReviewed: true,
-                exercisesScore: finalScore,
-                outputCompleted: true,
-                checkpointPassed: true,
-                completedAt: new Date(),
+            await supabase.from('unit_progress').insert({
+                user_id: authUser!.id,
+                unit_id: unitId,
+                grammar_card_read: true,
+                story_completed: true,
+                vocab_reviewed: true,
+                exercises_score: finalScore,
+                output_completed: true,
+                checkpoint_passed: true,
+                completed_at: new Date().toISOString(),
             });
 
             // Unlock next level
             const nl = nextLevelMap[level] || null;
             setNextLevel(nl);
             if (nl) {
-                const user = await db.users.toCollection().first();
-                if (user) {
-                    const unlockedLevels = [...(user.unlockedLevels || ['A1'])];
+                const { data: profile } = await supabase.from('profiles').select('unlocked_levels').eq('id', authUser!.id).single() as { data: Pick<Profile, 'unlocked_levels'> | null };
+                if (profile) {
+                    const unlockedLevels = [...(profile.unlocked_levels || ['A1'])];
                     if (!unlockedLevels.includes(nl)) unlockedLevels.push(nl);
-                    await db.users.update(user.id!, {
-                        currentLevel: nl,
-                        unlockedLevels,
-                    });
+                    await supabase.from('profiles').update({
+                        current_level: nl,
+                        unlocked_levels: unlockedLevels,
+                    }).eq('id', authUser!.id);
                 }
+                qc.invalidateQueries({ queryKey: ['profile'] });
+                qc.invalidateQueries({ queryKey: ['levelProgression'] });
             }
 
             setState('passed');
@@ -178,7 +182,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             // We can identify from exercises which ones were wrong
             // Since ExerciseRunner only gives us the final score, we can show
             // grammar topics from units that had exercises in the assessment
-            const units = await db.units.where('level').equals(level).toArray();
+            const units = getUnitsByLevel(level);
             const unitMap = new Map<string, Unit>();
             for (const u of units) {
                 if (!u.isAssessment) unitMap.set(u.id, u);
@@ -208,7 +212,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
             setState('failed');
         }
-    }, [level, unitId, exercises]);
+    }, [level, unitId, exercises, authUser, qc]);
 
     const handleRetry = useCallback(() => {
         setScore(0);

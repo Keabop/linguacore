@@ -1,9 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../lib/db';
 import type { Unit, UnitProgress } from '../lib/db';
+import type { UnitProgressRow } from '../lib/database.types';
+import { getUnitsByLevel } from '../data';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
@@ -22,16 +25,16 @@ type UnitState = 'locked' | 'current' | 'completed';
 interface UnitWithState {
     unit: Unit;
     state: UnitState;
-    progress: UnitProgress | null;
+    progress: any;
 }
 
-function getUnitsWithState(units: Unit[], progressMap: Map<string, UnitProgress>): UnitWithState[] {
+function getUnitsWithState(units: Unit[], progressMap: Map<string, any>): UnitWithState[] {
     const result: UnitWithState[] = [];
     let foundCurrent = false;
 
     for (const unit of units) {
         const progress = progressMap.get(unit.id) ?? null;
-        const isCompleted = progress?.completedAt != null;
+        const isCompleted = progress?.completed_at != null;
 
         if (isCompleted) {
             result.push({ unit, state: 'completed', progress });
@@ -65,28 +68,28 @@ export default function LearningPath() {
     const navigate = useNavigate();
     const { progressInfo } = useLevelProgression();
 
+    const { user: authUser } = useAuth();
     const currentLevel = progressInfo?.currentLevel ?? 'A1';
 
-    const units = useLiveQuery(
-        () => db.units.where('level').equals(currentLevel).sortBy('unitNumber'),
-        [currentLevel],
-    );
+    const units = getUnitsByLevel(currentLevel);
 
-    const unitProgress = useLiveQuery(
-        async () => {
+    const { data: unitProgress } = useQuery({
+        queryKey: ['unitProgress', currentLevel, authUser?.id],
+        queryFn: async () => {
             if (!units || units.length === 0) return [];
             const ids = units.map(u => u.id);
-            return db.unitProgress.where('unitId').anyOf(ids).toArray();
+            const { data } = await supabase.from('unit_progress').select('*').in('unit_id', ids);
+            return (data ?? []) as UnitProgressRow[];
         },
-        [units],
-    );
+        enabled: !!authUser?.id && units.length > 0,
+    });
 
     if (!progressInfo) return <PageLoader />;
 
-    const progressMap: globalThis.Map<string, UnitProgress> = new globalThis.Map();
+    const progressMap: globalThis.Map<string, any> = new globalThis.Map();
     if (unitProgress) {
         for (const p of unitProgress) {
-            progressMap.set(p.unitId, p);
+            progressMap.set(p.unit_id, p);
         }
     }
 
@@ -306,10 +309,10 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
                         {/* Progress checkmarks */}
                         {!isAssessment && (isCurrent || isCompleted) && progress && (
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1">
-                                <ProgressCheck label="Grammar" done={progress.grammarCardRead} />
-                                <ProgressCheck label="Story" done={progress.storyCompleted} />
-                                <ProgressCheck label="Exercises" done={progress.exercisesScore >= 70} />
-                                <ProgressCheck label="Checkpoint" done={progress.checkpointPassed} />
+                                <ProgressCheck label="Grammar" done={progress.grammar_card_read} />
+                                <ProgressCheck label="Story" done={progress.story_completed} />
+                                <ProgressCheck label="Exercises" done={progress.exercises_score >= 70} />
+                                <ProgressCheck label="Checkpoint" done={progress.checkpoint_passed} />
                             </div>
                         )}
                     </div>

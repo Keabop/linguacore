@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { db } from '../lib/db';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 import { useCards } from '../hooks/useCards';
 import { useLevelProgression, LEVEL_REQUIREMENTS } from '../hooks/useLevelProgression';
 import type { CEFRLevel } from '../lib/db';
+import type { ReadStoryRow, CardRow } from '../lib/database.types';
 import { Layers, RotateCcw, Target, Flame, Check, AlertTriangle } from 'lucide-react';
 import LevelBadge from '../components/ui/LevelBadge';
 
@@ -12,9 +14,34 @@ export default function Stats() {
     const { t } = useTranslation();
     const { totalCards } = useCards();
     const { user, progressInfo } = useLevelProgression();
-    const readStories = useLiveQuery(() => db.readStories.toArray());
-    const cards = useLiveQuery(() => db.cards.toArray());
-    const knownCount = useLiveQuery(() => db.knownWords.count());
+    const { user: authUser } = useAuth();
+
+    const { data: readStories } = useQuery({
+        queryKey: ['readStories', authUser?.id],
+        queryFn: async () => {
+            const { data } = await supabase.from('read_stories').select('*');
+            return (data ?? []) as ReadStoryRow[];
+        },
+        enabled: !!authUser?.id,
+    });
+
+    const { data: cards } = useQuery({
+        queryKey: ['cards', authUser?.id],
+        queryFn: async () => {
+            const { data } = await supabase.from('cards').select('*');
+            return (data ?? []) as CardRow[];
+        },
+        enabled: !!authUser?.id,
+    });
+
+    const { data: knownCount } = useQuery({
+        queryKey: ['knownWordsCount', authUser?.id],
+        queryFn: async () => {
+            const { count } = await supabase.from('known_words').select('*', { count: 'exact', head: true });
+            return count ?? 0;
+        },
+        enabled: !!authUser?.id,
+    });
 
     const totalReviews = cards?.reduce((sum, c) => sum + c.reps, 0) ?? 0;
     const avgRetention = (() => {
@@ -35,10 +62,10 @@ export default function Stats() {
             const ds = d.toISOString().split('T')[0];
             let count = 0;
             readStories?.forEach(r => {
-                if (r.completedAt.toISOString().split('T')[0] === ds) count++;
+                if (r.completed_at?.split('T')[0] === ds) count++;
             });
             cards?.forEach(c => {
-                if (c.lastReview && c.lastReview.toISOString().split('T')[0] === ds) count++;
+                if (c.last_review && c.last_review.split('T')[0] === ds) count++;
             });
             days.push({ date: ds, count });
         }

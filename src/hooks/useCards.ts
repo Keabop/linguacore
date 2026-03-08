@@ -1,115 +1,184 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Card, CardState } from '../lib/db';
-import { createNewCard, calculateNextReview, Rating } from '../lib/fsrs';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import { createNewCard, calculateNextReview, Rating } from '../lib/fsrs';
+import { CardState } from '../lib/db';
+import type { CardRow, Profile } from '../lib/database.types';
 
-/**
- * Hook to manage flashcard operations:
- * - Get due cards for review
- * - Add new cards from story reader
- * - Process review ratings
- */
+// Convert Supabase row to the shape FSRS expects
+function rowToCard(row: CardRow) {
+    return {
+        id: String(row.id),
+        wordId: row.word_id,
+        storyId: row.story_id,
+        state: row.state as CardState,
+        due: new Date(row.due),
+        stability: row.stability,
+        difficulty: row.difficulty,
+        elapsedDays: row.elapsed_days,
+        scheduledDays: row.scheduled_days,
+        reps: row.reps,
+        lapses: row.lapses,
+        lastReview: row.last_review ? new Date(row.last_review) : undefined,
+    };
+}
+
 export function useCards() {
-    // Get all cards due for review (due date <= now)
-    const dueCards = useLiveQuery(async () => {
-        const now = new Date();
-        return db.cards
-            .where('due')
-            .belowOrEqual(now)
-            .toArray();
-    }, []);
+    const { user } = useAuth();
+    const qc = useQueryClient();
+    const userId = user?.id;
 
-    // Get total card count
-    const totalCards = useLiveQuery(() => db.cards.count(), []);
+    const { data: dueCardsRaw } = useQuery({
+        queryKey: ['cards', 'due', userId],
+        queryFn: async () => {
+            const { data } = await supabase
+                .from('cards')
+                .select('*')
+                .lte('due', new Date().toISOString());
+            return ((data ?? []) as CardRow[]).map(rowToCard);
+        },
+        enabled: !!userId,
+    });
 
-    // Check if a word is already in the deck
+    const { data: totalCards } = useQuery({
+        queryKey: ['cards', 'count', userId],
+        queryFn: async () => {
+            const { count } = await supabase
+                .from('cards')
+                .select('*', { count: 'exact', head: true });
+            return count ?? 0;
+        },
+        enabled: !!userId,
+    });
+
     const isWordInDeck = useCallback(async (wordId: string): Promise<boolean> => {
-        const card = await db.cards.where('wordId').equals(wordId).first();
-        return !!card;
+        const { data } = await supabase
+            .from('cards')
+            .select('id')
+            .eq('word_id', wordId)
+            .limit(1);
+        return (data?.length ?? 0) > 0;
     }, []);
 
-    // Check if a word is marked as already known
     const isWordKnown = useCallback(async (wordId: string): Promise<boolean> => {
-        const known = await db.knownWords.get(wordId);
-        return !!known;
+        const { data } = await supabase
+            .from('known_words')
+            .select('word_id')
+            .eq('word_id', wordId)
+            .limit(1);
+        return (data?.length ?? 0) > 0;
     }, []);
 
-    // Add a new word to the review deck
     const addCard = useCallback(async (wordId: string, storyId: string) => {
+        if (!userId) return false;
         const exists = await isWordInDeck(wordId);
         if (exists) return false;
 
         const cardData = createNewCard(wordId, storyId);
-        const id = `${wordId}-${Date.now()}`;
-        await db.cards.add({ ...cardData, id } as Card);
 
-        // Update user's word count
-        const vocab = await db.vocabulary.get(wordId);
-        if (vocab) {
-            const user = await db.users.toCollection().first();
-            if (user && user.id !== undefined) {
-                const level = vocab.cefrLevel;
-                await db.users.update(user.id, (u: any) => {
-                    u.totalWordsLearned = (u.totalWordsLearned || 0) + 1;
-                    if (!u.levelProgress[level]) u.levelProgress[level] = { words: 0, stories: 0, retention: 0 };
-                    u.levelProgress[level].words = (u.levelProgress[level].words || 0) + 1;
-                });
-            }
+        await supabase.from('cards').insert({
+            user_id: userId,
+            word_id: wordId,
+            story_id: storyId,
+            state: cardData.state,
+            due: cardData.due.toISOString(),
+            stability: cardData.stability,
+            difficulty: cardData.difficulty,
+            elapsed_days: cardData.elapsedDays,
+            scheduled_days: cardData.scheduledDays,
+            reps: cardData.reps,
+            lapses: cardData.lapses,
+            last_review: null,
+        });
+
+        // Update profile word count
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('total_words_learned')
+            .eq('id', userId)
+            .single() as { data: Pick<Profile, 'total_words_learned'> | null };
+
+        if (profile) {
+            await supabase.from('profiles').update({
+                total_words_learned: profile.total_words_learned + 1,
+            }).eq('id', userId);
         }
 
+        qc.invalidateQueries({ queryKey: ['cards'] });
+        qc.invalidateQueries({ queryKey: ['profile'] });
         return true;
-    }, [isWordInDeck]);
+    }, [userId, isWordInDeck, qc]);
 
-    // Mark a word as already known (counts for progression, no flashcard)
     const markAsKnown = useCallback(async (wordId: string) => {
+        if (!userId) return false;
         const alreadyKnown = await isWordKnown(wordId);
         const alreadyInDeck = await isWordInDeck(wordId);
         if (alreadyKnown || alreadyInDeck) return false;
 
-        // Store in knownWords table
-        await db.knownWords.add({ wordId, knownAt: new Date() });
+        await supabase.from('known_words').insert({
+            user_id: userId,
+            word_id: wordId,
+            known_at: new Date().toISOString(),
+        });
 
-        // Update user's word count (same as adding a card)
-        const vocab = await db.vocabulary.get(wordId);
-        if (vocab) {
-            const user = await db.users.toCollection().first();
-            if (user && user.id !== undefined) {
-                const level = vocab.cefrLevel;
-                await db.users.update(user.id, (u: any) => {
-                    u.totalWordsLearned = (u.totalWordsLearned || 0) + 1;
-                    if (!u.levelProgress[level]) u.levelProgress[level] = { words: 0, stories: 0, retention: 0 };
-                    u.levelProgress[level].words = (u.levelProgress[level].words || 0) + 1;
-                });
-            }
+        // Update profile word count
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('total_words_learned')
+            .eq('id', userId)
+            .single() as { data: Pick<Profile, 'total_words_learned'> | null };
+
+        if (profile) {
+            await supabase.from('profiles').update({
+                total_words_learned: profile.total_words_learned + 1,
+            }).eq('id', userId);
         }
 
+        qc.invalidateQueries({ queryKey: ['profile'] });
         return true;
-    }, [isWordInDeck, isWordKnown]);
+    }, [userId, isWordInDeck, isWordKnown, qc]);
 
-    // Process a review rating
-    const reviewCard = useCallback(async (card: Card, rating: Rating) => {
-        const updates = calculateNextReview(card, rating);
-        await db.cards.update(card.id, updates);
+    const reviewCard = useCallback(async (card: ReturnType<typeof rowToCard>, rating: Rating) => {
+        if (!userId) return null;
+        const updates = calculateNextReview(card as any, rating);
 
-        // Update study streak
-        const user = await db.users.toCollection().first();
-        if (user && user.id !== undefined) {
-            const today = new Date().toISOString().split('T')[0];
-            if (user.lastStudyDate !== today) {
-                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-                const newStreak = user.lastStudyDate === yesterday ? user.streak + 1 : 1;
-                await db.users.update(user.id, {
-                    streak: newStreak,
-                    lastStudyDate: today,
-                });
-            }
+        await supabase.from('cards').update({
+            state: updates.state,
+            due: updates.due?.toISOString(),
+            stability: updates.stability,
+            difficulty: updates.difficulty,
+            elapsed_days: updates.elapsedDays,
+            scheduled_days: updates.scheduledDays,
+            reps: updates.reps,
+            lapses: updates.lapses,
+            last_review: updates.lastReview?.toISOString(),
+        }).eq('id', Number(card.id));
+
+        // Update streak
+        const today = new Date().toISOString().split('T')[0];
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('streak, last_study_date')
+            .eq('id', userId)
+            .single() as { data: Pick<Profile, 'streak' | 'last_study_date'> | null };
+
+        if (profile && profile.last_study_date !== today) {
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            const newStreak = profile.last_study_date === yesterday ? profile.streak + 1 : 1;
+            await supabase.from('profiles').update({
+                streak: newStreak,
+                last_study_date: today,
+            }).eq('id', userId);
         }
 
+        qc.invalidateQueries({ queryKey: ['cards'] });
+        qc.invalidateQueries({ queryKey: ['profile'] });
         return updates;
-    }, []);
+    }, [userId, qc]);
 
     return {
-        dueCards: dueCards ?? [],
+        dueCards: dueCardsRaw ?? [],
         totalCards: totalCards ?? 0,
         isWordInDeck,
         isWordKnown,

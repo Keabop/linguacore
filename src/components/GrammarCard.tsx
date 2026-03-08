@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { motion } from 'framer-motion';
 import DOMPurify from 'dompurify';
 import { BookOpen, CheckCircle2, Lightbulb } from 'lucide-react';
-import { db } from '../lib/db';
+import { getGrammarCardByUnit } from '../data';
+import { useUnitProgress } from '../hooks/useUnitProgress';
 
 interface GrammarCardProps {
     unitId: string;
@@ -14,30 +14,15 @@ interface GrammarCardProps {
 export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
     const { t } = useTranslation();
     const [saving, setSaving] = useState(false);
+    const { markStepComplete } = useUnitProgress(unitId);
 
-    const card = useLiveQuery(
-        () => db.grammarCards.where('unitId').equals(unitId).first(),
-        [unitId]
-    );
+    const card = getGrammarCardByUnit(unitId) ?? null;
 
     const handleUnderstood = async () => {
         if (saving) return;
         setSaving(true);
         try {
-            const existing = await db.unitProgress.where('unitId').equals(unitId).first();
-            if (existing) {
-                await db.unitProgress.update(existing.id!, { grammarCardRead: true });
-            } else {
-                await db.unitProgress.add({
-                    unitId,
-                    grammarCardRead: true,
-                    storyCompleted: false,
-                    vocabReviewed: false,
-                    exercisesScore: 0,
-                    outputCompleted: false,
-                    checkpointPassed: false,
-                });
-            }
+            await markStepComplete('grammar');
             onComplete();
         } catch {
             setSaving(false);
