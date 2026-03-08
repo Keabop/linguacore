@@ -74,7 +74,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                           : 'border-border'
                 }`}
             >
-                <div className="flex flex-wrap gap-2 min-h-[40px] items-center">
+                <div className="flex flex-wrap gap-3 min-h-[40px] items-center">
                     <AnimatePresence mode="popLayout">
                         {placedWords.length === 0 && status === 'pending' && (
                             <motion.span
@@ -97,7 +97,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                                 layout
                                 onClick={() => handleRemoveWord(word, i)}
                                 disabled={status !== 'pending'}
-                                className={`bg-primary/20 border border-primary/40 rounded-lg px-3 py-2 text-sm font-medium text-text-primary transition-all ${
+                                className={`bg-primary/20 border border-primary/40 rounded-lg px-4 py-2.5 text-sm font-medium text-text-primary transition-all ${
                                     status === 'pending' ? 'cursor-pointer hover:bg-primary/30 active:scale-95' : 'cursor-default'
                                 }`}
                             >
@@ -121,7 +121,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                                 exit="exit"
                                 layout
                                 onClick={() => handlePlaceWord(word, i)}
-                                className="bg-bg-app border border-border rounded-lg px-3 py-2 text-sm font-medium text-text-primary cursor-pointer hover:border-primary/50 active:scale-95 transition-all"
+                                className="bg-bg-app border border-border rounded-lg px-4 py-2.5 text-sm font-medium text-text-primary cursor-pointer hover:border-primary/50 active:scale-95 transition-all"
                             >
                                 {word}
                             </motion.button>
@@ -135,7 +135,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 <button
                     onClick={handleCheck}
                     disabled={!allPlaced}
-                    className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     {t('exercises.checkAnswer')}
                 </button>
@@ -146,19 +146,19 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-4"
+                    className="space-y-5"
                 >
                     <div className="text-center">
                         <p className="text-lg font-bold text-emerald-400 flex items-center justify-center gap-1.5">
                             <Check className="w-5 h-5" /> {t('exercises.correct')}
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-4">
+                    <div className="bg-bg-card border border-border rounded-xl p-5">
                         <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -169,7 +169,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-4"
+                    className="space-y-5"
                 >
                     <div className="text-center space-y-2">
                         <p className="text-lg font-bold text-red-400 flex items-center justify-center gap-1.5">
@@ -179,12 +179,12 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                             <span className="text-primary font-bold">{exercise.correctAnswer}</span>
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-4">
+                    <div className="bg-bg-card border border-border rounded-xl p-5">
                         <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

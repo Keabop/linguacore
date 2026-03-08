@@ -66,7 +66,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
             </motion.div>
 
             {/* Options */}
-            <div className="space-y-3">
+            <div className="space-y-4">
                 {exercise.options?.map((option, i) => (
                     <motion.button
                         key={option}
@@ -75,7 +75,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                         transition={{ delay: i * 0.05 }}
                         onClick={() => handleSelect(option)}
                         disabled={status !== 'pending'}
-                        className={`w-full rounded-xl p-4 text-left transition-all flex items-center justify-between gap-3 ${getOptionStyle(option)} ${
+                        className={`w-full rounded-xl p-5 text-left transition-all flex items-center justify-between gap-3 ${getOptionStyle(option)} ${
                             status === 'pending' ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
                         }`}
                     >
@@ -90,7 +90,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-4"
+                    className="space-y-5"
                 >
                     <div className="text-center">
                         {status === 'correct' ? (
@@ -103,12 +103,12 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                             </p>
                         )}
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-4">
+                    <div className="bg-bg-card border border-border rounded-xl p-5">
                         <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(status === 'correct')}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

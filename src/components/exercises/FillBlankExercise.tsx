@@ -58,14 +58,14 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
             </motion.div>
 
             {/* Input form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
                 <input
                     ref={inputRef}
                     type="text"
                     value={answer}
                     onChange={e => setAnswer(e.target.value)}
                     disabled={status !== 'pending'}
-                    className={`w-full bg-bg-app border rounded-xl px-4 py-3 text-text-primary focus:outline-none transition-all ${
+                    className={`w-full bg-bg-app border rounded-xl px-5 py-3.5 text-text-primary focus:outline-none transition-all ${
                         status === 'correct'
                             ? 'border-emerald-500 bg-emerald-500/10'
                             : status === 'incorrect'
@@ -81,7 +81,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     <button
                         type="submit"
                         disabled={!answer.trim()}
-                        className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                     >
                         {t('exercises.checkAnswer')}
                     </button>
@@ -93,19 +93,19 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-4"
+                    className="space-y-5"
                 >
                     <div className="text-center">
                         <p className="text-lg font-bold text-emerald-400 flex items-center justify-center gap-1.5">
                             <Check className="w-5 h-5" /> {t('exercises.correct')}
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-4">
+                    <div className="bg-bg-card border border-border rounded-xl p-5">
                         <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -116,7 +116,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-4"
+                    className="space-y-5"
                 >
                     <div className="text-center space-y-2">
                         <p className="text-lg font-bold text-red-400 flex items-center justify-center gap-1.5">
@@ -126,12 +126,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                             <span className="text-primary font-bold">{exercise.correctAnswer}</span>
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-4">
+                    <div className="bg-bg-card border border-border rounded-xl p-5">
                         <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

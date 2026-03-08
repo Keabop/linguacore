@@ -77,7 +77,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-12"
             >
-                <div className={`bg-bg-card border ${getScoreBorderColor()} rounded-2xl p-8 w-full max-w-sm text-center space-y-6`}>
+                <div className={`bg-bg-card border ${getScoreBorderColor()} rounded-2xl p-10 w-full max-w-sm text-center space-y-7`}>
                     <div className="space-y-2">
                         <p className="text-sm text-text-muted uppercase tracking-wider font-medium">
                             {t('exercises.title')}
@@ -106,7 +106,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
 
                     <button
                         onClick={() => onComplete(score)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                     >
                         {t('exercises.finish')}
                     </button>

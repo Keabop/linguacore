@@ -127,3 +127,37 @@ export async function chatWithTutor(
 ): Promise<ConversationResponse> {
     return callAgent<ConversationResponse>('conversation-tutor', { messages, level, topic });
 }
+
+// ===== Writing Evaluator =====
+
+export interface WritingCorrection {
+    original: string;
+    corrected: string;
+    explanation: string;
+    type: 'grammar' | 'vocabulary' | 'spelling' | 'style';
+}
+
+export interface WritingEvaluationResponse {
+    score: number;
+    corrections: WritingCorrection[];
+    feedback: {
+        grammar: { score: number; note: string };
+        vocabulary: { score: number; note: string };
+        coherence: { score: number; note: string };
+    };
+    improvedVersion: string;
+    encouragement: string;
+}
+
+export async function evaluateWriting(
+    text: string,
+    prompt: string,
+    level: CEFRLevel,
+    type: 'sentence-construction' | 'paragraph-completion' | 'free-writing' | 'error-correction',
+    targetGrammar: string[],
+    referenceAnswer?: string
+): Promise<WritingEvaluationResponse> {
+    return callAgent<WritingEvaluationResponse>('writing-evaluator', {
+        text, prompt, level, type, targetGrammar, referenceAnswer,
+    });
+}

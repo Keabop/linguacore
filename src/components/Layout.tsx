@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
-import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 
@@ -12,6 +12,7 @@ const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/path', icon: Map, labelKey: 'nav.path' },
     { path: '/learn', icon: BookOpen, labelKey: 'nav.learn' },
     { path: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
+    { path: '/practice', icon: PenLine, labelKey: 'nav.practice' },
     { path: '/review', icon: RefreshCw, labelKey: 'nav.review' },
     { path: '/stats', icon: BarChart3, labelKey: 'nav.stats' },
 ];

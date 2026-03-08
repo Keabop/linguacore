@@ -3,6 +3,7 @@ import { generateStory } from './agents/story-generator.js';
 import { enrichVocabulary } from './agents/vocab-enricher.js';
 import { createExercise } from './agents/exercise-creator.js';
 import { chat } from './agents/conversation-tutor.js';
+import { evaluateWriting } from './agents/writing-evaluator.js';
 import type { AgentType } from './lib/gemini.js';
 
 const CORS_HEADERS = {
@@ -34,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Validate agent name before dispatching
-        const VALID_AGENTS: AgentType[] = ['story-generator', 'vocab-enricher', 'exercise-creator', 'conversation-tutor'];
+        const VALID_AGENTS: AgentType[] = ['story-generator', 'vocab-enricher', 'exercise-creator', 'conversation-tutor', 'writing-evaluator'];
         if (!VALID_AGENTS.includes(agent)) {
             return res.status(400).json({ error: `Unknown agent: ${agent}` });
         }
@@ -53,6 +54,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 break;
             case 'conversation-tutor':
                 result = await chat(params);
+                break;
+            case 'writing-evaluator':
+                result = await evaluateWriting(params);
                 break;
         }
 

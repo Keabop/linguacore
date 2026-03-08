@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type UnitProgress } from '../lib/db';
 
-export type UnitStep = 'grammar' | 'story' | 'vocab' | 'exercises' | 'checkpoint' | 'completed';
+export type UnitStep = 'grammar' | 'story' | 'vocab' | 'exercises' | 'output' | 'checkpoint' | 'completed';
 
 export interface UseUnitProgressReturn {
     progress: UnitProgress | null;
@@ -17,6 +17,7 @@ function determineStep(progress: UnitProgress | null | undefined): UnitStep {
     if (!progress.storyCompleted) return 'story';
     if (!progress.vocabReviewed) return 'vocab';
     if (progress.exercisesScore === 0) return 'exercises';
+    if (!progress.outputCompleted) return 'output';
     if (!progress.checkpointPassed) return 'checkpoint';
     return 'completed';
 }
@@ -44,6 +45,7 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
                 storyCompleted: false,
                 vocabReviewed: false,
                 exercisesScore: 0,
+                outputCompleted: false,
                 checkpointPassed: false,
                 ...updates,
             });
@@ -63,6 +65,9 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
                 break;
             case 'exercises':
                 // exercises score is set via updateProgress directly
+                break;
+            case 'output':
+                await updateProgress({ outputCompleted: true });
                 break;
             case 'checkpoint':
                 await updateProgress({ checkpointPassed: true, completedAt: new Date() });

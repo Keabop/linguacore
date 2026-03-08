@@ -8,6 +8,7 @@ import {
     BookOpen,
     RefreshCw,
     PenLine,
+    Mic,
     Trophy,
     CheckCircle2,
     ChevronRight,
@@ -19,6 +20,7 @@ import type { GrammarExercise } from '../lib/db';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
+import OutputStep from '../components/OutputStep';
 import LevelAssessment from './LevelAssessment';
 
 /* ===== Step metadata ===== */
@@ -28,6 +30,7 @@ const STEPS: { key: UnitStep; icon: typeof BookOpen }[] = [
     { key: 'story', icon: BookOpen },
     { key: 'vocab', icon: RefreshCw },
     { key: 'exercises', icon: PenLine },
+    { key: 'output', icon: Mic },
     { key: 'checkpoint', icon: Trophy },
 ];
 
@@ -36,6 +39,7 @@ const STEP_LABELS: Record<string, string> = {
     story: 'Historia',
     vocab: 'Vocabulario',
     exercises: 'Ejercicios',
+    output: 'Output',
     checkpoint: 'Checkpoint',
 };
 
@@ -126,7 +130,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
 
                 <button
                     onClick={onBack}
-                    className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Volver a la ruta
                 </button>
@@ -228,6 +232,11 @@ export default function UnitFlow() {
         handleStepAdvance();
     };
 
+    const handleOutputComplete = async () => {
+        await markStepComplete('output');
+        handleStepAdvance();
+    };
+
     const handleCheckpointComplete = async (score: number) => {
         if (score >= 80) {
             await updateProgress({
@@ -313,6 +322,14 @@ export default function UnitFlow() {
                                 await markStepComplete('exercises');
                                 handleStepAdvance();
                             }}
+                        />
+                    )}
+
+                    {currentStep === 'output' && (
+                        <OutputStep
+                            unitId={unitId!}
+                            level={unit.level}
+                            onComplete={handleOutputComplete}
                         />
                     )}
 
@@ -520,7 +537,7 @@ function StoryStep({
                         </p>
                         <button
                             onClick={() => navigate(`/learn/${unitStory.id}`)}
-                            className="w-full bg-bg-app border border-border rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-colors group"
+                            className="w-full bg-bg-app border border-border rounded-xl p-5 flex items-center justify-between hover:border-primary/40 transition-colors group"
                         >
                             <div className="flex items-center gap-3">
                                 <BookOpen className="w-5 h-5 text-primary" />
@@ -538,7 +555,7 @@ function StoryStep({
                         </p>
                         <button
                             onClick={onNavigateStories}
-                            className="w-full bg-bg-app border border-border rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-colors group"
+                            className="w-full bg-bg-app border border-border rounded-xl p-5 flex items-center justify-between hover:border-primary/40 transition-colors group"
                         >
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-5 h-5 text-primary" />
@@ -554,7 +571,7 @@ function StoryStep({
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                         onClick={onComplete}
-                        className="flex-1 bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                        className="flex-1 bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                     >
                         {unitStory ? 'Marcar como completado' : 'Saltar por ahora'}
                     </button>
@@ -588,7 +605,7 @@ function VocabStep({
 
                 <button
                     onClick={onNavigateReview}
-                    className="w-full bg-bg-app border border-border rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-colors group"
+                    className="w-full bg-bg-app border border-border rounded-xl p-5 flex items-center justify-between hover:border-primary/40 transition-colors group"
                 >
                     <div className="flex items-center gap-3">
                         <RefreshCw className="w-5 h-5 text-accent-blue" />
@@ -601,7 +618,7 @@ function VocabStep({
 
                 <button
                     onClick={onComplete}
-                    className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                 >
                     Continuar
                 </button>
@@ -667,7 +684,7 @@ function CheckpointStep({
 
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Intentalo de nuevo
@@ -697,7 +714,7 @@ function EmptyStepCard({
     return (
         <div className="space-y-4">
             <StepHeader icon={Icon} label={title} description={description} />
-            <div className="bg-bg-card border border-border rounded-2xl p-6 text-center space-y-4">
+            <div className="bg-bg-card border border-border rounded-2xl p-7 text-center space-y-5">
                 <Icon className="w-10 h-10 text-text-muted mx-auto" />
                 <p className="text-text-muted text-sm">{description}</p>
                 <button
