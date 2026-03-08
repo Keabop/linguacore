@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
-import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, LogOut } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import OfflineBanner from './OfflineBanner';
+import { useAuth } from '../lib/AuthContext';
 
 const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/', icon: Home, labelKey: 'nav.home' },
@@ -23,6 +24,7 @@ export default function Layout() {
     const location = useLocation();
     const { progressInfo, user } = useLevelProgression();
     const { dueCards } = useCards();
+    const { signOut } = useAuth();
 
     return (
         <div className="app-layout">
@@ -52,7 +54,7 @@ export default function Layout() {
 
                 {/* Level badge at bottom */}
                 {progressInfo && (
-                    <div className="mt-auto pt-6 border-t border-border px-2">
+                    <div className="mt-auto pt-6 border-t border-border px-2 space-y-4">
                         <div className="flex items-center gap-3">
                             <LevelBadge level={progressInfo.currentLevel} size="default" />
                             <div className="flex-1">
@@ -65,6 +67,13 @@ export default function Layout() {
                                 </div>
                             </div>
                         </div>
+                        <button
+                            onClick={signOut}
+                            className="flex items-center gap-2 text-xs text-text-muted hover:text-red-400 transition-colors w-full"
+                        >
+                            <LogOut className="w-3.5 h-3.5" />
+                            Cerrar sesión
+                        </button>
                     </div>
                 )}
             </aside>

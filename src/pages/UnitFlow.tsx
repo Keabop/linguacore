@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,
@@ -15,8 +14,8 @@ import {
     Sparkles,
     RotateCcw,
 } from 'lucide-react';
-import { db } from '../lib/db';
 import type { GrammarExercise } from '../lib/db';
+import { getUnit, getStoryByUnit, getExercisesByUnit } from '../data';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
@@ -149,29 +148,9 @@ export default function UnitFlow() {
     const { progress, currentStep, isLoading, updateProgress, markStepComplete } =
         useUnitProgress(unitId ?? '');
 
-    const unit = useLiveQuery(
-        async () => {
-            if (!unitId) return null;
-            return (await db.units.get(unitId)) ?? null;
-        },
-        [unitId],
-    );
-
-    const unitStory = useLiveQuery(
-        async () => {
-            if (!unitId) return null;
-            return (await db.stories.where('unitId').equals(unitId).first()) ?? null;
-        },
-        [unitId],
-    );
-
-    const unitExercises = useLiveQuery(
-        () =>
-            unitId
-                ? db.grammarExercises.where('unitId').equals(unitId).toArray()
-                : ([] as GrammarExercise[]),
-        [unitId],
-    );
+    const unit = unitId ? getUnit(unitId) ?? null : null;
+    const unitStory = unitId ? getStoryByUnit(unitId) ?? null : null;
+    const unitExercises = unitId ? getExercisesByUnit(unitId) : ([] as GrammarExercise[]);
 
     // Track animation direction
     const [direction, setDirection] = useState(1);
@@ -186,7 +165,7 @@ export default function UnitFlow() {
     }, [unitExercises, checkpointKey]);
 
     // Loading state
-    if (isLoading || unit === undefined) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center py-20">
                 <div className="text-text-muted text-sm">{t('common.loading')}</div>
@@ -227,7 +206,7 @@ export default function UnitFlow() {
     /* -- Exercise completion handlers -- */
 
     const handleExercisesComplete = async (score: number) => {
-        await updateProgress({ exercisesScore: score });
+        await updateProgress({ exercises_score: score });
         await markStepComplete('exercises');
         handleStepAdvance();
     };
@@ -240,8 +219,8 @@ export default function UnitFlow() {
     const handleCheckpointComplete = async (score: number) => {
         if (score >= 80) {
             await updateProgress({
-                checkpointPassed: true,
-                completedAt: new Date(),
+                checkpoint_passed: true,
+                completed_at: new Date().toISOString(),
             });
             handleStepAdvance();
         }
@@ -318,7 +297,7 @@ export default function UnitFlow() {
                             description="No hay ejercicios disponibles para esta unidad todavia."
                             actionLabel="Saltar"
                             onAction={async () => {
-                                await updateProgress({ exercisesScore: 100 });
+                                await updateProgress({ exercises_score: 100 });
                                 await markStepComplete('exercises');
                                 handleStepAdvance();
                             }}
@@ -349,8 +328,8 @@ export default function UnitFlow() {
                             actionLabel="Completar unidad"
                             onAction={async () => {
                                 await updateProgress({
-                                    checkpointPassed: true,
-                                    completedAt: new Date(),
+                                    checkpoint_passed: true,
+                                    completed_at: new Date().toISOString(),
                                 });
                                 handleStepAdvance();
                             }}

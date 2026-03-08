@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 import { generateStory } from './agents/story-generator.js';
 import { enrichVocabulary } from './agents/vocab-enricher.js';
 import { createExercise } from './agents/exercise-creator.js';
@@ -17,11 +18,28 @@ function getCorsOrigin(req: VercelRequest): string {
     return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 }
 
+/** Validate Supabase JWT from Authorization header */
+async function authenticate(req: VercelRequest): Promise<string | null> {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) return null;
+
+    const token = authHeader.slice(7);
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) return null;
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) return null;
+    return user.id;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const corsOrigin = getCorsOrigin(req);
     res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -29,6 +47,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Authenticate — require valid Supabase JWT
+    const userId = await authenticate(req);
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized — valid Supabase session required' });
     }
 
     try {

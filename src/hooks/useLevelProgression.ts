@@ -1,7 +1,19 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type CEFRLevel } from '../lib/db';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import type { CEFRLevel, Profile, UnitProgressRow } from '../lib/database.types';
 
-// Legacy level requirements — kept for backward compatibility with Stats page
+// Import static data directly — no DB needed for these
+import {
+    a1Units, a2Units, b1Units, b2Units,
+} from '../data/curriculum';
+
+const ALL_UNITS = [...a1Units, ...a2Units, ...b1Units, ...b2Units];
+
+function getUnitsForLevel(level: CEFRLevel) {
+    return ALL_UNITS.filter(u => u.level === level).sort((a, b) => a.unitNumber - b.unitNumber);
+}
+
 export const LEVEL_REQUIREMENTS: Record<CEFRLevel, {
     minWords: number;
     retention: number;
@@ -21,69 +33,85 @@ export interface LevelProgressInfo {
     unitsCompleted: number;
     unitsTotal: number;
     overallPercent: number;
-    currentUnitId: string | null; // First incomplete unit's ID
-    // Backward compatibility fields for stats page:
+    currentUnitId: string | null;
     wordsProgress: number;
     wordsRequired: number;
     storiesProgress: number;
     storiesRequired: number;
 }
 
-/**
- * Hook to manage level progression based on learning path units.
- * A user levels up ONLY by completing all units + passing the level assessment.
- * Level-up is handled exclusively through the Level Assessment page.
- */
 export function useLevelProgression() {
-    const user = useLiveQuery(() => db.users.toCollection().first());
-    const readStoriesCount = useLiveQuery(() => db.readStories.count(), []);
+    const { user: authUser } = useAuth();
+    const qc = useQueryClient();
+    const userId = authUser?.id;
 
-    const currentLevel = user?.currentLevel ?? 'A1';
-
-    // Fetch all units for the current level, sorted by unitNumber
-    const units = useLiveQuery(
-        () => db.units.where('level').equals(currentLevel).sortBy('unitNumber'),
-        [currentLevel],
-    );
-
-    // Fetch unit progress for those units
-    const unitProgressRecords = useLiveQuery(
-        async () => {
-            if (!units || units.length === 0) return [];
-            const ids = units.map(u => u.id);
-            return db.unitProgress.where('unitId').anyOf(ids).toArray();
+    // Fetch profile
+    const { data: profile } = useQuery({
+        queryKey: ['profile', userId],
+        queryFn: async () => {
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId!)
+                .single();
+            return data as Profile | null;
         },
-        [units],
-    );
+        enabled: !!userId,
+    });
+
+    // Fetch read stories count
+    const { data: readStoriesCount } = useQuery({
+        queryKey: ['read-stories-count', userId],
+        queryFn: async () => {
+            const { count } = await supabase
+                .from('read_stories')
+                .select('*', { count: 'exact', head: true });
+            return count ?? 0;
+        },
+        enabled: !!userId,
+    });
+
+    // Fetch unit progress for current level
+    const currentLevel = profile?.current_level ?? 'A1';
+    const levelUnits = getUnitsForLevel(currentLevel);
+    const levelUnitIds = levelUnits.map(u => u.id);
+
+    const { data: unitProgressRecords } = useQuery({
+        queryKey: ['unit-progress-level', currentLevel, userId],
+        queryFn: async () => {
+            if (levelUnitIds.length === 0) return [];
+            const { data } = await supabase
+                .from('unit_progress')
+                .select('*')
+                .in('unit_id', levelUnitIds);
+            return (data ?? []) as UnitProgressRow[];
+        },
+        enabled: !!userId,
+    });
 
     const getProgressInfo = (): LevelProgressInfo | null => {
-        if (!user) return null;
+        if (!profile) return null;
 
-        const currentIdx = LEVELS.indexOf(user.currentLevel);
+        const currentIdx = LEVELS.indexOf(profile.current_level);
         const nextLevel = currentIdx < LEVELS.length - 1 ? LEVELS[currentIdx + 1] : null;
 
-        // Build a map of unitId -> UnitProgress for quick lookup
-        const progressMap = new Map<string, typeof unitProgressRecords extends (infer T)[] | undefined ? T : never>();
+        const progressMap = new Map<string, UnitProgressRow>();
         if (unitProgressRecords) {
             for (const p of unitProgressRecords) {
-                progressMap.set(p.unitId, p);
+                progressMap.set(p.unit_id, p);
             }
         }
 
-        // Calculate unit-based metrics
-        const unitsTotal = units?.length ?? 0;
+        const unitsTotal = levelUnits.length;
         let unitsCompleted = 0;
         let currentUnitId: string | null = null;
 
-        if (units) {
-            for (const unit of units) {
-                const progress = progressMap.get(unit.id);
-                if (progress?.completedAt) {
-                    unitsCompleted++;
-                } else if (currentUnitId === null) {
-                    // First incomplete unit becomes the current one
-                    currentUnitId = unit.id;
-                }
+        for (const unit of levelUnits) {
+            const progress = progressMap.get(unit.id);
+            if (progress?.completed_at) {
+                unitsCompleted++;
+            } else if (currentUnitId === null) {
+                currentUnitId = unit.id;
             }
         }
 
@@ -91,37 +119,46 @@ export function useLevelProgression() {
             ? Math.round((unitsCompleted / unitsTotal) * 100)
             : 0;
 
-        // Backward compatibility: keep words/stories progress for stats page
-        const wordsProgress = user.totalWordsLearned;
+        const wordsProgress = profile.total_words_learned;
         const storiesProgress = readStoriesCount ?? 0;
         const nextReq = nextLevel ? LEVEL_REQUIREMENTS[nextLevel] : null;
-        const wordsRequired = nextReq?.minWords ?? 0;
-        const storiesRequired = nextReq?.storiesRead ?? 0;
 
         return {
-            currentLevel: user.currentLevel,
+            currentLevel: profile.current_level,
             nextLevel,
             unitsCompleted,
             unitsTotal,
             overallPercent,
             currentUnitId,
             wordsProgress,
-            wordsRequired,
+            wordsRequired: nextReq?.minWords ?? 0,
             storiesProgress,
-            storiesRequired,
+            storiesRequired: nextReq?.storiesRead ?? 0,
         };
     };
 
     const unlockLevel = async (level: CEFRLevel) => {
-        if (!user || user.id === undefined) return;
-        await db.users.update(user.id, {
-            currentLevel: level,
-            unlockedLevels: [...user.unlockedLevels, level],
-        });
+        if (!userId || !profile) return;
+        await supabase.from('profiles').update({
+            current_level: level,
+            unlocked_levels: [...profile.unlocked_levels, level],
+        }).eq('id', userId);
+        qc.invalidateQueries({ queryKey: ['profile'] });
+        qc.invalidateQueries({ queryKey: ['unit-progress-level'] });
     };
 
+    // Adapt profile to the shape Layout/Dashboard expect
+    const userCompat = profile ? {
+        currentLevel: profile.current_level,
+        unlockedLevels: profile.unlocked_levels,
+        totalWordsLearned: profile.total_words_learned,
+        streak: profile.streak,
+        lastStudyDate: profile.last_study_date,
+        levelProgress: profile.level_progress,
+    } : undefined;
+
     return {
-        user,
+        user: userCompat,
         progressInfo: getProgressInfo(),
         unlockLevel,
     };

@@ -1,9 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { db, type Vocabulary } from '../lib/db';
+import type { Vocabulary } from '../lib/db';
+import { getStory, getVocab, getVocabMap } from '../data';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCards } from '../hooks/useCards';
 import { toast } from '../lib/toast';
 import DOMPurify from 'dompurify';
@@ -24,6 +27,8 @@ export default function StoryReader() {
     const { storyId } = useParams<{ storyId: string }>();
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { user: authUser } = useAuth();
+    const qc = useQueryClient();
     const { addCard, isWordInDeck, isWordKnown, markAsKnown } = useCards();
 
     const [selectedWord, setSelectedWord] = useState<Vocabulary | null>(null);
@@ -33,20 +38,16 @@ export default function StoryReader() {
     const [completed, setCompleted] = useState(false);
     const [wordStatuses, setWordStatuses] = useState<Map<string, 'deck' | 'known' | 'none'>>(new Map());
 
-    const story = useLiveQuery(
-        () => (storyId ? db.stories.get(storyId) : undefined),
-        [storyId]
-    );
+    const story = storyId ? getStory(storyId) : undefined;
 
     const keywords = useMemo(() => {
         if (!story) return [];
         return extractKeywords(story.content);
     }, [story]);
 
-    const vocabMap = useLiveQuery(async () => {
+    const vocabMap = useMemo(() => {
         if (!keywords.length) return new Map<string, Vocabulary>();
-        const vocabs = await db.vocabulary.where('id').anyOf(keywords).toArray();
-        return new Map(vocabs.map(v => [v.id, v]));
+        return getVocabMap(keywords) as Map<string, Vocabulary>;
     }, [keywords]);
 
     useEffect(() => {
@@ -74,7 +75,7 @@ export default function StoryReader() {
         const wordId = target.getAttribute('data-word');
         if (!wordId) return;
 
-        const vocab = await db.vocabulary.get(wordId);
+        const vocab = getVocab(wordId) as Vocabulary | undefined;
         if (vocab) {
             setSelectedWord(vocab);
             const inDeck = await isWordInDeck(wordId);
@@ -121,21 +122,20 @@ export default function StoryReader() {
     const handleComplete = async () => {
         if (!storyId) return;
         // Check if story was already completed to avoid duplicate counts
-        const alreadyRead = await db.readStories.where('storyId').equals(storyId).first();
+        const { data: existingRead } = await supabase
+            .from('read_stories')
+            .select('id')
+            .eq('story_id', storyId)
+            .limit(1);
+        const alreadyRead = existingRead && existingRead.length > 0;
         if (!alreadyRead) {
-            await db.readStories.add({
-                storyId,
-                completedAt: new Date(),
-                wordsAdded: addedWords.size,
+            await supabase.from('read_stories').insert({
+                user_id: authUser!.id,
+                story_id: storyId,
+                completed_at: new Date().toISOString(),
+                words_added: addedWords.size,
             });
-            const user = await db.users.toCollection().first();
-            if (user && user.id !== undefined && story) {
-                const level = story.level;
-                await db.users.update(user.id, (u: any) => {
-                    if (!u.levelProgress[level]) u.levelProgress[level] = { words: 0, stories: 0, retention: 0 };
-                    u.levelProgress[level].stories = (u.levelProgress[level].stories || 0) + 1;
-                });
-            }
+            qc.invalidateQueries({ queryKey: ['readStories'] });
         }
         setCompleted(true);
         toast.success({ title: t('reader.storyCompleted', '¡Cuento completado!'), description: `${addedWords.size} ${t('reader.wordsAdded', 'palabras añadidas')}` });

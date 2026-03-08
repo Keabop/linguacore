@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { db, type CEFRLevel } from '../lib/db';
+import type { CEFRLevel } from '../lib/db';
+import type { ReadStoryRow, KnownWordRow } from '../lib/database.types';
+import { allStories } from '../data';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import { useLevelProgression } from '../hooks/useLevelProgression';
 import { Lock, Check, Clock, Sparkles, Loader2, X } from 'lucide-react';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
@@ -12,15 +17,24 @@ import LevelBadge from '../components/ui/LevelBadge';
 export default function StoryList() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const stories = useLiveQuery(() => db.stories.toArray());
-    const user = useLiveQuery(() => db.users.toCollection().first());
-    const readStories = useLiveQuery(() => db.readStories.toArray());
+    const stories = allStories;
+    const { user } = useLevelProgression();
+    const { user: authUser } = useAuth();
+    const qc = useQueryClient();
+    const { data: readStories } = useQuery({
+        queryKey: ['readStories', authUser?.id],
+        queryFn: async () => {
+            const { data } = await supabase.from('read_stories').select('*');
+            return (data ?? []) as ReadStoryRow[];
+        },
+        enabled: !!authUser?.id,
+    });
     const [showAIModal, setShowAIModal] = useState(false);
     const [aiTopic, setAiTopic] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
 
-    if (!stories || !user) return null;
+    if (!user) return null;
 
     const levels: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
 
@@ -28,36 +42,17 @@ export default function StoryList() {
         setAiLoading(true);
         setAiError(null);
         try {
-            const knownWords = (await db.knownWords.toArray()).map(w => w.wordId);
+            const { data: knownWordsData } = await supabase.from('known_words').select('word_id');
+            const knownWords = ((knownWordsData ?? []) as Pick<KnownWordRow, 'word_id'>[]).map(w => w.word_id);
             const result = await generateStory(
                 user.currentLevel,
                 knownWords,
                 aiTopic || undefined
             );
 
-            // Save story to Dexie
-            await db.stories.add({
-                id: result.id,
-                level: result.level as CEFRLevel,
-                title: result.title,
-                content: result.content,
-                wordCount: result.wordCount,
-                estimatedMinutes: result.estimatedMinutes,
-            });
-
-            // Save new vocabulary words
-            for (const vocab of result.vocabulary) {
-                const exists = await db.vocabulary.get(vocab.id);
-                if (!exists) {
-                    await db.vocabulary.add({
-                        id: vocab.id,
-                        translations: vocab.translations,
-                        cefrLevel: vocab.cefrLevel as CEFRLevel,
-                        examples: vocab.examples,
-                        phonetic: vocab.phonetic,
-                    });
-                }
-            }
+            // TODO: implement AI story persistence with Supabase
+            // Previously saved to Dexie — skipping DB save for now.
+            // The navigate below will show "story not found" for AI stories until persistence is added.
 
             setShowAIModal(false);
             setAiTopic('');
@@ -160,7 +155,7 @@ export default function StoryList() {
                         {/* Story grid — 2 columns */}
                         <div className={`grid grid-cols-2 gap-5 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}>
                             {levelStories.map((story, si) => {
-                                const isRead = readStories?.some(r => r.storyId === story.id);
+                                const isRead = readStories?.some(r => r.story_id === story.id);
 
                                 return (
                                     <motion.div

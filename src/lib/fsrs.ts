@@ -35,6 +35,7 @@ export function createNewCard(wordId: string, storyId: string): Omit<Card, 'id'>
         scheduledDays: 0,
         reps: 0,
         lapses: 0,
+        lastReview: undefined,
     };
 }
 

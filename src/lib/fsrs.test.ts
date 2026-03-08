@@ -4,7 +4,7 @@ import { CardState, type Card } from './db';
 
 function makeCard(overrides: Partial<Card> = {}): Card {
     return {
-        id: 1,
+        id: '1',
         wordId: 'test-word',
         storyId: 'test-story',
         state: CardState.New,
@@ -15,6 +15,7 @@ function makeCard(overrides: Partial<Card> = {}): Card {
         scheduledDays: 0,
         reps: 0,
         lapses: 0,
+        lastReview: undefined,
         ...overrides,
     };
 }
@@ -128,7 +129,7 @@ describe('calculateNextReview', () => {
 
             card = makeCard({
                 ...result,
-                id: 1,
+                id: '1',
                 wordId: 'test-word',
                 storyId: 'test-story',
                 reps: result.reps!,

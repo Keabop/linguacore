@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PenLine, Mic, CheckCircle2 } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../lib/db';
 import type { CEFRLevel } from '../lib/db';
+import { getWritingPromptsByUnit, getSpeakingPromptsByUnit } from '../data';
 import WritingRunner from './writing/WritingRunner';
 import SpeakingRunner from './speaking/SpeakingRunner';
 
@@ -22,15 +21,8 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     const [writingScore, setWritingScore] = useState(0);
     const [speakingScore, setSpeakingScore] = useState(0);
 
-    const writingPrompts = useLiveQuery(
-        () => db.writingPrompts.where('unitId').equals(unitId).toArray(),
-        [unitId],
-    );
-
-    const speakingPrompts = useLiveQuery(
-        () => db.speakingPrompts.where('unitId').equals(unitId).toArray(),
-        [unitId],
-    );
+    const writingPrompts = getWritingPromptsByUnit(unitId);
+    const speakingPrompts = getSpeakingPromptsByUnit(unitId);
 
     const hasWriting = writingPrompts && writingPrompts.length > 0;
     const hasSpeaking = speakingPrompts && speakingPrompts.length > 0;
@@ -55,7 +47,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     };
 
     // No output prompts for this unit — skip
-    if (writingPrompts !== undefined && speakingPrompts !== undefined && !hasWriting && !hasSpeaking) {
+    if (!hasWriting && !hasSpeaking) {
         return (
             <div className="bg-bg-card border border-border rounded-xl p-6 text-center space-y-4">
                 <PenLine className="w-8 h-8 text-text-muted mx-auto" />
@@ -72,14 +64,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
         );
     }
 
-    // Loading
-    if (writingPrompts === undefined || speakingPrompts === undefined) {
-        return (
-            <div className="flex items-center justify-center py-12">
-                <p className="text-sm text-text-muted">Cargando ejercicios...</p>
-            </div>
-        );
-    }
+    // Static data is always available, no loading state needed
 
     return (
         <div className="space-y-5">
