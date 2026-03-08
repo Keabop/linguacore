@@ -157,7 +157,12 @@
     "cancel": "Cancelar",
     "save": "Guardar",
     "back": "Atrás",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "offline": "Sin conexión a internet. Las funciones con IA no están disponibles.",
+    "offlineDisabled": "No disponible sin conexión",
+    "dataNotFound": "No se encontraron datos",
+    "dataCorrupt": "Es posible que los datos del navegador se hayan borrado.",
+    "resetData": "Reiniciar datos"
   },
   "chat": {
     "title": "Tutor de Conversación",

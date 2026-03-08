@@ -6,6 +6,7 @@ import { db } from '../lib/db';
 import type { Unit, UnitProgress } from '../lib/db';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import LevelBadge from '../components/ui/LevelBadge';
+import PageLoader from '../components/PageLoader';
 import {
     Map,
     Lock,
@@ -80,7 +81,7 @@ export default function LearningPath() {
         [units],
     );
 
-    if (!progressInfo) return null;
+    if (!progressInfo) return <PageLoader />;
 
     const progressMap: globalThis.Map<string, UnitProgress> = new globalThis.Map();
     if (unitProgress) {

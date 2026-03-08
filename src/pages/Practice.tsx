@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PenLine, Mic, Sparkles, Loader2 } from 'lucide-react';
+import AIErrorCard from '../components/AIErrorCard';
 import { db } from '../lib/db';
 import type { CEFRLevel } from '../lib/db';
 import { useLevelProgression } from '../hooks/useLevelProgression';
@@ -198,7 +199,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
             </div>
 
             {error && (
-                <div className="bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 text-sm text-accent-red">{error}</div>
+                <AIErrorCard error={error} onRetry={() => setError(null)} />
             )}
 
             <div className="space-y-2">

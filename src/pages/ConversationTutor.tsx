@@ -6,6 +6,8 @@ import { db } from '../lib/db';
 import { chatWithTutor, type ConversationMessage, type ConversationResponse } from '../lib/ai';
 import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AIErrorCard from '../components/AIErrorCard';
+import PageLoader from '../components/PageLoader';
 
 interface ChatBubble {
     role: 'user' | 'assistant';
@@ -180,15 +182,11 @@ export default function ConversationTutor() {
 
                 {/* Error */}
                 {error && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center"
-                    >
-                        <p className="text-xs text-accent-red bg-accent-red/10 inline-block px-4 py-2 rounded-lg">
-                            {error}
-                        </p>
-                    </motion.div>
+                    <AIErrorCard
+                        error={error}
+                        onRetry={() => { setError(null); sendMessage(apiMessages.at(-1)?.content || 'Hello!'); }}
+                        disabled={isLoading}
+                    />
                 )}
 
                 <div ref={chatEndRef} />
