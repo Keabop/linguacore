@@ -19,6 +19,10 @@ const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/stats', icon: BarChart3, labelKey: 'nav.stats' },
 ];
 
+const mobileNavItems = navItems.filter(item =>
+    ['/', '/path', '/learn', '/review', '/stats'].includes(item.path)
+);
+
 export default function Layout() {
     const { t } = useTranslation();
     const location = useLocation();
@@ -37,7 +41,7 @@ export default function Layout() {
                 </div>
 
                 {/* Nav items */}
-                <nav className="flex-1 space-y-2">
+                <nav className="flex-1 space-y-1">
                     {navItems.map(item => (
                         <NavLink
                             key={item.path}
@@ -61,7 +65,7 @@ export default function Layout() {
                                 <p className="text-xs text-text-muted mb-2">{t('progress.currentLevel')}</p>
                                 <div className="h-1.5 bg-bg-app rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-white/25 rounded-full transition-all duration-500"
+                                        className="h-full bg-primary rounded-full transition-all duration-500"
                                         style={{ width: `${progressInfo.overallPercent}%` }}
                                     />
                                 </div>
@@ -103,9 +107,9 @@ export default function Layout() {
                     <div className="widget">
                         <div className="widget-title">{t('dashboard.streak')}</div>
                         <div className="flex items-center gap-4">
-                            <Flame className="w-8 h-8 text-accent-orange" />
+                            <Flame className="w-8 h-8 text-accent-amber" />
                             <div>
-                                <p className="text-3xl font-extrabold text-accent-orange leading-tight">{user.streak}</p>
+                                <p className="text-3xl font-extrabold text-accent-amber leading-tight">{user.streak}</p>
                                 <p className="text-xs text-text-muted mt-1">{t('dashboard.days')}</p>
                             </div>
                         </div>
@@ -122,7 +126,7 @@ export default function Layout() {
                                 <p className="text-xs text-text-muted mt-1">{t('dashboard.cards')}</p>
                             </div>
                             {dueCards.length > 0 && (
-                                <span className="bg-primary text-bg-app text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                                <span className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
                                     {t('dashboard.startReview')} <ArrowRight className="w-3 h-3" />
                                 </span>
                             )}
@@ -147,7 +151,7 @@ export default function Layout() {
                                 </div>
                                 <div className="h-2 bg-bg-app rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-white/30 rounded-full transition-all duration-500"
+                                        className="h-full bg-primary rounded-full transition-all duration-500"
                                         style={{ width: `${progressInfo.overallPercent}%` }}
                                     />
                                 </div>
@@ -165,7 +169,7 @@ export default function Layout() {
             {/* ===== FLOATING BOTTOM BAR (Mobile) ===== */}
             {!/^\/learn\/.+/.test(location.pathname) && (
                 <nav className="floating-bar">
-                    {navItems.map(item => (
+                    {mobileNavItems.map(item => (
                         <NavLink
                             key={item.path}
                             to={item.path}
@@ -198,7 +202,7 @@ function WidgetProgress({ label, current, target }: {
             </div>
             <div className="h-1.5 bg-bg-app rounded-full overflow-hidden">
                 <div
-                    className={`h-full rounded-full transition-all duration-500 ${met ? 'bg-white/30' : 'bg-white/20'}`}
+                    className={`h-full rounded-full transition-all duration-500 ${met ? 'bg-primary' : 'bg-primary/60'}`}
                     style={{ width: `${percent}%` }}
                 />
             </div>

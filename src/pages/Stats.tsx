@@ -115,8 +115,8 @@ export default function Stats() {
                                 className="aspect-square rounded-sm transition-colors"
                                 style={{
                                     backgroundColor: day.count > 0
-                                        ? `rgba(255, 255, 255, ${intensity * 0.4})`
-                                        : 'rgba(255, 255, 255, 0.04)',
+                                        ? `rgba(34, 197, 94, ${0.15 + intensity * 0.65})`
+                                        : 'rgba(255, 255, 255, 0.03)',
                                 }}
                                 title={`${day.date}: ${day.count} ${t('stats.activities')}`}
                             />
@@ -130,7 +130,7 @@ export default function Stats() {
                             <div
                                 key={i}
                                 className="w-2.5 h-2.5 rounded-sm"
-                                style={{ backgroundColor: op > 0 ? `rgba(255, 255, 255, ${op * 0.4})` : 'rgba(255,255,255,0.04)' }}
+                                style={{ backgroundColor: op > 0 ? `rgba(34, 197, 94, ${0.15 + op * 0.65})` : 'rgba(255,255,255,0.03)' }}
                             />
                         ))}
                     </div>
@@ -157,7 +157,7 @@ export default function Stats() {
                     </div>
                     <div className="border-t border-border pt-3 flex items-center justify-between">
                         <span className="text-sm font-semibold">{t('stats.total')}</span>
-                        <span className="text-sm font-extrabold text-white">{(totalCards ?? 0) + (knownCount ?? 0)}</span>
+                        <span className="text-sm font-bold text-white">{(totalCards ?? 0) + (knownCount ?? 0)}</span>
                     </div>
                 </div>
             </motion.div>
@@ -224,11 +224,11 @@ function ProgressRow({ label, current, target, suffix, met }: {
 }) {
     return (
         <div className="flex items-center gap-2">
-            <span className={`text-xs ${met ? 'text-primary' : 'text-accent-orange'}`}>
+            <span className={`text-xs ${met ? 'text-success' : 'text-accent-orange'}`}>
                 {met ? <Check className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
             </span>
             <span className="text-xs flex-1 text-text-secondary">{label}</span>
-            <span className={`text-xs font-bold ${met ? 'text-primary' : 'text-text-muted'}`}>
+            <span className={`text-xs font-bold ${met ? 'text-success' : 'text-text-muted'}`}>
                 {current}{suffix}/{target}{suffix}
             </span>
         </div >

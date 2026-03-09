@@ -71,7 +71,7 @@ export default function ErrorCorrection({ instruction, errorText, targetGrammar,
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim()}
-                className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar corrección
                 <ArrowRight className="w-4 h-4" />
