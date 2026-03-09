@@ -122,7 +122,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 {!submitted ? (
                     <>
                         <button onClick={handleToggleRecord}
-                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-primary text-bg-app hover:bg-primary-dark'}`}>
+                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-primary text-white hover:bg-primary-dark'}`}>
                             {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
@@ -140,7 +140,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(result?.score ?? 0)}
-                            className="flex-1 bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            className="flex-1 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                             Continuar
                         </button>
                     </>

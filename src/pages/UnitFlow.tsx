@@ -129,7 +129,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
 
                 <button
                     onClick={onBack}
-                    className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Volver a la ruta
                 </button>
@@ -550,7 +550,7 @@ function StoryStep({
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                         onClick={onComplete}
-                        className="flex-1 bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                        className="flex-1 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                     >
                         {unitStory ? 'Marcar como completado' : 'Saltar por ahora'}
                     </button>
@@ -597,7 +597,7 @@ function VocabStep({
 
                 <button
                     onClick={onComplete}
-                    className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                 >
                     Continuar
                 </button>
@@ -663,7 +663,7 @@ function CheckpointStep({
 
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Intentalo de nuevo
@@ -698,7 +698,7 @@ function EmptyStepCard({
                 <p className="text-text-muted text-sm">{description}</p>
                 <button
                     onClick={onAction}
-                    className="bg-primary hover:bg-primary-dark text-bg-app py-3 px-8 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="bg-primary hover:bg-primary-dark text-white py-3 px-8 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                 >
                     {actionLabel}
                 </button>

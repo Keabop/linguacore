@@ -10,7 +10,7 @@ interface LevelUpModalProps {
 }
 
 function Confetti({ delay, x }: { delay: number; x: number }) {
-    const colors = ['#FFFFFF', '#E5E5E5', '#60A5FA', '#A78BFA', '#FBBF24', '#F87171'];
+    const colors = ['#6366F1', '#818CF8', '#F59E0B', '#22C55E', '#A78BFA', '#FBBF24'];
     const color = colors[Math.floor(Math.random() * colors.length)];
     return (
         <motion.div
@@ -84,7 +84,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={onClose}
-                            className="w-full bg-primary hover:bg-primary-dark text-bg-app font-bold py-3 rounded-xl text-lg transition-colors"
+                            className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl text-lg transition-colors"
                         >
                             {t('levelUp.continue')}
                         </motion.button>

@@ -108,7 +108,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                     </div>
                     <button
                         onClick={() => onAnswer(status === 'correct')}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

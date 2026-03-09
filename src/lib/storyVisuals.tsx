@@ -37,7 +37,7 @@ export const storyMeshes: Record<string, string> = {
     'b1-010': 'radial-gradient(circle at 50% 30%, #ef444460 0%, transparent 50%), radial-gradient(circle at 30% 70%, #4ade8050 0%, transparent 55%), radial-gradient(circle at 50% 50%, #141614 0%, #0a0e0a 100%)',
 };
 
-export const fallbackMesh = 'radial-gradient(circle at 40% 30%, rgba(255,255,255,0.06) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.04) 0%, transparent 55%), linear-gradient(135deg, #1a1a1a, #0f0f0f)';
+export const fallbackMesh = 'radial-gradient(circle at 40% 30%, rgba(99,102,241,0.06) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(99,102,241,0.04) 0%, transparent 55%), linear-gradient(135deg, #18181B, #09090B)';
 
 export function getStoryMesh(storyId: string): string {
     return storyMeshes[storyId] ?? fallbackMesh;

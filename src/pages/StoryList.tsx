@@ -183,7 +183,7 @@ export default function StoryList() {
                                                 </span>
                                             )}
                                             {isRead && (
-                                                <span className="absolute top-3 right-3 text-xs bg-white/20 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
+                                                <span className="absolute top-3 right-3 text-xs bg-black/30 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
                                                     <Check className="w-3 h-3" /> {t('storyList.read')}
                                                 </span>
                                             )}

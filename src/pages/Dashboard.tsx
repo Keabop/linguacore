@@ -90,14 +90,16 @@ export default function Dashboard() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 }}
-                    className="bg-bg-card border border-primary/20 rounded-2xl p-7 space-y-5"
+                    className={`bg-bg-card border rounded-2xl p-7 space-y-5 ${{
+                        A1: 'border-[#60A5FA]/20', A2: 'border-[#4ADE80]/20', B1: 'border-[#FBBF24]/20', B2: 'border-[#F87171]/20'
+                    }[currentLevel] || 'border-primary/20'}`}
                 >
                     {/* Header */}
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Map className="w-5 h-5 text-primary" />
                         </div>
-                        <h2 className="text-lg font-extrabold">{t('dashboard.continueLearning')}</h2>
+                        <h2 className="text-lg font-bold">{t('dashboard.continueLearning')}</h2>
                     </div>
 
                     {allUnitsCompleted ? (
@@ -145,7 +147,7 @@ export default function Dashboard() {
                             {/* Continue button */}
                             <button
                                 onClick={() => navigate(`/path/${firstIncompleteUnit.id}`)}
-                                className="w-full sm:w-auto bg-primary text-bg-app font-bold text-sm px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                                className="w-full sm:w-auto bg-primary text-white font-bold text-sm px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                             >
                                 {t('dashboard.continue')}
                                 <ArrowRight className="w-4 h-4" />
@@ -164,7 +166,7 @@ export default function Dashboard() {
                     onClick={() => navigate('/review')}
                     className="story-card cursor-pointer group"
                 >
-                    <div className="story-card-banner" style={{ height: '130px', background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 0%, transparent 55%), linear-gradient(135deg, #1a1a1a, #2a2a2a)' }}>
+                    <div className="story-card-banner" style={{ height: '130px', background: 'radial-gradient(circle at 30% 30%, rgba(99,102,241,0.12) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(99,102,241,0.08) 0%, transparent 55%), linear-gradient(135deg, #18181B, #27272A)' }}>
                         <div className="space-y-1.5">
                             <p className="text-sm text-white/70 font-medium">{t('dashboard.dueToday')}</p>
                             <p className="text-2xl font-extrabold text-white">{dueCards.length} {t('dashboard.cards')} {t('dashboard.pendingReview')}</p>
@@ -187,7 +189,7 @@ export default function Dashboard() {
                 transition={{ delay: 0.15 }}
                 className="grid grid-cols-3 gap-6 lg:hidden"
             >
-                <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} color="text-accent-orange" />
+                <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} color="text-accent-amber" />
                 <QuickStat icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('dashboard.totalCards')} color="text-accent-blue" />
                 <QuickStat icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-accent-purple" />
             </motion.div>
@@ -265,7 +267,7 @@ export default function Dashboard() {
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${progressInfo.overallPercent}%` }}
-                                    className="h-full bg-white/30 rounded-full"
+                                    className="h-full bg-primary rounded-full"
                                     transition={{ duration: 0.8, delay: 0.5 }}
                                 />
                             </div>
@@ -311,7 +313,7 @@ function ProgressItem({ label, current, target }: {
             </div>
             <div className="h-1.5 bg-bg-app rounded-full overflow-hidden">
                 <div
-                    className={`h-full rounded-full transition-all duration-500 ${met ? 'bg-white/30' : 'bg-white/20'}`}
+                    className={`h-full rounded-full transition-all duration-500 ${met ? 'bg-primary' : 'bg-primary/60'}`}
                     style={{ width: `${pct}%` }}
                 />
             </div>
