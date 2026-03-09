@@ -144,7 +144,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                 transition={{ delay: 0.4 }}
                 onClick={handleUnderstood}
                 disabled={saving}
-                className="w-full bg-primary text-bg-app font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:bg-primary-dark disabled:opacity-50"
+                className="w-full bg-primary text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:bg-primary-dark disabled:opacity-50"
             >
                 {saving ? t('common.loading') : t('grammar.understood')}
             </motion.button>

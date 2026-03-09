@@ -80,14 +80,13 @@ export default function Auth() {
                 className="w-full max-w-sm"
             >
                 {/* Logo + Branding */}
-                <div className="flex flex-col items-center" style={{ marginBottom: 32 }}>
+                <div className="flex flex-col items-center mb-8">
                     <img
                         src="/logo.png"
                         alt="LinguaCore"
-                        className="w-20 h-20 rounded-2xl object-cover"
-                        style={{ marginBottom: 20 }}
+                        className="w-20 h-20 rounded-2xl object-cover mb-5"
                     />
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight" style={{ marginBottom: 6 }}>LinguaCore</h1>
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight mb-1.5">LinguaCore</h1>
                     <p className="text-sm text-text-muted">
                         {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
                     </p>
@@ -95,7 +94,7 @@ export default function Auth() {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit}>
-                    <div className="relative" style={{ marginBottom: 14 }}>
+                    <div className="relative mb-3.5">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-text-muted pointer-events-none" />
                         <input
                             type="email"
@@ -103,12 +102,11 @@ export default function Auth() {
                             onChange={e => setEmail(e.target.value)}
                             placeholder="Correo electrónico"
                             required
-                            className="w-full bg-bg-card border border-border rounded-xl pr-4 py-3.5 text-sm text-white placeholder:text-text-muted/60 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
-                            style={{ paddingLeft: '2.75rem' }}
+                            className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-text-muted/60 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
                     </div>
 
-                    <div className="relative" style={{ marginBottom: 20 }}>
+                    <div className="relative mb-5">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-text-muted pointer-events-none" />
                         <input
                             type="password"
@@ -117,19 +115,18 @@ export default function Auth() {
                             placeholder="Contraseña"
                             required
                             minLength={8}
-                            className="w-full bg-bg-card border border-border rounded-xl pr-4 py-3.5 text-sm text-white placeholder:text-text-muted/60 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
-                            style={{ paddingLeft: '2.75rem' }}
+                            className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-text-muted/60 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
                     </div>
 
                     {error && (
-                        <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-4 py-2.5" style={{ marginBottom: 16 }}>{error}</p>
+                        <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-4 py-2.5 mb-4">{error}</p>
                     )}
 
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
                     >
                         {submitting ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -143,7 +140,7 @@ export default function Auth() {
                 </form>
 
                 {/* Divider */}
-                <div className="flex items-center gap-4" style={{ marginTop: 24, marginBottom: 24 }}>
+                <div className="flex items-center gap-4 my-6">
                     <div className="flex-1 h-px bg-border" />
                     <span className="text-xs text-text-muted uppercase tracking-wider">o</span>
                     <div className="flex-1 h-px bg-border" />
@@ -152,8 +149,7 @@ export default function Auth() {
                 {/* Google OAuth */}
                 <button
                     onClick={signInWithGoogle}
-                    className="w-full bg-bg-card border border-border hover:border-primary/30 text-white font-medium py-3.5 rounded-xl transition-all flex items-center justify-center gap-3 text-sm"
-                    style={{ marginBottom: 24 }}
+                    className="w-full bg-bg-card border border-border hover:border-primary/30 text-white font-medium py-3.5 rounded-xl transition-all flex items-center justify-center gap-3 text-sm mb-6"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />

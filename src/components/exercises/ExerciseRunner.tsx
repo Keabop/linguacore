@@ -106,7 +106,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
 
                     <button
                         onClick={() => onComplete(score)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                     >
                         {t('exercises.finish')}
                     </button>

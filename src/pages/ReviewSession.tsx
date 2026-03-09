@@ -61,7 +61,7 @@ export default function ReviewSession() {
                 <p className="text-text-secondary">{t('review.comeBack')}</p>
                 <button
                     onClick={() => navigate('/')}
-                    className="bg-primary hover:bg-primary-dark text-bg-app px-6 py-3 rounded-xl font-bold transition-all mt-4"
+                    className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold transition-all mt-4"
                 >
                     {t('reader.backToStories')}
                 </button>
@@ -87,13 +87,13 @@ export default function ReviewSession() {
                         <p className="text-[10px] text-text-muted">{t('review.reviewed')}</p>
                     </div>
                     <div className="widget text-center">
-                        <p className={`text-2xl font-extrabold ${accuracy >= 70 ? 'text-primary' : 'text-accent-orange'}`}>{accuracy}%</p>
+                        <p className={`text-2xl font-extrabold ${accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`}>{accuracy}%</p>
                         <p className="text-[10px] text-text-muted">{t('review.accuracy')}</p>
                     </div>
                 </div>
                 <button
                     onClick={() => navigate('/')}
-                    className="bg-primary hover:bg-primary-dark text-bg-app px-8 py-3 rounded-xl font-bold transition-all"
+                    className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl font-bold transition-all"
                 >
                     {t('review.backHome')}
                 </button>

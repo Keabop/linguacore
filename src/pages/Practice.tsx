@@ -86,7 +86,7 @@ export default function Practice() {
             <div className="flex gap-2">
                 {LEVELS.map(l => (
                     <button key={l} onClick={() => setLevel(l)}
-                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${level === l ? 'bg-primary text-bg-app' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${level === l ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
                         {l}
                     </button>
                 ))}
@@ -95,11 +95,11 @@ export default function Practice() {
             {/* Tabs */}
             <div className="flex gap-2">
                 <button onClick={() => setTab('writing')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${tab === 'writing' ? 'bg-primary text-bg-app' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${tab === 'writing' ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
                     <PenLine className="w-4 h-4" /> Escritura
                 </button>
                 <button onClick={() => setTab('speaking')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${tab === 'speaking' ? 'bg-primary text-bg-app' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${tab === 'speaking' ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
                     <Mic className="w-4 h-4" /> Habla
                 </button>
             </div>
@@ -213,7 +213,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                     Cambiar tema
                 </button>
                 <button onClick={handleSubmit} disabled={wordCount < 5}
-                    className="flex-1 bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2">
+                    className="flex-1 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2">
                     <Sparkles className="w-4 h-4" /> Evaluar con IA
                 </button>
             </div>
@@ -308,7 +308,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                 {!submitted ? (
                     <>
                         <button onClick={handleToggleRecord}
-                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-primary text-bg-app hover:bg-primary-dark'}`}>
+                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-primary text-white hover:bg-primary-dark'}`}>
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
                         {transcript && !isListening && (
@@ -325,7 +325,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                             Reintentar
                         </button>
                         <button onClick={handleNext}
-                            className="flex-1 bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            className="flex-1 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                             Siguiente
                         </button>
                     </>

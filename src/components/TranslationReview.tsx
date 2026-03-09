@@ -93,7 +93,7 @@ export default function TranslationReview({ card, vocabulary, onResult }: Props)
                         <button
                             type="submit"
                             disabled={!answer.trim()}
-                            className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-40 text-bg-app py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                            className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-40 text-white py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
                         >
                             {t('review.check')} ↵
                         </button>

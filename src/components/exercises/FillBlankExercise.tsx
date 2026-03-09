@@ -81,7 +81,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     <button
                         type="submit"
                         disabled={!answer.trim()}
-                        className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                     >
                         {t('exercises.checkAnswer')}
                     </button>
@@ -105,7 +105,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -131,7 +131,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

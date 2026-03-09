@@ -175,7 +175,9 @@ export default function LearningPath() {
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${levelPercent}%` }}
-                            className="h-full rounded-full bg-primary"
+                            className={`h-full rounded-full ${
+                                { A1: 'bg-[#60A5FA]', A2: 'bg-[#4ADE80]', B1: 'bg-[#FBBF24]', B2: 'bg-[#F87171]' }[currentLevel] || 'bg-primary'
+                            }`}
                             transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
                         />
                     </div>

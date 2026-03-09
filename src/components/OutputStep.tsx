@@ -56,7 +56,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                 </p>
                 <button
                     onClick={onComplete}
-                    className="bg-primary hover:bg-primary-dark text-bg-app px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Saltar
                 </button>
@@ -81,7 +81,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         onClick={() => setActiveTab('writing')}
                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
                             activeTab === 'writing'
-                                ? 'bg-primary text-bg-app'
+                                ? 'bg-primary text-white'
                                 : 'bg-bg-card border border-border text-text-secondary hover:text-white'
                         }`}
                     >
@@ -95,7 +95,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         onClick={() => setActiveTab('speaking')}
                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
                             activeTab === 'speaking'
-                                ? 'bg-primary text-bg-app'
+                                ? 'bg-primary text-white'
                                 : 'bg-bg-card border border-border text-text-secondary hover:text-white'
                         }`}
                     >
@@ -134,7 +134,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     onClick={onComplete}
-                    className="w-full bg-primary hover:bg-primary-dark text-bg-app py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Continuar al checkpoint
                 </motion.button>

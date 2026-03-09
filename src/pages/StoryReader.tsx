@@ -182,7 +182,7 @@ export default function StoryReader() {
                     </button>
                     <button
                         onClick={() => navigate('/review')}
-                        className="bg-primary hover:bg-primary-dark text-bg-app px-6 py-3 rounded-xl font-medium transition-all"
+                        className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-medium transition-all"
                     >
                         {t('dashboard.startReview')}
                     </button>
@@ -262,7 +262,7 @@ export default function StoryReader() {
             {/* Complete button */}
             <button
                 onClick={handleComplete}
-                className="w-full bg-primary hover:bg-primary-dark text-bg-app font-bold py-3 rounded-xl transition-all active:scale-[0.98]"
+                className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-all active:scale-[0.98]"
             >
                 ✓ {t('reader.storyCompleted')}
             </button>
@@ -327,7 +327,7 @@ export default function StoryReader() {
                                         <>
                                             <button
                                                 onClick={handleAddWord}
-                                                className="flex-1 bg-primary hover:bg-primary-dark text-bg-app py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
+                                                className="flex-1 bg-primary hover:bg-primary-dark text-white py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
                                             >
                                                 + {t('reader.addToDeck')}
                                             </button>
