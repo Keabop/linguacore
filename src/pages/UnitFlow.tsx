@@ -341,7 +341,7 @@ export default function UnitFlow() {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             {/* Back button */}
             <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
 
@@ -363,7 +363,7 @@ export default function UnitFlow() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="flex items-center gap-1.5"
+                    className="flex items-center gap-2"
                 >
                     {STEPS.map((step, i) => {
                         const Icon = step.icon;
@@ -372,7 +372,7 @@ export default function UnitFlow() {
                         const isUpcoming = i > activeStepIdx;
 
                         return (
-                            <div key={step.key} className="flex items-center gap-1.5">
+                            <div key={step.key} className="flex items-center gap-2">
                                 {/* Step dot/icon */}
                                 <div
                                     className={`
@@ -397,7 +397,7 @@ export default function UnitFlow() {
                                 {i < STEPS.length - 1 && (
                                     <div
                                         className={`
-                                            h-[2px] w-4 sm:w-6 md:w-8 rounded-full transition-colors duration-300
+                                            h-[2px] w-5 sm:w-7 md:w-9 rounded-full transition-colors duration-300
                                             ${isCompleted ? 'bg-green-500/40' : 'bg-border'}
                                         `}
                                     />
@@ -410,13 +410,13 @@ export default function UnitFlow() {
 
             {/* Step labels (visible on wider screens) */}
             {currentStep !== 'completed' && (
-                <div className="hidden sm:flex items-center gap-1.5 -mt-5">
+                <div className="hidden sm:flex items-center gap-2 -mt-4">
                     {STEPS.map((step, i) => {
                         const isCompleted = i < activeStepIdx;
                         const isCurrent = i === activeStepIdx;
 
                         return (
-                            <div key={step.key} className="flex items-center gap-1.5">
+                            <div key={step.key} className="flex items-center gap-2">
                                 <span
                                     className={`
                                         text-[10px] font-semibold w-9 text-center leading-tight
@@ -431,7 +431,7 @@ export default function UnitFlow() {
                                     {STEP_LABELS[step.key]}
                                 </span>
                                 {i < STEPS.length - 1 && (
-                                    <div className="w-4 sm:w-6 md:w-8" />
+                                    <div className="w-5 sm:w-7 md:w-9" />
                                 )}
                             </div>
                         );
@@ -508,7 +508,7 @@ function StoryStep({
                 description="Lee una historia para practicar la gramatica de esta unidad."
             />
 
-            <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-5">
+            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-6">
                 {unitStory ? (
                     <>
                         <p className="text-text-secondary text-sm leading-relaxed">

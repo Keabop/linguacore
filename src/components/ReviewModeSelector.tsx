@@ -25,7 +25,7 @@ export default function ReviewModeSelector({ dueCount, onSelect }: Props) {
                 </p>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}

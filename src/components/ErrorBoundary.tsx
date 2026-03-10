@@ -1,5 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, WifiOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Props {
@@ -10,6 +10,18 @@ interface Props {
 interface State {
     hasError: boolean;
     error: Error | null;
+}
+
+/** Detect if the error is a failed dynamic import (offline / chunk missing) */
+function isChunkLoadError(error: Error | null): boolean {
+    if (!error) return false;
+    const msg = error.message.toLowerCase();
+    return (
+        msg.includes('failed to fetch dynamically imported module') ||
+        msg.includes('loading chunk') ||
+        msg.includes('loading css chunk') ||
+        msg.includes('dynamically imported module')
+    );
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
@@ -35,6 +47,45 @@ export default class ErrorBoundary extends Component<Props, State> {
 
     render() {
         if (this.state.hasError) {
+            const isOfflineChunk = isChunkLoadError(this.state.error);
+            const isOffline = !navigator.onLine;
+
+            // Offline-specific UI for failed dynamic imports
+            if (isOfflineChunk && isOffline) {
+                return (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center justify-center min-h-[60vh] px-4"
+                    >
+                        <div className="bg-bg-card border border-accent-orange/20 rounded-2xl p-8 max-w-md w-full text-center space-y-5">
+                            <div className="mx-auto w-14 h-14 rounded-full bg-accent-orange/10 flex items-center justify-center">
+                                <WifiOff className="w-7 h-7 text-accent-orange" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold text-white mb-2">
+                                    Página no disponible offline
+                                </h2>
+                                <p className="text-sm text-text-muted">
+                                    Esta página no se ha cargado previamente y no está disponible sin conexión.
+                                    Vuelve al inicio o conéctate a internet para cargarla.
+                                </p>
+                            </div>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={this.handleGoHome}
+                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors"
+                                >
+                                    <Home className="w-4 h-4" />
+                                    Ir al inicio
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                );
+            }
+
+            // Generic error UI
             return (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}

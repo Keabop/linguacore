@@ -90,7 +90,7 @@ export default function Dashboard() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 }}
-                    className={`bg-bg-card border rounded-2xl p-7 space-y-5 ${{
+                    className={`bg-bg-card border rounded-2xl p-5 md:p-8 space-y-5 md:space-y-6 ${{
                         A1: 'border-[#60A5FA]/20', A2: 'border-[#4ADE80]/20', B1: 'border-[#FBBF24]/20', B2: 'border-[#F87171]/20'
                     }[currentLevel] || 'border-primary/20'}`}
                 >
@@ -118,7 +118,7 @@ export default function Dashboard() {
                         </div>
                     ) : firstIncompleteUnit ? (
                         /* Current unit info */
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {/* Unit title + grammar */}
                             <div className="space-y-1">
                                 <h3 className="font-bold text-base">{firstIncompleteUnit.title}</h3>
@@ -147,7 +147,7 @@ export default function Dashboard() {
                             {/* Continue button */}
                             <button
                                 onClick={() => navigate(`/path/${firstIncompleteUnit.id}`)}
-                                className="w-full sm:w-auto bg-primary text-white font-bold text-sm px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                                className="w-full sm:w-auto bg-primary text-white font-bold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mt-3"
                             >
                                 {t('dashboard.continue')}
                                 <ArrowRight className="w-4 h-4" />
@@ -212,7 +212,7 @@ export default function Dashboard() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-7">
                         {recommended.map((story, i) => (
                             <motion.div
                                 key={story.id}

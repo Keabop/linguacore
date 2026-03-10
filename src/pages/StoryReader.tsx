@@ -122,14 +122,18 @@ export default function StoryReader() {
     const handleComplete = async () => {
         if (!storyId) return;
         // Check if story was already completed to avoid duplicate counts
-        const { data: existingRead } = await supabase
-            .from('read_stories')
-            .select('id')
-            .eq('story_id', storyId)
-            .limit(1);
-        const alreadyRead = existingRead && existingRead.length > 0;
+        let alreadyRead = false;
+        if (navigator.onLine) {
+            const { data: existingRead } = await supabase
+                .from('read_stories')
+                .select('id')
+                .eq('story_id', storyId)
+                .limit(1);
+            alreadyRead = (existingRead && existingRead.length > 0) ?? false;
+        }
         if (!alreadyRead) {
-            await supabase.from('read_stories').insert({
+            const { offlineInsert } = await import('../lib/offlineMutation');
+            await offlineInsert('read_stories', {
                 user_id: authUser!.id,
                 story_id: storyId,
                 completed_at: new Date().toISOString(),
@@ -192,7 +196,7 @@ export default function StoryReader() {
     }
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             {/* Story header */}
             <div className="flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="text-text-muted hover:text-text text-xl">←</button>
@@ -216,7 +220,7 @@ export default function StoryReader() {
             <div
                 id="story-content"
                 onClick={handleWordClick}
-                className="widget !p-6 text-lg leading-relaxed tracking-wide"
+                className="widget !p-7 text-lg leading-relaxed tracking-wide"
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(story.content, {
                         ALLOWED_TAGS: ['p', 'span', 'br'],
@@ -286,7 +290,7 @@ export default function StoryReader() {
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             className="fixed bottom-4 left-4 right-4 z-[60]"
                         >
-                            <div className="widget !shadow-2xl space-y-2 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
+                            <div className="widget !shadow-2xl space-y-3 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="text-xl font-bold text-accent-blue">{selectedWord.id}</h3>

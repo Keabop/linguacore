@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +8,7 @@ import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, Message
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import OfflineBanner from './OfflineBanner';
+import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
 
 const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
@@ -29,6 +31,19 @@ export default function Layout() {
     const { progressInfo, user } = useLevelProgression();
     const { dueCards } = useCards();
     const { signOut } = useAuth();
+    const syncState = useSyncManager();
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll active nav item into view on route change
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+        const active = container.querySelector('a.active') as HTMLElement | null;
+        if (active) {
+            const offset = active.offsetLeft - container.offsetWidth / 2 + active.offsetWidth / 2;
+            container.scrollTo({ left: offset, behavior: 'smooth' });
+        }
+    }, [location.pathname]);
 
     return (
         <div className="app-layout">
@@ -85,7 +100,7 @@ export default function Layout() {
             {/* ===== MAIN CONTENT ===== */}
             <div className="main-content">
                 <div className="main-content-inner">
-                    <OfflineBanner />
+                    <OfflineBanner syncState={syncState} />
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
@@ -138,7 +153,7 @@ export default function Layout() {
                 {progressInfo && (
                     <div className="widget">
                         <div className="widget-title">{t('progress.title')}</div>
-                        <div className="space-y-5">
+                        <div className="space-y-6">
                             <WidgetProgress
                                 label={t('progress.unitsCompleted')}
                                 current={progressInfo.unitsCompleted}
