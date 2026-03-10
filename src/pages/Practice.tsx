@@ -75,7 +75,7 @@ export default function Practice() {
     const [level, setLevel] = useState<CEFRLevel>(user?.currentLevel ?? 'A1');
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             {/* Header */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
                 <h1 className="text-3xl font-extrabold">Práctica libre</h1>
@@ -83,7 +83,7 @@ export default function Practice() {
             </motion.div>
 
             {/* Level selector */}
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
                 {LEVELS.map(l => (
                     <button key={l} onClick={() => setLevel(l)}
                         className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${level === l ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
@@ -93,7 +93,7 @@ export default function Practice() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
                 <button onClick={() => setTab('writing')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${tab === 'writing' ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
                     <PenLine className="w-4 h-4" /> Escritura
@@ -164,7 +164,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                 {topics.map((topic, i) => (
                     <motion.button key={i} onClick={() => handleSelectTopic(topic)}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                        className="w-full text-left bg-bg-card border border-border rounded-xl p-4 hover:border-primary/30 hover:bg-bg-card-hover transition-all">
+                        className="w-full text-left bg-bg-card border border-border rounded-xl p-5 hover:border-primary/30 hover:bg-bg-card-hover transition-all">
                         <p className="text-sm text-white">{topic}</p>
                     </motion.button>
                 ))}
@@ -203,7 +203,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
             <div className="space-y-2">
                 <textarea value={text} onChange={e => setText(e.target.value)}
                     placeholder="Escribe en inglés..." rows={8}
-                    className="w-full bg-bg-card border border-border rounded-xl p-5 text-white text-sm leading-relaxed placeholder:text-text-muted resize-none focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all min-h-[200px]" />
+                    className="w-full bg-bg-card border border-border rounded-xl p-6 text-white text-sm leading-relaxed placeholder:text-text-muted resize-none focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all min-h-[220px]" />
                 <p className="text-xs text-text-muted text-right">{wordCount} palabras</p>
             </div>
 

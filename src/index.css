@@ -140,8 +140,8 @@ body {
 
 .main-content-inner {
     width: 100%;
-    max-width: 720px;
-    padding: 40px 32px 48px;
+    max-width: 800px;
+    padding: 48px 40px 56px;
 }
 
 /* Right sidebar */
@@ -200,18 +200,25 @@ body {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
     border-radius: 16px;
-    padding: 24px;
+    padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
+@media (min-width: 768px) {
+    .widget {
+        padding: 28px;
+        margin-bottom: 24px;
+    }
+}
+
 .widget-title {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 /* ===== Story cards ===== */
@@ -252,7 +259,13 @@ body {
 }
 
 .story-card-body {
-    padding: 20px;
+    padding: 16px;
+}
+
+@media (min-width: 768px) {
+    .story-card-body {
+        padding: 24px;
+    }
 }
 
 /* ===== Interactive word styles ===== */
@@ -324,7 +337,7 @@ span[data-word].in-deck {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
     border-radius: 16px;
-    padding: 24px;
+    padding: 28px;
     cursor: pointer;
     transition: all 0.25s ease;
 }
@@ -464,7 +477,7 @@ span[data-word].in-deck {
     }
 
     .main-content-inner {
-        padding: 24px 20px 112px;
+        padding: 24px 16px 112px;
     }
 
     .floating-bar {

@@ -5,18 +5,39 @@ import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
 import { useAuth } from './lib/AuthContext';
-import type { ReactNode } from 'react';
+import type { ReactNode, ComponentType } from 'react';
 
-const Auth = lazy(() => import('./pages/Auth'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const StoryList = lazy(() => import('./pages/StoryList'));
-const StoryReader = lazy(() => import('./pages/StoryReader'));
-const ReviewSession = lazy(() => import('./pages/ReviewSession'));
-const Stats = lazy(() => import('./pages/Stats'));
-const ConversationTutor = lazy(() => import('./pages/ConversationTutor'));
-const LearningPath = lazy(() => import('./pages/LearningPath'));
-const UnitFlow = lazy(() => import('./pages/UnitFlow'));
-const Practice = lazy(() => import('./pages/Practice'));
+/**
+ * Lazy import with retry — handles transient network failures and
+ * service-worker cache race conditions. On final failure it rejects
+ * so the ErrorBoundary can show an offline-specific message.
+ */
+function lazyRetry<T extends ComponentType<any>>(
+    factory: () => Promise<{ default: T }>,
+    retries = 2,
+): React.LazyExoticComponent<T> {
+    return lazy(() => {
+        const attempt = (remaining: number): Promise<{ default: T }> =>
+            factory().catch((err) => {
+                if (remaining <= 0) throw err;
+                return new Promise<{ default: T }>((resolve) =>
+                    setTimeout(() => resolve(attempt(remaining - 1)), 1000),
+                );
+            });
+        return attempt(retries);
+    });
+}
+
+const Auth = lazyRetry(() => import('./pages/Auth'));
+const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
+const StoryList = lazyRetry(() => import('./pages/StoryList'));
+const StoryReader = lazyRetry(() => import('./pages/StoryReader'));
+const ReviewSession = lazyRetry(() => import('./pages/ReviewSession'));
+const Stats = lazyRetry(() => import('./pages/Stats'));
+const ConversationTutor = lazyRetry(() => import('./pages/ConversationTutor'));
+const LearningPath = lazyRetry(() => import('./pages/LearningPath'));
+const UnitFlow = lazyRetry(() => import('./pages/UnitFlow'));
+const Practice = lazyRetry(() => import('./pages/Practice'));
 
 function SafeRoute({ children }: { children: ReactNode }) {
     const location = useLocation();

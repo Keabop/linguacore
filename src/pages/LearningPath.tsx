@@ -105,7 +105,7 @@ export default function LearningPath() {
     };
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-14">
             {/* Level Header */}
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
@@ -113,7 +113,7 @@ export default function LearningPath() {
                 className="flex items-center gap-4"
             >
                 <Map className="w-6 h-6 text-primary" />
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-extrabold">{t('path.title')}</h1>
                     <LevelBadge level={currentLevel} />
                 </div>
@@ -125,10 +125,10 @@ export default function LearningPath() {
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
-                    className="relative pl-8 md:pl-10"
+                    className="relative pl-6 md:pl-10"
                 >
                     {/* Connector line */}
-                    <div className="absolute left-[15px] md:left-[19px] top-4 bottom-4 w-[2px] bg-border" />
+                    <div className="absolute left-[11px] md:left-[19px] top-4 bottom-4 w-[2px] bg-border" />
 
                     {unitsWithState.map((item, index) => (
                         <UnitCard
@@ -163,7 +163,7 @@ export default function LearningPath() {
                     transition={{ delay: 0.4 }}
                     className="widget"
                 >
-                    <div className="flex justify-between text-xs mb-3">
+                    <div className="flex justify-between text-xs mb-4">
                         <span className="text-text-muted font-medium uppercase tracking-wide">
                             Progreso del nivel {currentLevel}
                         </span>
@@ -225,12 +225,12 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
     return (
         <motion.div
             variants={itemVariants}
-            className={`relative mb-6 last:mb-0 ${isLocked ? 'opacity-50' : ''}`}
+            className={`relative mb-8 last:mb-0 ${isLocked ? 'opacity-50' : ''}`}
         >
             {/* Timeline node */}
             <div
                 className={`
-                    absolute -left-8 md:-left-10 top-6
+                    absolute -left-6 md:-left-10 top-6
                     w-4 h-4 md:w-5 md:h-5 rounded-full
                     border-[3px] z-10
                     ${dotClass}
@@ -247,7 +247,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
             <div
                 onClick={onClick}
                 className={`
-                    bg-bg-card border rounded-2xl p-6
+                    bg-bg-card border rounded-2xl p-5 md:p-7
                     transition-all duration-200
                     ${cardBorder}
                     ${!isLocked ? 'cursor-pointer hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5' : 'cursor-not-allowed'}
@@ -255,7 +255,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
             >
                 <div className="flex items-start justify-between gap-3">
                     {/* Left: content */}
-                    <div className="flex-1 min-w-0 space-y-3">
+                    <div className="flex-1 min-w-0 space-y-4">
                         {/* Unit number + assessment badge */}
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <span className={`
@@ -310,7 +310,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
 
                         {/* Progress checkmarks */}
                         {!isAssessment && (isCurrent || isCompleted) && progress && (
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1">
+                            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1">
                                 <ProgressCheck label="Grammar" done={progress.grammar_card_read} />
                                 <ProgressCheck label="Story" done={progress.story_completed} />
                                 <ProgressCheck label="Exercises" done={progress.exercises_score >= 70} />

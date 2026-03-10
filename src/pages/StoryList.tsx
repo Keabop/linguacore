@@ -140,7 +140,7 @@ export default function StoryList() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: li * 0.08 }}
-                        className="space-y-6"
+                        className="space-y-8"
                     >
                         {/* Level header */}
                         <div className="flex items-center gap-3">
@@ -153,7 +153,7 @@ export default function StoryList() {
                         </div>
 
                         {/* Story grid — 2 columns */}
-                        <div className={`grid grid-cols-2 gap-5 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}>
+                        <div className={`grid grid-cols-2 gap-6 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}>
                             {levelStories.map((story, si) => {
                                 const isRead = readStories?.some(r => r.story_id === story.id);
 

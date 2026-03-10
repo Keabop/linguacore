@@ -26,3 +26,6 @@ dist-ssr
 .vercel
 .env
 .env.local
+
+# PWA dev service worker
+dev-dist

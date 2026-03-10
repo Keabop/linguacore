@@ -9,8 +9,13 @@ export default defineConfig({
         tailwindcss(),
         VitePWA({
             registerType: 'autoUpdate',
+            devOptions: {
+                enabled: true,
+            },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,json,svg,png,ico}'],
+                navigateFallback: '/index.html',
+                navigateFallbackDenylist: [/^\/api\//],
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -64,6 +69,7 @@ export default defineConfig({
                 icons: [
                     { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
                     { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+                    { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' as any },
                 ],
             },
         }),
@@ -90,7 +96,9 @@ export default defineConfig({
                     if (n.includes('/framer-motion/')) return 'vendor-motion';
                     // Persistence & server-state
                     if (n.includes('/dexie/') || n.includes('/dexie-react-hooks/') ||
-                        n.includes('/@tanstack/react-query/')) {
+                        n.includes('/@tanstack/react-query/') ||
+                        n.includes('/@tanstack/react-query-persist-client/') ||
+                        n.includes('/idb-keyval/')) {
                         return 'vendor-data';
                     }
                     // i18n

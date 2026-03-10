@@ -79,7 +79,7 @@ export default function Stats() {
     if (!user) return null;
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
                 <h1 className="text-3xl font-extrabold">{t('nav.stats')}</h1>
                 <p className="text-text-secondary mt-1">{t('stats.subtitle')}</p>
@@ -90,7 +90,7 @@ export default function Stats() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+                className="grid grid-cols-2 sm:grid-cols-4 gap-4"
             >
                 <StatCard icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('stats.totalCards')} color="text-accent-blue" />
                 <StatCard icon={<RotateCcw className="w-5 h-5" />} value={totalReviews} label={t('stats.totalReviews')} color="text-accent-purple" />
@@ -106,7 +106,7 @@ export default function Stats() {
                 className="widget"
             >
                 <div className="widget-title">{t('stats.activity')}</div>
-                <div className="grid grid-cols-7 gap-1.5">
+                <div className="grid grid-cols-7 gap-2">
                     {activityData.map((day) => {
                         const intensity = day.count > 0 ? Math.max(0.2, day.count / maxActivity) : 0;
                         return (
@@ -146,7 +146,7 @@ export default function Stats() {
                 className="widget"
             >
                 <div className="widget-title">{t('stats.vocabulary')}</div>
-                <div className="space-y-3">
+                <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-text-secondary">{t('stats.inDeck')}</span>
                         <span className="text-sm font-bold text-accent-blue">{totalCards}</span>

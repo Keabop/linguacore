@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Brain, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { Mail, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 
 type Mode = 'login' | 'register';
@@ -73,60 +73,60 @@ export default function Auth() {
     }
 
     return (
-        <div className="min-h-screen bg-bg-app flex items-center justify-center px-8 sm:px-6">
+        <div className="min-h-screen bg-bg-app flex items-center justify-center px-6">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-sm"
+                className="w-full max-w-[420px]"
             >
                 {/* Logo + Branding */}
-                <div className="flex flex-col items-center mb-8">
+                <div className="flex flex-col items-center mb-12">
                     <img
                         src="/logo.png"
                         alt="LinguaCore"
-                        className="w-20 h-20 rounded-2xl object-cover mb-5"
+                        className="w-20 h-20 rounded-2xl object-cover mb-6"
                     />
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight mb-1.5">LinguaCore</h1>
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">LinguaCore</h1>
                     <p className="text-sm text-text-muted">
                         {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
                     </p>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit}>
-                    <div className="relative mb-3.5">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-text-muted pointer-events-none" />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-xs text-text-muted font-semibold uppercase tracking-wider mb-2">Correo electrónico</label>
                         <input
                             type="email"
                             value={email}
                             onChange={e => setEmail(e.target.value)}
-                            placeholder="Correo electrónico"
+                            placeholder="tu@correo.com"
                             required
-                            className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-text-muted/60 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                            className="w-full bg-bg-card border border-border rounded-xl px-5 py-4 text-sm text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
                     </div>
 
-                    <div className="relative mb-5">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-text-muted pointer-events-none" />
+                    <div>
+                        <label className="block text-xs text-text-muted font-semibold uppercase tracking-wider mb-2">Contraseña</label>
                         <input
                             type="password"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
-                            placeholder="Contraseña"
+                            placeholder="••••••••"
                             required
                             minLength={8}
-                            className="w-full bg-bg-card border border-border rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder:text-text-muted/60 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                            className="w-full bg-bg-card border border-border rounded-xl px-5 py-4 text-sm text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
                     </div>
 
                     {error && (
-                        <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-4 py-2.5 mb-4">{error}</p>
+                        <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-4 py-2.5">{error}</p>
                     )}
 
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm mt-2"
                     >
                         {submitting ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -140,7 +140,7 @@ export default function Auth() {
                 </form>
 
                 {/* Divider */}
-                <div className="flex items-center gap-4 my-6">
+                <div className="flex items-center gap-4 my-8">
                     <div className="flex-1 h-px bg-border" />
                     <span className="text-xs text-text-muted uppercase tracking-wider">o</span>
                     <div className="flex-1 h-px bg-border" />
@@ -149,7 +149,7 @@ export default function Auth() {
                 {/* Google OAuth */}
                 <button
                     onClick={signInWithGoogle}
-                    className="w-full bg-bg-card border border-border hover:border-primary/30 text-white font-medium py-3.5 rounded-xl transition-all flex items-center justify-center gap-3 text-sm mb-6"
+                    className="w-full bg-bg-card border border-border hover:border-primary/30 text-white font-medium py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-sm mb-8"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
