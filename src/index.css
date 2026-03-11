@@ -492,17 +492,25 @@ span[data-word].in-deck {
         -webkit-backdrop-filter: blur(20px);
         border-radius: 22px;
         padding: 8px 10px;
-        justify-content: space-around;
+        gap: 2px;
         align-items: center;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
         border: 1px solid rgba(255, 255, 255, 0.06);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         animation: float-glow 3s ease-in-out infinite;
+    }
+
+    .floating-bar::-webkit-scrollbar {
+        display: none;
     }
 
     .floating-bar a {
         display: flex;
         flex-direction: column;
         align-items: center;
+        flex-shrink: 0;
         gap: 2px;
         padding: 8px 12px;
         border-radius: 16px;

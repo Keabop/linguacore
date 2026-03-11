@@ -21,9 +21,6 @@ const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/stats', icon: BarChart3, labelKey: 'nav.stats' },
 ];
 
-const mobileNavItems = navItems.filter(item =>
-    ['/', '/path', '/learn', '/review', '/stats'].includes(item.path)
-);
 
 export default function Layout() {
     const { t } = useTranslation();
@@ -32,7 +29,7 @@ export default function Layout() {
     const { dueCards } = useCards();
     const { signOut } = useAuth();
     const syncState = useSyncManager();
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const scrollRef = useRef<HTMLElement>(null);
 
     // Auto-scroll active nav item into view on route change
     useEffect(() => {
@@ -183,8 +180,8 @@ export default function Layout() {
 
             {/* ===== FLOATING BOTTOM BAR (Mobile) ===== */}
             {!/^\/learn\/.+/.test(location.pathname) && (
-                <nav className="floating-bar">
-                    {mobileNavItems.map(item => (
+                <nav ref={scrollRef} className="floating-bar">
+                    {navItems.map(item => (
                         <NavLink
                             key={item.path}
                             to={item.path}
