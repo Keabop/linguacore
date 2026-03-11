@@ -77,7 +77,7 @@ export default function Dashboard() {
 
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-14">
             {/* Greeting */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
                 <h1 className="text-3xl font-extrabold leading-tight">{t('dashboard.greeting')}</h1>
@@ -187,7 +187,7 @@ export default function Dashboard() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="grid grid-cols-3 gap-6 lg:hidden"
+                className="grid grid-cols-3 gap-7 lg:hidden"
             >
                 <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} color="text-accent-amber" />
                 <QuickStat icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('dashboard.totalCards')} color="text-accent-blue" />
@@ -200,7 +200,7 @@ export default function Dashboard() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="space-y-5"
+                    className="space-y-7"
                 >
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-bold">{t('dashboard.recommended')}</h2>
@@ -212,7 +212,7 @@ export default function Dashboard() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-7">
+                    <div className="grid grid-cols-2 gap-8">
                         {recommended.map((story, i) => (
                             <motion.div
                                 key={story.id}

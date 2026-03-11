@@ -75,7 +75,7 @@ export default function Practice() {
     const [level, setLevel] = useState<CEFRLevel>(user?.currentLevel ?? 'A1');
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-12">
             {/* Header */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
                 <h1 className="text-3xl font-extrabold">Práctica libre</h1>
@@ -83,7 +83,7 @@ export default function Practice() {
             </motion.div>
 
             {/* Level selector */}
-            <div className="flex gap-2.5">
+            <div className="flex gap-4">
                 {LEVELS.map(l => (
                     <button key={l} onClick={() => setLevel(l)}
                         className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${level === l ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
@@ -93,7 +93,7 @@ export default function Practice() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2.5">
+            <div className="flex gap-4">
                 <button onClick={() => setTab('writing')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${tab === 'writing' ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
                     <PenLine className="w-4 h-4" /> Escritura
@@ -159,7 +159,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
 
     if (phase === 'select') {
         return (
-            <div className="space-y-4">
+            <div className="space-y-6">
                 <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider">Elige un tema</h3>
                 {topics.map((topic, i) => (
                     <motion.button key={i} onClick={() => handleSelectTopic(topic)}
@@ -183,14 +183,14 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
 
     if (phase === 'feedback' && feedback) {
         return (
-            <div className="space-y-5">
+            <div className="space-y-6">
                 <WritingFeedback data={feedback} onNext={handleReset} nextLabel="Otro tema" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             <div className="bg-bg-card border border-border rounded-xl p-5">
                 <p className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-2">Tema</p>
                 <p className="text-sm text-white">{selectedTopic}</p>
@@ -207,7 +207,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                 <p className="text-xs text-text-muted text-right">{wordCount} palabras</p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-4">
                 <button onClick={handleReset}
                     className="bg-bg-card border border-border hover:bg-bg-card-hover text-white px-6 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                     Cambiar tema
@@ -263,7 +263,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
     }
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             <div className="bg-bg-card-hover border border-border-light rounded-xl p-5 space-y-3">
                 <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Lee en voz alta</p>
                 {!result ? (
@@ -304,7 +304,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                 </motion.div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-4">
                 {!submitted ? (
                     <>
                         <button onClick={handleToggleRecord}

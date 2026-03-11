@@ -19,7 +19,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
     };
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             {/* Instruction */}
             <div className="bg-bg-card border border-border rounded-xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-accent-blue text-sm font-semibold">
@@ -44,7 +44,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
 
             {/* Grammar hints */}
             {targetGrammar.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
                         <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full">
                             {g}

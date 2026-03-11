@@ -55,7 +55,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Question */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -66,7 +66,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
             </motion.div>
 
             {/* Options */}
-            <div className="space-y-4">
+            <div className="space-y-5">
                 {exercise.options?.map((option, i) => (
                     <motion.button
                         key={option}

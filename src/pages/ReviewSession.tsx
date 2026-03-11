@@ -112,7 +112,7 @@ export default function ReviewSession() {
         : 0;
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             {/* Hide floating navbar while reviewing */}
             <style>{`.floating-bar { display: none !important; }`}</style>
             {/* Progress header */}

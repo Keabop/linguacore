@@ -95,7 +95,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
         <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-7"
         >
             {/* Score */}
             <div className="text-center space-y-3">
@@ -104,7 +104,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             </div>
 
             {/* Category scores */}
-            <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
+            <div className="bg-bg-card border border-border rounded-xl p-5 space-y-5">
                 <CategoryBar label="Gramática" score={data.feedback.grammar.score} note={data.feedback.grammar.note} />
                 <CategoryBar label="Vocabulario" score={data.feedback.vocabulary.score} note={data.feedback.vocabulary.note} />
                 <CategoryBar label="Coherencia" score={data.feedback.coherence.score} note={data.feedback.coherence.note} />

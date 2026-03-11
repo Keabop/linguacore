@@ -278,7 +278,7 @@ export default function UnitFlow() {
                     )}
 
                     {currentStep === 'exercises' && unitExercises && unitExercises.length > 0 && (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <StepHeader
                                 icon={PenLine}
                                 label={t('exercises.title')}
@@ -342,7 +342,7 @@ export default function UnitFlow() {
     };
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-12">
             {/* Back button */}
             <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
 
@@ -502,14 +502,14 @@ function StoryStep({
     const navigate = useNavigate();
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <StepHeader
                 icon={BookOpen}
                 label="Historia"
                 description="Lee una historia para practicar la gramatica de esta unidad."
             />
 
-            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-6">
+            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-7">
                 {unitStory ? (
                     <>
                         <p className="text-text-secondary text-sm leading-relaxed">
@@ -602,7 +602,7 @@ function VocabStep({
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <StepHeader
                 icon={RefreshCw}
                 label="Vocabulario"
@@ -612,13 +612,13 @@ function VocabStep({
                 }
             />
 
-            <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-5">
+            <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-6">
                 {vocabItems.length > 0 ? (
                     <>
                         <p className="text-text-secondary text-sm leading-relaxed">
                             Toca cada tarjeta para ver la traducción y ejemplo.
                         </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {vocabItems.map(v => (
                                 <button
                                     key={v.id}
@@ -710,7 +710,7 @@ function CheckpointStep({
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <StepHeader
                 icon={Trophy}
                 label="Checkpoint"
@@ -765,7 +765,7 @@ function EmptyStepCard({
     onAction: () => void;
 }) {
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <StepHeader icon={Icon} label={title} description={description} />
             <div className="bg-bg-card border border-border rounded-2xl p-7 text-center space-y-5">
                 <Icon className="w-10 h-10 text-text-muted mx-auto" />
