@@ -14,8 +14,8 @@ import {
     Sparkles,
     RotateCcw,
 } from 'lucide-react';
-import type { GrammarExercise } from '../lib/db';
-import { getUnit, getStoryByUnit, getExercisesByUnit } from '../data';
+import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
+import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap } from '../data';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
@@ -268,6 +268,7 @@ export default function UnitFlow() {
 
                     {currentStep === 'vocab' && (
                         <VocabStep
+                            unitStory={unitStory}
                             onComplete={() => {
                                 markStepComplete('vocab');
                                 handleStepAdvance();
@@ -562,29 +563,102 @@ function StoryStep({
 
 /* -- Vocab Step -- */
 
+function extractKeywords(html: string): string[] {
+    const regex = /data-word="([^"]+)"/g;
+    const seen = new Set<string>();
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+        seen.add(match[1]);
+    }
+    return Array.from(seen);
+}
+
 function VocabStep({
+    unitStory,
     onComplete,
     onNavigateReview,
 }: {
+    unitStory: Story | null;
     onComplete: () => void;
     onNavigateReview: () => void;
 }) {
+    const vocabItems = useMemo(() => {
+        if (!unitStory) return [];
+        const keywords = extractKeywords(unitStory.content);
+        if (!keywords.length) return [];
+        const vocabMap = getVocabMap(keywords);
+        return Array.from(vocabMap.values());
+    }, [unitStory]);
+
+    const [flipped, setFlipped] = useState<Set<string>>(new Set());
+
+    const toggleFlip = (id: string) => {
+        setFlipped(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
     return (
         <div className="space-y-4">
             <StepHeader
                 icon={RefreshCw}
                 label="Vocabulario"
-                description="Repasa el vocabulario que aprendiste."
+                description={unitStory
+                    ? `Vocabulario clave de "${unitStory.title}".`
+                    : "Repasa el vocabulario que aprendiste."
+                }
             />
 
             <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-5">
-                <p className="text-text-secondary text-sm leading-relaxed">
-                    Practica las tarjetas de vocabulario que has acumulado. Este paso es flexible y puedes continuar cuando quieras.
-                </p>
+                {vocabItems.length > 0 ? (
+                    <>
+                        <p className="text-text-secondary text-sm leading-relaxed">
+                            Toca cada tarjeta para ver la traducción y ejemplo.
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            {vocabItems.map(v => (
+                                <button
+                                    key={v.id}
+                                    onClick={() => toggleFlip(v.id)}
+                                    className={`
+                                        relative rounded-xl border p-3 text-left transition-all duration-200 min-h-[72px]
+                                        ${flipped.has(v.id)
+                                            ? 'bg-primary/10 border-primary/30'
+                                            : 'bg-bg-app border-border hover:border-primary/30'
+                                        }
+                                    `}
+                                >
+                                    {!flipped.has(v.id) ? (
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-bold text-sm text-white">{v.id}</span>
+                                            {v.phonetic && (
+                                                <span className="text-[10px] text-text-muted">{v.phonetic}</span>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-semibold text-xs text-primary">{v.translations.join(', ')}</span>
+                                            <span className="text-[10px] text-text-secondary italic leading-tight">
+                                                {v.examples[0]}
+                                            </span>
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <p className="text-text-secondary text-sm leading-relaxed">
+                        Practica las tarjetas de vocabulario que has acumulado. Este paso es flexible y puedes continuar cuando quieras.
+                    </p>
+                )}
 
                 <button
                     onClick={onNavigateReview}
-                    className="w-full bg-bg-app border border-border rounded-xl p-5 flex items-center justify-between hover:border-primary/40 transition-colors group"
+                    className="w-full bg-bg-app border border-border rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-colors group"
                 >
                     <div className="flex items-center gap-3">
                         <RefreshCw className="w-5 h-5 text-accent-blue" />
