@@ -149,7 +149,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Progress indicator */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">

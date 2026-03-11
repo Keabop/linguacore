@@ -36,7 +36,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
     const parts = exercise.question.split('___');
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Question with blank */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -58,7 +58,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
             </motion.div>
 
             {/* Input form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <input
                     ref={inputRef}
                     type="text"

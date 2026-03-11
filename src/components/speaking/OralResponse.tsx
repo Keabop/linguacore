@@ -53,7 +53,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
     }
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             <div className="bg-bg-card border border-border rounded-xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-purple-400 text-sm font-semibold">
                     <MessageCircle className="w-4 h-4" />
@@ -63,7 +63,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
             </div>
 
             {targetGrammar.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
                         <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full">{g}</span>
                     ))}
@@ -104,7 +104,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                 <div className="bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 text-sm text-accent-red">{error}</div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-4">
                 {phase === 'recording' && (
                     <>
                         <button onClick={handleToggleRecord}

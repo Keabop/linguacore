@@ -50,7 +50,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="space-y-6"
+            className="space-y-8"
         >
             {/* Header */}
             <div className="flex items-center gap-3">
@@ -66,7 +66,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
             </div>
 
             {/* Main card */}
-            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-7">
+            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-8">
                 {/* Explanation (HTML content) */}
                 <div
                     className="grammar-explanation text-text-secondary text-[0.9375rem] leading-relaxed"

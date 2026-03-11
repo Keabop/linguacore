@@ -67,7 +67,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     // Static data is always available, no loading state needed
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-7">
             {/* Section header */}
             <div className="space-y-1">
                 <h3 className="text-lg font-bold text-white">Producción</h3>
@@ -75,7 +75,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2">
+            <div className="flex gap-3">
                 {hasWriting && (
                     <button
                         onClick={() => setActiveTab('writing')}

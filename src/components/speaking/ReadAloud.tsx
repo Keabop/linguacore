@@ -66,7 +66,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
     }
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             <div className="bg-bg-card border border-border rounded-xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-accent-blue text-sm font-semibold">
                     <Volume2 className="w-4 h-4" />
@@ -118,7 +118,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 </motion.div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-4">
                 {!submitted ? (
                     <>
                         <button onClick={handleToggleRecord}

@@ -54,7 +54,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Instruction */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -110,7 +110,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
 
             {/* Available words pool */}
             {status === 'pending' && (
-                <div className="flex flex-wrap gap-2 justify-center">
+                <div className="flex flex-wrap gap-3 justify-center">
                     <AnimatePresence mode="popLayout">
                         {availableWords.map((word, i) => (
                             <motion.button

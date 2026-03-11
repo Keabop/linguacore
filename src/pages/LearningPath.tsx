@@ -225,7 +225,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
     return (
         <motion.div
             variants={itemVariants}
-            className={`relative mb-8 last:mb-0 ${isLocked ? 'opacity-50' : ''}`}
+            className={`relative mx-2 mt-2 mb-10 last:mb-0 ${isLocked ? 'opacity-50' : ''}`}
         >
             {/* Timeline node */}
             <div
@@ -255,7 +255,7 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
             >
                 <div className="flex items-start justify-between gap-3">
                     {/* Left: content */}
-                    <div className="flex-1 min-w-0 space-y-4">
+                    <div className="flex-1 min-w-0 pl-[3px] space-y-4">
                         {/* Unit number + assessment badge */}
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <span className={`

@@ -196,7 +196,7 @@ export default function StoryReader() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Story header */}
             <div className="flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="text-text-muted hover:text-text text-xl">←</button>
@@ -241,7 +241,7 @@ export default function StoryReader() {
                         📚 {t('reader.keyVocabulary')}
                         <span className="text-xs text-text-muted font-normal">({keywords.length})</span>
                     </h3>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                         {keywords.map((wordId) => {
                             const vocab = vocabMap.get(wordId);
                             const status = wordStatuses.get(wordId) || 'none';

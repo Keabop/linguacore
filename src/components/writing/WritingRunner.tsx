@@ -108,7 +108,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
     };
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-text-secondary text-sm">
