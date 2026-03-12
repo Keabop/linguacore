@@ -2,20 +2,24 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Card, type Vocabulary } from '../lib/db';
-import { getVocab } from '../data';
+import { getVocab, getSkill } from '../data';
 import { useCards } from '../hooks/useCards';
+import { useSkillCards, getReviewDepth } from '../hooks/useSkillCards';
 import { Rating } from '../lib/fsrs';
 import ReviewModeSelector, { type ReviewMode } from '../components/ReviewModeSelector';
 import ClozeReview from '../components/ClozeReview';
 import TranslationReview from '../components/TranslationReview';
+import GrammarReview from '../components/GrammarReview';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Trophy, ArrowLeft } from 'lucide-react';
+import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen } from 'lucide-react';
 import { toast } from '../lib/toast';
 
 export default function ReviewSession() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { dueCards, reviewCard } = useCards();
+    const { dueSkillCards, reviewSkillCard } = useSkillCards();
+    const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | null>(null);
     const [mode, setMode] = useState<ReviewMode | null>(null);
     const [sessionDone, setSessionDone] = useState(false);
     const [correctCount, setCorrectCount] = useState(0);
@@ -49,7 +53,7 @@ export default function ReviewSession() {
     }, [currentCard, dueCards.length, reviewCard]);
 
     // No due cards and no session
-    if (dueCards.length === 0 && !sessionDone && !mode) {
+    if (dueCards.length === 0 && dueSkillCards.length === 0 && !sessionDone && !mode && !reviewType) {
         return (
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -66,6 +70,130 @@ export default function ReviewSession() {
                     {t('reader.backToStories')}
                 </button>
             </motion.div>
+        );
+    }
+
+    // Type selector: Vocabulary vs Grammar
+    if (!reviewType && !mode && (dueCards.length > 0 || dueSkillCards.length > 0)) {
+        // Auto-select if only one type has due items
+        if (dueCards.length > 0 && dueSkillCards.length === 0) {
+            setReviewType('vocab');
+        } else if (dueCards.length === 0 && dueSkillCards.length > 0) {
+            setReviewType('grammar');
+        } else {
+            return (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-8 py-4"
+                >
+                    <h2 className="text-xl font-bold text-center">{t('review.chooseType', '¿Qué quieres repasar?')}</h2>
+                    <div className="space-y-4">
+                        <button
+                            onClick={() => setReviewType('vocab')}
+                            className="w-full widget hover:border-primary/50 transition-all text-left space-y-1"
+                        >
+                            <div className="flex items-center gap-3">
+                                <RefreshCw className="w-5 h-5 text-accent-blue" />
+                                <div>
+                                    <p className="font-bold">{t('review.vocabulary', 'Vocabulario')}</p>
+                                    <p className="text-sm text-text-muted">{dueCards.length} {t('review.wordsDue', 'palabras pendientes')}</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setReviewType('grammar')}
+                            className="w-full widget hover:border-primary/50 transition-all text-left space-y-1"
+                        >
+                            <div className="flex items-center gap-3">
+                                <BookOpen className="w-5 h-5 text-accent-purple" />
+                                <div>
+                                    <p className="font-bold">{t('review.grammar', 'Gramática')}</p>
+                                    <p className="text-sm text-text-muted">{dueSkillCards.length} {t('review.skillsDue', 'habilidades pendientes')}</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </motion.div>
+            );
+        }
+    }
+
+    // Grammar review flow
+    if (reviewType === 'grammar') {
+        if (sessionDone) {
+            const accuracy = totalReviewed > 0 ? Math.round((correctCount / totalReviewed) * 100) : 0;
+            return (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-12 space-y-5"
+                >
+                    <style>{`.floating-bar { display: none !important; }`}</style>
+                    <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
+                    <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
+                    <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
+                        <div className="widget text-center">
+                            <p className="text-2xl font-extrabold text-accent-blue">{totalReviewed}</p>
+                            <p className="text-[10px] text-text-muted">{t('review.reviewed')}</p>
+                        </div>
+                        <div className="widget text-center">
+                            <p className={`text-2xl font-extrabold ${accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`}>{accuracy}%</p>
+                            <p className="text-[10px] text-text-muted">{t('review.accuracy')}</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl font-bold transition-all"
+                    >
+                        {t('review.backHome')}
+                    </button>
+                </motion.div>
+            );
+        }
+
+        const currentSkillCard = dueSkillCards[0];
+        const currentSkill = currentSkillCard ? getSkill(currentSkillCard.skillId) : undefined;
+
+        if (!currentSkillCard || !currentSkill) {
+            setSessionDone(true);
+            return null;
+        }
+
+        const depth = getReviewDepth(currentSkillCard);
+
+        return (
+            <div className="space-y-10">
+                <style>{`.floating-bar { display: none !important; }`}</style>
+                {/* Progress header */}
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                        <button
+                            onClick={() => { setReviewType(null); setSessionDone(false); setCorrectCount(0); setTotalReviewed(0); }}
+                            className="text-text-muted hover:text-text transition-colors"
+                        >
+                            <ArrowLeft className="w-4 h-4 inline" /> {t('review.changeMode', 'Cambiar modo')}
+                        </button>
+                        <span className="text-text-muted font-mono text-xs">
+                            {t('review.grammar', 'Gramática')} · {dueSkillCards.length} {t('review.remaining', 'restantes')}
+                        </span>
+                    </div>
+                </div>
+                <GrammarReview
+                    key={currentSkillCard.id}
+                    skillCard={currentSkillCard}
+                    skill={currentSkill}
+                    depth={depth}
+                    onComplete={async (rating) => {
+                        await reviewSkillCard(currentSkillCard, rating);
+                        setTotalReviewed(tr => tr + 1);
+                        if (rating !== Rating.Again) setCorrectCount(c => c + 1);
+                        if (dueSkillCards.length <= 1) {
+                            setSessionDone(true);
+                        }
+                    }}
+                />
+            </div>
         );
     }
 
