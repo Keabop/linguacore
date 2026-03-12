@@ -30,7 +30,9 @@
     "unitProgress": "Unidad {{current}} de {{total}} — {{level}}",
     "allCompleted": "¡Has completado todas las unidades de este nivel!",
     "goToPath": "Ir a la ruta",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "grammarSkills": "Habilidades de gramática",
+    "grammarDue": "gramática pendiente"
   },
   "reader": {
     "tapToTranslate": "Toca una palabra para ver su traducción",
@@ -97,7 +99,24 @@
     "continueNext": "Continuar",
     "changeMode": "Cambiar modo",
     "hint": "Pista",
-    "dueCards": "tarjetas pendientes"
+    "dueCards": "tarjetas pendientes",
+    "chooseType": "¿Qué quieres repasar?",
+    "vocabulary": "Vocabulario",
+    "grammar": "Gramática",
+    "wordsDue": "palabras pendientes",
+    "skillsDue": "habilidades pendientes",
+    "howWasIt": "¿Qué tan bien lo sabías?",
+    "againDesc": "Lo olvidé",
+    "hardDesc": "Difícil",
+    "goodDesc": "Lo sabía",
+    "easyDesc": "Muy fácil",
+    "grammarTip": "Tip de gramática",
+    "startExercises": "Comenzar ejercicios",
+    "typeAnswer": "Escribe tu respuesta...",
+    "pressEnter": "Presiona Enter para enviar",
+    "finish": "Finalizar",
+    "next": "Siguiente",
+    "remaining": "restantes"
   },
   "progress": {
     "title": "Tu progreso",
@@ -185,6 +204,10 @@
   "grammar": {
     "understood": "Entendido",
     "title": "Gramática"
+  },
+  "unitFlow": {
+    "skillsAdded": "¡Habilidades de gramática añadidas!",
+    "skillsAddedDesc": "{{count}} habilidades añadidas a tu repaso"
   },
   "exercises": {
     "title": "Ejercicios",
