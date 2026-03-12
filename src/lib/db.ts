@@ -59,6 +59,24 @@ export interface SkillCard {
     lastReview: Date | undefined;
 }
 
+export interface SkillExercise {
+    type: ExerciseType;
+    prompt: string;
+    answer: string;
+    options?: string[];
+    explanation: string;
+}
+
+export interface GrammarSkill {
+    id: string;
+    unitId: string;
+    name: string;
+    description: string;
+    difficulty: number;
+    grammarTip: string;
+    exercises: SkillExercise[];
+}
+
 export type ExerciseType = 'fill-blank' | 'multiple-choice' | 'word-order';
 
 export interface Unit {

@@ -6,6 +6,7 @@ import {
     a2Units, a2GrammarCards, a2Exercises,
     b1Units, b1GrammarCards, b1Exercises,
     b2Units, b2GrammarCards, b2Exercises,
+    a1Skills, a2Skills, b1Skills, b2Skills,
 } from './curriculum';
 import {
     a1WritingPrompts, a1SpeakingPrompts,
@@ -48,6 +49,12 @@ export const getVocabByIds = (ids: string[]) => {
     const set = new Set(ids);
     return allVocabulary.filter(v => set.has(v.id));
 };
+export const allGrammarSkills = [...a1Skills, ...a2Skills, ...b1Skills, ...b2Skills];
+export const getSkillsByUnit = (unitId: string) =>
+    allGrammarSkills.filter(s => s.unitId === unitId);
+export const getSkill = (skillId: string) =>
+    allGrammarSkills.find(s => s.id === skillId);
+
 export const getVocabMap = (ids: string[]) => {
     const map = new Map<string, typeof allVocabulary[0]>();
     for (const v of allVocabulary) {
