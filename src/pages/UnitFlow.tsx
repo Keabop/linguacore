@@ -17,6 +17,8 @@ import {
 import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
 import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap } from '../data';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
+import { useSkillCards } from '../hooks/useSkillCards';
+import { toast } from '../lib/toast';
 import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
 import OutputStep from '../components/OutputStep';
@@ -147,6 +149,7 @@ export default function UnitFlow() {
 
     const { progress, currentStep, isLoading, updateProgress, markStepComplete } =
         useUnitProgress(unitId ?? '');
+    const { addSkillCards } = useSkillCards();
 
     const unit = unitId ? getUnit(unitId) ?? null : null;
     const unitStory = unitId ? getStoryByUnit(unitId) ?? null : null;
@@ -222,6 +225,19 @@ export default function UnitFlow() {
                 checkpoint_passed: true,
                 completed_at: new Date().toISOString(),
             });
+
+            // Create grammar skill cards for spaced repetition
+            const skillCount = await addSkillCards(unitId!);
+            if (skillCount > 0) {
+                toast.success({
+                    title: t('unitFlow.skillsAdded', '¡Habilidades de gramática añadidas!'),
+                    description: t('unitFlow.skillsAddedDesc', {
+                        count: skillCount,
+                        defaultValue: `${skillCount} habilidades añadidas a tu repaso`,
+                    }),
+                });
+            }
+
             handleStepAdvance();
         }
         // If failed, user gets retry button — no automatic progress
