@@ -10,6 +10,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
+import SkillBreakdown from '../components/SkillBreakdown';
 import {
     Map,
     Lock,
@@ -316,6 +317,11 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
                                 <ProgressCheck label="Exercises" done={progress.exercises_score >= 70} />
                                 <ProgressCheck label="Checkpoint" done={progress.checkpoint_passed} />
                             </div>
+                        )}
+
+                        {/* Skill mastery breakdown for completed units */}
+                        {isCompleted && !isAssessment && (
+                            <SkillBreakdown unitId={unit.id} />
                         )}
                     </div>
 
