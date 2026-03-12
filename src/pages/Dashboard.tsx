@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
+import { useSkillCards } from '../hooks/useSkillCards';
 import LevelUpModal from '../components/ui/LevelUpModal';
 import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, PartyPopper } from 'lucide-react';
 import type { CEFRLevel } from '../lib/db';
@@ -22,6 +23,7 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const { user, progressInfo } = useLevelProgression();
     const { dueCards, totalCards } = useCards();
+    const { dueSkillCards } = useSkillCards();
     const { user: authUser } = useAuth();
     const [showLevelUp, setShowLevelUp] = useState(false);
     const [newLevel, setNewLevel] = useState<CEFRLevel>('A2');
@@ -176,6 +178,30 @@ export default function Dashboard() {
                         <div className="flex items-center gap-4">
                             <RefreshCw className="w-5 h-5 text-text-muted" />
                             <span className="font-bold text-white group-hover:text-primary transition-colors">{t('dashboard.startReview')}</span>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-text-muted group-hover:translate-x-1 transition-transform" />
+                    </div>
+                </motion.div>
+            )}
+
+            {/* Grammar Skills Review */}
+            {dueSkillCards.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 }}
+                    onClick={() => navigate('/review')}
+                    className="widget cursor-pointer group hover:border-primary/50 transition-all"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <BookOpen className="w-5 h-5 text-accent-purple" />
+                            <div>
+                                <p className="font-bold group-hover:text-primary transition-colors">
+                                    {dueSkillCards.length} {t('dashboard.grammarSkills', 'grammar skills')} {t('dashboard.pendingReview')}
+                                </p>
+                                <p className="text-xs text-text-muted mt-1">{t('dashboard.grammarReviewDesc', 'Review your grammar knowledge')}</p>
+                            </div>
                         </div>
                         <ArrowRight className="w-5 h-5 text-text-muted group-hover:translate-x-1 transition-transform" />
                     </div>
