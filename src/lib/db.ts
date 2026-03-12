@@ -44,6 +44,21 @@ export interface Card {
   lastReview: Date | undefined;
 }
 
+export interface SkillCard {
+    id: string;
+    skillId: string;
+    unitId: string;
+    state: CardState;
+    due: Date;
+    stability: number;
+    difficulty: number;
+    elapsedDays: number;
+    scheduledDays: number;
+    reps: number;
+    lapses: number;
+    lastReview: Date | undefined;
+}
+
 export type ExerciseType = 'fill-blank' | 'multiple-choice' | 'word-order';
 
 export interface Unit {

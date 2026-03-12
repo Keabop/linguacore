@@ -69,6 +69,23 @@ export type UnitProgressRow = {
     completed_at: string | null;
 };
 
+export type SkillCardRow = {
+    id: number;
+    user_id: string;
+    skill_id: string;
+    unit_id: string;
+    state: number;
+    due: string;
+    stability: number;
+    difficulty: number;
+    elapsed_days: number;
+    scheduled_days: number;
+    reps: number;
+    lapses: number;
+    last_review: string | null;
+    created_at: string;
+};
+
 export type LevelAssessmentRow = {
     id: number;
     user_id: string;
@@ -140,6 +157,12 @@ export type Database = {
                 Row: UnitProgressRow;
                 Insert: Omit<UnitProgressRow, 'id'>;
                 Update: Partial<Omit<UnitProgressRow, 'id'>>;
+                Relationships: [];
+            };
+            skill_cards: {
+                Row: SkillCardRow;
+                Insert: Omit<SkillCardRow, 'id' | 'created_at'>;
+                Update: Partial<Omit<SkillCardRow, 'id' | 'created_at'>>;
                 Relationships: [];
             };
             level_assessments: {
