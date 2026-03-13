@@ -9,6 +9,7 @@ import SpeakingRunner from './speaking/SpeakingRunner';
 
 const DEFER_MINUTES = 15;
 const DEFER_KEY = 'speaking-deferred-until';
+const WRITING_DONE_KEY = 'output-writing-done';
 
 function getDeferredUntil(unitId: string): Date | null {
     try {
@@ -39,19 +40,28 @@ type Tab = 'writing' | 'speaking';
 
 export default function OutputStep({ unitId, level, onComplete }: Props) {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<Tab>('writing');
-    const [writingDone, setWritingDone] = useState(false);
+    const writingPrompts = getWritingPromptsByUnit(unitId);
+    const speakingPrompts = getSpeakingPromptsByUnit(unitId);
+    const hasWriting = writingPrompts && writingPrompts.length > 0;
+    const hasSpeaking = speakingPrompts && speakingPrompts.length > 0;
+
+    // Restore persisted writing completion
+    const savedWriting = (() => {
+        try {
+            const raw = localStorage.getItem(`${WRITING_DONE_KEY}:${unitId}`);
+            if (!raw) return null;
+            return JSON.parse(raw) as { score: number };
+        } catch { return null; }
+    })();
+
+    const [activeTab, setActiveTab] = useState<Tab>(savedWriting && hasSpeaking ? 'speaking' : 'writing');
+    const [writingDone, setWritingDone] = useState(!!savedWriting);
     const [speakingDone, setSpeakingDone] = useState(false);
-    const [writingScore, setWritingScore] = useState(0);
+    const [writingScore, setWritingScore] = useState(savedWriting?.score ?? 0);
     const [speakingScore, setSpeakingScore] = useState(0);
     const [speakingDeferred, setSpeakingDeferred] = useState<Date | null>(null);
     const [minutesLeft, setMinutesLeft] = useState(0);
 
-    const writingPrompts = getWritingPromptsByUnit(unitId);
-    const speakingPrompts = getSpeakingPromptsByUnit(unitId);
-
-    const hasWriting = writingPrompts && writingPrompts.length > 0;
-    const hasSpeaking = speakingPrompts && speakingPrompts.length > 0;
     const bothDone = (writingDone || !hasWriting) && (speakingDone || !hasSpeaking);
 
     // Check if speaking is currently deferred
@@ -83,6 +93,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     const handleWritingComplete = (score: number) => {
         setWritingScore(score);
         setWritingDone(true);
+        localStorage.setItem(`${WRITING_DONE_KEY}:${unitId}`, JSON.stringify({ score }));
         if (hasSpeaking && !speakingDone) {
             setActiveTab('speaking');
         }
@@ -92,6 +103,8 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
         setSpeakingScore(score);
         setSpeakingDone(true);
         clearDeferred(unitId);
+        // Clean up persisted writing state since output step is completing
+        localStorage.removeItem(`${WRITING_DONE_KEY}:${unitId}`);
         if (hasWriting && !writingDone) {
             setActiveTab('writing');
         }
