@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { PenLine, Mic, Sparkles, Loader2 } from 'lucide-react';
+import { PenLine, Mic, Sparkles, Loader2, History, Save, Eye, CheckCircle2 } from 'lucide-react';
 import AIErrorCard from '../components/AIErrorCard';
 import type { CEFRLevel } from '../lib/db';
 import { useLevelProgression } from '../hooks/useLevelProgression';
@@ -9,6 +9,9 @@ import { evaluateWriting } from '../lib/ai';
 import type { WritingEvaluationResponse } from '../lib/ai';
 import WritingFeedback from '../components/writing/WritingFeedback';
 import { useSpeech } from '../hooks/useSpeech';
+import { useAuth } from '../lib/AuthContext';
+import { supabase } from '../lib/supabase';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 type Tab = 'writing' | 'speaking';
 
@@ -119,12 +122,32 @@ export default function Practice() {
 /* ===== Writing Practice Sub-component ===== */
 
 function WritingPractice({ level }: { level: CEFRLevel }) {
+    const { t } = useTranslation();
+    const { user } = useAuth();
+    const qc = useQueryClient();
     const topics = WRITING_TOPICS[level] || WRITING_TOPICS['A1'];
     const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
     const [text, setText] = useState('');
     const [phase, setPhase] = useState<'select' | 'writing' | 'evaluating' | 'feedback'>('select');
     const [feedback, setFeedback] = useState<WritingEvaluationResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [saved, setSaved] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
+    const [viewingFeedback, setViewingFeedback] = useState<WritingEvaluationResponse | null>(null);
+
+    // Fetch writing history
+    const { data: writingHistory } = useQuery({
+        queryKey: ['writing-submissions', user?.id],
+        queryFn: async () => {
+            const { data } = await supabase
+                .from('writing_submissions')
+                .select('*')
+                .order('submitted_at', { ascending: false })
+                .limit(20);
+            return data ?? [];
+        },
+        enabled: !!user?.id,
+    });
 
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
@@ -134,6 +157,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
         setPhase('writing');
         setFeedback(null);
         setError(null);
+        setSaved(false);
     };
 
     const handleSubmit = async () => {
@@ -150,12 +174,43 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
         }
     };
 
+    const handleSave = async () => {
+        if (!user?.id || !feedback || !selectedTopic) return;
+        try {
+            await supabase.from('writing_submissions').insert({
+                user_id: user.id,
+                prompt_id: selectedTopic.slice(0, 50),
+                unit_id: 'practice',
+                user_text: text,
+                score: feedback.score,
+                corrections: feedback.corrections as any,
+                feedback_summary: feedback.feedback as any,
+                improved_version: feedback.improvedVersion,
+                submitted_at: new Date().toISOString(),
+            });
+            setSaved(true);
+            qc.invalidateQueries({ queryKey: ['writing-submissions'] });
+        } catch {
+            // silently fail
+        }
+    };
+
     const handleReset = () => {
         setSelectedTopic(null);
         setText('');
         setPhase('select');
         setFeedback(null);
+        setSaved(false);
     };
+
+    // Viewing past feedback (read-only)
+    if (viewingFeedback) {
+        return (
+            <div className="space-y-6">
+                <WritingFeedback data={viewingFeedback} onNext={() => setViewingFeedback(null)} nextLabel="Volver" />
+            </div>
+        );
+    }
 
     if (phase === 'select') {
         return (
@@ -168,6 +223,48 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                         <p className="text-sm text-white">{topic}</p>
                     </motion.button>
                 ))}
+
+                {/* Writing History */}
+                {writingHistory && writingHistory.length > 0 && (
+                    <div className="space-y-4 mt-8 pt-8 border-t border-border">
+                        <button onClick={() => setShowHistory(!showHistory)}
+                            className="flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-white transition-colors">
+                            <History className="w-4 h-4" /> {t('practice.writingHistory')} ({writingHistory.length})
+                        </button>
+                        {showHistory && (
+                            <div className="space-y-3">
+                                {writingHistory.map((entry: any) => (
+                                    <button key={entry.id}
+                                        onClick={() => {
+                                            setViewingFeedback({
+                                                score: entry.score,
+                                                corrections: entry.corrections || [],
+                                                feedback: entry.feedback_summary || {},
+                                                improvedVersion: entry.improved_version || '',
+                                                encouragement: '',
+                                            });
+                                        }}
+                                        className="w-full text-left bg-bg-card border border-border rounded-xl p-4 hover:border-primary/30 transition-all space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs text-text-muted">
+                                                {new Date(entry.submitted_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                                entry.score >= 80 ? 'bg-green-500/10 text-green-400' :
+                                                entry.score >= 60 ? 'bg-accent-orange/10 text-accent-orange' :
+                                                'bg-accent-red/10 text-accent-red'
+                                            }`}>{entry.score}%</span>
+                                        </div>
+                                        <p className="text-sm text-white truncate">{entry.user_text}</p>
+                                        <p className="text-xs text-accent-blue flex items-center gap-1">
+                                            <Eye className="w-3 h-3" /> {t('practice.viewFeedback')}
+                                        </p>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         );
     }
@@ -185,6 +282,16 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
         return (
             <div className="space-y-6">
                 <WritingFeedback data={feedback} onNext={handleReset} nextLabel="Otro tema" />
+                {!saved ? (
+                    <button onClick={handleSave}
+                        className="w-full bg-bg-card border border-border hover:border-primary/30 text-white py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2">
+                        <Save className="w-4 h-4" /> {t('practice.saveToHistory')}
+                    </button>
+                ) : (
+                    <p className="text-center text-green-400 text-sm flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-4 h-4" /> {t('practice.savedToHistory')}
+                    </p>
+                )}
             </div>
         );
     }
