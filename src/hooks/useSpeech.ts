@@ -89,7 +89,7 @@ export function useSpeech(): UseSpeechReturn {
                 }
             }
 
-            if (final) setTranscript(prev => prev + final);
+            setTranscript(final);
             setInterimTranscript(interim);
         };
 
