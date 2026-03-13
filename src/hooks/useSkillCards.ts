@@ -80,7 +80,11 @@ export function useSkillCards() {
         const skills = getSkillsByUnit(unitId);
         if (skills.length === 0) return 0;
 
-        const tomorrow = new Date(Date.now() + 86400000).toISOString();
+        // Due at the start of tomorrow (midnight local time)
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        const dueDate = tomorrow.toISOString();
         let created = 0;
 
         for (const skill of skills) {
@@ -90,7 +94,7 @@ export function useSkillCards() {
                     skill_id: skill.id,
                     unit_id: unitId,
                     state: CardState.New,
-                    due: tomorrow,
+                    due: dueDate,
                     stability: 0,
                     difficulty: 0,
                     elapsed_days: 0,
