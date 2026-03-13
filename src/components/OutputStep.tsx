@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { PenLine, Mic, CheckCircle2, Clock, MicOff } from 'lucide-react';
+import { PenLine, Mic, CheckCircle2, Clock, MicOff, WifiOff, BookOpen } from 'lucide-react';
 import type { CEFRLevel } from '../lib/db';
 import { getWritingPromptsByUnit, getSpeakingPromptsByUnit } from '../data';
 import WritingRunner from './writing/WritingRunner';
@@ -61,8 +61,21 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     const [speakingScore, setSpeakingScore] = useState(0);
     const [speakingDeferred, setSpeakingDeferred] = useState<Date | null>(null);
     const [minutesLeft, setMinutesLeft] = useState(0);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     const bothDone = (writingDone || !hasWriting) && (speakingDone || !hasSpeaking);
+
+    // Track online/offline status
+    useEffect(() => {
+        const goOnline = () => setIsOnline(true);
+        const goOffline = () => setIsOnline(false);
+        window.addEventListener('online', goOnline);
+        window.addEventListener('offline', goOffline);
+        return () => {
+            window.removeEventListener('online', goOnline);
+            window.removeEventListener('offline', goOffline);
+        };
+    }, []);
 
     // Check if speaking is currently deferred
     useEffect(() => {
@@ -169,6 +182,31 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     </button>
                 )}
             </div>
+
+            {/* Offline banner */}
+            {!isOnline && !bothDone && (
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 space-y-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <WifiOff className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                        <div className="space-y-1">
+                            <p className="text-sm font-bold text-white">Sin conexión a internet</p>
+                            <p className="text-xs text-text-secondary leading-relaxed">
+                                Los ejercicios de producción necesitan IA. Mientras tanto, puedes aprender vocabulario con los cuentos.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => navigate('/learn')}
+                        className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                        <BookOpen className="w-4 h-4" /> Ir a leer cuentos
+                    </button>
+                </motion.div>
+            )}
 
             {/* Content */}
             <motion.div key={activeTab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
