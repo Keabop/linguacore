@@ -119,6 +119,16 @@ export type SpeakingSubmissionRow = {
     submitted_at: string;
 };
 
+export type ConversationSessionRow = {
+    id: number;
+    user_id: string;
+    level: string;
+    topic: string | null;
+    messages: any[];
+    started_at: string;
+    ended_at: string | null;
+};
+
 // Supabase Database type for createClient<Database>
 export type Database = {
     public: {
@@ -181,6 +191,12 @@ export type Database = {
                 Row: SpeakingSubmissionRow;
                 Insert: Omit<SpeakingSubmissionRow, 'id'>;
                 Update: Partial<Omit<SpeakingSubmissionRow, 'id'>>;
+                Relationships: [];
+            };
+            conversation_sessions: {
+                Row: ConversationSessionRow;
+                Insert: Omit<ConversationSessionRow, 'id'>;
+                Update: Partial<Omit<ConversationSessionRow, 'id'>>;
                 Relationships: [];
             };
         };

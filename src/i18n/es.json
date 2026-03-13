@@ -188,7 +188,16 @@
     "level": "Nivel {{level}}",
     "placeholder": "Escribe en inglés...",
     "corrections": "Correcciones",
-    "startConversation": "Iniciar conversación"
+    "startConversation": "Iniciar conversación",
+    "endSession": "Finalizar sesión",
+    "endSessionConfirm": "¿Seguro que quieres finalizar la conversación?",
+    "sessionSaved": "Conversación guardada en tu historial",
+    "history": "Historial",
+    "noHistory": "Aún no tienes conversaciones guardadas",
+    "viewSession": "Ver conversación",
+    "sessionDate": "Sesión del {{date}}",
+    "messagesCount": "{{count}} mensajes",
+    "readOnly": "Solo lectura"
   },
   "path": {
     "title": "Ruta de Aprendizaje",
@@ -218,6 +227,14 @@
     "checkAnswer": "Comprobar",
     "next": "Siguiente",
     "finish": "Finalizar"
+  },
+  "practice": {
+    "saveToHistory": "Guardar en historial",
+    "savedToHistory": "¡Guardado en tu historial!",
+    "writingHistory": "Historial de escritura",
+    "noWritingHistory": "Aún no has guardado evaluaciones",
+    "score": "Puntuación: {{score}}%",
+    "viewFeedback": "Ver feedback"
   },
   "assessment": {
     "title": "Evaluación {{level}}",
