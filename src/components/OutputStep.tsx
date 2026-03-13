@@ -1,10 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { PenLine, Mic, CheckCircle2 } from 'lucide-react';
+import { PenLine, Mic, CheckCircle2, Clock, MicOff } from 'lucide-react';
 import type { CEFRLevel } from '../lib/db';
 import { getWritingPromptsByUnit, getSpeakingPromptsByUnit } from '../data';
 import WritingRunner from './writing/WritingRunner';
 import SpeakingRunner from './speaking/SpeakingRunner';
+
+const DEFER_MINUTES = 15;
+const DEFER_KEY = 'speaking-deferred-until';
+
+function getDeferredUntil(unitId: string): Date | null {
+    try {
+        const raw = localStorage.getItem(`${DEFER_KEY}:${unitId}`);
+        if (!raw) return null;
+        const d = new Date(raw);
+        return d > new Date() ? d : null;
+    } catch { return null; }
+}
+
+function setDeferredUntil(unitId: string): Date {
+    const until = new Date(Date.now() + DEFER_MINUTES * 60 * 1000);
+    localStorage.setItem(`${DEFER_KEY}:${unitId}`, until.toISOString());
+    return until;
+}
+
+function clearDeferred(unitId: string) {
+    localStorage.removeItem(`${DEFER_KEY}:${unitId}`);
+}
 
 interface Props {
     unitId: string;
@@ -15,11 +38,14 @@ interface Props {
 type Tab = 'writing' | 'speaking';
 
 export default function OutputStep({ unitId, level, onComplete }: Props) {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<Tab>('writing');
     const [writingDone, setWritingDone] = useState(false);
     const [speakingDone, setSpeakingDone] = useState(false);
     const [writingScore, setWritingScore] = useState(0);
     const [speakingScore, setSpeakingScore] = useState(0);
+    const [speakingDeferred, setSpeakingDeferred] = useState<Date | null>(null);
+    const [minutesLeft, setMinutesLeft] = useState(0);
 
     const writingPrompts = getWritingPromptsByUnit(unitId);
     const speakingPrompts = getSpeakingPromptsByUnit(unitId);
@@ -28,10 +54,35 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     const hasSpeaking = speakingPrompts && speakingPrompts.length > 0;
     const bothDone = (writingDone || !hasWriting) && (speakingDone || !hasSpeaking);
 
+    // Check if speaking is currently deferred
+    useEffect(() => {
+        const deferred = getDeferredUntil(unitId);
+        setSpeakingDeferred(deferred);
+        if (deferred) {
+            const updateTimer = () => {
+                const diff = Math.max(0, Math.ceil((deferred.getTime() - Date.now()) / 60000));
+                setMinutesLeft(diff);
+                if (diff <= 0) {
+                    setSpeakingDeferred(null);
+                    clearDeferred(unitId);
+                }
+            };
+            updateTimer();
+            const interval = setInterval(updateTimer, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [unitId]);
+
+    const handleDeferSpeaking = useCallback(() => {
+        const until = setDeferredUntil(unitId);
+        setSpeakingDeferred(until);
+        setMinutesLeft(DEFER_MINUTES);
+        navigate('/path');
+    }, [unitId, navigate]);
+
     const handleWritingComplete = (score: number) => {
         setWritingScore(score);
         setWritingDone(true);
-        // Auto-switch to speaking if available
         if (hasSpeaking && !speakingDone) {
             setActiveTab('speaking');
         }
@@ -40,7 +91,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     const handleSpeakingComplete = (score: number) => {
         setSpeakingScore(score);
         setSpeakingDone(true);
-        // Auto-switch to writing if not done yet
+        clearDeferred(unitId);
         if (hasWriting && !writingDone) {
             setActiveTab('writing');
         }
@@ -117,8 +168,39 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         <p className="text-sm text-white font-semibold">Escritura completada — {writingScore}%</p>
                     </div>
                 )}
-                {activeTab === 'speaking' && hasSpeaking && !speakingDone && (
-                    <SpeakingRunner prompts={speakingPrompts} level={level} onComplete={handleSpeakingComplete} />
+                {activeTab === 'speaking' && hasSpeaking && !speakingDone && !speakingDeferred && (
+                    <div className="space-y-6">
+                        <SpeakingRunner prompts={speakingPrompts} level={level} onComplete={handleSpeakingComplete} />
+                        <button
+                            onClick={handleDeferSpeaking}
+                            className="w-full flex items-center justify-center gap-2 bg-bg-card border border-border text-text-muted hover:text-text-secondary py-3 rounded-xl text-sm transition-all"
+                        >
+                            <MicOff className="w-4 h-4" />
+                            No puedo hablar ahora
+                        </button>
+                    </div>
+                )}
+                {activeTab === 'speaking' && hasSpeaking && !speakingDone && speakingDeferred && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-bg-card border border-amber-500/20 rounded-xl p-6 text-center space-y-4"
+                    >
+                        <Clock className="w-10 h-10 text-amber-400 mx-auto" />
+                        <div className="space-y-2">
+                            <p className="text-sm font-bold text-white">Ejercicios de habla pospuestos</p>
+                            <p className="text-xs text-text-secondary leading-relaxed">
+                                Estarán disponibles en <span className="text-amber-400 font-bold">{minutesLeft} minutos</span>.
+                                Hablar es parte esencial del aprendizaje — ¡vuelve cuando puedas!
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => navigate('/path')}
+                            className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                        >
+                            Volver a la ruta
+                        </button>
+                    </motion.div>
                 )}
                 {activeTab === 'speaking' && speakingDone && (
                     <div className="bg-green-500/8 border border-green-500/20 rounded-xl p-6 text-center space-y-2">
