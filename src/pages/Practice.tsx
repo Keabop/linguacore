@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { PenLine, Mic, Sparkles, Loader2, History, Save, Eye, CheckCircle2, ArrowLeft } from 'lucide-react';
 import AIErrorCard from '../components/AIErrorCard';
+import { useErrorCards } from '../hooks/useErrorCards';
 import type { CEFRLevel } from '../lib/db';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { evaluateWriting } from '../lib/ai';
@@ -151,6 +152,7 @@ export default function Practice() {
 function WritingPractice({ level }: { level: CEFRLevel }) {
     const { t } = useTranslation();
     const { user } = useAuth();
+    const { addErrorCard } = useErrorCards();
     const qc = useQueryClient();
     const topics = WRITING_TOPICS[level] || WRITING_TOPICS['A1'];
     const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
@@ -197,6 +199,17 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
         try {
             const result = await evaluateWriting(text, selectedTopic, level, 'free-writing', []);
             setFeedback(result);
+            // Extract corrections as error cards
+            if (result.corrections && result.corrections.length > 0) {
+                for (const c of result.corrections) {
+                    addErrorCard({
+                        original: c.original,
+                        corrected: c.corrected,
+                        explanation: c.explanation,
+                        type: c.type,
+                    }, 'writing');
+                }
+            }
             setPhase('feedback');
         } catch (err: any) {
             setError(err.message || 'Error al evaluar.');
