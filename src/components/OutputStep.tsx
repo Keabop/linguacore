@@ -62,6 +62,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     const [speakingDeferred, setSpeakingDeferred] = useState<Date | null>(null);
     const [minutesLeft, setMinutesLeft] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [speakingAttempted, setSpeakingAttempted] = useState(false);
 
     const bothDone = (writingDone || !hasWriting) && (speakingDone || !hasSpeaking);
 
@@ -221,14 +222,16 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                 )}
                 {activeTab === 'speaking' && hasSpeaking && !speakingDone && !speakingDeferred && (
                     <div className="space-y-6">
-                        <SpeakingRunner prompts={speakingPrompts} level={level} onComplete={handleSpeakingComplete} />
-                        <button
-                            onClick={handleDeferSpeaking}
-                            className="w-full flex items-center justify-center gap-2 bg-bg-card border border-border text-text-muted hover:text-text-secondary py-3 rounded-xl text-sm transition-all"
-                        >
-                            <MicOff className="w-4 h-4" />
-                            No puedo hablar ahora
-                        </button>
+                        <SpeakingRunner prompts={speakingPrompts} level={level} onComplete={handleSpeakingComplete} onFirstAttempt={() => setSpeakingAttempted(true)} />
+                        {!speakingAttempted && (
+                            <button
+                                onClick={handleDeferSpeaking}
+                                className="w-full flex items-center justify-center gap-2 bg-bg-card border border-border text-text-muted hover:text-text-secondary py-3 rounded-xl text-sm transition-all"
+                            >
+                                <MicOff className="w-4 h-4" />
+                                No puedo hablar ahora
+                            </button>
+                        )}
                     </div>
                 )}
                 {activeTab === 'speaking' && hasSpeaking && !speakingDone && speakingDeferred && (

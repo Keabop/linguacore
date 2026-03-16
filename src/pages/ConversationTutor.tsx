@@ -195,7 +195,7 @@ export default function ConversationTutor() {
     // ── READONLY VIEW ──
     if (view === 'readonly' && readonlySession) {
         return (
-            <div className="flex flex-col h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)]">
+            <div className="flex flex-col h-[calc(100dvh-6rem)] max-h-[calc(100dvh-6rem)] overflow-x-hidden">
                 <style>{`.floating-bar { display: none !important; }`}</style>
 
                 {/* Header with back button */}
@@ -256,7 +256,7 @@ export default function ConversationTutor() {
 
     // ── CHAT VIEW (active conversation) ──
     return (
-        <div className="flex flex-col h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)]">
+        <div className="flex flex-col h-[calc(100dvh-6rem)] max-h-[calc(100dvh-6rem)] overflow-x-hidden">
             {/* Hide floating bottom bar */}
             <style>{`.floating-bar { display: none !important; }`}</style>
 

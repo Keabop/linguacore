@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
+import { answersMatch } from '../../lib/normalizeAnswer';
 
 interface FillBlankExerciseProps {
     exercise: GrammarExercise;
@@ -25,9 +26,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
         e.preventDefault();
         if (!answer.trim() || status !== 'pending') return;
 
-        const normalized = answer.trim().toLowerCase();
-        const target = exercise.correctAnswer.trim().toLowerCase();
-        const isCorrect = normalized === target;
+        const isCorrect = answersMatch(answer, exercise.correctAnswer);
 
         setStatus(isCorrect ? 'correct' : 'incorrect');
     };

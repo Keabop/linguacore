@@ -84,8 +84,19 @@ export async function processQueue(
     for (const mutation of memoryQueue) {
         try {
             if (mutation.operation === 'insert') {
-                const { error } = await supabase.from(mutation.table).insert(mutation.data);
-                if (error) throw error;
+                // Use upsert to handle duplicate key conflicts gracefully
+                // (e.g. unit_progress already synced from another session/tab)
+                const { error } = await supabase.from(mutation.table).upsert(mutation.data, { onConflict: 'user_id,unit_id', ignoreDuplicates: false });
+                if (error) {
+                    // If upsert also fails (e.g. different conflict constraint), try plain insert
+                    // but ignore duplicate key errors (23505) — the record already exists
+                    if (error.code === '23505') {
+                        // Record already exists, treat as success
+                        console.info('[OfflineQueue] Record already exists, skipping:', mutation.table);
+                    } else {
+                        throw error;
+                    }
+                }
             } else if (mutation.operation === 'update' && mutation.match) {
                 let query = supabase.from(mutation.table).update(mutation.data) as any;
                 for (const [key, value] of Object.entries(mutation.match)) {
