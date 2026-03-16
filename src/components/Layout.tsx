@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
-import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, LogOut } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, LogOut, Sun, Moon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import OfflineBanner from './OfflineBanner';
 import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
+import { useTheme } from '../lib/ThemeContext';
 
 const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/', icon: Home, labelKey: 'nav.home' },
@@ -28,6 +29,7 @@ export default function Layout() {
     const { progressInfo, user } = useLevelProgression();
     const { dueCards } = useCards();
     const { signOut } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const syncState = useSyncManager();
     const scrollRef = useRef<HTMLElement>(null);
 
@@ -49,7 +51,7 @@ export default function Layout() {
                 {/* Logo */}
                 <div className="flex items-center gap-3 mb-10 px-2">
                     <img src="/logo.png" alt="LinguaCore" className="w-7 h-7 rounded-lg object-cover" />
-                    <span className="text-xl font-extrabold text-white tracking-tight">LinguaCore</span>
+                    <span className="text-xl font-extrabold text-text tracking-tight">LinguaCore</span>
                 </div>
 
                 {/* Nav items */}
@@ -83,6 +85,13 @@ export default function Layout() {
                                 </div>
                             </div>
                         </div>
+                        <button
+                            onClick={toggleTheme}
+                            className="flex items-center gap-2 text-xs text-text-muted hover:text-text-secondary transition-colors w-full"
+                        >
+                            {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                            {theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}
+                        </button>
                         <button
                             onClick={signOut}
                             className="flex items-center gap-2 text-xs text-text-muted hover:text-red-400 transition-colors w-full"
@@ -195,6 +204,15 @@ export default function Layout() {
                     ))}
                 </nav>
             )}
+
+            {/* Theme toggle - visible on mobile only */}
+            <button
+                onClick={toggleTheme}
+                className="fixed top-4 right-4 z-40 p-2 rounded-full bg-bg-card border border-border shadow-lg lg:hidden"
+                aria-label="Toggle theme"
+            >
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-text-secondary" /> : <Moon className="w-4 h-4 text-text-secondary" />}
+            </button>
         </div>
     );
 }
