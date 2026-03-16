@@ -216,7 +216,8 @@
   },
   "unitFlow": {
     "skillsAdded": "¡Habilidades de gramática añadidas!",
-    "skillsAddedDesc": "{{count}} habilidades añadidas a tu repaso"
+    "skillsAddedDesc": "{{count}} habilidades añadidas a tu repaso",
+    "canSpeakNow": "Ya puedo hablar"
   },
   "exercises": {
     "title": "Ejercicios",
