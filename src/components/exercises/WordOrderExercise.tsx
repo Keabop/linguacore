@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
+import { answersMatch } from '../../lib/normalizeAnswer';
 
 interface WordOrderExerciseProps {
     exercise: GrammarExercise;
@@ -41,7 +42,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
 
     const handleCheck = () => {
         const builtSentence = placedWords.join(' ');
-        const isCorrect = builtSentence.trim().toLowerCase() === exercise.correctAnswer.trim().toLowerCase();
+        const isCorrect = answersMatch(builtSentence, exercise.correctAnswer);
         setStatus(isCorrect ? 'correct' : 'incorrect');
     };
 

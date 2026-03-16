@@ -9,9 +9,10 @@ interface Props {
     prompts: SpeakingPrompt[];
     level: CEFRLevel;
     onComplete: (avgScore: number) => void;
+    onFirstAttempt?: () => void;
 }
 
-export default function SpeakingRunner({ prompts, level, onComplete }: Props) {
+export default function SpeakingRunner({ prompts, level, onComplete, onFirstAttempt }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [scores, setScores] = useState<number[]>([]);
 
@@ -21,6 +22,10 @@ export default function SpeakingRunner({ prompts, level, onComplete }: Props) {
     const handleExerciseComplete = (score: number) => {
         const newScores = [...scores, score];
         setScores(newScores);
+        // Notify parent on first completed attempt (hide defer button)
+        if (scores.length === 0 && onFirstAttempt) {
+            onFirstAttempt();
+        }
         if (isLast) {
             const avg = Math.round(newScores.reduce((a, b) => a + b, 0) / newScores.length);
             onComplete(avg);
