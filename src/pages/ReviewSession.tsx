@@ -5,13 +5,15 @@ import { type Card, type Vocabulary } from '../lib/db';
 import { getVocab, getSkill } from '../data';
 import { useCards } from '../hooks/useCards';
 import { useSkillCards, getReviewDepth } from '../hooks/useSkillCards';
+import { useErrorCards } from '../hooks/useErrorCards';
 import { Rating } from '../lib/fsrs';
 import ReviewModeSelector, { type ReviewMode } from '../components/ReviewModeSelector';
 import ClozeReview from '../components/ClozeReview';
 import TranslationReview from '../components/TranslationReview';
 import GrammarReview from '../components/GrammarReview';
+import ErrorReview from '../components/ErrorReview';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen } from 'lucide-react';
+import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen, AlertTriangle } from 'lucide-react';
 import { toast } from '../lib/toast';
 
 export default function ReviewSession() {
@@ -19,7 +21,8 @@ export default function ReviewSession() {
     const navigate = useNavigate();
     const { dueCards, reviewCard } = useCards();
     const { dueSkillCards, reviewSkillCard } = useSkillCards();
-    const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | null>(null);
+    const { dueErrorCards, reviewErrorCard } = useErrorCards();
+    const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
     const [mode, setMode] = useState<ReviewMode | null>(null);
     const [sessionDone, setSessionDone] = useState(false);
     const [correctCount, setCorrectCount] = useState(0);
@@ -53,7 +56,7 @@ export default function ReviewSession() {
     }, [currentCard, dueCards.length, reviewCard]);
 
     // No due cards and no session
-    if (dueCards.length === 0 && dueSkillCards.length === 0 && !sessionDone && !mode && !reviewType) {
+    if (dueCards.length === 0 && dueSkillCards.length === 0 && dueErrorCards.length === 0 && !sessionDone && !mode && !reviewType) {
         return (
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -73,46 +76,54 @@ export default function ReviewSession() {
         );
     }
 
-    // Type selector: Vocabulary vs Grammar
-    if (!reviewType && !mode && (dueCards.length > 0 || dueSkillCards.length > 0)) {
-        // Auto-select if only one type has due items
-        if (dueCards.length > 0 && dueSkillCards.length === 0) {
-            setReviewType('vocab');
-        } else if (dueCards.length === 0 && dueSkillCards.length > 0) {
-            setReviewType('grammar');
+    // Type selector: Vocabulary vs Grammar vs Errors
+    if (!reviewType && !mode && (dueCards.length > 0 || dueSkillCards.length > 0 || dueErrorCards.length > 0)) {
+        const typesWithDue = [
+            dueCards.length > 0 ? 'vocab' as const : null,
+            dueSkillCards.length > 0 ? 'grammar' as const : null,
+            dueErrorCards.length > 0 ? 'errors' as const : null,
+        ].filter((v): v is 'vocab' | 'grammar' | 'errors' => v !== null);
+
+        if (typesWithDue.length === 1) {
+            setReviewType(typesWithDue[0]);
         } else {
             return (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8 py-4"
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 py-4">
                     <h2 className="text-xl font-bold text-center">{t('review.chooseType', '¿Qué quieres repasar?')}</h2>
                     <div className="space-y-4">
-                        <button
-                            onClick={() => setReviewType('vocab')}
-                            className="w-full widget hover:border-primary/50 transition-all text-left space-y-1"
-                        >
-                            <div className="flex items-center gap-3">
-                                <RefreshCw className="w-5 h-5 text-accent-blue" />
-                                <div>
-                                    <p className="font-bold">{t('review.vocabulary', 'Vocabulario')}</p>
-                                    <p className="text-sm text-text-muted">{dueCards.length} {t('review.wordsDue', 'palabras pendientes')}</p>
+                        {dueCards.length > 0 && (
+                            <button onClick={() => setReviewType('vocab')} className="w-full widget hover:border-primary/50 transition-all text-left space-y-1">
+                                <div className="flex items-center gap-3">
+                                    <RefreshCw className="w-5 h-5 text-accent-blue" />
+                                    <div>
+                                        <p className="font-bold">{t('review.vocabulary', 'Vocabulario')}</p>
+                                        <p className="text-sm text-text-muted">{dueCards.length} {t('review.wordsDue', 'palabras pendientes')}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </button>
-                        <button
-                            onClick={() => setReviewType('grammar')}
-                            className="w-full widget hover:border-primary/50 transition-all text-left space-y-1"
-                        >
-                            <div className="flex items-center gap-3">
-                                <BookOpen className="w-5 h-5 text-accent-purple" />
-                                <div>
-                                    <p className="font-bold">{t('review.grammar', 'Gramática')}</p>
-                                    <p className="text-sm text-text-muted">{dueSkillCards.length} {t('review.skillsDue', 'habilidades pendientes')}</p>
+                            </button>
+                        )}
+                        {dueSkillCards.length > 0 && (
+                            <button onClick={() => setReviewType('grammar')} className="w-full widget hover:border-primary/50 transition-all text-left space-y-1">
+                                <div className="flex items-center gap-3">
+                                    <BookOpen className="w-5 h-5 text-accent-purple" />
+                                    <div>
+                                        <p className="font-bold">{t('review.grammar', 'Gramática')}</p>
+                                        <p className="text-sm text-text-muted">{dueSkillCards.length} {t('review.skillsDue', 'habilidades pendientes')}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </button>
+                            </button>
+                        )}
+                        {dueErrorCards.length > 0 && (
+                            <button onClick={() => setReviewType('errors')} className="w-full widget hover:border-primary/50 transition-all text-left space-y-1">
+                                <div className="flex items-center gap-3">
+                                    <AlertTriangle className="w-5 h-5 text-accent-orange" />
+                                    <div>
+                                        <p className="font-bold">{t('review.myErrors', 'Mis errores')}</p>
+                                        <p className="text-sm text-text-muted">{dueErrorCards.length} {t('review.errorsDue', 'errores pendientes')}</p>
+                                    </div>
+                                </div>
+                            </button>
+                        )}
                     </div>
                 </motion.div>
             );
@@ -189,6 +200,70 @@ export default function ReviewSession() {
                         setTotalReviewed(tr => tr + 1);
                         if (rating !== Rating.Again) setCorrectCount(c => c + 1);
                         if (dueSkillCards.length <= 1) {
+                            setSessionDone(true);
+                        }
+                    }}
+                />
+            </div>
+        );
+    }
+
+    // Error cards review flow
+    if (reviewType === 'errors') {
+        if (sessionDone) {
+            const accuracy = totalReviewed > 0 ? Math.round((correctCount / totalReviewed) * 100) : 0;
+            return (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-12 space-y-5">
+                    <style>{`.floating-bar { display: none !important; }`}</style>
+                    <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
+                    <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
+                    <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
+                        <div className="widget text-center">
+                            <p className="text-2xl font-extrabold text-accent-blue">{totalReviewed}</p>
+                            <p className="text-[10px] text-text-muted">{t('review.reviewed')}</p>
+                        </div>
+                        <div className="widget text-center">
+                            <p className={`text-2xl font-extrabold ${accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`}>{accuracy}%</p>
+                            <p className="text-[10px] text-text-muted">{t('review.accuracy')}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => navigate('/')} className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl font-bold transition-all">
+                        {t('review.backHome')}
+                    </button>
+                </motion.div>
+            );
+        }
+
+        const currentErrorCard = dueErrorCards[0];
+        if (!currentErrorCard) {
+            setSessionDone(true);
+            return null;
+        }
+
+        return (
+            <div className="space-y-10">
+                <style>{`.floating-bar { display: none !important; }`}</style>
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                        <button
+                            onClick={() => { setReviewType(null); setSessionDone(false); setCorrectCount(0); setTotalReviewed(0); }}
+                            className="text-text-muted hover:text-text transition-colors"
+                        >
+                            <ArrowLeft className="w-4 h-4 inline" /> {t('review.changeMode', 'Cambiar modo')}
+                        </button>
+                        <span className="text-text-muted font-mono text-xs">
+                            {t('review.myErrors', 'Mis errores')} · {dueErrorCards.length} {t('review.remaining', 'restantes')}
+                        </span>
+                    </div>
+                </div>
+                <ErrorReview
+                    key={currentErrorCard.id}
+                    card={currentErrorCard}
+                    onComplete={async (rating) => {
+                        await reviewErrorCard(currentErrorCard, rating);
+                        setTotalReviewed(tr => tr + 1);
+                        if (rating !== Rating.Again) setCorrectCount(c => c + 1);
+                        if (dueErrorCards.length <= 1) {
                             setSessionDone(true);
                         }
                     }}
