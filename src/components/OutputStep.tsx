@@ -245,12 +245,23 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                                 Hablar es parte esencial del aprendizaje — ¡vuelve cuando puedas!
                             </p>
                         </div>
-                        <button
-                            onClick={() => navigate('/path')}
-                            className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
-                        >
-                            Volver a la ruta
-                        </button>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => {
+                                    clearDeferred(unitId);
+                                    setSpeakingDeferred(null);
+                                }}
+                                className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            >
+                                <Mic className="w-4 h-4" /> Ya puedo hablar
+                            </button>
+                            <button
+                                onClick={() => navigate('/path')}
+                                className="w-full bg-bg-card border border-border hover:bg-bg-card-hover text-text-secondary py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                            >
+                                Volver a la ruta
+                            </button>
+                        </div>
                     </motion.div>
                 )}
                 {activeTab === 'speaking' && speakingDone && (
