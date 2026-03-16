@@ -8,8 +8,9 @@ import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
 import { useSkillCards } from '../hooks/useSkillCards';
+import { useErrorCards } from '../hooks/useErrorCards';
 import LevelUpModal from '../components/ui/LevelUpModal';
-import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, PartyPopper } from 'lucide-react';
+import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, PartyPopper, AlertTriangle } from 'lucide-react';
 import type { CEFRLevel } from '../lib/db';
 import type { ReadStoryRow, UnitProgressRow } from '../lib/database.types';
 import { allStories, getUnitsByLevel } from '../data';
@@ -24,6 +25,7 @@ export default function Dashboard() {
     const { user, progressInfo } = useLevelProgression();
     const { dueCards, totalCards } = useCards();
     const { dueSkillCards } = useSkillCards();
+    const { dueErrorCards, totalErrorCards } = useErrorCards();
     const { user: authUser } = useAuth();
     const [showLevelUp, setShowLevelUp] = useState(false);
     const [newLevel, setNewLevel] = useState<CEFRLevel>('A2');
@@ -206,6 +208,19 @@ export default function Dashboard() {
                         <ArrowRight className="w-5 h-5 text-text-muted group-hover:translate-x-1 transition-transform" />
                     </div>
                 </motion.div>
+            )}
+
+            {/* Error Cards Widget */}
+            {totalErrorCards > 0 && (
+                <div className="widget flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-accent-orange" />
+                    <div>
+                        <p className="text-sm font-bold">{totalErrorCards} {t('dashboard.myErrors', 'Mis errores')}</p>
+                        {dueErrorCards.length > 0 && (
+                            <p className="text-xs text-text-muted">{dueErrorCards.length} {t('dashboard.errorsDue', 'errores pendientes')}</p>
+                        )}
+                    </div>
+                </div>
             )}
 
             {/* Quick Stats (mobile only) */}
