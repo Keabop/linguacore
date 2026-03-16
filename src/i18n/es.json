@@ -32,7 +32,9 @@
     "goToPath": "Ir a la ruta",
     "continue": "Continuar",
     "grammarSkills": "Habilidades de gramática",
-    "grammarDue": "gramática pendiente"
+    "grammarDue": "gramática pendiente",
+    "myErrors": "Mis errores",
+    "errorsDue": "errores pendientes"
   },
   "reader": {
     "tapToTranslate": "Toca una palabra para ver su traducción",
@@ -116,7 +118,9 @@
     "pressEnter": "Presiona Enter para enviar",
     "finish": "Finalizar",
     "next": "Siguiente",
-    "remaining": "restantes"
+    "remaining": "restantes",
+    "myErrors": "Mis errores",
+    "errorsDue": "errores pendientes"
   },
   "progress": {
     "title": "Tu progreso",
