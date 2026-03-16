@@ -7,6 +7,7 @@ import { chatWithTutor, type ConversationMessage, type ConversationResponse } fr
 import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AIErrorCard from '../components/AIErrorCard';
+import { useErrorCards } from '../hooks/useErrorCards';
 
 interface ChatBubble {
     role: 'user' | 'assistant';
@@ -20,6 +21,7 @@ export default function ConversationTutor() {
     const navigate = useNavigate();
     const { user } = useLevelProgression();
     const { sessions, saveSession } = useConversationHistory();
+    const { addErrorCard } = useErrorCards();
 
     const [messages, setMessages] = useState<ChatBubble[]>([]);
     const [apiMessages, setApiMessages] = useState<ConversationMessage[]>([]);
@@ -72,6 +74,16 @@ export default function ConversationTutor() {
                 corrections: response.corrections,
                 suggestions: response.suggestions,
             }]);
+            // Extract corrections as error cards
+            if (response.corrections && response.corrections.length > 0) {
+                for (const c of response.corrections) {
+                    addErrorCard({
+                        original: c.original,
+                        corrected: c.corrected,
+                        explanation: c.explanation,
+                    }, 'tutor');
+                }
+            }
         } catch (err: any) {
             setError(err.message || t('common.error'));
         } finally {
