@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { PenLine, Mic, Sparkles, Loader2, History, Save, Eye, CheckCircle2 } from 'lucide-react';
+import { PenLine, Mic, Sparkles, Loader2, History, Save, Eye, CheckCircle2, ArrowLeft } from 'lucide-react';
 import AIErrorCard from '../components/AIErrorCard';
 import type { CEFRLevel } from '../lib/db';
 import { useLevelProgression } from '../hooks/useLevelProgression';
@@ -16,9 +16,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 type Tab = 'writing' | 'speaking';
 
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
+const FREE_TOPIC = '__FREE_TOPIC__';
 
 const WRITING_TOPICS: Record<string, string[]> = {
     A1: [
+        FREE_TOPIC,
         'Describe your family in 3-4 sentences.',
         'Write about your daily routine.',
         'Describe your favorite food.',
@@ -26,6 +28,7 @@ const WRITING_TOPICS: Record<string, string[]> = {
         'Describe your house or apartment.',
     ],
     A2: [
+        FREE_TOPIC,
         'Write about your last vacation.',
         'Describe what you did last weekend.',
         'Write about your favorite hobby.',
@@ -33,6 +36,7 @@ const WRITING_TOPICS: Record<string, string[]> = {
         'Write about a special celebration you attended.',
     ],
     B1: [
+        FREE_TOPIC,
         'Write a short opinion about social media.',
         'Describe a challenge you overcame.',
         'Write about a book or movie you enjoyed.',
@@ -40,6 +44,7 @@ const WRITING_TOPICS: Record<string, string[]> = {
         'Write about a skill you would like to learn and why.',
     ],
     B2: [
+        FREE_TOPIC,
         'Discuss the pros and cons of remote work.',
         'Write about how technology has changed education.',
         'Describe a cultural difference you find interesting.',
@@ -75,27 +80,51 @@ export default function Practice() {
     const { t } = useTranslation();
     const { user } = useLevelProgression();
     const [tab, setTab] = useState<Tab>('writing');
-    const [level, setLevel] = useState<CEFRLevel>(user?.currentLevel ?? 'A1');
+    const [selectedLevel, setSelectedLevel] = useState<CEFRLevel | null>(null);
+
+    const levelLabel = (l: CEFRLevel) =>
+        l === 'A1' ? 'Principiante' : l === 'A2' ? 'Básico' : l === 'B1' ? 'Intermedio' : 'Avanzado';
+
+    if (!selectedLevel) {
+        return (
+            <div className="space-y-12">
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+                    <h1 className="text-3xl font-extrabold">Práctica libre</h1>
+                    <p className="text-text-secondary text-sm mt-1">Practica tu escritura y habla cuando quieras.</p>
+                </motion.div>
+                <div className="grid grid-cols-2 gap-4">
+                    {LEVELS.map((l, i) => (
+                        <motion.button
+                            key={l}
+                            onClick={() => setSelectedLevel(l)}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="bg-bg-card border border-border rounded-2xl p-6 hover:border-primary/40 hover:bg-bg-card-hover transition-all text-center space-y-2"
+                        >
+                            <span className="text-3xl font-extrabold text-primary">{l}</span>
+                            <p className="text-xs text-text-muted">{levelLabel(l)}</p>
+                        </motion.button>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-12">
-            {/* Header */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-                <h1 className="text-3xl font-extrabold">Práctica libre</h1>
-                <p className="text-text-secondary text-sm mt-1">Practica tu escritura y habla cuando quieras.</p>
+        <div className="space-y-8">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
+                <button
+                    onClick={() => setSelectedLevel(null)}
+                    className="p-2 rounded-lg bg-bg-card border border-border hover:bg-bg-card-hover transition-all"
+                >
+                    <ArrowLeft className="w-4 h-4 text-text-secondary" />
+                </button>
+                <div>
+                    <h1 className="text-2xl font-extrabold">Práctica libre</h1>
+                    <span className="text-xs font-bold text-primary">{selectedLevel} — {levelLabel(selectedLevel)}</span>
+                </div>
             </motion.div>
-
-            {/* Level selector */}
-            <div className="flex gap-4">
-                {LEVELS.map(l => (
-                    <button key={l} onClick={() => setLevel(l)}
-                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${level === l ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
-                        {l}
-                    </button>
-                ))}
-            </div>
-
-            {/* Tabs */}
             <div className="flex gap-4">
                 <button onClick={() => setTab('writing')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${tab === 'writing' ? 'bg-primary text-white' : 'bg-bg-card border border-border text-text-secondary hover:text-white'}`}>
@@ -106,13 +135,11 @@ export default function Practice() {
                     <Mic className="w-4 h-4" /> Habla
                 </button>
             </div>
-
-            {/* Content */}
-            <motion.div key={`${tab}-${level}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+            <motion.div key={`${tab}-${selectedLevel}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
                 {tab === 'writing' ? (
-                    <WritingPractice level={level} />
+                    <WritingPractice level={selectedLevel} />
                 ) : (
-                    <SpeakingPractice level={level} />
+                    <SpeakingPractice level={selectedLevel} />
                 )}
             </motion.div>
         </div>
@@ -152,7 +179,10 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
     const handleSelectTopic = (topic: string) => {
-        setSelectedTopic(topic);
+        const actualTopic = topic === FREE_TOPIC
+            ? `Free writing: write about any topic you choose. Evaluate at CEFR ${level} level.`
+            : topic;
+        setSelectedTopic(actualTopic);
         setText('');
         setPhase('writing');
         setFeedback(null);
@@ -219,8 +249,18 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                 {topics.map((topic, i) => (
                     <motion.button key={i} onClick={() => handleSelectTopic(topic)}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                        className="w-full text-left bg-bg-card border border-border rounded-xl p-5 hover:border-primary/30 hover:bg-bg-card-hover transition-all">
-                        <p className="text-sm text-white">{topic}</p>
+                        className={`w-full text-left bg-bg-card border rounded-xl p-5 hover:border-primary/30 hover:bg-bg-card-hover transition-all ${topic === FREE_TOPIC ? 'border-dashed border-primary/20' : 'border-border'}`}>
+                        {topic === FREE_TOPIC ? (
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="w-5 h-5 text-primary flex-shrink-0" />
+                                <div>
+                                    <p className="text-sm font-semibold">Tema libre</p>
+                                    <p className="text-xs text-text-muted">Escribe sobre lo que quieras</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm">{topic}</p>
+                        )}
                     </motion.button>
                 ))}
 
@@ -245,7 +285,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                                             });
                                         }}
                                         className="w-full text-left bg-bg-card border border-border rounded-xl p-4 hover:border-primary/30 transition-all space-y-2">
-                                        <div className="flex justify-between items-center">
+                                        <div className="flex flex-wrap justify-between items-center gap-2">
                                             <span className="text-xs text-text-muted">
                                                 {new Date(entry.submitted_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                             </span>
@@ -255,9 +295,9 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                                                 'bg-accent-red/10 text-accent-red'
                                             }`}>{entry.score}%</span>
                                         </div>
-                                        <p className="text-sm text-white truncate">{entry.user_text}</p>
+                                        <p className="text-sm truncate break-all">{entry.user_text}</p>
                                         <p className="text-xs text-accent-blue flex items-center gap-1">
-                                            <Eye className="w-3 h-3" /> {t('practice.viewFeedback')}
+                                            <Eye className="w-3 h-3 flex-shrink-0" /> {t('practice.viewFeedback')}
                                         </p>
                                     </button>
                                 ))}
