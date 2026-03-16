@@ -59,6 +59,26 @@ export interface SkillCard {
     lastReview: Date | undefined;
 }
 
+export interface ErrorCard {
+    id: string;
+    errorPattern: string;
+    originalSentence: string;
+    correctedSentence: string;
+    explanation: string;
+    errorType: 'grammar' | 'vocabulary' | 'spelling' | 'style';
+    source: 'tutor' | 'writing' | 'unit';
+    exampleVariants: string[];
+    state: CardState;
+    due: Date;
+    stability: number;
+    difficulty: number;
+    elapsedDays: number;
+    scheduledDays: number;
+    reps: number;
+    lapses: number;
+    lastReview?: Date;
+}
+
 export interface SkillExercise {
     type: ExerciseType;
     prompt: string;
