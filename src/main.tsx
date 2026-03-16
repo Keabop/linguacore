@@ -4,6 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import App from './App';
 import { AuthProvider } from './lib/AuthContext';
+import { ThemeProvider } from './lib/ThemeContext';
 import { createIdbPersister } from './lib/queryPersister';
 import './i18n/config';
 import './index.css';
@@ -33,9 +34,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 maxAge: 1000 * 60 * 60 * 24 * 7,   // 7 days
             }}
         >
-            <AuthProvider>
-                <App />
-            </AuthProvider>
+            <ThemeProvider>
+                <AuthProvider>
+                    <App />
+                </AuthProvider>
+            </ThemeProvider>
         </PersistQueryClientProvider>
     </React.StrictMode>,
 );

@@ -63,6 +63,65 @@
     --gradient-b2: linear-gradient(135deg, #7F1D1D 0%, #EF4444 100%);
 }
 
+/* ===== LIGHT THEME OVERRIDES ===== */
+.light {
+    /* Backgrounds — clean whites/grays maintaining warmth */
+    --color-bg-app: #F8F8FC;
+    --color-bg-sidebar: #FFFFFF;
+    --color-bg-card: #FFFFFF;
+    --color-bg-card-hover: #F3F3F8;
+    --color-bg-elevated: #EEEEF4;
+
+    /* Legacy compat */
+    --color-bg: #F8F8FC;
+    --color-bg-secondary: #FFFFFF;
+    --color-surface: #FFFFFF;
+    --color-surface-hover: #F3F3F8;
+    --color-surface-light: #E4E4EC;
+
+    /* Primary — keep indigo, slightly deeper for contrast on white */
+    --color-primary: #5B5DF0;
+    --color-primary-light: #7577F5;
+    --color-primary-dark: #4845DB;
+    --color-primary-glow: rgba(91, 93, 240, 0.12);
+
+    /* Accents — slightly deeper for contrast on light bg */
+    --color-accent-blue: #3B82F6;
+    --color-accent-orange: #D97706;
+    --color-accent-red: #EF4444;
+    --color-accent-purple: #8B5CF6;
+    --color-accent-gold: #CA8A04;
+    --color-accent-amber: #D97706;
+
+    /* Status — slightly deeper */
+    --color-success: #16A34A;
+    --color-success-light: #22C55E;
+    --color-warning: #D97706;
+    --color-warning-light: #F59E0B;
+    --color-error: #DC2626;
+    --color-error-light: #EF4444;
+
+    /* Text — dark on light */
+    --color-text: #1A1A2E;
+    --color-text-secondary: #64648C;
+    --color-text-muted: #9C9CB8;
+
+    /* Borders — dark-based instead of white-based */
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-border-light: rgba(0, 0, 0, 0.12);
+
+    /* CEFR colors — slightly deeper for light bg */
+    --color-a1: #3B82F6;
+    --color-a2: #16A34A;
+    --color-b1: #D97706;
+    --color-b2: #DC2626;
+
+    /* Story card gradients — same, they look great on light too */
+    --gradient-a1: linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%);
+    --gradient-a2: linear-gradient(135deg, #14532D 0%, #22C55E 100%);
+    --gradient-b1: linear-gradient(135deg, #78350F 0%, #F59E0B 100%);
+    --gradient-b2: linear-gradient(135deg, #7F1D1D 0%, #EF4444 100%);
+}
 
 /* ===== Base styles ===== */
 @layer base {
@@ -541,6 +600,98 @@ span[data-word].in-deck {
         font-size: 1.3rem;
         line-height: 1;
     }
+
+    .light .floating-bar {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(0, 0, 0, 0.08);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .light .floating-bar a {
+        color: var(--color-text-muted);
+    }
+
+    .light .floating-bar a.active {
+        background: rgba(91, 93, 240, 0.1);
+        color: var(--color-primary);
+    }
+}
+
+/* ===== Light mode component overrides ===== */
+.light .nav-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.light .nav-item.active {
+    background: rgba(91, 93, 240, 0.08);
+    color: #1A1A2E;
+}
+
+.light .widget {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.light .story-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.light .story-card:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+.light span[data-word]:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.light span[data-word].in-deck {
+    background: rgba(91, 93, 240, 0.08);
+}
+
+.light .vocab-chip {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.light .vocab-chip:hover {
+    background: rgba(59, 130, 246, 0.12);
+}
+
+.light .vocab-chip.in-deck {
+    background: rgba(91, 93, 240, 0.08);
+    border-color: rgba(91, 93, 240, 0.15);
+}
+
+.light .vocab-chip.known {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.light .mode-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(91, 93, 240, 0.15);
+}
+
+.light .review-input {
+    background: #FFFFFF;
+}
+
+.light .review-input:focus {
+    box-shadow: 0 0 0 3px rgba(91, 93, 240, 0.1);
+}
+
+.light .review-input.correct {
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+.light .review-input.incorrect {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* Scrollbar — light mode */
+.light ::-webkit-scrollbar-thumb {
+    background: rgba(91, 93, 240, 0.12);
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+    background: rgba(91, 93, 240, 0.2);
 }
 
 /* ===== Sileo toast dark theme ===== */
