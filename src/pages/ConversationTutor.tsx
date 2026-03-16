@@ -81,7 +81,7 @@ export default function ConversationTutor() {
                         original: c.original,
                         corrected: c.corrected,
                         explanation: c.explanation,
-                    }, 'tutor');
+                    }, 'tutor', c.example_variants || []);
                 }
             }
         } catch (err: any) {

@@ -50,12 +50,14 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exac
     {
       "original": "what the student wrote wrong",
       "corrected": "the corrected version",
-      "explanation": "Brief explanation in Spanish of the correction"
+      "explanation": "Brief explanation in Spanish of the correction",
+      "example_variants": ["Another correct sentence with the same pattern", "One more correct example"]
     }
   ],
   "suggestions": ["Suggested response option 1", "Suggested response option 2"]
 }
 
+For each correction, include 2 "example_variants": additional correct example sentences demonstrating proper usage of the same pattern the student got wrong.
 If there are no corrections needed, use an empty array for corrections.
 Always provide 2 suggested responses the student could use to continue the conversation.`;
 

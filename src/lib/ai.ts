@@ -146,6 +146,7 @@ export interface ConversationResponse {
         original: string;
         corrected: string;
         explanation: string;
+        example_variants?: string[];
     }>;
     suggestions: string[];
 }
@@ -165,6 +166,7 @@ export interface WritingCorrection {
     corrected: string;
     explanation: string;
     type: 'grammar' | 'vocabulary' | 'spelling' | 'style';
+    example_variants?: string[];
 }
 
 export interface WritingEvaluationResponse {
