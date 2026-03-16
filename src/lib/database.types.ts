@@ -129,6 +129,28 @@ export type ConversationSessionRow = {
     ended_at: string | null;
 };
 
+export type ErrorCardRow = {
+    id: number;
+    user_id: string;
+    error_pattern: string;
+    original_sentence: string;
+    corrected_sentence: string;
+    explanation: string;
+    error_type: 'grammar' | 'vocabulary' | 'spelling' | 'style';
+    source: 'tutor' | 'writing' | 'unit';
+    example_variants: string[];
+    state: number;
+    due: string;
+    stability: number;
+    difficulty: number;
+    elapsed_days: number;
+    scheduled_days: number;
+    reps: number;
+    lapses: number;
+    last_review: string | null;
+    created_at: string;
+};
+
 // Supabase Database type for createClient<Database>
 export type Database = {
     public: {
@@ -197,6 +219,12 @@ export type Database = {
                 Row: ConversationSessionRow;
                 Insert: Omit<ConversationSessionRow, 'id'>;
                 Update: Partial<Omit<ConversationSessionRow, 'id'>>;
+                Relationships: [];
+            };
+            error_cards: {
+                Row: ErrorCardRow;
+                Insert: Omit<ErrorCardRow, 'id' | 'created_at'>;
+                Update: Partial<Omit<ErrorCardRow, 'id' | 'created_at'>>;
                 Relationships: [];
             };
         };
