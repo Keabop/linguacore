@@ -207,7 +207,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                         corrected: c.corrected,
                         explanation: c.explanation,
                         type: c.type,
-                    }, 'writing');
+                    }, 'writing', c.example_variants || []);
                 }
             }
             setPhase('feedback');

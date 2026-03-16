@@ -75,7 +75,8 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exac
       "original": "what the student wrote",
       "corrected": "the corrected version",
       "explanation": "Explicación en español de por qué es incorrecto",
-      "type": "grammar"
+      "type": "grammar",
+      "example_variants": ["Correct example using the same pattern", "Another correct example"]
     }
   ],
   "feedback": {
@@ -87,6 +88,7 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exac
   "encouragement": "Mensaje motivacional en español para el estudiante"
 }
 
+For each correction, include 2 "example_variants": additional correct sentences that demonstrate proper usage of the same pattern.
 If the student's text is perfect or near-perfect, return an empty corrections array and high scores.
 The "improvedVersion" should always be the best version of what the student was trying to say.`;
 
