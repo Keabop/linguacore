@@ -36,7 +36,7 @@ export function useSubscription() {
     const manageSubscription = async (action: 'cancel' | 'reactivate') => {
         if (!session?.access_token) throw new Error('No session');
 
-        const res = await fetch('/api/payments/cancel-subscription', {
+        const res = await fetch('/api/payments/create-subscription', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

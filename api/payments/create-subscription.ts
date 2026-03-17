@@ -79,11 +79,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const { plan } = req.body as { plan: 'monthly' | 'annual' };
-
-        if (!plan || !PLANS[plan]) {
-            return res.status(400).json({ error: 'Invalid plan. Must be "monthly" or "annual".' });
-        }
+        const { plan, action } = req.body as {
+            plan?: 'monthly' | 'annual';
+            action?: 'cancel' | 'reactivate';
+        };
 
         const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
         if (!accessToken) {
@@ -93,6 +92,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const client = new MercadoPagoConfig({ accessToken });
         const preApproval = new PreApproval(client);
+
+        // ---------------------------------------------------------------
+        // Cancel / Reactivate existing subscription
+        // ---------------------------------------------------------------
+        if (action) {
+            if (!['cancel', 'reactivate'].includes(action)) {
+                return res.status(400).json({ error: 'Invalid action. Must be "cancel" or "reactivate".' });
+            }
+
+            const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+            const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (!supabaseUrl || !serviceRoleKey) {
+                return res.status(500).json({ error: 'Server configuration error' });
+            }
+
+            const supabase = createClient(supabaseUrl, serviceRoleKey);
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('subscription_id')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile?.subscription_id) {
+                return res.status(400).json({ error: 'No active subscription found' });
+            }
+
+            await preApproval.update({
+                id: profile.subscription_id,
+                body: { status: action === 'cancel' ? 'cancelled' : 'authorized' },
+            });
+
+            await supabase
+                .from('profiles')
+                .update({ subscription_status: action === 'cancel' ? 'cancelled' : 'active' })
+                .eq('id', user.id);
+
+            const resultAction = action === 'cancel' ? 'cancelled' : 'reactivated';
+            return res.status(200).json({ success: true, action: resultAction });
+        }
+
+        // ---------------------------------------------------------------
+        // Create new subscription
+        // ---------------------------------------------------------------
+        if (!plan || !PLANS[plan]) {
+            return res.status(400).json({ error: 'Invalid plan. Must be "monthly" or "annual".' });
+        }
 
         const config = PLANS[plan];
         const backUrl = (process.env.APP_URL || 'https://linguacore-zeta.vercel.app') + '/pricing?status=success';
@@ -114,7 +159,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         return res.status(200).json({ init_point: result.init_point });
     } catch (error: any) {
-        console.error('[Payments] Error creating subscription:', error);
-        return res.status(500).json({ error: 'Failed to create subscription' });
+        console.error('[Payments] Error:', error);
+        return res.status(500).json({ error: 'Failed to process subscription request' });
     }
 }
