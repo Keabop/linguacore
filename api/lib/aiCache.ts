@@ -43,21 +43,21 @@ export async function getCachedResponse(cacheKey: string): Promise<any | null> {
         if (error || !data) return null;
 
         // Fire-and-forget: bump hit_count & last_hit_at
-        sb.from('ai_cache')
-            .select('hit_count')
-            .eq('cache_key', cacheKey)
-            .maybeSingle()
-            .then(({ data: row }) => {
-                if (!row) return;
-                sb.from('ai_cache')
-                    .update({
-                        hit_count: (row.hit_count ?? 0) + 1,
-                        last_hit_at: new Date().toISOString(),
-                    })
-                    .eq('cache_key', cacheKey)
-                    .then(() => {});
-            })
-            .catch(() => {});
+        Promise.resolve(
+            sb.from('ai_cache')
+                .select('hit_count')
+                .eq('cache_key', cacheKey)
+                .maybeSingle()
+        ).then(({ data: row }) => {
+            if (!row) return;
+            sb.from('ai_cache')
+                .update({
+                    hit_count: (row.hit_count ?? 0) + 1,
+                    last_hit_at: new Date().toISOString(),
+                })
+                .eq('cache_key', cacheKey)
+                .then(() => {});
+        }).catch(() => {});
 
         return data.response;
     } catch {
