@@ -57,9 +57,9 @@ export default defineConfig({
                 ],
             },
             manifest: {
-                name: 'LinguaCore - Aprende Inglés',
-                short_name: 'LinguaCore',
-                description: 'Aprende inglés con historias interactivas y repetición espaciada',
+                name: 'Voxie',
+                short_name: 'Voxie',
+                description: 'Aprende inglés con IA',
                 lang: 'es',
                 theme_color: '#6366f1',
                 background_color: '#0f0f23',

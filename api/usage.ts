@@ -7,6 +7,8 @@ import { getUserTier, getAllLimitsForUser } from './lib/usageLimits.js';
 // ---------------------------------------------------------------------------
 const ALLOWED_ORIGINS = [
     'https://linguacore-zeta.vercel.app',
+    'https://voxie.lat',
+    'https://www.voxie.lat',
     'http://localhost:5173',
     'http://localhost:4173',
 ];
