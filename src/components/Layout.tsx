@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
-import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, LogOut, Sun, Moon } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, LogOut, Sun, Moon, User } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import OfflineBanner from './OfflineBanner';
@@ -190,7 +190,7 @@ export default function Layout() {
             {/* ===== FLOATING BOTTOM BAR (Mobile) ===== */}
             {!/^\/learn\/.+/.test(location.pathname) && (
                 <nav ref={scrollRef} className="floating-bar">
-                    {navItems.map(item => (
+                    {navItems.filter(i => i.path !== '/stats').map(item => (
                         <NavLink
                             key={item.path}
                             to={item.path}
@@ -202,6 +202,16 @@ export default function Layout() {
                             <span>{t(item.labelKey)}</span>
                         </NavLink>
                     ))}
+                    {/* Profile pill — replaces Stats on mobile */}
+                    <NavLink
+                        to="/stats"
+                        className={({ isActive }) =>
+                            `floating-bar-profile ${isActive ? 'active' : ''}`
+                        }
+                    >
+                        <User className="w-5 h-5" />
+                        <span>{t('nav.profile')}</span>
+                    </NavLink>
                 </nav>
             )}
 
