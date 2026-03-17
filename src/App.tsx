@@ -38,6 +38,7 @@ const ConversationTutor = lazyRetry(() => import('./pages/ConversationTutor'));
 const LearningPath = lazyRetry(() => import('./pages/LearningPath'));
 const UnitFlow = lazyRetry(() => import('./pages/UnitFlow'));
 const Practice = lazyRetry(() => import('./pages/Practice'));
+const Pricing = lazyRetry(() => import('./pages/Pricing'));
 
 function SafeRoute({ children }: { children: ReactNode }) {
     const location = useLocation();
@@ -75,6 +76,7 @@ export default function App() {
                     <Route path="/path" element={<SafeRoute><LearningPath /></SafeRoute>} />
                     <Route path="/path/:unitId" element={<SafeRoute><UnitFlow /></SafeRoute>} />
                     <Route path="/practice" element={<SafeRoute><Practice /></SafeRoute>} />
+                    <Route path="/pricing" element={<SafeRoute><Pricing /></SafeRoute>} />
                 </Route>
             </Routes>
             <Toaster
