@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { useTier } from '../hooks/useTier';
+import { supabase } from '../lib/supabase';
 
 const FREE_FEATURES = [
     'Nivel A1 completo (gramática, vocabulario, ejercicios)',
@@ -24,13 +26,47 @@ const PRO_FEATURES = [
     'Evaluaciones de escritura completas',
 ];
 
-function handleSubscribe(plan: 'monthly' | 'annual') {
-    // Placeholder — will be connected to Mercado Pago later
-    console.log(`Subscribe: ${plan}`);
-}
-
 export default function Pricing() {
     const { isPro, isFree } = useTier();
+    const [loading, setLoading] = useState<'monthly' | 'annual' | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    async function handleSubscribe(plan: 'monthly' | 'annual') {
+        setError(null);
+        setLoading(plan);
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) {
+                setError('Debes iniciar sesión para suscribirte.');
+                return;
+            }
+
+            const res = await fetch('/api/payments/create-subscription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ plan }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.error || 'Error al crear la suscripción.');
+                return;
+            }
+
+            if (data.init_point) {
+                window.location.href = data.init_point;
+            }
+        } catch {
+            setError('Error de conexión. Intenta de nuevo.');
+        } finally {
+            setLoading(null);
+        }
+    }
 
     return (
         <motion.div
@@ -92,16 +128,24 @@ export default function Pricing() {
                             <div className="flex flex-col gap-3">
                                 <button
                                     onClick={() => handleSubscribe('monthly')}
-                                    className="w-full cursor-pointer rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                                    disabled={loading !== null}
+                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
+                                    {loading === 'monthly' && <Loader2 className="size-4 animate-spin" />}
                                     Mensual — $129/mes
                                 </button>
                                 <button
                                     onClick={() => handleSubscribe('annual')}
-                                    className="w-full cursor-pointer rounded-xl border border-primary bg-transparent px-4 py-2.5 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
+                                    disabled={loading !== null}
+                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary bg-transparent px-4 py-2.5 text-sm font-semibold text-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
+                                    {loading === 'annual' && <Loader2 className="size-4 animate-spin" />}
                                     Anual — $1,200/año ($100/mes)
                                 </button>
+
+                                {error && (
+                                    <p className="mt-1 text-center text-sm text-red-400">{error}</p>
+                                )}
                             </div>
                         )}
                     </div>
