@@ -83,10 +83,10 @@ export default function Auth() {
                 <div className="flex flex-col items-center mb-12">
                     <img
                         src="/logo.png"
-                        alt="LinguaCore"
+                        alt="Voxie"
                         className="w-20 h-20 rounded-2xl object-cover mb-6"
                     />
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">LinguaCore</h1>
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">Voxie</h1>
                     <p className="text-sm text-text-muted">
                         {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
                     </p>
