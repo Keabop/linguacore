@@ -248,5 +248,41 @@
     "fail": "No has alcanzado el 80%. Repasa y vuelve a intentarlo.",
     "retry": "Reintentar",
     "score": "Tu puntuación: {{score}}%"
+  },
+  "account": {
+    "title": "Mi cuenta",
+    "plan": "Plan",
+    "planFree": "Gratuito",
+    "planPro": "Pro",
+    "planMonthly": "Mensual",
+    "planAnnual": "Anual",
+    "memberSince": "Miembro desde",
+    "nextBilling": "Próximo cobro",
+    "cancelSubscription": "Cancelar suscripción",
+    "reactivateSubscription": "Reactivar suscripción",
+    "upgradeToPro": "Mejorar a Pro",
+    "cancelConfirmTitle": "¿Seguro que deseas cancelar?",
+    "cancelConfirmLose": "Perderás acceso a:",
+    "cancelLoseLevel": "Niveles A2, B1 y B2",
+    "cancelLoseTutor": "Tutor IA ilimitado",
+    "cancelLoseWriting": "Práctica de escritura ilimitada",
+    "cancelLoseStories": "Generación de historias",
+    "cancelAccessUntil": "Tu acceso Pro continúa hasta {{date}}",
+    "cancelKeep": "Mantener Pro",
+    "cancelConfirm": "Sí, cancelar",
+    "cancelSuccess": "Suscripción cancelada. Tu acceso Pro continúa hasta el final del período.",
+    "cancelError": "Error al cancelar. Intenta de nuevo.",
+    "reactivateSuccess": "¡Suscripción reactivada!",
+    "reactivateError": "Error al reactivar. Intenta de nuevo.",
+    "proStats": "Estadísticas avanzadas disponibles con Plan Pro"
+  },
+  "settings": {
+    "title": "Configuración",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "language": "Idioma",
+    "planAndSubscription": "Plan y suscripción",
+    "logout": "Cerrar sesión"
   }
 }
