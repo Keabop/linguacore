@@ -380,7 +380,7 @@ export default function Landing() {
                             <span className="text-3xl font-extrabold text-text">$129</span>
                             <span className="text-sm text-text-muted">/mes</span>
                         </div>
-                        <div className="text-xs text-text-muted mb-6">o $1,200/ano ($100/mes)</div>
+                        <div className="text-xs text-text-muted mb-6">o $1,200/año ($100/mes)</div>
                         <ul className="space-y-3">
                             {PRO_ITEMS.map((item) => (
                                 <li key={item} className="flex items-start gap-2.5 text-sm text-text-secondary">
@@ -433,7 +433,7 @@ export default function Landing() {
                         <span className="text-sm font-bold text-text-muted">Voxie</span>
                     </div>
                     <p className="text-xs text-text-muted">
-                        Hecho en Mexico con IA
+                        © {new Date().getFullYear()} Voxie. Todos los derechos reservados.
                     </p>
                 </div>
             </footer>
