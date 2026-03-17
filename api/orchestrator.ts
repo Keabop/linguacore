@@ -7,6 +7,7 @@ import { chat } from './agents/conversation-tutor.js';
 import { evaluateWriting } from './agents/writing-evaluator.js';
 import type { AgentType } from './lib/gemini.js';
 import { isCacheable, generateCacheKey, getCachedResponse, setCachedResponse } from './lib/aiCache.js';
+import { checkUsageLimit, checkWeeklyLimit, incrementUsage, getUserTier } from './lib/usageLimits.js';
 
 const ALLOWED_ORIGINS = [
     'https://linguacore-zeta.vercel.app',
@@ -75,6 +76,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({ error: 'Unauthorized — valid Supabase session required' });
     }
 
+    // Fetch user tier for per-user usage limits
+    const userTier = await getUserTier(userId);
+
     try {
         const { agent, params } = req.body as { agent: AgentType; params: any };
 
@@ -86,6 +90,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const VALID_AGENTS: AgentType[] = ['story-generator', 'vocab-enricher', 'exercise-creator', 'conversation-tutor', 'writing-evaluator'];
         if (!VALID_AGENTS.includes(agent)) {
             return res.status(400).json({ error: `Unknown agent: ${agent}` });
+        }
+
+        // --- Per-user usage limits (free tier only) ---
+        if (agent === 'conversation-tutor') {
+            const usage = await checkUsageLimit(userId, 'conversation-tutor', userTier);
+            if (!usage.allowed) {
+                return res.status(429).json({
+                    error: 'daily_limit_reached',
+                    message: 'Has alcanzado el límite diario de mensajes del tutor. Actualiza a Pro para uso ilimitado.',
+                    remaining: 0,
+                });
+            }
+        }
+
+        if (agent === 'story-generator') {
+            const usage = await checkWeeklyLimit(userId, 'story-generator', userTier);
+            if (!usage.allowed) {
+                return res.status(429).json({
+                    error: 'weekly_limit_reached',
+                    message: 'Has alcanzado el límite semanal de historias. Actualiza a Pro para uso ilimitado.',
+                    remaining: 0,
+                });
+            }
         }
 
         // --- Cache lookup (cacheable agents only) ---
@@ -125,6 +152,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // --- Cache store (fire-and-forget) ---
         if (cacheKey && isCacheable(agent)) {
             setCachedResponse(cacheKey, agent, cacheKey, result).catch(() => {});
+        }
+
+        // --- Increment usage counter (fire-and-forget) ---
+        if (agent === 'conversation-tutor' || agent === 'story-generator') {
+            incrementUsage(userId, agent).catch(() => {});
         }
 
         return res.status(200).json(result);
