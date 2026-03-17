@@ -57,9 +57,9 @@ export default function Auth() {
                     className="bg-bg-card border border-border rounded-2xl p-8 max-w-sm w-full text-center space-y-4"
                 >
                     <Mail className="w-10 h-10 text-primary mx-auto" />
-                    <h2 className="text-lg font-bold text-white">Revisa tu correo</h2>
+                    <h2 className="text-lg font-bold text-text">Revisa tu correo</h2>
                     <p className="text-sm text-text-muted">
-                        Te enviamos un enlace de confirmación a <span className="text-white font-medium">{email}</span>. Haz clic en el enlace para activar tu cuenta.
+                        Te enviamos un enlace de confirmación a <span className="text-text font-medium">{email}</span>. Haz clic en el enlace para activar tu cuenta.
                     </p>
                     <button
                         onClick={() => { setRegistered(false); setMode('login'); }}
@@ -86,7 +86,7 @@ export default function Auth() {
                         alt="Voxie"
                         className="w-20 h-20 rounded-2xl object-cover mb-6"
                     />
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">Voxie</h1>
+                    <h1 className="text-3xl font-extrabold text-text tracking-tight mb-2">Voxie</h1>
                     <p className="text-sm text-text-muted">
                         {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
                     </p>
@@ -102,7 +102,7 @@ export default function Auth() {
                             onChange={e => setEmail(e.target.value)}
                             placeholder="tu@correo.com"
                             required
-                            className="w-full bg-bg-card border border-border rounded-xl px-5 py-4 text-sm text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                            className="w-full bg-bg-card border border-border rounded-xl px-5 py-4 text-sm text-text placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
                     </div>
 
@@ -115,7 +115,7 @@ export default function Auth() {
                             placeholder="••••••••"
                             required
                             minLength={8}
-                            className="w-full bg-bg-card border border-border rounded-xl px-5 py-4 text-sm text-white placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                            className="w-full bg-bg-card border border-border rounded-xl px-5 py-4 text-sm text-text placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                         />
                     </div>
 
@@ -149,7 +149,7 @@ export default function Auth() {
                 {/* Google OAuth */}
                 <button
                     onClick={signInWithGoogle}
-                    className="w-full bg-bg-card border border-border hover:border-primary/30 text-white font-medium py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-sm mb-8"
+                    className="w-full bg-bg-card border border-border hover:border-primary/30 text-text font-medium py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-sm mb-8"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
