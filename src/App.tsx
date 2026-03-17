@@ -34,7 +34,7 @@ const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
 const StoryList = lazyRetry(() => import('./pages/StoryList'));
 const StoryReader = lazyRetry(() => import('./pages/StoryReader'));
 const ReviewSession = lazyRetry(() => import('./pages/ReviewSession'));
-const Stats = lazyRetry(() => import('./pages/Stats'));
+const Account = lazyRetry(() => import('./pages/Account'));
 const ConversationTutor = lazyRetry(() => import('./pages/ConversationTutor'));
 const LearningPath = lazyRetry(() => import('./pages/LearningPath'));
 const UnitFlow = lazyRetry(() => import('./pages/UnitFlow'));
@@ -81,7 +81,7 @@ export default function App() {
                     <Route path="/learn" element={<SafeRoute><StoryList /></SafeRoute>} />
                     <Route path="/learn/:storyId" element={<SafeRoute><StoryReader /></SafeRoute>} />
                     <Route path="/review" element={<SafeRoute><ReviewSession /></SafeRoute>} />
-                    <Route path="/stats" element={<SafeRoute><Stats /></SafeRoute>} />
+                    <Route path="/account" element={<SafeRoute><Account /></SafeRoute>} />
                     <Route path="/chat" element={<SafeRoute><ConversationTutor /></SafeRoute>} />
                     <Route path="/path" element={<SafeRoute><LearningPath /></SafeRoute>} />
                     <Route path="/path/:unitId" element={<SafeRoute><UnitFlow /></SafeRoute>} />
