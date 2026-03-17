@@ -6,6 +6,7 @@ import { createExercise } from './agents/exercise-creator.js';
 import { chat } from './agents/conversation-tutor.js';
 import { evaluateWriting } from './agents/writing-evaluator.js';
 import type { AgentType } from './lib/gemini.js';
+import { isCacheable, generateCacheKey, getCachedResponse, setCachedResponse } from './lib/aiCache.js';
 
 const ALLOWED_ORIGINS = [
     'https://linguacore-zeta.vercel.app',
@@ -87,6 +88,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: `Unknown agent: ${agent}` });
         }
 
+        // --- Cache lookup (cacheable agents only) ---
+        let cacheKey: string | null = null;
+        if (isCacheable(agent)) {
+            try {
+                cacheKey = generateCacheKey(agent, params);
+                const cached = await getCachedResponse(cacheKey);
+                if (cached) {
+                    return res.status(200).json(cached);
+                }
+            } catch {
+                // Cache miss or failure — continue to agent call
+            }
+        }
+
         let result: any;
 
         switch (agent) {
@@ -105,6 +120,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             case 'writing-evaluator':
                 result = await evaluateWriting(params);
                 break;
+        }
+
+        // --- Cache store (fire-and-forget) ---
+        if (cacheKey && isCacheable(agent)) {
+            setCachedResponse(cacheKey, agent, cacheKey, result).catch(() => {});
         }
 
         return res.status(200).json(result);

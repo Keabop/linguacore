@@ -1,0 +1,93 @@
+import { createHash } from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+import type { AgentType } from './gemini.js';
+
+const CACHEABLE_AGENTS: AgentType[] = [
+    'story-generator',
+    'vocab-enricher',
+    'exercise-creator',
+];
+
+function getSupabaseAdmin() {
+    const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key) return null;
+    return createClient(url, key);
+}
+
+/** Check whether an agent's responses can be cached */
+export function isCacheable(agent: AgentType): boolean {
+    return CACHEABLE_AGENTS.includes(agent);
+}
+
+/** Generate a deterministic SHA-256 cache key from agent name + params (excluding user-specific fields) */
+export function generateCacheKey(agent: AgentType, params: Record<string, any>): string {
+    // Strip user-specific / non-deterministic fields
+    const { messages, userId, user_id, ...cacheable } = params ?? {};
+    const payload = `${agent}:${JSON.stringify(cacheable)}`;
+    return createHash('sha256').update(payload).digest('hex');
+}
+
+/** Look up a cached response. Returns the response object or null. */
+export async function getCachedResponse(cacheKey: string): Promise<any | null> {
+    try {
+        const sb = getSupabaseAdmin();
+        if (!sb) return null;
+
+        const { data, error } = await sb
+            .from('ai_cache')
+            .select('response')
+            .eq('cache_key', cacheKey)
+            .maybeSingle();
+
+        if (error || !data) return null;
+
+        // Fire-and-forget: bump hit_count & last_hit_at
+        sb.from('ai_cache')
+            .select('hit_count')
+            .eq('cache_key', cacheKey)
+            .maybeSingle()
+            .then(({ data: row }) => {
+                if (!row) return;
+                sb.from('ai_cache')
+                    .update({
+                        hit_count: (row.hit_count ?? 0) + 1,
+                        last_hit_at: new Date().toISOString(),
+                    })
+                    .eq('cache_key', cacheKey)
+                    .then(() => {});
+            })
+            .catch(() => {});
+
+        return data.response;
+    } catch {
+        return null;
+    }
+}
+
+/** Store a response in the cache (upsert). */
+export async function setCachedResponse(
+    cacheKey: string,
+    agent: AgentType,
+    paramsHash: string,
+    response: any,
+): Promise<void> {
+    try {
+        const sb = getSupabaseAdmin();
+        if (!sb) return;
+
+        await sb.from('ai_cache').upsert(
+            {
+                cache_key: cacheKey,
+                agent,
+                params_hash: paramsHash,
+                response,
+                hit_count: 0,
+                last_hit_at: new Date().toISOString(),
+            },
+            { onConflict: 'cache_key' },
+        );
+    } catch {
+        // Cache write failure is non-critical — request still succeeds
+    }
+}
