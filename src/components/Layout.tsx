@@ -4,13 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
-import { Home, BookOpen, RefreshCw, BarChart3, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, LogOut, Sun, Moon, User } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, User } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import OfflineBanner from './OfflineBanner';
 import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
-import { useTheme } from '../lib/ThemeContext';
 
 const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/dashboard', icon: Home, labelKey: 'nav.home' },
@@ -19,7 +18,6 @@ const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
     { path: '/practice', icon: PenLine, labelKey: 'nav.practice' },
     { path: '/review', icon: RefreshCw, labelKey: 'nav.review' },
-    { path: '/stats', icon: BarChart3, labelKey: 'nav.stats' },
 ];
 
 
@@ -28,8 +26,7 @@ export default function Layout() {
     const location = useLocation();
     const { progressInfo, user } = useLevelProgression();
     const { dueCards } = useCards();
-    const { signOut } = useAuth();
-    const { theme, toggleTheme } = useTheme();
+    const { user: authUser } = useAuth();
     const syncState = useSyncManager();
     const scrollRef = useRef<HTMLElement>(null);
 
@@ -70,36 +67,26 @@ export default function Layout() {
                     ))}
                 </nav>
 
-                {/* Level badge at bottom */}
-                {progressInfo && (
-                    <div className="mt-auto pt-6 border-t border-border px-2 space-y-4">
-                        <div className="flex items-center gap-3">
-                            <LevelBadge level={progressInfo.currentLevel} size="default" />
-                            <div className="flex-1">
-                                <p className="text-xs text-text-muted mb-2">{t('progress.currentLevel')}</p>
-                                <div className="h-1.5 bg-bg-app rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-primary rounded-full transition-all duration-500"
-                                        style={{ width: `${progressInfo.overallPercent}%` }}
-                                    />
-                                </div>
+                {/* User area at bottom */}
+                {progressInfo && authUser && (
+                    <NavLink
+                        to="/account"
+                        className={({ isActive }) =>
+                            `mt-auto pt-6 border-t border-border px-2 flex items-center gap-3 rounded-xl py-2 transition-colors hover:bg-bg-app/50 ${isActive ? 'bg-bg-app/50' : ''}`
+                        }
+                    >
+                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                            {authUser.email?.charAt(0).toUpperCase() ?? '?'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-text truncate">
+                                {authUser.user_metadata?.full_name || authUser.email?.split('@')[0]}
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                                <LevelBadge level={progressInfo.currentLevel} size="compact" />
                             </div>
                         </div>
-                        <button
-                            onClick={toggleTheme}
-                            className="flex items-center gap-2 text-xs text-text-muted hover:text-text-secondary transition-colors w-full"
-                        >
-                            {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                            {theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}
-                        </button>
-                        <button
-                            onClick={signOut}
-                            className="flex items-center gap-2 text-xs text-text-muted hover:text-red-400 transition-colors w-full"
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                            Cerrar sesión
-                        </button>
-                    </div>
+                    </NavLink>
                 )}
             </aside>
 
@@ -190,7 +177,7 @@ export default function Layout() {
             {/* ===== FLOATING BOTTOM BAR (Mobile) ===== */}
             {!/^\/learn\/.+/.test(location.pathname) && (
                 <nav ref={scrollRef} className="floating-bar">
-                    {navItems.filter(i => i.path !== '/stats').map(item => (
+                    {navItems.map(item => (
                         <NavLink
                             key={item.path}
                             to={item.path}
@@ -204,7 +191,7 @@ export default function Layout() {
                     ))}
                     {/* Profile pill — replaces Stats on mobile */}
                     <NavLink
-                        to="/stats"
+                        to="/account"
                         className={({ isActive }) =>
                             `floating-bar-profile ${isActive ? 'active' : ''}`
                         }
@@ -214,15 +201,6 @@ export default function Layout() {
                     </NavLink>
                 </nav>
             )}
-
-            {/* Theme toggle - visible on mobile only */}
-            <button
-                onClick={toggleTheme}
-                className="fixed top-4 right-4 z-40 p-2 rounded-full bg-bg-card border border-border shadow-lg lg:hidden"
-                aria-label="Toggle theme"
-            >
-                {theme === 'dark' ? <Sun className="w-4 h-4 text-text-secondary" /> : <Moon className="w-4 h-4 text-text-secondary" />}
-            </button>
         </div>
     );
 }
