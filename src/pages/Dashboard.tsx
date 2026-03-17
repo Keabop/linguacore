@@ -18,6 +18,7 @@ import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
 import DBErrorCard from '../components/DBErrorCard';
+import PWAInstallPrompt from '../components/PWAInstallPrompt';
 
 export default function Dashboard() {
     const { t } = useTranslation();
@@ -82,6 +83,8 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-14">
+            <PWAInstallPrompt />
+
             {/* Greeting */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
                 <h1 className="text-3xl font-extrabold leading-tight">{t('dashboard.greeting')}</h1>
