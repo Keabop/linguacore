@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import type { Unit, UnitProgress } from '../lib/db';
 import type { UnitProgressRow } from '../lib/database.types';
 import { getUnitsByLevel } from '../data';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
+import { useTier } from '../hooks/useTier';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
 import SkillBreakdown from '../components/SkillBreakdown';
@@ -19,6 +20,7 @@ import {
     Play,
     Trophy,
     ChevronRight,
+    Crown,
 } from 'lucide-react';
 
 type UnitState = 'locked' | 'current' | 'completed';
@@ -68,9 +70,12 @@ export default function LearningPath() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { progressInfo } = useLevelProgression();
+    const { isPro, isFree } = useTier();
 
     const { user: authUser } = useAuth();
     const currentLevel = progressInfo?.currentLevel ?? 'A1';
+
+    const isLevelAccessible = (level: string) => isPro || level === 'A1';
 
     const units = getUnitsByLevel(currentLevel);
 
@@ -102,8 +107,11 @@ export default function LearningPath() {
 
     const handleUnitClick = (item: UnitWithState) => {
         if (item.state === 'locked') return;
+        if (!isLevelAccessible(item.unit.level)) return;
         navigate(`/path/${item.unit.id}`);
     };
+
+    const levelGated = isFree && !isLevelAccessible(currentLevel);
 
     return (
         <div className="space-y-14">
@@ -117,6 +125,11 @@ export default function LearningPath() {
                 <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-extrabold">{t('path.title')}</h1>
                     <LevelBadge level={currentLevel} />
+                    {levelGated && (
+                        <Link to="/pricing" className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full hover:bg-primary/20 transition-colors">
+                            <Crown className="w-3 h-3" /> Plan Pro
+                        </Link>
+                    )}
                 </div>
             </motion.div>
 
@@ -139,6 +152,7 @@ export default function LearningPath() {
                             total={totalCount}
                             onClick={() => handleUnitClick(item)}
                             t={t}
+                            tierGated={levelGated}
                         />
                     ))}
                 </motion.div>
@@ -196,9 +210,10 @@ interface UnitCardProps {
     total: number;
     onClick: () => void;
     t: (key: string) => string;
+    tierGated?: boolean;
 }
 
-function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
+function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) {
     const { unit, state, progress } = item;
     const isAssessment = unit.isAssessment;
     const isLocked = state === 'locked';
@@ -223,10 +238,12 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
             ? 'border-green-500/20'
             : 'border-border';
 
+    const effectivelyLocked = isLocked || tierGated;
+
     return (
         <motion.div
             variants={itemVariants}
-            className={`relative mx-2 mt-2 mb-10 last:mb-0 ${isLocked ? 'opacity-50' : ''}`}
+            className={`relative mx-2 mt-2 mb-10 last:mb-0 ${effectivelyLocked ? 'opacity-50' : ''}`}
         >
             {/* Timeline node */}
             <div
@@ -246,14 +263,21 @@ function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
 
             {/* Card */}
             <div
-                onClick={onClick}
+                onClick={tierGated ? undefined : onClick}
                 className={`
                     bg-bg-card border rounded-2xl p-5 md:p-7
-                    transition-all duration-200
+                    transition-all duration-200 relative overflow-hidden
                     ${cardBorder}
-                    ${!isLocked ? 'cursor-pointer hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5' : 'cursor-not-allowed'}
+                    ${!effectivelyLocked ? 'cursor-pointer hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5' : 'cursor-not-allowed'}
                 `}
             >
+                {/* Tier gate overlay */}
+                {tierGated && (
+                    <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 rounded-2xl">
+                        <Lock className="w-6 h-6 text-primary" />
+                        <span className="text-xs font-bold text-primary">Plan Pro</span>
+                    </Link>
+                )}
                 <div className="flex items-start justify-between gap-3">
                     {/* Left: content */}
                     <div className="flex-1 min-w-0 pl-[3px] space-y-4">

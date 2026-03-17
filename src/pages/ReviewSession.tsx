@@ -12,16 +12,25 @@ import ClozeReview from '../components/ClozeReview';
 import TranslationReview from '../components/TranslationReview';
 import GrammarReview from '../components/GrammarReview';
 import ErrorReview from '../components/ErrorReview';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen, AlertTriangle } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen, AlertTriangle, Lock } from 'lucide-react';
 import { toast } from '../lib/toast';
+import { useTier } from '../hooks/useTier';
+import { UsageBadge } from '../components/UsageBadge';
 
 export default function ReviewSession() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { dueCards, reviewCard } = useCards();
-    const { dueSkillCards, reviewSkillCard } = useSkillCards();
-    const { dueErrorCards, reviewErrorCard } = useErrorCards();
+    const { isFree, limits } = useTier();
+    const { dueCards: allDueCards, reviewCard } = useCards();
+    const { dueSkillCards: allDueSkillCards, reviewSkillCard } = useSkillCards();
+    const { dueErrorCards: allDueErrorCards, reviewErrorCard } = useErrorCards();
+
+    const cardLimit = isFree ? limits.fsrsCardsPerDay : Infinity;
+    const dueCards = isFree ? allDueCards.slice(0, cardLimit) : allDueCards;
+    const dueSkillCards = isFree ? allDueSkillCards.slice(0, cardLimit) : allDueSkillCards;
+    const dueErrorCards = isFree ? allDueErrorCards.slice(0, cardLimit) : allDueErrorCards;
+    const totalTruncated = (allDueCards.length - dueCards.length) + (allDueSkillCards.length - dueSkillCards.length) + (allDueErrorCards.length - dueErrorCards.length);
     const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
     const [mode, setMode] = useState<ReviewMode | null>(null);
     const [sessionDone, setSessionDone] = useState(false);
@@ -90,6 +99,11 @@ export default function ReviewSession() {
             return (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 py-4">
                     <h2 className="text-xl font-bold text-center">{t('review.chooseType', '¿Qué quieres repasar?')}</h2>
+                    {isFree && (
+                        <div className="flex justify-center">
+                            <UsageBadge remaining={dueCards.length + dueSkillCards.length + dueErrorCards.length} limit={cardLimit} label="repasos hoy" />
+                        </div>
+                    )}
                     <div className="space-y-4">
                         {dueCards.length > 0 && (
                             <button onClick={() => setReviewType('vocab')} className="w-full widget hover:border-primary/50 transition-all text-left space-y-1">
@@ -123,6 +137,17 @@ export default function ReviewSession() {
                                     </div>
                                 </div>
                             </button>
+                        )}
+                        {isFree && totalTruncated > 0 && (
+                            <div className="text-center py-4 space-y-2 border-t border-border mt-2 pt-4">
+                                <p className="text-sm text-text-muted">
+                                    <Lock className="w-3.5 h-3.5 inline mr-1" />
+                                    Tienes {totalTruncated} tarjetas mas. Desbloquea repasos ilimitados con Plan Pro
+                                </p>
+                                <Link to="/pricing" className="text-xs text-primary font-semibold hover:underline">
+                                    Ver Plan Pro
+                                </Link>
+                            </div>
                         )}
                     </div>
                 </motion.div>
@@ -294,6 +319,17 @@ export default function ReviewSession() {
                         <p className="text-[10px] text-text-muted">{t('review.accuracy')}</p>
                     </div>
                 </div>
+                {isFree && totalTruncated > 0 && (
+                    <div className="space-y-2 pt-2">
+                        <p className="text-sm text-text-muted">
+                            <Lock className="w-3.5 h-3.5 inline mr-1" />
+                            Tienes {totalTruncated} tarjetas mas. Desbloquea repasos ilimitados con Plan Pro
+                        </p>
+                        <Link to="/pricing" className="text-sm text-primary font-semibold hover:underline">
+                            Ver Plan Pro
+                        </Link>
+                    </div>
+                )}
                 <button
                     onClick={() => navigate('/')}
                     className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl font-bold transition-all"

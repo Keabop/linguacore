@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import type { CEFRLevel } from '../lib/db';
 import type { ReadStoryRow, KnownWordRow } from '../lib/database.types';
 import { allStories } from '../data';
@@ -9,6 +9,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
+import { useTier } from '../hooks/useTier';
+import { useUsageLimits } from '../hooks/useUsageLimits';
+import { UsageBadge } from '../components/UsageBadge';
 import { Lock, Check, Clock, Sparkles, Loader2, X } from 'lucide-react';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
@@ -21,6 +24,10 @@ export default function StoryList() {
     const { user } = useLevelProgression();
     const { user: authUser } = useAuth();
     const qc = useQueryClient();
+    const { isFree } = useTier();
+    const { data: usage } = useUsageLimits();
+    const storyUsage = usage?.limits['story-generator'];
+    const storyLimitReached = isFree && storyUsage && !storyUsage.allowed;
     const { data: readStories } = useQuery({
         queryKey: ['readStories', authUser?.id],
         queryFn: async () => {
@@ -56,6 +63,7 @@ export default function StoryList() {
 
             setShowAIModal(false);
             setAiTopic('');
+            qc.invalidateQueries({ queryKey: ['usage-limits'] });
             navigate(`/learn/${result.id}`);
         } catch (err: any) {
             setAiError(err.message || t('common.error'));
@@ -72,12 +80,28 @@ export default function StoryList() {
                         <h1 className="text-3xl font-extrabold leading-tight">{t('nav.learn')}</h1>
                         <p className="text-text-secondary leading-relaxed">{t('storyList.subtitle')}</p>
                     </div>
-                    <button
-                        onClick={() => setShowAIModal(true)}
-                        className="bg-gradient-to-r from-accent-blue to-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20"
-                    >
-                        <Sparkles className="w-4 h-4" /> {t('storyList.generateAI')}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {isFree && storyUsage && (
+                            <UsageBadge remaining={storyUsage.remaining} limit={storyUsage.limit} label="historias esta semana" />
+                        )}
+                        {storyLimitReached ? (
+                            <div className="text-right space-y-1">
+                                <p className="text-xs text-text-muted flex items-center gap-1">
+                                    <Lock className="w-3 h-3" /> Ya generaste tu historia de esta semana
+                                </p>
+                                <Link to="/pricing" className="text-[10px] text-primary font-semibold hover:underline">
+                                    Se reinicia el lunes — o desbloquea con Pro
+                                </Link>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setShowAIModal(true)}
+                                className="bg-gradient-to-r from-accent-blue to-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20"
+                            >
+                                <Sparkles className="w-4 h-4" /> {t('storyList.generateAI')}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </motion.div>
 
