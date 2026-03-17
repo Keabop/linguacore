@@ -16,7 +16,7 @@ export default function Auth() {
     const [registered, setRegistered] = useState(false);
 
     // Already logged in → go to dashboard
-    if (!loading && user) return <Navigate to="/" replace />;
+    if (!loading && user) return <Navigate to="/dashboard" replace />;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

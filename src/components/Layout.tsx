@@ -13,7 +13,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/ThemeContext';
 
 const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
-    { path: '/', icon: Home, labelKey: 'nav.home' },
+    { path: '/dashboard', icon: Home, labelKey: 'nav.home' },
     { path: '/path', icon: Map, labelKey: 'nav.path' },
     { path: '/learn', icon: BookOpen, labelKey: 'nav.learn' },
     { path: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },

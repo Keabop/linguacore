@@ -28,6 +28,7 @@ function lazyRetry<T extends ComponentType<any>>(
     });
 }
 
+const Landing = lazyRetry(() => import('./pages/Landing'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
 const StoryList = lazyRetry(() => import('./pages/StoryList'));
@@ -54,20 +55,29 @@ function SafeRoute({ children }: { children: ReactNode }) {
 function RequireAuth({ children }: { children: ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <PageLoader />;
-    if (!user) return <Navigate to="/auth" replace />;
+    if (!user) return <Navigate to="/" replace />;
     return <>{children}</>;
+}
+
+/** Show Landing for guests, redirect authenticated users to /dashboard */
+function SmartHome() {
+    const { user, loading } = useAuth();
+    if (loading) return <PageLoader />;
+    if (user) return <Navigate to="/dashboard" replace />;
+    return <Suspense fallback={<PageLoader />}><Landing /></Suspense>;
 }
 
 export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Public route */}
+                {/* Public routes */}
+                <Route path="/" element={<SmartHome />} />
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>
-                    <Route path="/" element={<SafeRoute><Dashboard /></SafeRoute>} />
+                    <Route path="/dashboard" element={<SafeRoute><Dashboard /></SafeRoute>} />
                     <Route path="/learn" element={<SafeRoute><StoryList /></SafeRoute>} />
                     <Route path="/learn/:storyId" element={<SafeRoute><StoryReader /></SafeRoute>} />
                     <Route path="/review" element={<SafeRoute><ReviewSession /></SafeRoute>} />
