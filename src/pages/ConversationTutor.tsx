@@ -4,10 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useConversationHistory, type ConversationSession } from '../hooks/useConversationHistory';
 import { chatWithTutor, type ConversationMessage, type ConversationResponse } from '../lib/ai';
-import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus, Lock } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import AIErrorCard from '../components/AIErrorCard';
 import { useErrorCards } from '../hooks/useErrorCards';
+import { useTier } from '../hooks/useTier';
+import { useUsageLimits } from '../hooks/useUsageLimits';
+import { UsageBadge } from '../components/UsageBadge';
 
 interface ChatBubble {
     role: 'user' | 'assistant';
@@ -19,9 +23,13 @@ interface ChatBubble {
 export default function ConversationTutor() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { user } = useLevelProgression();
     const { sessions, saveSession } = useConversationHistory();
     const { addErrorCard } = useErrorCards();
+    const { isFree } = useTier();
+    const { data: usage } = useUsageLimits();
+    const tutorUsage = usage?.limits['conversation-tutor'];
 
     const [messages, setMessages] = useState<ChatBubble[]>([]);
     const [apiMessages, setApiMessages] = useState<ConversationMessage[]>([]);
@@ -84,6 +92,8 @@ export default function ConversationTutor() {
                     }, 'tutor', c.example_variants || []);
                 }
             }
+            // Invalidate usage limits so the badge updates
+            queryClient.invalidateQueries({ queryKey: ['usage-limits'] });
         } catch (err: any) {
             setError(err.message || t('common.error'));
         } finally {
@@ -165,7 +175,7 @@ export default function ConversationTutor() {
                         <h3 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
                             <History className="w-4 h-4" /> {t('chat.history')}
                         </h3>
-                        {sessions.map(session => {
+                        {(isFree ? sessions.slice(0, 2) : sessions).map(session => {
                             const msgCount = session.messages.filter(m => m.role === 'user').length;
                             const dateStr = session.startedAt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                             const preview = session.messages.find(m => m.role === 'user')?.content || '';
@@ -182,6 +192,17 @@ export default function ConversationTutor() {
                                 </button>
                             );
                         })}
+                        {isFree && sessions.length > 2 && (
+                            <div className="text-center py-4 space-y-2">
+                                <p className="text-sm text-text-muted">
+                                    <Lock className="w-3.5 h-3.5 inline mr-1" />
+                                    {sessions.length - 2} conversaciones mas disponibles en Plan Pro
+                                </p>
+                                <Link to="/pricing" className="text-xs text-primary font-semibold hover:underline">
+                                    Desbloquear historial completo
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -300,7 +321,12 @@ export default function ConversationTutor() {
                         </div>
                         <div className="space-y-1">
                             <h2 className="font-bold text-base leading-tight">{t('chat.title')}</h2>
-                            <p className="text-xs text-text-muted leading-relaxed">{t('chat.level', { level })}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-xs text-text-muted leading-relaxed">{t('chat.level', { level })}</p>
+                                {isFree && tutorUsage && (
+                                    <UsageBadge remaining={tutorUsage.remaining} limit={tutorUsage.limit} label="mensajes" />
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -401,25 +427,37 @@ export default function ConversationTutor() {
             )}
 
             {/* Input area */}
-            <form onSubmit={handleSubmit} className="flex gap-3 pt-5 border-t border-border shrink-0">
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    placeholder={t('chat.placeholder')}
-                    disabled={isLoading}
-                    className="flex-1 bg-bg-card border border-border rounded-xl px-5 py-3 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors disabled:opacity-50"
-                    autoComplete="off"
-                />
-                <button
-                    type="submit"
-                    disabled={!input.trim() || isLoading}
-                    className="bg-primary hover:bg-primary-dark disabled:opacity-40 text-white px-5 rounded-xl transition-all active:scale-95"
-                >
-                    <Send className="w-4 h-4" />
-                </button>
-            </form>
+            {isFree && tutorUsage && !tutorUsage.allowed ? (
+                <div className="pt-5 border-t border-border shrink-0 text-center space-y-2 py-4">
+                    <p className="text-sm text-text-muted font-medium">
+                        <Lock className="w-4 h-4 inline mr-1.5" />
+                        Has usado tus {tutorUsage.limit} mensajes de hoy
+                    </p>
+                    <Link to="/pricing" className="text-sm text-primary font-semibold hover:underline">
+                        Desbloquea chat ilimitado con Plan Pro
+                    </Link>
+                </div>
+            ) : (
+                <form onSubmit={handleSubmit} className="flex gap-3 pt-5 border-t border-border shrink-0">
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        placeholder={t('chat.placeholder')}
+                        disabled={isLoading}
+                        className="flex-1 bg-bg-card border border-border rounded-xl px-5 py-3 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors disabled:opacity-50"
+                        autoComplete="off"
+                    />
+                    <button
+                        type="submit"
+                        disabled={!input.trim() || isLoading}
+                        className="bg-primary hover:bg-primary-dark disabled:opacity-40 text-white px-5 rounded-xl transition-all active:scale-95"
+                    >
+                        <Send className="w-4 h-4" />
+                    </button>
+                </form>
+            )}
         </div>
     );
 }
