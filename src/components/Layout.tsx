@@ -1,10 +1,9 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
-import { useCards } from '../hooks/useCards';
-import { Home, BookOpen, RefreshCw, Flame, ArrowRight, Brain, MessageCircle, Map, PenLine, User } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import OfflineBanner from './OfflineBanner';
@@ -20,15 +19,54 @@ const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/review', icon: RefreshCw, labelKey: 'nav.review' },
 ];
 
+function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
+    path: string; icon: LucideIcon; labelKey: string; expanded: boolean;
+}) {
+    const { t } = useTranslation();
+    return (
+        <NavLink
+            to={path}
+            className={({ isActive }) =>
+                `rail-item ${isActive ? 'active' : ''}`
+            }
+        >
+            {({ isActive }) => (
+                <>
+                    {isActive && (
+                        <motion.div
+                            layoutId="activeIndicator"
+                            className="absolute -left-3 w-1 h-6 bg-primary rounded-r-full"
+                        />
+                    )}
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
+                        <Icon className="w-5 h-5" />
+                    </div>
+                    <AnimatePresence>
+                        {expanded && (
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0, transition: { duration: 0 } }}
+                                className="text-sm font-semibold whitespace-nowrap"
+                            >
+                                {t(labelKey)}
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+                </>
+            )}
+        </NavLink>
+    );
+}
 
 export default function Layout() {
     const { t } = useTranslation();
     const location = useLocation();
-    const { progressInfo, user } = useLevelProgression();
-    const { dueCards } = useCards();
+    const { progressInfo } = useLevelProgression();
     const { user: authUser } = useAuth();
     const syncState = useSyncManager();
     const scrollRef = useRef<HTMLElement>(null);
+    const [expanded, setExpanded] = useState(false);
 
     // Auto-scroll active nav item into view on route change
     useEffect(() => {
@@ -43,27 +81,43 @@ export default function Layout() {
 
     return (
         <div className="app-layout">
-            {/* ===== LEFT SIDEBAR ===== */}
-            <aside className="sidebar-nav">
+            {/* ===== RAIL SIDEBAR ===== */}
+            <motion.aside
+                className="sidebar-rail"
+                onMouseEnter={() => setExpanded(true)}
+                onMouseLeave={() => setExpanded(false)}
+                animate={{ width: expanded ? 240 : 68 }}
+                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
                 {/* Logo */}
-                <div className="flex items-center gap-3 mb-10 px-2">
-                    <img src="/logo.png" alt="Voxie" className="w-7 h-7 rounded-lg object-cover" />
-                    <span className="text-xl font-extrabold text-text tracking-tight">Voxie</span>
+                <div className="flex items-center px-3 mb-10">
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
+                        <img src="/logo.png" alt="Voxie" className="w-7 h-7 rounded-lg object-cover" />
+                    </div>
+                    <AnimatePresence>
+                        {expanded && (
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0, transition: { duration: 0 } }}
+                                className="ml-3 text-xl font-extrabold text-text tracking-tight"
+                            >
+                                Voxie
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Nav items */}
                 <nav className="flex-1 space-y-1">
                     {navItems.map(item => (
-                        <NavLink
+                        <RailNavItem
                             key={item.path}
-                            to={item.path}
-                            className={({ isActive }) =>
-                                `nav-item ${isActive ? 'active' : ''}`
-                            }
-                        >
-                            <item.icon className="w-5 h-5" />
-                            <span>{t(item.labelKey)}</span>
-                        </NavLink>
+                            path={item.path}
+                            icon={item.icon}
+                            labelKey={item.labelKey}
+                            expanded={expanded}
+                        />
                     ))}
                 </nav>
 
@@ -78,17 +132,26 @@ export default function Layout() {
                         <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
                             {authUser.email?.charAt(0).toUpperCase() ?? '?'}
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-text truncate">
-                                {authUser.user_metadata?.full_name || authUser.email?.split('@')[0]}
-                            </p>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <LevelBadge level={progressInfo.currentLevel} size="compact" />
-                            </div>
-                        </div>
+                        <AnimatePresence>
+                            {expanded && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0, transition: { duration: 0 } }}
+                                    className="flex-1 min-w-0"
+                                >
+                                    <p className="text-sm font-semibold text-text truncate">
+                                        {authUser.user_metadata?.full_name || authUser.email?.split('@')[0]}
+                                    </p>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <LevelBadge level={progressInfo.currentLevel} size="compact" />
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </NavLink>
                 )}
-            </aside>
+            </motion.aside>
 
             {/* ===== MAIN CONTENT ===== */}
             <div className="main-content">
@@ -97,82 +160,16 @@ export default function Layout() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -12 }}
-                            transition={{ duration: 0.2 }}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
+                            transition={{ duration: 0.25 }}
                         >
                             <Outlet />
                         </motion.div>
                     </AnimatePresence>
                 </div>
             </div>
-
-            {/* ===== RIGHT SIDEBAR (Widgets) ===== */}
-            <aside className="sidebar-widgets">
-                {/* Streak widget */}
-                {user && (
-                    <div className="widget">
-                        <div className="widget-title">{t('dashboard.streak')}</div>
-                        <div className="flex items-center gap-4">
-                            <Flame className="w-8 h-8 text-accent-amber" />
-                            <div>
-                                <p className="text-3xl font-extrabold text-accent-amber leading-tight">{user.streak}</p>
-                                <p className="text-xs text-text-muted mt-1">{t('dashboard.days')}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Due cards widget */}
-                <NavLink to="/review" className="block">
-                    <div className={`widget transition-all hover:border-primary/40 ${dueCards.length > 0 ? 'animate-pulse-glow' : ''}`}>
-                        <div className="widget-title">{t('dashboard.dueToday')}</div>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-3xl font-extrabold leading-tight">{dueCards.length}</p>
-                                <p className="text-xs text-text-muted mt-1">{t('dashboard.cards')}</p>
-                            </div>
-                            {dueCards.length > 0 && (
-                                <span className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                                    {t('dashboard.startReview')} <ArrowRight className="w-3 h-3" />
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </NavLink>
-
-                {/* Progress widget — unit-based */}
-                {progressInfo && (
-                    <div className="widget">
-                        <div className="widget-title">{t('progress.title')}</div>
-                        <div className="space-y-6">
-                            <WidgetProgress
-                                label={t('progress.unitsCompleted')}
-                                current={progressInfo.unitsCompleted}
-                                target={progressInfo.unitsTotal}
-                            />
-                            <div className="pt-2">
-                                <div className="flex justify-between text-xs mb-2">
-                                    <span className="text-text-muted">{t('progress.currentLevel')}</span>
-                                    <span className="text-text-secondary font-bold">{progressInfo.overallPercent}%</span>
-                                </div>
-                                <div className="h-2 bg-bg-app rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-primary rounded-full transition-all duration-500"
-                                        style={{ width: `${progressInfo.overallPercent}%` }}
-                                    />
-                                </div>
-                            </div>
-                            {progressInfo.currentUnitId && (
-                                <div className="pt-1 text-xs text-text-muted">
-                                    {t('progress.nextUnit')}: <span className="text-text-secondary font-semibold">{progressInfo.currentUnitId}</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </aside>
 
             {/* ===== FLOATING BOTTOM BAR (Mobile) ===== */}
             {!/^\/learn\/.+/.test(location.pathname) && (
@@ -201,29 +198,6 @@ export default function Layout() {
                     </NavLink>
                 </nav>
             )}
-        </div>
-    );
-}
-
-function WidgetProgress({ label, current, target }: {
-    label: string; current: number; target: number;
-}) {
-    const percent = target > 0 ? Math.min((current / target) * 100, 100) : 0;
-    const met = current >= target;
-    return (
-        <div>
-            <div className="flex justify-between text-xs mb-2">
-                <span className="text-text-secondary">{label}</span>
-                <span className={`font-bold ${met ? 'text-text-secondary' : 'text-text-muted'}`}>
-                    {current}/{target}
-                </span>
-            </div>
-            <div className="h-1.5 bg-bg-app rounded-full overflow-hidden">
-                <div
-                    className={`h-full rounded-full transition-all duration-500 ${met ? 'bg-primary' : 'bg-primary/60'}`}
-                    style={{ width: `${percent}%` }}
-                />
-            </div>
         </div>
     );
 }

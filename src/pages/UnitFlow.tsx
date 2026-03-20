@@ -18,6 +18,7 @@ import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
 import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap } from '../data';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
+import { Particles, SplitText } from '../components/reactbits';
 import { toast } from '../lib/toast';
 import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
@@ -59,29 +60,18 @@ const slideVariants = {
     center: {
         x: 0,
         opacity: 1,
+        transition: { type: 'spring' as const, stiffness: 300, damping: 30 },
     },
     exit: (dir: number) => ({
         x: dir > 0 ? -80 : 80,
         opacity: 0,
+        transition: { duration: 0.2 },
     }),
 };
 
-/* ===== Celebration particles ===== */
+/* ===== Celebration ===== */
 
 function CelebrationCard({ onBack }: { onBack: () => void }) {
-    const particles = useMemo(
-        () =>
-            Array.from({ length: 24 }, (_, i) => ({
-                id: i,
-                x: Math.random() * 100,
-                delay: Math.random() * 0.8,
-                duration: 1.5 + Math.random() * 1.5,
-                size: 4 + Math.random() * 6,
-                color: ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#06b6d4'][i % 5],
-            })),
-        [],
-    );
-
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -89,52 +79,53 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="relative flex flex-col items-center justify-center py-16 overflow-hidden"
         >
-            {/* Confetti particles */}
-            {particles.map(p => (
-                <motion.div
-                    key={p.id}
-                    initial={{ y: -20, x: `${p.x}%`, opacity: 1 }}
-                    animate={{ y: 400, opacity: 0 }}
-                    transition={{
-                        duration: p.duration,
-                        delay: p.delay,
-                        repeat: Infinity,
-                        ease: 'easeIn',
-                    }}
-                    className="absolute top-0 rounded-full"
-                    style={{
-                        left: `${p.x}%`,
-                        width: p.size,
-                        height: p.size,
-                        backgroundColor: p.color,
-                    }}
+            {/* Particles */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <Particles
+                    particleColors={['#6366F1', '#22C55E', '#F59E0B', '#FCD34D']}
+                    particleCount={50}
+                    speed={0.3}
+                    particleBaseSize={60}
+                    alphaParticles={true}
+                    className="w-full h-full"
                 />
-            ))}
+            </div>
 
             <div className="relative z-10 bg-bg-card border border-green-500/30 rounded-2xl p-8 w-full max-w-sm text-center space-y-6 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
                 <motion.div
                     initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                    animate={{ scale: [0, 1.3, 1] }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.2 }}
                 >
-                    <Trophy className="w-16 h-16 text-amber-400 mx-auto" />
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-accent-gold/20 blur-2xl rounded-full animate-pulse" />
+                        <Trophy className="w-16 h-16 text-amber-400 mx-auto relative z-10" />
+                    </div>
                 </motion.div>
 
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-extrabold text-white">
-                        Unidad completada
-                    </h2>
+                    <SplitText
+                        text="¡Unidad completada!"
+                        className="text-2xl font-extrabold text-white"
+                        delay={20}
+                        splitType="chars"
+                        animationFrom={{ opacity: 0, transform: 'translate3d(0,15px,0)' }}
+                        animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+                        tag="h2"
+                    />
                     <p className="text-text-secondary text-sm leading-relaxed">
                         Has completado todos los pasos de esta unidad. Sigue avanzando en tu ruta de aprendizaje.
                     </p>
                 </div>
 
-                <button
-                    onClick={onBack}
-                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
-                >
-                    Volver a la ruta
-                </button>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}>
+                    <button
+                        onClick={onBack}
+                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    >
+                        Volver a la ruta
+                    </button>
+                </motion.div>
             </div>
         </motion.div>
     );
@@ -259,7 +250,6 @@ export default function UnitFlow() {
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
                 >
                     {currentStep === 'grammar' && (
                         <GrammarCard

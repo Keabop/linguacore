@@ -17,6 +17,7 @@ import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen, AlertTriangle, Lock }
 import { toast } from '../lib/toast';
 import { useTier } from '../hooks/useTier';
 import { UsageBadge } from '../components/UsageBadge';
+import { CountUp } from '../components/reactbits';
 
 export default function ReviewSession() {
     const { t } = useTranslation();
@@ -170,11 +171,11 @@ export default function ReviewSession() {
                     <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
                         <div className="widget text-center">
-                            <p className="text-2xl font-extrabold text-accent-blue">{totalReviewed}</p>
+                            <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-extrabold text-accent-blue" />
                             <p className="text-[10px] text-text-muted">{t('review.reviewed')}</p>
                         </div>
                         <div className="widget text-center">
-                            <p className={`text-2xl font-extrabold ${accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`}>{accuracy}%</p>
+                            <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-extrabold ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                             <p className="text-[10px] text-text-muted">{t('review.accuracy')}</p>
                         </div>
                     </div>
@@ -244,11 +245,11 @@ export default function ReviewSession() {
                     <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
                         <div className="widget text-center">
-                            <p className="text-2xl font-extrabold text-accent-blue">{totalReviewed}</p>
+                            <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-extrabold text-accent-blue" />
                             <p className="text-[10px] text-text-muted">{t('review.reviewed')}</p>
                         </div>
                         <div className="widget text-center">
-                            <p className={`text-2xl font-extrabold ${accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`}>{accuracy}%</p>
+                            <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-extrabold ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                             <p className="text-[10px] text-text-muted">{t('review.accuracy')}</p>
                         </div>
                     </div>
@@ -311,11 +312,11 @@ export default function ReviewSession() {
                 <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
                 <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
                     <div className="widget text-center">
-                        <p className="text-2xl font-extrabold text-accent-blue">{totalReviewed}</p>
+                        <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-extrabold text-accent-blue" />
                         <p className="text-[10px] text-text-muted">{t('review.reviewed')}</p>
                     </div>
                     <div className="widget text-center">
-                        <p className={`text-2xl font-extrabold ${accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`}>{accuracy}%</p>
+                        <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-extrabold ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                         <p className="text-[10px] text-text-muted">{t('review.accuracy')}</p>
                     </div>
                 </div>
@@ -381,10 +382,10 @@ export default function ReviewSession() {
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={cardKey}
-                        initial={{ opacity: 0, x: 40 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -40 }}
-                        transition={{ duration: 0.2 }}
+                        initial={{ x: 80, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -80, opacity: 0 }}
+                        transition={{ type: 'spring' as const, stiffness: 300, damping: 30 }}
                     >
                         {mode === 'cloze' ? (
                             <ClozeReview card={currentCard} vocabulary={currentVocab} onResult={handleResult} />

@@ -16,6 +16,7 @@ import { Lock, Check, Clock, Sparkles, Loader2, X } from 'lucide-react';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
 import LevelBadge from '../components/ui/LevelBadge';
+import { SpotlightCard } from '../components/reactbits';
 
 export default function StoryList() {
     const { t } = useTranslation();
@@ -57,14 +58,10 @@ export default function StoryList() {
                 aiTopic || undefined
             );
 
-            // TODO: implement AI story persistence with Supabase
-            // Previously saved to Dexie — skipping DB save for now.
-            // The navigate below will show "story not found" for AI stories until persistence is added.
-
             setShowAIModal(false);
             setAiTopic('');
             qc.invalidateQueries({ queryKey: ['usage-limits'] });
-            navigate(`/learn/${result.id}`);
+            navigate(`/learn/${result.id}`, { state: { aiStory: result } });
         } catch (err: any) {
             setAiError(err.message || t('common.error'));
         } finally {
@@ -187,41 +184,51 @@ export default function StoryList() {
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ delay: li * 0.08 + si * 0.04 }}
-                                        onClick={() => isUnlocked && navigate(`/learn/${story.id}`)}
-                                        className="story-card"
+                                        style={{ perspective: '800px' }}
                                     >
-                                        {/* Mesh gradient banner with SVG icon */}
-                                        <div
-                                            className="story-card-banner relative flex items-center justify-center overflow-hidden"
-                                            style={{ background: getStoryMesh(story.id) }}
+                                        <motion.div
+                                            whileHover={{ rotateX: -3, rotateY: 5, scale: 1.02 }}
+                                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                            onClick={() => isUnlocked && navigate(`/learn/${story.id}`)}
                                         >
-                                            {/* Decorative icon */}
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <StoryIcon storyId={story.id} />
-                                            </div>
+                                            <SpotlightCard
+                                                className="story-card"
+                                                spotlightColor="rgba(99, 102, 241, 0.12)"
+                                            >
+                                                {/* Mesh gradient banner with SVG icon */}
+                                                <div
+                                                    className="story-card-banner relative flex items-center justify-center overflow-hidden"
+                                                    style={{ background: getStoryMesh(story.id) }}
+                                                >
+                                                    {/* Decorative icon */}
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <StoryIcon storyId={story.id} />
+                                                    </div>
 
-                                            {/* AI / Read badge */}
-                                            {story.id.startsWith('ai-') && (
-                                                <span className="absolute top-3 left-3 text-xs bg-primary/80 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
-                                                    <Sparkles className="w-3 h-3" /> AI
-                                                </span>
-                                            )}
-                                            {isRead && (
-                                                <span className="absolute top-3 right-3 text-xs bg-black/30 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
-                                                    <Check className="w-3 h-3" /> {t('storyList.read')}
-                                                </span>
-                                            )}
-                                        </div>
+                                                    {/* AI / Read badge */}
+                                                    {story.id.startsWith('ai-') && (
+                                                        <span className="absolute top-3 left-3 text-xs bg-primary/80 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
+                                                            <Sparkles className="w-3 h-3" /> AI
+                                                        </span>
+                                                    )}
+                                                    {isRead && (
+                                                        <span className="absolute top-3 right-3 text-xs bg-black/30 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
+                                                            <Check className="w-3 h-3" /> {t('storyList.read')}
+                                                        </span>
+                                                    )}
+                                                </div>
 
-                                        {/* Body */}
-                                        <div className="story-card-body space-y-2.5">
-                                            <h3 className="font-bold text-sm line-clamp-2 leading-snug">{story.title}</h3>
-                                            <div className="flex items-center gap-2.5 text-xs text-text-muted">
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
-                                                <span>·</span>
-                                                <span>{story.wordCount} {t('reader.words')}</span>
-                                            </div>
-                                        </div>
+                                                {/* Body */}
+                                                <div className="story-card-body space-y-2.5">
+                                                    <h3 className="font-bold text-sm line-clamp-2 leading-snug">{story.title}</h3>
+                                                    <div className="flex items-center gap-2.5 text-xs text-text-muted">
+                                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
+                                                        <span>·</span>
+                                                        <span>{story.wordCount} {t('reader.words')}</span>
+                                                    </div>
+                                                </div>
+                                            </SpotlightCard>
+                                        </motion.div>
                                     </motion.div>
                                 );
                             })}

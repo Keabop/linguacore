@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
+import Aurora from '../components/reactbits/Aurora';
 
 type Mode = 'login' | 'register';
 
@@ -42,19 +43,21 @@ export default function Auth() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-bg-app flex items-center justify-center">
-                <div className="w-8 h-8 border-3 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+            <div className="min-h-screen bg-bg-app flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 z-0"><Aurora colorStops={["#4F46E5", "#6366F1", "#A78BFA"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
+                <div className="relative z-10 w-8 h-8 border-3 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
             </div>
         );
     }
 
     if (registered) {
         return (
-            <div className="min-h-screen bg-bg-app flex items-center justify-center px-4">
+            <div className="min-h-screen bg-bg-app flex items-center justify-center px-4 relative overflow-hidden">
+                <div className="absolute inset-0 z-0"><Aurora colorStops={["#4F46E5", "#6366F1", "#A78BFA"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-bg-card border border-border rounded-2xl p-8 max-w-sm w-full text-center space-y-4"
+                    className="relative z-10 bg-bg-card border border-border rounded-2xl p-8 max-w-sm w-full text-center space-y-4"
                 >
                     <Mail className="w-10 h-10 text-primary mx-auto" />
                     <h2 className="text-lg font-bold text-text">Revisa tu correo</h2>
@@ -73,11 +76,13 @@ export default function Auth() {
     }
 
     return (
-        <div className="min-h-screen bg-bg-app flex items-center justify-center px-6">
+        <div className="min-h-screen bg-bg-app flex items-center justify-center px-6 relative overflow-hidden">
+            <div className="absolute inset-0 z-0"><Aurora colorStops={["#4F46E5", "#6366F1", "#A78BFA"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-[420px]"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="relative z-10 w-full max-w-[420px]"
             >
                 {/* Logo + Branding */}
                 <div className="flex flex-col items-center mb-12">
