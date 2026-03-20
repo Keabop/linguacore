@@ -35,7 +35,11 @@
     "grammarSkills": "Habilidades de gramática",
     "grammarDue": "gramática pendiente",
     "myErrors": "Mis errores",
-    "errorsDue": "errores pendientes"
+    "errorsDue": "errores pendientes",
+    "greetingDueCards": "Tienes {{count}} tarjetas por repasar",
+    "greetingStreak": "Llevas {{count}} días seguidos",
+    "greetingInactive": "Han pasado {{count}} días desde tu última sesión",
+    "greetingAllDone": "Todo al día — no hay nada pendiente"
   },
   "reader": {
     "tapToTranslate": "Toca una palabra para ver su traducción",

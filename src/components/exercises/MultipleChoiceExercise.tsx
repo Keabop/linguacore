@@ -39,6 +39,14 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
         return 'bg-bg-app border border-border opacity-50';
     };
 
+    const getOptionFeedbackClass = (option: string) => {
+        if (status === 'pending') return '';
+        const isCorrectOption = option.trim().toLowerCase() === exercise.correctAnswer.trim().toLowerCase();
+        if (isCorrectOption) return 'border-flash-correct';
+        if (option === selected && !isCorrectOption) return 'border-flash-incorrect';
+        return '';
+    };
+
     const getOptionIcon = (option: string) => {
         if (status === 'pending') return null;
 
@@ -70,14 +78,14 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                 {exercise.options?.map((option, i) => (
                     <motion.button
                         key={option}
-                        initial={{ opacity: 0, x: -16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.08, type: 'spring', stiffness: 300, damping: 25 }}
                         onClick={() => handleSelect(option)}
                         disabled={status !== 'pending'}
-                        className={`w-full rounded-xl p-5 text-left transition-all flex items-center justify-between gap-3 ${getOptionStyle(option)} ${
+                        className={`relative w-full rounded-xl p-5 text-left transition-all flex items-center justify-between gap-3 ${getOptionStyle(option)} ${
                             status === 'pending' ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
-                        }`}
+                        } ${getOptionFeedbackClass(option)}`}
                     >
                         <span className="text-text-primary font-medium">{option}</span>
                         {getOptionIcon(option)}

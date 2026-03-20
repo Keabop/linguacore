@@ -120,7 +120,7 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                     onChange={e => setAnswer(e.target.value)}
                     placeholder={t('review.fillBlank')}
                     disabled={status !== 'pending'}
-                    className={`review-input ${status === 'correct' ? 'correct' : status === 'incorrect' ? 'incorrect' : ''}`}
+                    className={`review-input ${status === 'correct' ? 'correct border-flash-correct' : status === 'incorrect' ? 'incorrect border-flash-incorrect' : ''}`}
                     autoComplete="off"
                     autoCapitalize="off"
                     spellCheck={false}

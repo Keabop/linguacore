@@ -63,10 +63,12 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
         center: {
             x: 0,
             opacity: 1,
+            transition: { type: 'spring' as const, stiffness: 300, damping: 30 },
         },
         exit: (dir: number) => ({
             x: dir > 0 ? -80 : 80,
             opacity: 0,
+            transition: { duration: 0.2 },
         }),
     };
 
@@ -179,7 +181,6 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
                 >
                     {renderExercise()}
                 </motion.div>

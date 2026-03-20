@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
+import { CountUp } from '../components/reactbits';
 
 const FREE_FEATURES = [
     'Nivel A1 completo (gramática, vocabulario, ejercicios)',
@@ -87,33 +88,50 @@ export default function Pricing() {
                 <div className="rounded-2xl border border-border bg-bg-card p-6">
                     <h2 className="text-xl font-semibold text-text-primary">Gratis</h2>
                     <p className="mt-2 text-2xl font-bold text-text-primary">
-                        $0 <span className="text-base font-normal text-text-muted">— Para siempre</span>
+                        $<CountUp from={0} to={0} duration={1} className="inline" /> <span className="text-base font-normal text-text-muted">— Para siempre</span>
                     </p>
 
                     <ul className="mt-6 space-y-3">
-                        {FREE_FEATURES.map((f) => (
-                            <li key={f} className="flex items-start gap-2 text-sm text-text-muted">
+                        {FREE_FEATURES.map((f, i) => (
+                            <motion.li
+                                key={f}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 + i * 0.05 }}
+                                className="flex items-start gap-2 text-sm text-text-muted"
+                            >
                                 <Check className="mt-0.5 size-4 shrink-0 text-text-muted" />
                                 {f}
-                            </li>
+                            </motion.li>
                         ))}
                     </ul>
                 </div>
 
                 {/* Pro Plan */}
-                <div className="rounded-2xl border-2 border-primary bg-bg-card p-6">
+                <div
+                    className="rounded-2xl border-2 border-primary bg-bg-card p-6"
+                    style={{
+                        boxShadow: '0 0 20px rgba(99, 102, 241, 0.15), 0 0 40px rgba(99, 102, 241, 0.05)',
+                    }}
+                >
                     <h2 className="text-xl font-semibold text-text-primary">Plan Pro</h2>
                     <p className="mt-2 text-2xl font-bold text-text-primary">
-                        $129 <span className="text-base font-normal text-text-muted">MXN/mes</span>
+                        $<CountUp from={0} to={129} duration={1.5} className="inline" /> <span className="text-base font-normal text-text-muted">MXN/mes</span>
                     </p>
-                    <p className="text-sm text-text-muted">o $1,200 MXN/año</p>
+                    <p className="text-sm text-text-muted">o $<CountUp from={0} to={1200} duration={2} separator="," className="inline" /> MXN/año</p>
 
                     <ul className="mt-6 space-y-3">
-                        {PRO_FEATURES.map((f) => (
-                            <li key={f} className="flex items-start gap-2 text-sm text-text-muted">
+                        {PRO_FEATURES.map((f, i) => (
+                            <motion.li
+                                key={f}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 + i * 0.05 }}
+                                className="flex items-start gap-2 text-sm text-text-muted"
+                            >
                                 <Check className="mt-0.5 size-4 shrink-0 text-primary" />
                                 {f}
-                            </li>
+                            </motion.li>
                         ))}
                     </ul>
 

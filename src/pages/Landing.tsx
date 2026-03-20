@@ -9,8 +9,14 @@ import {
     Sparkles,
     ArrowRight,
     Check,
-    Zap,
 } from 'lucide-react';
+
+import Aurora from '../components/reactbits/Aurora';
+import SplitText from '../components/reactbits/SplitText';
+import BlurText from '../components/reactbits/BlurText';
+import SpotlightCard from '../components/reactbits/SpotlightCard';
+import Magnet from '../components/reactbits/Magnet';
+import CountUp from '../components/reactbits/CountUp';
 
 /* ------------------------------------------------------------------ */
 /*  Animation helpers                                                  */
@@ -90,30 +96,82 @@ const PRO_ITEMS = [
     'Evaluacion de escritura completa',
 ];
 
+const HOW_STEPS = [
+    {
+        step: '01',
+        title: 'Crea tu cuenta',
+        desc: 'Registrate gratis en 30 segundos con email o Google. El nivel A1 es tuyo para siempre.',
+    },
+    {
+        step: '02',
+        title: 'Estudia a tu ritmo',
+        desc: 'Lee historias, practica con el tutor, y repasa vocabulario. La IA se adapta a tus errores.',
+    },
+    {
+        step: '03',
+        title: 'Avanza de nivel',
+        desc: 'Completa unidades, pasa evaluaciones y desbloquea niveles del A1 al B2.',
+    },
+];
+
 /* ------------------------------------------------------------------ */
 /*  Components                                                         */
 /* ------------------------------------------------------------------ */
 
-function GlowOrb({ className }: { className: string }) {
+function FeatureCard({ icon: Icon, title, desc, color, bg, i }: typeof FEATURES[0] & { i: number }) {
     return (
-        <div
-            className={`absolute rounded-full blur-[120px] opacity-20 pointer-events-none ${className}`}
-        />
+        <motion.div custom={i} variants={fadeUp}>
+            <SpotlightCard
+                className="h-full bg-bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-6 hover:border-primary/30 transition-all duration-300"
+                spotlightColor="rgba(99, 102, 241, 0.15)"
+            >
+                <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-4`}>
+                    <Icon className={`w-5 h-5 ${color}`} />
+                </div>
+                <h3 className="text-base font-bold text-text mb-2">{title}</h3>
+                <p className="text-sm text-text-secondary leading-relaxed">{desc}</p>
+            </SpotlightCard>
+        </motion.div>
     );
 }
 
-function FeatureCard({ icon: Icon, title, desc, color, bg, i }: typeof FEATURES[0] & { i: number }) {
+function HowItWorksBlock({
+    step,
+    title,
+    desc,
+    reverse,
+}: {
+    step: string;
+    title: string;
+    desc: string;
+    reverse: boolean;
+}) {
     return (
         <motion.div
-            custom={i}
-            variants={fadeUp}
-            className="group relative bg-bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-6 hover:border-primary/30 transition-all duration-300"
+            initial={{ opacity: 0, x: reverse ? 60 : -60 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className={`flex flex-col md:flex-row items-center gap-8 md:gap-12 ${reverse ? 'md:flex-row-reverse' : ''}`}
         >
-            <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-4`}>
-                <Icon className={`w-5 h-5 ${color}`} />
+            {/* Text side */}
+            <div className="flex-1 text-center md:text-left">
+                <div className="text-5xl font-extrabold text-primary/20 mb-3">{step}</div>
+                <h3 className="text-xl font-bold text-text mb-2">{title}</h3>
+                <p className="text-sm text-text-secondary leading-relaxed max-w-md">{desc}</p>
             </div>
-            <h3 className="text-base font-bold text-text mb-2">{title}</h3>
-            <p className="text-sm text-text-secondary leading-relaxed">{desc}</p>
+
+            {/* Mockup placeholder side */}
+            <div className="flex-1 w-full max-w-sm">
+                <div className="bg-bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 aspect-[4/3] flex items-center justify-center">
+                    <div className="space-y-3 w-full px-4">
+                        <div className="h-3 w-3/4 bg-text/10 rounded" />
+                        <div className="h-3 w-1/2 bg-text/5 rounded" />
+                        <div className="h-8 w-full bg-primary/10 rounded-lg mt-4" />
+                        <div className="h-3 w-2/3 bg-text/5 rounded" />
+                    </div>
+                </div>
+            </div>
         </motion.div>
     );
 }
@@ -124,10 +182,16 @@ function FeatureCard({ icon: Icon, title, desc, color, bg, i }: typeof FEATURES[
 export default function Landing() {
     return (
         <div className="min-h-screen bg-bg-app text-text overflow-x-hidden">
-            {/* Background glows */}
-            <GlowOrb className="w-[600px] h-[600px] bg-primary top-[-200px] left-1/2 -translate-x-1/2" />
-            <GlowOrb className="w-[400px] h-[400px] bg-accent-blue top-[60vh] right-[-100px]" />
-            <GlowOrb className="w-[350px] h-[350px] bg-accent-purple bottom-[20vh] left-[-80px]" />
+            {/* Aurora background */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                <Aurora
+                    colorStops={["#4F46E5", "#6366F1", "#A78BFA"]}
+                    speed={0.3}
+                    blend={0.6}
+                    amplitude={0.8}
+                    className="w-full h-full"
+                />
+            </div>
 
             {/* ─── Navbar ─── */}
             <nav className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
@@ -153,62 +217,53 @@ export default function Landing() {
 
             {/* ─── Hero ─── */}
             <section className="relative z-10 mx-auto max-w-4xl px-6 pt-16 pb-24 text-center">
+                <div className="mb-6">
+                    <SplitText
+                        text="Historias, práctica y AI. Todo lo que necesitas."
+                        splitType="words"
+                        delay={30}
+                        tag="h1"
+                        className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] tracking-tight"
+                    />
+                </div>
+
+                <div className="mb-10">
+                    <BlurText
+                        text="Historias adaptadas, tutor conversacional, y repeticion espaciada. Todo con IA que se adapta a tu nivel y corrige tus errores reales."
+                        delay={80}
+                        className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed"
+                    />
+                </div>
+
                 <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={stagger}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                    className="flex justify-center"
                 >
-                    <motion.div custom={0} variants={fadeUp} className="mb-6">
-                        <span className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary-light text-xs font-bold px-3.5 py-1.5 rounded-full">
-                            <Zap className="w-3 h-3" />
-                            Potenciado por Inteligencia Artificial
-                        </span>
-                    </motion.div>
-
-                    <motion.h1
-                        custom={1}
-                        variants={fadeUp}
-                        className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] tracking-tight mb-6"
-                    >
-                        Aprende ingles{' '}
-                        <span className="bg-gradient-to-r from-primary via-primary-light to-accent-purple bg-clip-text text-transparent">
-                            de verdad
-                        </span>
-                    </motion.h1>
-
-                    <motion.p
-                        custom={2}
-                        variants={fadeUp}
-                        className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed"
-                    >
-                        Historias adaptadas, tutor conversacional, y repeticion espaciada. Todo con IA que se adapta a tu nivel y corrige tus errores reales.
-                    </motion.p>
-
-                    <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <Magnet padding={50}>
                         <Link
                             to="/auth"
-                            className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold text-base px-8 py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold text-base px-8 py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
                             Comenzar gratis
                             <ArrowRight className="w-4 h-4" />
                         </Link>
-                        <a
-                            href="#features"
-                            className="text-sm font-semibold text-text-secondary hover:text-text transition-colors px-6 py-4"
-                        >
-                            Ver caracteristicas
-                        </a>
-                    </motion.div>
+                    </Magnet>
                 </motion.div>
 
-                {/* Hero visual — app preview mockup */}
+                {/* Hero visual — app preview mockup with 3D perspective tilt */}
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
                     className="mt-16 relative"
+                    style={{ perspective: 1200 }}
                 >
-                    <div className="relative mx-auto max-w-3xl rounded-2xl border border-border bg-bg-card/50 backdrop-blur-sm p-2 shadow-2xl shadow-primary/5">
+                    <motion.div
+                        style={{ rotateX: 4 }}
+                        className="relative mx-auto max-w-3xl rounded-2xl border border-border bg-bg-card/50 backdrop-blur-sm p-2 shadow-2xl shadow-primary/5"
+                    >
                         {/* Fake browser bar */}
                         <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
                             <div className="flex gap-1.5">
@@ -253,7 +308,7 @@ export default function Landing() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                     {/* Glow under the card */}
                     <div className="absolute inset-x-0 -bottom-8 h-32 bg-gradient-to-b from-primary/10 to-transparent blur-2xl pointer-events-none" />
                 </motion.div>
@@ -261,21 +316,22 @@ export default function Landing() {
 
             {/* ─── Features ─── */}
             <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                    variants={stagger}
-                    className="text-center mb-16"
-                >
-                    <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-extrabold mb-4">
-                        Todo lo que necesitas para{' '}
-                        <span className="text-primary-light">aprender ingles</span>
-                    </motion.h2>
-                    <motion.p custom={1} variants={fadeUp} className="text-text-secondary text-lg max-w-xl mx-auto">
+                <div className="text-center mb-16">
+                    <BlurText
+                        text="Todo lo que necesitas para aprender ingles"
+                        delay={60}
+                        className="text-3xl sm:text-4xl font-extrabold mb-4"
+                    />
+                    <motion.p
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3, duration: 0.5 }}
+                        className="text-text-secondary text-lg max-w-xl mx-auto"
+                    >
                         Seis herramientas con IA que trabajan juntas para darte la experiencia de aprendizaje mas completa.
                     </motion.p>
-                </motion.div>
+                </div>
 
                 <motion.div
                     initial="hidden"
@@ -290,39 +346,27 @@ export default function Landing() {
                 </motion.div>
             </section>
 
-            {/* ─── How it works ─── */}
-            <section className="relative z-10 mx-auto max-w-4xl px-6 py-24">
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.3 }}
-                    variants={stagger}
-                    className="text-center mb-16"
-                >
-                    <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-extrabold mb-4">
-                        Asi funciona
-                    </motion.h2>
-                </motion.div>
+            {/* ─── How it works — Notion style ─── */}
+            <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
+                <div className="text-center mb-16">
+                    <BlurText
+                        text="Asi funciona"
+                        delay={60}
+                        className="text-3xl sm:text-4xl font-extrabold mb-4"
+                    />
+                </div>
 
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                    variants={stagger}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-8"
-                >
-                    {[
-                        { step: '01', title: 'Crea tu cuenta', desc: 'Registrate gratis en 30 segundos con email o Google. El nivel A1 es tuyo para siempre.' },
-                        { step: '02', title: 'Estudia a tu ritmo', desc: 'Lee historias, practica con el tutor, y repasa vocabulario. La IA se adapta a tus errores.' },
-                        { step: '03', title: 'Avanza de nivel', desc: 'Completa unidades, pasa evaluaciones y desbloquea niveles del A1 al B2.' },
-                    ].map((item, i) => (
-                        <motion.div key={item.step} custom={i} variants={fadeUp} className="text-center">
-                            <div className="text-4xl font-extrabold text-primary/20 mb-3">{item.step}</div>
-                            <h3 className="text-lg font-bold text-text mb-2">{item.title}</h3>
-                            <p className="text-sm text-text-secondary leading-relaxed">{item.desc}</p>
-                        </motion.div>
+                <div className="space-y-16 md:space-y-24">
+                    {HOW_STEPS.map((item, i) => (
+                        <HowItWorksBlock
+                            key={item.step}
+                            step={item.step}
+                            title={item.title}
+                            desc={item.desc}
+                            reverse={i % 2 !== 0}
+                        />
                     ))}
-                </motion.div>
+                </div>
             </section>
 
             {/* ─── Pricing preview ─── */}
@@ -352,14 +396,23 @@ export default function Landing() {
                     {/* Free */}
                     <motion.div custom={0} variants={fadeUp} className="bg-bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-7">
                         <div className="text-sm font-bold text-text-secondary mb-1">Gratis</div>
-                        <div className="text-3xl font-extrabold text-text mb-1">$0</div>
+                        <div className="text-3xl font-extrabold text-text mb-1">
+                            $<CountUp to={0} from={0} duration={1} className="inline" />
+                        </div>
                         <div className="text-xs text-text-muted mb-6">Para siempre</div>
                         <ul className="space-y-3">
-                            {FREE_ITEMS.map((item) => (
-                                <li key={item} className="flex items-start gap-2.5 text-sm text-text-secondary">
+                            {FREE_ITEMS.map((item, idx) => (
+                                <motion.li
+                                    key={item}
+                                    initial={{ opacity: 0, x: -12 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: 0.1 * idx, duration: 0.3 }}
+                                    className="flex items-start gap-2.5 text-sm text-text-secondary"
+                                >
                                     <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
                                     {item}
-                                </li>
+                                </motion.li>
                             ))}
                         </ul>
                         <Link
@@ -371,22 +424,33 @@ export default function Landing() {
                     </motion.div>
 
                     {/* Pro */}
-                    <motion.div custom={1} variants={fadeUp} className="relative bg-bg-card/60 backdrop-blur-sm border border-primary/30 rounded-2xl p-7">
+                    <motion.div custom={1} variants={fadeUp} className="relative bg-bg-card/60 backdrop-blur-sm border border-primary/30 rounded-2xl p-7 pro-glow-border">
                         <div className="absolute -top-3 right-6 bg-primary text-white text-[11px] font-bold px-3 py-1 rounded-full">
                             Recomendado
                         </div>
                         <div className="text-sm font-bold text-primary-light mb-1">Plan Pro</div>
                         <div className="flex items-baseline gap-1 mb-1">
-                            <span className="text-3xl font-extrabold text-text">$129</span>
+                            <span className="text-3xl font-extrabold text-text">
+                                $<CountUp to={129} from={0} duration={2} className="inline" />
+                            </span>
                             <span className="text-sm text-text-muted">/mes</span>
                         </div>
-                        <div className="text-xs text-text-muted mb-6">o $1,200/año ($100/mes)</div>
+                        <div className="text-xs text-text-muted mb-6">
+                            o $<CountUp to={1200} from={0} duration={2.5} separator="," className="inline" />/año ($100/mes)
+                        </div>
                         <ul className="space-y-3">
-                            {PRO_ITEMS.map((item) => (
-                                <li key={item} className="flex items-start gap-2.5 text-sm text-text-secondary">
+                            {PRO_ITEMS.map((item, idx) => (
+                                <motion.li
+                                    key={item}
+                                    initial={{ opacity: 0, x: -12 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: 0.1 * idx, duration: 0.3 }}
+                                    className="flex items-start gap-2.5 text-sm text-text-secondary"
+                                >
                                     <Check className="w-4 h-4 text-primary-light shrink-0 mt-0.5" />
                                     {item}
-                                </li>
+                                </motion.li>
                             ))}
                         </ul>
                         <Link
@@ -437,6 +501,21 @@ export default function Landing() {
                     </p>
                 </div>
             </footer>
+
+            {/* Pro card glow animation */}
+            <style>{`
+                .pro-glow-border {
+                    animation: proGlow 3s ease-in-out infinite alternate;
+                }
+                @keyframes proGlow {
+                    0% {
+                        box-shadow: 0 0 8px rgba(99, 102, 241, 0.15), 0 0 20px rgba(99, 102, 241, 0.05);
+                    }
+                    100% {
+                        box-shadow: 0 0 16px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
+                    }
+                }
+            `}</style>
         </div>
     );
 }
