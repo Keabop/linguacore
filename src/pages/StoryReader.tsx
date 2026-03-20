@@ -1,6 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { getStory, getVocab, getVocabMap } from '../data';
@@ -27,6 +27,7 @@ export default function StoryReader() {
     const { storyId } = useParams<{ storyId: string }>();
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
     const { user: authUser } = useAuth();
     const qc = useQueryClient();
     const { addCard, isWordInDeck, isWordKnown, markAsKnown } = useCards();
@@ -38,7 +39,11 @@ export default function StoryReader() {
     const [completed, setCompleted] = useState(false);
     const [wordStatuses, setWordStatuses] = useState<Map<string, 'deck' | 'known' | 'none'>>(new Map());
 
-    const story = storyId ? getStory(storyId) : undefined;
+    // Check static data first, then fallback to AI story from navigation state
+    const aiStory = (location.state as any)?.aiStory;
+    const staticStory = storyId ? getStory(storyId) : undefined;
+    const story = staticStory ?? (aiStory ? { ...aiStory, level: aiStory.level as any } : undefined);
+    const isAIStory = !staticStory && !!aiStory;
 
     const keywords = useMemo(() => {
         if (!story) return [];
@@ -47,8 +52,15 @@ export default function StoryReader() {
 
     const vocabMap = useMemo(() => {
         if (!keywords.length) return new Map<string, Vocabulary>();
+        if (isAIStory && aiStory?.vocabulary) {
+            const map = new Map<string, Vocabulary>();
+            for (const v of aiStory.vocabulary) {
+                map.set(v.id, v as Vocabulary);
+            }
+            return map;
+        }
         return getVocabMap(keywords) as Map<string, Vocabulary>;
-    }, [keywords]);
+    }, [keywords, isAIStory, aiStory]);
 
     useEffect(() => {
         if (!keywords.length) return;
@@ -75,7 +87,7 @@ export default function StoryReader() {
         const wordId = target.getAttribute('data-word');
         if (!wordId) return;
 
-        const vocab = getVocab(wordId) as Vocabulary | undefined;
+        const vocab = (isAIStory ? vocabMap.get(wordId) : getVocab(wordId)) as Vocabulary | undefined;
         if (vocab) {
             setSelectedWord(vocab);
             const inDeck = await isWordInDeck(wordId);
@@ -162,40 +174,53 @@ export default function StoryReader() {
     }, [story, addedWords, isWordInDeck]);
 
     if (!story) {
-        return <div className="text-center text-text-muted py-8">{t('common.loading')}</div>;
+        return (
+            <div className="text-center py-12 space-y-4">
+                <p className="text-text-muted">{t('reader.storyNotFound', 'Historia no encontrada')}</p>
+                <button
+                    onClick={() => navigate('/learn')}
+                    className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-medium transition-all"
+                >
+                    {t('reader.backToStories', 'Volver a historias')}
+                </button>
+            </div>
+        );
     }
 
     if (completed) {
         return (
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-12 space-y-4"
-            >
-                <div className="text-7xl">🎉</div>
-                <h2 className="text-2xl font-bold">{t('reader.storyCompleted')}</h2>
-                <p className="text-text-secondary">
-                    {addedWords.size} {t('reader.wordsAdded')}
-                </p>
-                <div className="flex gap-3 justify-center pt-4">
-                    <button
-                        onClick={() => navigate('/learn')}
-                        className="bg-bg-card hover:bg-bg-card-hover text-text px-6 py-3 rounded-xl font-medium transition-all"
-                    >
-                        {t('reader.backToStories')}
-                    </button>
-                    <button
-                        onClick={() => navigate('/review')}
-                        className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-medium transition-all"
-                    >
-                        {t('dashboard.startReview')}
-                    </button>
-                </div>
-            </motion.div>
+            <LazyMotion features={domAnimation}>
+                <m.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-12 space-y-4"
+                >
+                    <div className="text-7xl">🎉</div>
+                    <h2 className="text-2xl font-bold">{t('reader.storyCompleted')}</h2>
+                    <p className="text-text-secondary">
+                        {addedWords.size} {t('reader.wordsAdded')}
+                    </p>
+                    <div className="flex gap-3 justify-center pt-4">
+                        <button
+                            onClick={() => navigate('/learn')}
+                            className="bg-bg-card hover:bg-bg-card-hover text-text px-6 py-3 rounded-xl font-medium transition-all"
+                        >
+                            {t('reader.backToStories')}
+                        </button>
+                        <button
+                            onClick={() => navigate('/review')}
+                            className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-medium transition-all"
+                        >
+                            {t('dashboard.startReview')}
+                        </button>
+                    </div>
+                </m.div>
+            </LazyMotion>
         );
     }
 
     return (
+        <LazyMotion features={domAnimation}>
         <div className="space-y-8">
             {/* Story header */}
             <div className="flex items-center gap-3">
@@ -219,8 +244,12 @@ export default function StoryReader() {
             {/* Story content */}
             <div
                 id="story-content"
+                role="document"
+                tabIndex={0}
                 onClick={handleWordClick}
-                className="widget !p-7 text-lg leading-relaxed tracking-wide"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
+                className="widget !p-7 text-lg leading-relaxed tracking-wide focus:outline-none"
+                // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(story.content, {
                         ALLOWED_TAGS: ['p', 'span', 'br'],
@@ -231,7 +260,7 @@ export default function StoryReader() {
 
             {/* Key vocabulary zone */}
             {keywords.length > 0 && vocabMap && (
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
@@ -260,7 +289,7 @@ export default function StoryReader() {
                             );
                         })}
                     </div>
-                </motion.div>
+                </m.div>
             )}
 
             {/* Complete button */}
@@ -276,14 +305,14 @@ export default function StoryReader() {
                 {selectedWord && (
                     <>
                         {/* Backdrop */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setSelectedWord(null)}
                             className="fixed inset-0 bg-black/40 z-[55]"
                         />
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 30 }}
@@ -345,10 +374,11 @@ export default function StoryReader() {
                                     )}
                                 </div>
                             </div>
-                        </motion.div>
+                        </m.div>
                     </>
                 )}
             </AnimatePresence>
         </div>
+        </LazyMotion>
     );
 }
