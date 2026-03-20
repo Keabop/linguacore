@@ -81,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         const { plan, action } = req.body as {
             plan?: 'monthly' | 'annual';
-            action?: 'cancel' | 'reactivate';
+            action?: 'cancel' | 'reactivate' | 'verify';
         };
 
         const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
@@ -92,6 +92,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const client = new MercadoPagoConfig({ accessToken });
         const preApproval = new PreApproval(client);
+
+        // ---------------------------------------------------------------
+        // Verify subscription (called when user returns from MP checkout)
+        // ---------------------------------------------------------------
+        if (action === 'verify') {
+            const mpRes = await fetch(
+                `https://api.mercadopago.com/preapproval/search?external_reference=${user.id}&sort=date_created&criteria=desc&limit=1`,
+                { headers: { Authorization: `Bearer ${accessToken}` } },
+            );
+
+            if (!mpRes.ok) {
+                console.error('[Verify] MP search failed:', mpRes.status);
+                return res.status(502).json({ error: 'Failed to verify with payment provider' });
+            }
+
+            const mpData = await mpRes.json();
+            const subscription = mpData.results?.[0];
+
+            if (!subscription) {
+                return res.status(200).json({ tier: 'free', subscription_status: 'none' });
+            }
+
+            const mpStatus = subscription.status ?? '';
+            const tier = mpStatus === 'cancelled' ? 'free' : 'pro';
+            const subStatus = mpStatus === 'authorized' ? 'active'
+                : mpStatus === 'paused' ? 'past_due'
+                : mpStatus === 'cancelled' ? 'cancelled' : 'pending';
+
+            const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+            const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (!supabaseUrl || !serviceRoleKey) {
+                return res.status(500).json({ error: 'Server configuration error' });
+            }
+
+            const supabase = createClient(supabaseUrl, serviceRoleKey);
+            const { error: dbError } = await supabase
+                .from('profiles')
+                .update({
+                    tier,
+                    subscription_id: subscription.id?.toString() ?? null,
+                    subscription_status: subStatus,
+                })
+                .eq('id', user.id);
+
+            if (dbError) {
+                console.error('[Verify] DB update failed:', dbError);
+                return res.status(500).json({ error: 'Failed to update profile' });
+            }
+
+            console.log(`[Verify] Updated user ${user.id}: tier=${tier}, status=${subStatus}`);
+            return res.status(200).json({ tier, subscription_status: subStatus });
+        }
 
         // ---------------------------------------------------------------
         // Cancel / Reactivate existing subscription
@@ -140,7 +192,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const config = PLANS[plan];
-        const backUrl = (process.env.APP_URL || 'https://linguacore-zeta.vercel.app') + '/pricing?status=success';
+        const appUrl = process.env.APP_URL || 'https://linguacore-zeta.vercel.app';
+        const backUrl = appUrl + '/pricing?status=success';
+        const notificationUrl = appUrl + '/api/payments/webhook';
 
         const result = await preApproval.create({
             body: {
@@ -152,9 +206,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     currency_id: 'MXN',
                 },
                 back_url: backUrl,
+                notification_url: notificationUrl,
                 payer_email: user.email!,
                 external_reference: user.id,
-            },
+            } as any,
         });
 
         return res.status(200).json({ init_point: result.init_point });

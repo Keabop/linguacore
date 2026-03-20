@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Loader2, PartyPopper } from 'lucide-react';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 import { CountUp } from '../components/reactbits';
 
 const FREE_FEATURES = [
@@ -31,6 +32,51 @@ export default function Pricing() {
     const { isPro, isFree } = useTier();
     const [loading, setLoading] = useState<'monthly' | 'annual' | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [verifying, setVerifying] = useState(false);
+    const [justUpgraded, setJustUpgraded] = useState(false);
+    const qc = useQueryClient();
+
+    // When user returns from Mercado Pago checkout (?status=success),
+    // immediately verify subscription with MP API and update profile
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('status') !== 'success') return;
+
+        // Clean URL
+        window.history.replaceState({}, '', '/pricing');
+
+        async function verifySubscription() {
+            setVerifying(true);
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.access_token) return;
+
+                const res = await fetch('/api/payments/create-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ action: 'verify' }),
+                });
+
+                const data = await res.json();
+                if (res.ok && data.tier === 'pro') {
+                    setJustUpgraded(true);
+                }
+
+                // Refetch tier data so UI updates immediately
+                qc.invalidateQueries({ queryKey: ['profile-tier'] });
+            } catch {
+                // Verification failed silently — webhook will handle it later
+                console.warn('[Pricing] Verify failed, relying on webhook');
+            } finally {
+                setVerifying(false);
+            }
+        }
+
+        verifySubscription();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     async function handleSubscribe(plan: 'monthly' | 'annual') {
         setError(null);
@@ -76,6 +122,28 @@ export default function Pricing() {
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className="mx-auto max-w-4xl px-4 py-10"
         >
+            {/* Verifying banner */}
+            {verifying && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-3 text-sm text-primary"
+                >
+                    <Loader2 className="size-4 animate-spin" /> Verificando tu suscripción...
+                </motion.div>
+            )}
+
+            {/* Just upgraded banner */}
+            {justUpgraded && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mb-6 flex items-center justify-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-sm font-semibold text-green-400"
+                >
+                    <PartyPopper className="size-5" /> ¡Bienvenido a Pro! Tu plan ya está activo.
+                </motion.div>
+            )}
+
             <div className="mb-10 text-center">
                 <h1 className="text-3xl font-bold text-text-primary">Precios</h1>
                 <p className="mt-2 text-text-muted">
