@@ -119,15 +119,15 @@ export default function Dashboard() {
                     className="relative"
                 >
                     <SpotlightCard
-                        className={`bg-bg-card border rounded-2xl p-5 md:p-8 space-y-5 md:space-y-6 ${{
+                        className={`bg-[var(--color-card)] border rounded-2xl p-5 md:p-8 space-y-5 md:space-y-6 ${{
                             A1: 'border-[#60A5FA]/20', A2: 'border-[#4ADE80]/20', B1: 'border-[#FBBF24]/20', B2: 'border-[#F87171]/20'
-                        }[currentLevel] || 'border-primary/20'}`}
-                        spotlightColor={levelSpotlightColor[currentLevel] ?? 'rgba(99, 102, 241, 0.15)'}
+                        }[currentLevel] || 'border-[var(--color-primary)]/20'}`}
+                        spotlightColor={levelSpotlightColor[currentLevel] ?? 'rgba(112, 42, 225, 0.15)'}
                     >
                         {/* Header */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <Map className="w-5 h-5 text-primary" />
+                            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center">
+                                <Map className="w-5 h-5 text-[var(--color-primary)]" />
                             </div>
                             <h2 className="text-lg font-bold">{t('dashboard.continueLearning')}</h2>
                         </div>
@@ -135,13 +135,13 @@ export default function Dashboard() {
                         {allUnitsCompleted ? (
                             /* All completed state */
                             <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-green-400">
+                                <div className="flex items-center gap-3 text-[var(--color-success)]">
                                     <PartyPopper className="w-5 h-5" />
                                     <p className="text-sm font-medium">{t('dashboard.allCompleted')}</p>
                                 </div>
                                 <button
                                     onClick={() => navigate('/path')}
-                                    className="text-sm text-primary font-semibold hover:text-primary-light transition-colors flex items-center gap-1.5"
+                                    className="text-sm text-[var(--color-primary)] font-semibold hover:text-[var(--color-primary-light)] transition-colors flex items-center gap-1.5"
                                 >
                                     {t('dashboard.goToPath')} <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
@@ -152,11 +152,11 @@ export default function Dashboard() {
                                 {/* Unit title + grammar */}
                                 <div className="space-y-1">
                                     <h3 className="font-bold text-base">{firstIncompleteUnit.title}</h3>
-                                    <p className="text-sm text-text-muted">{firstIncompleteUnit.grammarTopic}</p>
+                                    <p className="text-sm text-[var(--color-on-surface-muted)]">{firstIncompleteUnit.grammarTopic}</p>
                                 </div>
 
                                 {/* Mini progress text */}
-                                <p className="text-xs text-text-secondary font-semibold">
+                                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">
                                     {t('dashboard.unitProgress', {
                                         current: unitsCompleted + 1,
                                         total: unitsTotal,
@@ -165,11 +165,11 @@ export default function Dashboard() {
                                 </p>
 
                                 {/* Progress bar */}
-                                <div className="h-2 bg-bg-app rounded-full overflow-hidden">
+                                <div className="progress-bloom">
                                     <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${unitsTotal > 0 ? Math.round((unitsCompleted / unitsTotal) * 100) : 0}%` }}
-                                        className="h-full rounded-full bg-primary"
+                                        className="progress-bloom-fill"
                                         transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
                                     />
                                 </div>
@@ -177,7 +177,7 @@ export default function Dashboard() {
                                 {/* Continue button */}
                                 <button
                                     onClick={() => navigate(`/path/${firstIncompleteUnit.id}`)}
-                                    className="w-full sm:w-auto bg-primary text-white font-bold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mt-3"
+                                    className="btn-primary w-full sm:w-auto px-6 py-3 text-sm flex items-center justify-center gap-2 mt-3"
                                 >
                                     {t('dashboard.continue')}
                                     <ArrowRight className="w-4 h-4" />
@@ -197,21 +197,21 @@ export default function Dashboard() {
                     onClick={() => navigate('/review')}
                     className="cursor-pointer group"
                 >
-                    <SpotlightCard className="story-card" spotlightColor="rgba(99, 102, 241, 0.15)">
-                        <div className="story-card-banner" style={{ height: '130px', background: 'radial-gradient(circle at 30% 30%, rgba(99,102,241,0.12) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(99,102,241,0.08) 0%, transparent 55%), linear-gradient(135deg, #18181B, #27272A)' }}>
+                    <SpotlightCard className="story-card" spotlightColor="rgba(112, 42, 225, 0.15)">
+                        <div className="story-card-banner" style={{ height: '130px', background: 'radial-gradient(circle at 30% 30%, rgba(112,42,225,0.12) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(112,42,225,0.08) 0%, transparent 55%), linear-gradient(135deg, var(--color-primary), var(--color-primary-light))' }}>
                             <div className="space-y-1.5">
-                                <p className="text-sm text-white/70 font-medium">{t('dashboard.dueToday')}</p>
-                                <p className="text-2xl font-extrabold text-white">
-                                    <CountUp from={0} to={dueCards.length} duration={1.5} className="text-2xl font-extrabold text-white inline" /> {t('dashboard.cards')} {t('dashboard.pendingReview')}
+                                <p className="text-sm text-[var(--color-on-primary)]/70 font-medium">{t('dashboard.dueToday')}</p>
+                                <p className="text-2xl font-extrabold text-[var(--color-on-primary)]">
+                                    <CountUp from={0} to={dueCards.length} duration={1.5} className="text-2xl font-extrabold text-[var(--color-on-primary)] inline" /> {t('dashboard.cards')} {t('dashboard.pendingReview')}
                                 </p>
                             </div>
                         </div>
                         <div className="story-card-body flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <RefreshCw className="w-5 h-5 text-text-muted" />
-                                <span className="font-bold text-white group-hover:text-primary transition-colors">{t('dashboard.startReview')}</span>
+                                <RefreshCw className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
+                                <span className="font-bold group-hover:text-[var(--color-primary)] transition-colors">{t('dashboard.startReview')}</span>
                             </div>
-                            <ArrowRight className="w-5 h-5 text-text-muted group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="w-5 h-5 text-[var(--color-on-surface-muted)] group-hover:translate-x-1 transition-transform" />
                         </div>
                     </SpotlightCard>
                 </motion.div>
@@ -224,19 +224,19 @@ export default function Dashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.12 }}
                     onClick={() => navigate('/review')}
-                    className="widget cursor-pointer group hover:border-primary/50 transition-all"
+                    className="widget cursor-pointer group hover:border-[var(--color-primary)]/50 transition-all"
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <BookOpen className="w-5 h-5 text-accent-purple" />
+                            <BookOpen className="w-5 h-5 text-[var(--color-primary-light)]" />
                             <div>
-                                <p className="font-bold group-hover:text-primary transition-colors">
+                                <p className="font-bold group-hover:text-[var(--color-primary)] transition-colors">
                                     {dueSkillCards.length} {t('dashboard.grammarSkills', 'grammar skills')} {t('dashboard.pendingReview')}
                                 </p>
-                                <p className="text-xs text-text-muted mt-1">{t('dashboard.grammarReviewDesc', 'Review your grammar knowledge')}</p>
+                                <p className="text-xs text-[var(--color-on-surface-muted)] mt-1">{t('dashboard.grammarReviewDesc', 'Review your grammar knowledge')}</p>
                             </div>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-text-muted group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-5 h-5 text-[var(--color-on-surface-muted)] group-hover:translate-x-1 transition-transform" />
                     </div>
                 </motion.div>
             )}
@@ -244,11 +244,11 @@ export default function Dashboard() {
             {/* Error Cards Widget */}
             {totalErrorCards > 0 && (
                 <div className="widget flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5 text-accent-orange" />
+                    <AlertTriangle className="w-5 h-5 text-[var(--color-level-b1)]" />
                     <div>
                         <p className="text-sm font-bold">{totalErrorCards} {t('dashboard.myErrors', 'Mis errores')}</p>
                         {dueErrorCards.length > 0 && (
-                            <p className="text-xs text-text-muted">{dueErrorCards.length} {t('dashboard.errorsDue', 'errores pendientes')}</p>
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">{dueErrorCards.length} {t('dashboard.errorsDue', 'errores pendientes')}</p>
                         )}
                     </div>
                 </div>
@@ -261,9 +261,9 @@ export default function Dashboard() {
                 transition={{ delay: 0.15 }}
                 className="grid grid-cols-3 gap-7"
             >
-                <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} color="text-accent-amber" />
-                <QuickStat icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('dashboard.totalCards')} color="text-accent-blue" />
-                <QuickStat icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-accent-purple" />
+                <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} color="text-[var(--color-tertiary)]" />
+                <QuickStat icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('dashboard.totalCards')} color="text-[var(--color-level-a1)]" />
+                <QuickStat icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-[var(--color-primary-light)]" />
             </motion.div>
 
             {/* Recommended Stories */}
@@ -278,7 +278,7 @@ export default function Dashboard() {
                         <h2 className="text-lg font-bold">{t('dashboard.recommended')}</h2>
                         <button
                             onClick={() => navigate('/learn')}
-                            className="text-sm text-primary font-semibold hover:text-primary-light transition-colors flex items-center gap-1.5"
+                            className="text-sm text-[var(--color-primary)] font-semibold hover:text-[var(--color-primary-light)] transition-colors flex items-center gap-1.5"
                         >
                             {t('dashboard.viewAll')} <ArrowRight className="w-3.5 h-3.5" />
                         </button>
@@ -312,7 +312,7 @@ export default function Dashboard() {
                                         </div>
                                         <div className="story-card-body space-y-2.5">
                                             <h3 className="font-bold text-sm leading-snug line-clamp-2">{story.title}</h3>
-                                            <div className="flex items-center gap-2.5 text-xs text-text-muted">
+                                            <div className="flex items-center gap-2.5 text-xs text-[var(--color-on-surface-muted)]">
                                                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
                                                 <span>·</span>
                                                 <span>{story.wordCount} {t('reader.words')}</span>
@@ -339,21 +339,21 @@ export default function Dashboard() {
                         <ProgressItem label={t('progress.unitsCompleted')} current={progressInfo.unitsCompleted} target={progressInfo.unitsTotal} />
                         <div className="pt-3">
                             <div className="flex justify-between text-xs mb-2">
-                                <span className="text-text-muted">{t('progress.currentLevel')}</span>
-                                <span className="text-text-secondary font-bold">{progressInfo.overallPercent}%</span>
+                                <span className="text-[var(--color-on-surface-muted)]">{t('progress.currentLevel')}</span>
+                                <span className="text-[var(--color-on-surface-muted)] font-bold">{progressInfo.overallPercent}%</span>
                             </div>
-                            <div className="h-2 bg-bg-app rounded-full overflow-hidden">
+                            <div className="progress-bloom">
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${progressInfo.overallPercent}%` }}
-                                    className="h-full bg-primary rounded-full"
+                                    className="progress-bloom-fill"
                                     transition={{ duration: 0.8, delay: 0.5 }}
                                 />
                             </div>
                         </div>
                         {progressInfo.currentUnitId && (
-                            <div className="text-xs text-text-muted">
-                                {t('progress.nextUnit')}: <span className="text-text-secondary font-semibold">{progressInfo.currentUnitId}</span>
+                            <div className="text-xs text-[var(--color-on-surface-muted)]">
+                                {t('progress.nextUnit')}: <span className="text-[var(--color-on-surface-muted)] font-semibold">{progressInfo.currentUnitId}</span>
                             </div>
                         )}
                     </div>
@@ -372,7 +372,7 @@ function QuickStat({ icon, value, label, color }: {
         <div className="widget text-center">
             <div className={`flex justify-center ${color}`}>{icon}</div>
             <CountUp from={0} to={value} duration={1.2} className={`text-2xl font-extrabold mt-4 ${color}`} />
-            <p className="text-xs text-text-muted mt-2 leading-relaxed">{label}</p>
+            <p className="text-xs text-[var(--color-on-surface-muted)] mt-2 leading-relaxed">{label}</p>
         </div>
     );
 }
@@ -385,14 +385,14 @@ function ProgressItem({ label, current, target }: {
     return (
         <div>
             <div className="flex justify-between text-xs mb-2">
-                <span className="text-text-secondary">{label}</span>
-                <span className={`font-bold ${met ? 'text-text-secondary' : 'text-text-muted'}`}>
+                <span className="text-[var(--color-on-surface-muted)]">{label}</span>
+                <span className={`font-bold ${met ? 'text-[var(--color-on-surface-muted)]' : 'text-[var(--color-on-surface-muted)]'}`}>
                     {met && <Check className="w-3 h-3 inline mr-1" />}{current}/{target}
                 </span>
             </div>
-            <div className="h-1.5 bg-bg-app rounded-full overflow-hidden">
+            <div className="progress-bloom">
                 <div
-                    className={`h-full rounded-full transition-all duration-500 ${met ? 'bg-primary' : 'bg-primary/60'}`}
+                    className={`progress-bloom-fill transition-all duration-500 ${met ? '' : 'opacity-60'}`}
                     style={{ width: `${pct}%` }}
                 />
             </div>
