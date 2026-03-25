@@ -15,7 +15,7 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ open, onClose }: SettingsModalProps) {
     const { t } = useTranslation();
-    const { theme, toggleTheme } = useTheme();
+    const { mode, toggleMode } = useTheme();
     const { signOut } = useAuth();
     const { subscription, cancelSubscription, reactivateSubscription } = useSubscription();
     const { isPro } = useTier();
@@ -96,14 +96,14 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                 {/* Theme */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        {theme === 'dark' ? <Moon className="w-5 h-5 text-text-muted" /> : <Sun className="w-5 h-5 text-text-muted" />}
+                                        {mode === 'dark' ? <Moon className="w-5 h-5 text-text-muted" /> : <Sun className="w-5 h-5 text-text-muted" />}
                                         <span className="text-sm font-medium text-text">{t('settings.theme')}</span>
                                     </div>
                                     <button
-                                        onClick={toggleTheme}
+                                        onClick={toggleMode}
                                         className="px-3 py-1.5 text-xs font-medium rounded-lg bg-bg-app border border-border text-text-secondary hover:text-text transition-colors"
                                     >
-                                        {theme === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
+                                        {mode === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
                                     </button>
                                 </div>
 
