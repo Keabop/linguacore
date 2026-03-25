@@ -75,7 +75,7 @@ export default function StoryList() {
                 <div className="flex items-center justify-between">
                     <div className="space-y-2">
                         <h1 className="text-3xl font-extrabold leading-tight">{t('nav.learn')}</h1>
-                        <p className="text-text-secondary leading-relaxed">{t('storyList.subtitle')}</p>
+                        <p className="text-[var(--color-on-surface-muted)] leading-relaxed">{t('storyList.subtitle')}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {isFree && storyUsage && (
@@ -83,17 +83,17 @@ export default function StoryList() {
                         )}
                         {storyLimitReached ? (
                             <div className="text-right space-y-1">
-                                <p className="text-xs text-text-muted flex items-center gap-1">
+                                <p className="text-xs text-[var(--color-on-surface-muted)] flex items-center gap-1">
                                     <Lock className="w-3 h-3" /> Ya generaste tu historia de esta semana
                                 </p>
-                                <Link to="/pricing" className="text-[10px] text-primary font-semibold hover:underline">
+                                <Link to="/pricing" className="text-[10px] text-[var(--color-primary)] font-semibold hover:underline">
                                     Se reinicia el lunes — o desbloquea con Pro
                                 </Link>
                             </div>
                         ) : (
                             <button
                                 onClick={() => setShowAIModal(true)}
-                                className="bg-gradient-to-r from-accent-blue to-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20"
+                                className="btn-primary flex items-center gap-2 active:scale-95 shadow-lg shadow-[var(--color-primary)]/20"
                             >
                                 <Sparkles className="w-4 h-4" /> {t('storyList.generateAI')}
                             </button>
@@ -111,16 +111,16 @@ export default function StoryList() {
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="widget border-primary/30 space-y-5">
+                        <div className="widget border-[var(--color-primary)]/30 space-y-5">
                             <div className="flex items-center justify-between">
                                 <h3 className="font-bold flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4 text-primary" /> {t('storyList.aiTitle')}
+                                    <Sparkles className="w-4 h-4 text-[var(--color-primary)]" /> {t('storyList.aiTitle')}
                                 </h3>
-                                <button onClick={() => setShowAIModal(false)} className="text-text-muted hover:text-text">
+                                <button onClick={() => setShowAIModal(false)} className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]">
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
-                            <p className="text-sm text-text-muted leading-relaxed">
+                            <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">
                                 {t('storyList.aiDescription', { level: user.currentLevel })}
                             </p>
                             <input
@@ -128,16 +128,16 @@ export default function StoryList() {
                                 value={aiTopic}
                                 onChange={e => setAiTopic(e.target.value)}
                                 placeholder={t('storyList.aiTopicPlaceholder')}
-                                className="w-full bg-bg-app border border-border rounded-xl px-5 py-3 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors"
+                                className="input-soft w-full"
                                 disabled={aiLoading}
                             />
                             {aiError && (
-                                <p className="text-xs text-accent-red bg-accent-red/10 px-4 py-2 rounded-lg">{aiError}</p>
+                                <p className="text-xs text-[var(--color-error)] bg-[var(--color-error)]/10 px-4 py-2 rounded-lg">{aiError}</p>
                             )}
                             <button
                                 onClick={handleGenerateStory}
                                 disabled={aiLoading}
-                                className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                                className="btn-primary w-full py-3.5 disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {aiLoading ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> {t('storyList.aiGenerating')}</>
@@ -167,7 +167,7 @@ export default function StoryList() {
                         <div className="flex items-center gap-3">
                             <LevelBadge level={level} size="default" />
                             {!isUnlocked && (
-                                <span className="text-text-muted text-sm flex items-center gap-1.5">
+                                <span className="text-[var(--color-on-surface-muted)] text-sm flex items-center gap-1.5">
                                     <Lock className="w-3.5 h-3.5" /> {t('storyList.locked')}
                                 </span>
                             )}
@@ -193,7 +193,7 @@ export default function StoryList() {
                                         >
                                             <SpotlightCard
                                                 className="story-card"
-                                                spotlightColor="rgba(99, 102, 241, 0.12)"
+                                                spotlightColor="rgba(112, 42, 225, 0.12)"
                                             >
                                                 {/* Mesh gradient banner with SVG icon */}
                                                 <div
@@ -207,7 +207,7 @@ export default function StoryList() {
 
                                                     {/* AI / Read badge */}
                                                     {story.id.startsWith('ai-') && (
-                                                        <span className="absolute top-3 left-3 text-xs bg-primary/80 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
+                                                        <span className="absolute top-3 left-3 text-xs bg-[var(--color-primary)]/80 text-[var(--color-on-primary)] px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
                                                             <Sparkles className="w-3 h-3" /> AI
                                                         </span>
                                                     )}
@@ -221,7 +221,7 @@ export default function StoryList() {
                                                 {/* Body */}
                                                 <div className="story-card-body space-y-2.5">
                                                     <h3 className="font-bold text-sm line-clamp-2 leading-snug">{story.title}</h3>
-                                                    <div className="flex items-center gap-2.5 text-xs text-text-muted">
+                                                    <div className="flex items-center gap-2.5 text-xs text-[var(--color-on-surface-muted)]">
                                                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
                                                         <span>·</span>
                                                         <span>{story.wordCount} {t('reader.words')}</span>

@@ -121,12 +121,12 @@ export default function LearningPath() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-4"
             >
-                <Map className="w-6 h-6 text-primary" />
+                <Map className="w-6 h-6 text-[var(--color-primary)]" />
                 <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-extrabold">{t('path.title')}</h1>
                     <LevelBadge level={currentLevel} />
                     {levelGated && (
-                        <Link to="/pricing" className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full hover:bg-primary/20 transition-colors">
+                        <Link to="/pricing" className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2.5 py-1 rounded-full hover:bg-[var(--color-primary)]/20 transition-colors">
                             <Crown className="w-3 h-3" /> Plan Pro
                         </Link>
                     )}
@@ -142,7 +142,7 @@ export default function LearningPath() {
                     className="relative pl-6 md:pl-10"
                 >
                     {/* Connector line */}
-                    <div className="absolute left-[11px] md:left-[19px] top-4 bottom-4 w-[2px] bg-border" />
+                    <div className="absolute left-[11px] md:left-[19px] top-4 bottom-4 w-[2px] bg-[var(--color-outline-subtle)]" />
 
                     {unitsWithState.map((item, index) => (
                         <UnitCard
@@ -163,8 +163,8 @@ export default function LearningPath() {
                     transition={{ delay: 0.1 }}
                     className="widget text-center py-12"
                 >
-                    <BookOpen className="w-10 h-10 text-text-muted mx-auto mb-4" />
-                    <p className="text-text-muted">
+                    <BookOpen className="w-10 h-10 text-[var(--color-on-surface-muted)] mx-auto mb-4" />
+                    <p className="text-[var(--color-on-surface-muted)]">
                         No hay unidades disponibles para el nivel {currentLevel} todav&iacute;a.
                     </p>
                 </motion.div>
@@ -179,19 +179,19 @@ export default function LearningPath() {
                     className="widget"
                 >
                     <div className="flex justify-between text-xs mb-4">
-                        <span className="text-text-muted font-medium uppercase tracking-wide">
+                        <span className="text-[var(--color-on-surface-muted)] font-medium uppercase tracking-wide">
                             Progreso del nivel {currentLevel}
                         </span>
-                        <span className="text-text-secondary font-bold">
+                        <span className="text-[var(--color-on-surface-muted)] font-bold">
                             {completedCount}/{totalCount} &mdash; {levelPercent}%
                         </span>
                     </div>
-                    <div className="h-2.5 bg-bg-app rounded-full overflow-hidden">
+                    <div className="progress-bloom overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${levelPercent}%` }}
-                            className={`h-full rounded-full ${
-                                { A1: 'bg-[#60A5FA]', A2: 'bg-[#4ADE80]', B1: 'bg-[#FBBF24]', B2: 'bg-[#F87171]' }[currentLevel] || 'bg-primary'
+                            className={`progress-bloom-fill ${
+                                { A1: 'bg-[#60A5FA]', A2: 'bg-[#4ADE80]', B1: 'bg-[#FBBF24]', B2: 'bg-[#F87171]' }[currentLevel] || 'bg-[var(--color-primary)]'
                             }`}
                             transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
                         />
@@ -222,21 +222,21 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
 
     // Node dot colors
     const dotClass = isCompleted
-        ? 'bg-green-500 border-green-500/30'
+        ? 'bg-[var(--color-success)] border-[var(--color-success)]/30'
         : isCurrent
             ? isAssessment
-                ? 'bg-amber-500 border-amber-500/30'
-                : 'bg-primary border-primary/30'
-            : 'bg-bg-card border-border';
+                ? 'bg-[var(--color-level-b1)] border-[var(--color-level-b1)]/30'
+                : 'bg-[var(--color-primary)] border-[var(--color-primary)]/30'
+            : 'bg-[var(--color-card)] border-[var(--color-outline-subtle)]';
 
     // Card border styles
     const cardBorder = isCurrent
         ? isAssessment
-            ? 'border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.08)]'
-            : 'border-primary/40 shadow-[0_0_20px_rgba(var(--color-primary-rgb,99,102,241),0.08)]'
+            ? 'border-[var(--color-level-b1)]/40 shadow-[0_0_20px_rgba(251,191,36,0.08)]'
+            : 'border-[var(--color-primary)]/40 shadow-[0_0_20px_rgba(112,42,225,0.08)]'
         : isCompleted
-            ? 'border-green-500/20'
-            : 'border-border';
+            ? 'border-[var(--color-success)]/20'
+            : 'border-[var(--color-outline-subtle)]';
 
     const effectivelyLocked = isLocked || tierGated;
 
@@ -252,8 +252,8 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     w-4 h-4 md:w-5 md:h-5 rounded-full
                     border-[3px] z-10
                     ${dotClass}
-                    ${isCurrent && !isAssessment ? 'ring-4 ring-primary/20 animate-pulse' : ''}
-                    ${isCurrent && isAssessment ? 'ring-4 ring-amber-500/20 animate-pulse' : ''}
+                    ${isCurrent && !isAssessment ? 'ring-4 ring-[var(--color-primary)]/20 animate-pulse' : ''}
+                    ${isCurrent && isAssessment ? 'ring-4 ring-[var(--color-level-b1)]/20 animate-pulse' : ''}
                 `}
             >
                 {isCompleted && (
@@ -265,17 +265,17 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
             <div
                 onClick={tierGated ? undefined : onClick}
                 className={`
-                    bg-bg-card border rounded-2xl p-5 md:p-7
+                    bg-[var(--color-card)] border rounded-2xl p-5 md:p-7
                     transition-all duration-200 relative overflow-hidden
                     ${cardBorder}
-                    ${!effectivelyLocked ? 'cursor-pointer hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5' : 'cursor-not-allowed'}
+                    ${!effectivelyLocked ? 'cursor-pointer hover:border-[var(--color-primary)]/50 hover:shadow-lg hover:-translate-y-0.5' : 'cursor-not-allowed'}
                 `}
             >
                 {/* Tier gate overlay */}
                 {tierGated && (
                     <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 rounded-2xl">
-                        <Lock className="w-6 h-6 text-primary" />
-                        <span className="text-xs font-bold text-primary">Plan Pro</span>
+                        <Lock className="w-6 h-6 text-[var(--color-primary)]" />
+                        <span className="text-xs font-bold text-[var(--color-primary)]">Plan Pro</span>
                     </Link>
                 )}
                 <div className="flex items-start justify-between gap-3">
@@ -285,7 +285,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <span className={`
                                 text-xs font-bold uppercase tracking-wider
-                                ${isAssessment ? 'text-amber-400' : 'text-text-muted'}
+                                ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-on-surface-muted)]'}
                             `}>
                                 {isAssessment
                                     ? t('path.assessment')
@@ -295,7 +295,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
 
                             {/* State pill */}
                             {isCompleted && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-full">
                                     <CheckCircle2 className="w-3 h-3" />
                                     {t('path.completed')}
                                 </span>
@@ -304,8 +304,8 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                                 <span className={`
                                     inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full
                                     ${isAssessment
-                                        ? 'text-amber-400 bg-amber-500/10'
-                                        : 'text-primary bg-primary/10'
+                                        ? 'text-[var(--color-level-b1)] bg-[var(--color-level-b1)]/10'
+                                        : 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
                                     }
                                 `}>
                                     <Play className="w-3 h-3" />
@@ -313,7 +313,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                                 </span>
                             )}
                             {isLocked && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-text-muted bg-white/5 px-2 py-0.5 rounded-full">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--color-on-surface-muted)] bg-[var(--color-surface)] px-2 py-0.5 rounded-full">
                                     <Lock className="w-3 h-3" />
                                     {t('path.locked')}
                                 </span>
@@ -323,13 +323,13 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                         {/* Title */}
                         <h3 className="text-base font-bold leading-snug">
                             {isAssessment && (
-                                <Trophy className="w-4 h-4 inline mr-1.5 text-amber-400 -mt-0.5" />
+                                <Trophy className="w-4 h-4 inline mr-1.5 text-[var(--color-level-b1)] -mt-0.5" />
                             )}
                             {unit.title}
                         </h3>
 
                         {/* Grammar topic */}
-                        <p className="text-sm text-text-muted leading-relaxed">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">
                             {unit.grammarTopic}
                         </p>
 
@@ -352,11 +352,11 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     {/* Right: action icon */}
                     <div className="flex-shrink-0 mt-1">
                         {isLocked ? (
-                            <Lock className="w-5 h-5 text-text-muted" />
+                            <Lock className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
                         ) : isCompleted ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-500" />
+                            <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />
                         ) : (
-                            <ChevronRight className={`w-5 h-5 ${isAssessment ? 'text-amber-400' : 'text-primary'}`} />
+                            <ChevronRight className={`w-5 h-5 ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-primary)]'}`} />
                         )}
                     </div>
                 </div>
@@ -365,11 +365,11 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                 {isCurrent && (
                     <div className={`
                         mt-4 pt-3 border-t
-                        ${isAssessment ? 'border-amber-500/20' : 'border-border'}
+                        ${isAssessment ? 'border-[var(--color-level-b1)]/20' : 'border-[var(--color-outline-subtle)]'}
                     `}>
                         <span className={`
                             text-sm font-semibold flex items-center gap-2
-                            ${isAssessment ? 'text-amber-400' : 'text-primary'}
+                            ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-primary)]'}
                         `}>
                             <Play className="w-4 h-4" />
                             {progress
@@ -390,7 +390,7 @@ function ProgressCheck({ label, done }: { label: string; done: boolean }) {
     return (
         <span className={`
             inline-flex items-center gap-1 text-xs font-medium
-            ${done ? 'text-green-400' : 'text-text-muted'}
+            ${done ? 'text-[var(--color-success)]' : 'text-[var(--color-on-surface-muted)]'}
         `}>
             {done ? (
                 <CheckCircle2 className="w-3.5 h-3.5" />
