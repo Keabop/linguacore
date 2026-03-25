@@ -35,7 +35,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
                     {isActive && (
                         <motion.div
                             layoutId="activeIndicator"
-                            className="absolute -left-3 w-1 h-6 bg-primary rounded-r-full"
+                            className="absolute -left-3 w-1 h-6 bg-[var(--color-primary)] rounded-r-full"
                         />
                     )}
                     <div className="w-10 h-10 flex items-center justify-center shrink-0">
@@ -100,7 +100,7 @@ export default function Layout() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0, transition: { duration: 0 } }}
-                                className="ml-3 text-xl font-extrabold text-text tracking-tight"
+                                className="ml-3 text-xl font-extrabold text-[var(--color-on-surface)] tracking-tight"
                             >
                                 Voxie
                             </motion.span>
@@ -126,10 +126,10 @@ export default function Layout() {
                     <NavLink
                         to="/account"
                         className={({ isActive }) =>
-                            `mt-auto pt-6 border-t border-border px-2 flex items-center gap-3 rounded-xl py-2 transition-colors hover:bg-bg-app/50 ${isActive ? 'bg-bg-app/50' : ''}`
+                            `mt-auto pt-6 border-t border-[var(--color-outline-subtle)] px-2 flex items-center gap-3 rounded-xl py-2 transition-colors hover:bg-[var(--color-surface)] ${isActive ? 'bg-[var(--color-surface)]' : ''}`
                         }
                     >
-                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 flex items-center justify-center text-sm font-bold text-[var(--color-primary)] shrink-0">
                             {authUser.email?.charAt(0).toUpperCase() ?? '?'}
                         </div>
                         <AnimatePresence>
@@ -140,7 +140,7 @@ export default function Layout() {
                                     exit={{ opacity: 0, transition: { duration: 0 } }}
                                     className="flex-1 min-w-0"
                                 >
-                                    <p className="text-sm font-semibold text-text truncate">
+                                    <p className="text-sm font-semibold text-[var(--color-on-surface)] truncate">
                                         {authUser.user_metadata?.full_name || authUser.email?.split('@')[0]}
                                     </p>
                                     <div className="flex items-center gap-1.5 mt-0.5">
