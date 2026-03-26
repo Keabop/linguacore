@@ -33,7 +33,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
     if (card === undefined) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="text-text-muted text-sm">{t('common.loading')}</div>
+                <div className="text-[var(--color-on-surface-muted)] text-sm">{t('common.loading')}</div>
             </div>
         );
     }
@@ -58,7 +58,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     <BookOpen className="w-5 h-5 text-accent-blue" />
                 </div>
                 <div>
-                    <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">
+                    <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-semibold">
                         {t('grammar.title')}
                     </p>
                     <h2 className="text-xl font-extrabold leading-tight">{card.title}</h2>
@@ -66,17 +66,17 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
             </div>
 
             {/* Main card */}
-            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-8">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-7 space-y-8">
                 {/* Explanation (HTML content) */}
                 <div
-                    className="grammar-explanation text-text-secondary text-[0.9375rem] leading-relaxed"
+                    className="grammar-explanation text-[var(--color-on-surface-muted)] text-[0.9375rem] leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: sanitizedExplanation }}
                 />
 
                 {/* Examples */}
                 {card.examples.length > 0 && (
                     <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm font-bold text-text-secondary">
+                        <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface-muted)]">
                             <Lightbulb className="w-4 h-4 text-accent-orange" />
                             <span>Ejemplos</span>
                         </div>
@@ -92,15 +92,15 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                                         initial={{ opacity: 0, x: -8 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.15 + i * 0.06 }}
-                                        className="bg-bg-app/60 border border-border rounded-xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3"
+                                        className="bg-[var(--color-background)]/60 border border-[var(--color-outline-subtle)] rounded-xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3"
                                     >
                                         <span className="font-bold text-accent-blue text-[0.9375rem]">
                                             {english}
                                         </span>
                                         {spanish && (
                                             <>
-                                                <span className="hidden sm:inline text-text-muted">&rarr;</span>
-                                                <span className="text-text-muted text-sm">
+                                                <span className="hidden sm:inline text-[var(--color-on-surface-muted)]">&rarr;</span>
+                                                <span className="text-[var(--color-on-surface-muted)] text-sm">
                                                     {spanish}
                                                 </span>
                                             </>
@@ -115,7 +115,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                 {/* Rules */}
                 {card.rules.length > 0 && (
                     <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm font-bold text-text-secondary">
+                        <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface-muted)]">
                             <CheckCircle2 className="w-4 h-4 text-success" />
                             <span>Reglas clave</span>
                         </div>
@@ -129,7 +129,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                                     className="flex items-start gap-3 text-[0.9375rem]"
                                 >
                                     <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" />
-                                    <span className="text-text-secondary leading-relaxed">{rule}</span>
+                                    <span className="text-[var(--color-on-surface-muted)] leading-relaxed">{rule}</span>
                                 </motion.li>
                             ))}
                         </ul>
@@ -144,7 +144,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                 transition={{ delay: 0.4 }}
                 onClick={handleUnderstood}
                 disabled={saving}
-                className="w-full bg-primary text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:bg-primary-dark disabled:opacity-50"
+                className="w-full bg-[var(--color-primary)] text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:brightness-90 disabled:opacity-50"
             >
                 {saving ? t('common.loading') : t('grammar.understood')}
             </motion.button>

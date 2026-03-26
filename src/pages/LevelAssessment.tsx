@@ -239,12 +239,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 className="flex flex-col items-center justify-center min-h-[40vh] space-y-4"
             >
                 <XCircle className="w-12 h-12 text-red-400" />
-                <p className="text-text-secondary text-center">
+                <p className="text-[var(--color-on-surface-muted)] text-center">
                     No se encontraron ejercicios para esta evaluaci&oacute;n.
                 </p>
                 <button
                     onClick={onComplete}
-                    className="flex items-center gap-2 text-primary font-semibold hover:text-primary-light transition-colors"
+                    className="flex items-center gap-2 text-[var(--color-primary)] font-semibold hover:brightness-110 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Volver a la ruta
@@ -274,20 +274,20 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         {t('assessment.title', { level })}
                     </h1>
 
-                    <p className="text-text-secondary text-base leading-relaxed max-w-sm mx-auto">
+                    <p className="text-[var(--color-on-surface-muted)] text-base leading-relaxed max-w-sm mx-auto">
                         Demuestra tu dominio del nivel {level}. Se evaluar&aacute;n todos
                         los temas de gram&aacute;tica que has estudiado.
                     </p>
                 </div>
 
-                <div className="bg-bg-card border border-border rounded-2xl p-6 w-full max-w-sm space-y-5">
+                <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 w-full max-w-sm space-y-5">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
                             <CheckCircle2 className="w-5 h-5 text-amber-400" />
                         </div>
                         <div>
                             <p className="font-bold text-sm">15–20 ejercicios</p>
-                            <p className="text-xs text-text-muted">Todos los temas del nivel</p>
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">Todos los temas del nivel</p>
                         </div>
                     </div>
 
@@ -297,7 +297,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         </div>
                         <div>
                             <p className="font-bold text-sm">80% para aprobar</p>
-                            <p className="text-xs text-text-muted">
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">
                                 Necesitas al menos 80% de respuestas correctas
                             </p>
                         </div>
@@ -309,7 +309,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         </div>
                         <div>
                             <p className="font-bold text-sm">Desbloquea el siguiente nivel</p>
-                            <p className="text-xs text-text-muted">
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">
                                 {nextLevelMap[level]
                                     ? `Al aprobar, desbloquear\u00e1s el nivel ${nextLevelMap[level]}`
                                     : 'Completa tu dominio del nivel'}
@@ -327,7 +327,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
                 <button
                     onClick={onComplete}
-                    className="flex items-center gap-2 text-text-muted hover:text-text-secondary transition-colors text-sm"
+                    className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors text-sm"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Volver a la ruta
@@ -410,7 +410,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         <h1 className="text-4xl font-extrabold text-amber-400">
                             {t('levelUp.congratulations')}
                         </h1>
-                        <p className="text-text-secondary text-lg">
+                        <p className="text-[var(--color-on-surface-muted)] text-lg">
                             {t('assessment.pass')}
                         </p>
                     </motion.div>
@@ -420,15 +420,15 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="bg-bg-card border border-amber-500/30 rounded-2xl p-6 w-full max-w-sm text-center space-y-5"
+                        className="bg-[var(--color-card)] border border-amber-500/30 rounded-2xl p-6 w-full max-w-sm text-center space-y-5"
                     >
-                        <p className="text-sm text-text-muted uppercase tracking-wider font-medium">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
                             {t('assessment.title', { level })}
                         </p>
                         <p className="text-6xl font-extrabold text-amber-400">
                             {score}%
                         </p>
-                        <p className="text-text-secondary text-sm">
+                        <p className="text-[var(--color-on-surface-muted)] text-sm">
                             {t('assessment.score', { score })}
                         </p>
 
@@ -475,15 +475,15 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                        className="bg-bg-card border border-red-500/30 rounded-2xl p-6 w-full max-w-sm text-center space-y-5"
+                        className="bg-[var(--color-card)] border border-red-500/30 rounded-2xl p-6 w-full max-w-sm text-center space-y-5"
                     >
-                        <p className="text-sm text-text-muted uppercase tracking-wider font-medium">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
                             {t('assessment.title', { level })}
                         </p>
                         <p className="text-6xl font-extrabold text-red-400">
                             {score}%
                         </p>
-                        <p className="text-text-secondary text-sm leading-relaxed">
+                        <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                             {t('assessment.fail')}
                         </p>
                     </motion.div>
@@ -494,9 +494,9 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="bg-bg-card border border-border rounded-2xl p-5 w-full max-w-sm space-y-3"
+                            className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-5 w-full max-w-sm space-y-3"
                         >
-                            <p className="text-sm font-bold text-text-secondary">
+                            <p className="text-sm font-bold text-[var(--color-on-surface-muted)]">
                                 Temas a repasar:
                             </p>
                             <div className="space-y-2">
@@ -506,7 +506,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                                         className="flex items-start gap-2.5 text-sm"
                                     >
                                         <XCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                                        <span className="text-text-secondary leading-snug">
+                                        <span className="text-[var(--color-on-surface-muted)] leading-snug">
                                             {topic.grammarTopic}
                                         </span>
                                     </div>
@@ -532,7 +532,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
                         <button
                             onClick={onComplete}
-                            className="w-full bg-bg-card border border-border hover:border-primary/40 text-text-secondary py-3.5 rounded-xl font-bold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/40 text-[var(--color-on-surface-muted)] py-3.5 rounded-xl font-bold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Volver a la ruta

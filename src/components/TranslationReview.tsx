@@ -65,12 +65,12 @@ export default function TranslationReview({ card, vocabulary, onResult }: Props)
                 animate={{ opacity: 1, y: 0 }}
                 className="widget text-center space-y-2 !py-10"
             >
-                <p className="text-xs text-text-muted uppercase tracking-wider">
+                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">
                     {t('review.translationMode')}
                 </p>
                 <h3 className="text-4xl font-extrabold text-accent-blue">{vocabulary.id}</h3>
                 {vocabulary.phonetic && (
-                    <p className="text-sm text-text-muted">{vocabulary.phonetic}</p>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">{vocabulary.phonetic}</p>
                 )}
             </motion.div>
 
@@ -93,7 +93,7 @@ export default function TranslationReview({ card, vocabulary, onResult }: Props)
                         <button
                             type="submit"
                             disabled={!answer.trim()}
-                            className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-40 text-white py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 disabled:opacity-40 text-white py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
                         >
                             {t('review.check')} ↵
                         </button>
@@ -101,7 +101,7 @@ export default function TranslationReview({ card, vocabulary, onResult }: Props)
                             <button
                                 type="button"
                                 onClick={handleHint}
-                                className="bg-bg-card hover:bg-bg-card-hover text-text-secondary py-3 px-4 rounded-xl font-medium transition-all text-sm"
+                                className="bg-[var(--color-card)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface-muted)] py-3 px-4 rounded-xl font-medium transition-all text-sm"
                             >
                                 <Lightbulb className="w-4 h-4 inline" /> {t('review.hint')}
                             </button>
@@ -128,10 +128,10 @@ export default function TranslationReview({ card, vocabulary, onResult }: Props)
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center"
                 >
-                    <p className="text-lg font-bold text-primary flex items-center justify-center gap-1"><Check className="w-5 h-5" /> {t('review.correct')}</p>
-                    <p className="text-sm text-text-secondary mt-1">{vocabulary.translations.join(', ')}</p>
+                    <p className="text-lg font-bold text-[var(--color-primary)] flex items-center justify-center gap-1"><Check className="w-5 h-5" /> {t('review.correct')}</p>
+                    <p className="text-sm text-[var(--color-on-surface-muted)] mt-1">{vocabulary.translations.join(', ')}</p>
                     {usedHint && (
-                        <p className="text-xs text-text-muted mt-1">
+                        <p className="text-xs text-[var(--color-on-surface-muted)] mt-1">
                             ({t('review.hint')} → {t('review.again')})
                         </p>
                     )}
@@ -145,12 +145,12 @@ export default function TranslationReview({ card, vocabulary, onResult }: Props)
                     className="text-center space-y-3"
                 >
                     <p className="text-lg font-bold text-accent-red flex items-center justify-center gap-1"><X className="w-5 h-5" /> {t('review.incorrect')}</p>
-                    <p className="text-sm text-text-secondary">
-                        {t('review.correctAnswer')}: <span className="text-primary font-bold">{vocabulary.translations.join(', ')}</span>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">
+                        {t('review.correctAnswer')}: <span className="text-[var(--color-primary)] font-bold">{vocabulary.translations.join(', ')}</span>
                     </p>
                     <button
                         onClick={handleContinue}
-                        className="bg-bg-card hover:bg-bg-card-hover text-text px-6 py-2.5 rounded-xl font-medium transition-all"
+                        className="bg-[var(--color-card)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] px-6 py-2.5 rounded-xl font-medium transition-all"
                     >
                         {t('review.continueNext')} <ArrowRight className="w-4 h-4 inline" />
                     </button>

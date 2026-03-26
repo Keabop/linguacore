@@ -65,12 +65,12 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
             >
                 <div className="text-center space-y-3">
                     <h3 className="text-xl font-bold">{skill.name}</h3>
-                    <p className="text-text-secondary text-sm">
+                    <p className="text-[var(--color-on-surface-muted)] text-sm">
                         {correctCount}/{exercises.length} correct ({accuracy}%)
                     </p>
                 </div>
 
-                <p className="text-center text-text-muted text-sm">
+                <p className="text-center text-[var(--color-on-surface-muted)] text-sm">
                     {t('review.howWasIt', 'How well did you know this?')}
                 </p>
 
@@ -105,20 +105,20 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
             >
                 <div className="space-y-2">
                     <h3 className="text-lg font-bold">{skill.name}</h3>
-                    <p className="text-text-muted text-sm">{skill.description}</p>
+                    <p className="text-[var(--color-on-surface-muted)] text-sm">{skill.description}</p>
                 </div>
 
-                <div className="widget border-l-4 border-primary space-y-3">
-                    <div className="flex items-center gap-2 text-primary">
+                <div className="widget border-l-4 border-[var(--color-primary)] space-y-3">
+                    <div className="flex items-center gap-2 text-[var(--color-primary)]">
                         <Lightbulb className="w-4 h-4" />
                         <span className="text-sm font-bold">{t('review.grammarTip', 'Grammar Tip')}</span>
                     </div>
-                    <p className="text-sm text-text-secondary leading-relaxed">{skill.grammarTip}</p>
+                    <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{skill.grammarTip}</p>
                 </div>
 
                 <button
                     onClick={() => setShowTip(false)}
-                    className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    className="w-full bg-[var(--color-primary)] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 >
                     {t('review.startExercises', 'Start Exercises')}
                     <ArrowRight className="w-4 h-4" />
@@ -134,14 +134,14 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
         <div className="space-y-8">
             {/* Progress */}
             <div className="space-y-2">
-                <div className="flex justify-between text-xs text-text-muted">
+                <div className="flex justify-between text-xs text-[var(--color-on-surface-muted)]">
                     <span>{skill.name}</span>
                     <span>{currentIndex + 1}/{exercises.length}</span>
                 </div>
-                <div className="h-1.5 bg-bg-card rounded-full overflow-hidden">
+                <div className="h-1.5 bg-[var(--color-card)] rounded-full overflow-hidden">
                     <motion.div
                         animate={{ width: `${((currentIndex + (answered ? 1 : 0)) / exercises.length) * 100}%` }}
-                        className="h-full bg-primary rounded-full"
+                        className="h-full bg-[var(--color-primary)] rounded-full"
                         transition={{ duration: 0.3 }}
                     />
                 </div>
@@ -164,11 +164,11 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
                             {currentExercise.options.map((option) => {
                                 const isSelected = selectedAnswer === option;
                                 const isOptionCorrect = option.trim().toLowerCase() === currentExercise.answer.trim().toLowerCase();
-                                let optionClass = 'border-border hover:border-primary/50';
+                                let optionClass = 'border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/50';
                                 if (answered) {
                                     if (isOptionCorrect) optionClass = 'border-green-500 bg-green-500/10';
                                     else if (isSelected && !isOptionCorrect) optionClass = 'border-red-500 bg-red-500/10';
-                                    else optionClass = 'border-border opacity-50';
+                                    else optionClass = 'border-[var(--color-outline-subtle)] opacity-50';
                                 }
                                 return (
                                     <button
@@ -191,7 +191,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
                                 type="text"
                                 placeholder={t('review.typeAnswer', 'Type your answer...')}
                                 disabled={answered}
-                                className="w-full bg-bg-card border border-border rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none transition-colors"
+                                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:outline-none transition-colors"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         handleAnswer((e.target as HTMLInputElement).value);
@@ -199,7 +199,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
                                 }}
                             />
                             {!answered && (
-                                <p className="text-xs text-text-muted">{t('review.pressEnter', 'Press Enter to submit')}</p>
+                                <p className="text-xs text-[var(--color-on-surface-muted)]">{t('review.pressEnter', 'Press Enter to submit')}</p>
                             )}
                         </div>
                     )}
@@ -222,7 +222,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
 
                             <button
                                 onClick={handleNext}
-                                className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
+                                className="w-full bg-[var(--color-primary)] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
                             >
                                 {isLastExercise ? t('review.finish', 'Finish') : t('review.next', 'Next')}
                             </button>

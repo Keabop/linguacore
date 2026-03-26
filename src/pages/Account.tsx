@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock } from 'lucide-react';
+import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useTheme } from '../lib/ThemeContext';
 import { useCards } from '../hooks/useCards';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useTier } from '../hooks/useTier';
@@ -20,6 +21,7 @@ export default function Account() {
     const { user, progressInfo } = useLevelProgression();
     const { isPro, isFree } = useTier();
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const { proTheme, setProTheme } = useTheme();
 
     const { data: readStories } = useQuery({
         queryKey: ['readStories', authUser?.id],
@@ -93,21 +95,21 @@ export default function Account() {
                     className="flex items-start justify-between"
                 >
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center text-2xl font-bold text-primary">
+                        <div className="w-16 h-16 rounded-full bg-[var(--color-primary)]/10 border-2 border-[var(--color-primary)]/30 flex items-center justify-center text-2xl font-bold text-[var(--color-primary)]">
                             {initial}
                         </div>
                         <div>
-                            <h1 className="text-2xl font-extrabold text-text">{authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0]}</h1>
-                            <p className="text-sm text-text-muted">{authUser?.email}</p>
+                            <h1 className="text-2xl font-extrabold text-[var(--color-on-surface)]">{authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0]}</h1>
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">{authUser?.email}</p>
                             <div className="flex items-center gap-2 mt-1">
                                 <LevelBadge level={progressInfo?.currentLevel ?? 'A1'} size="compact" />
                                 {isPro && (
-                                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                    <span className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
                                         <Crown className="w-3 h-3" /> Pro
                                     </span>
                                 )}
                                 {isFree && (
-                                    <span className="text-xs bg-bg-app text-text-muted px-2 py-0.5 rounded-full font-medium border border-border">
+                                    <span className="text-xs bg-[var(--color-background)] text-[var(--color-on-surface-muted)] px-2 py-0.5 rounded-full font-medium border border-[var(--color-outline-subtle)]">
                                         {t('account.planFree')}
                                     </span>
                                 )}
@@ -116,10 +118,10 @@ export default function Account() {
                     </div>
                     <button
                         onClick={() => setSettingsOpen(true)}
-                        className="p-2.5 rounded-xl bg-bg-card border border-border hover:border-primary/30 transition-colors"
+                        className="p-2.5 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/30 transition-colors"
                         aria-label={t('settings.title')}
                     >
-                        <Settings className="w-5 h-5 text-text-muted" />
+                        <Settings className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
                     </button>
                 </motion.div>
 
@@ -130,10 +132,10 @@ export default function Account() {
                     transition={{ delay: 0.1 }}
                     className="grid grid-cols-2 sm:grid-cols-4 gap-4"
                 >
-                    <StatCard icon={<Flame className="w-5 h-5" />} value={user.streak} label={t('dashboard.streak')} color="text-accent-orange" />
-                    <StatCard icon={<Layers className="w-5 h-5" />} value={(totalCards ?? 0) + (knownCount ?? 0)} label={t('dashboard.wordsLearned')} color="text-accent-blue" />
-                    <StatCard icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-primary" />
-                    <StatCard icon={<RotateCcw className="w-5 h-5" />} value={totalReviews} label={t('stats.totalReviews')} color="text-accent-purple" />
+                    <StatCard icon={<Flame className="w-5 h-5" />} value={user.streak} label={t('dashboard.streak')} color="text-[var(--color-warning)]" />
+                    <StatCard icon={<Layers className="w-5 h-5" />} value={(totalCards ?? 0) + (knownCount ?? 0)} label={t('dashboard.wordsLearned')} color="text-[var(--color-level-a1)]" />
+                    <StatCard icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-[var(--color-primary)]" />
+                    <StatCard icon={<RotateCcw className="w-5 h-5" />} value={totalReviews} label={t('stats.totalReviews')} color="text-[var(--color-primary)]" />
                 </motion.div>
 
                 {/* ===== Level Progress ===== */}
@@ -149,12 +151,12 @@ export default function Account() {
                             <LevelBadge level={progressInfo.currentLevel} size="default" />
                             <div className="flex-1">
                                 <div className="flex justify-between text-xs mb-2">
-                                    <span className="text-text-secondary font-medium">{progressInfo.unitsCompleted}/{progressInfo.unitsTotal} {t('progress.unitsCompleted').toLowerCase()}</span>
-                                    <span className="text-text-secondary font-bold">{progressInfo.overallPercent}%</span>
+                                    <span className="text-[var(--color-on-surface-muted)] font-medium">{progressInfo.unitsCompleted}/{progressInfo.unitsTotal} {t('progress.unitsCompleted').toLowerCase()}</span>
+                                    <span className="text-[var(--color-on-surface-muted)] font-bold">{progressInfo.overallPercent}%</span>
                                 </div>
-                                <div className="h-2 bg-bg-app rounded-full overflow-hidden">
+                                <div className="h-2 bg-[var(--color-background)] rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-primary rounded-full transition-all duration-500"
+                                        className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-500"
                                         style={{ width: `${progressInfo.overallPercent}%` }}
                                     />
                                 </div>
@@ -189,7 +191,7 @@ export default function Account() {
                                 );
                             })}
                         </div>
-                        <div className="flex justify-between mt-2 text-[10px] text-text-muted">
+                        <div className="flex justify-between mt-2 text-[10px] text-[var(--color-on-surface-muted)]">
                             <span>{t('stats.lessActive')}</span>
                             <div className="flex gap-1">
                                 {[0, 0.2, 0.4, 0.7, 1].map((op, i) => (
@@ -211,13 +213,13 @@ export default function Account() {
                         className="widget border-dashed"
                     >
                         <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Lock className="w-5 h-5 text-primary" />
+                            <div className="w-10 h-10 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+                                <Lock className="w-5 h-5 text-[var(--color-primary)]" />
                             </div>
-                            <p className="text-sm text-text-muted">{t('account.proStats')}</p>
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">{t('account.proStats')}</p>
                             <Link
                                 to="/pricing"
-                                className="text-xs bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                                className="btn-primary text-xs px-4 py-2 rounded-lg"
                             >
                                 {t('account.upgradeToPro')}
                             </Link>
@@ -236,20 +238,20 @@ export default function Account() {
                         <div className="widget-title">{t('stats.vocabulary')}</div>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-text-secondary">{t('stats.inDeck')}</span>
+                                <span className="text-sm text-[var(--color-on-surface-muted)]">{t('stats.inDeck')}</span>
                                 <span className="text-sm font-bold text-accent-blue">{totalCards}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-text-secondary">{t('stats.knownWords')}</span>
-                                <span className="text-sm font-bold text-primary">{knownCount ?? 0}</span>
+                                <span className="text-sm text-[var(--color-on-surface-muted)]">{t('stats.knownWords')}</span>
+                                <span className="text-sm font-bold text-[var(--color-primary)]">{knownCount ?? 0}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-text-secondary">{t('stats.avgRetention')}</span>
+                                <span className="text-sm text-[var(--color-on-surface-muted)]">{t('stats.avgRetention')}</span>
                                 <span className="text-sm font-bold text-accent-purple">{avgRetention}%</span>
                             </div>
-                            <div className="border-t border-border pt-3 flex items-center justify-between">
+                            <div className="border-t border-[var(--color-outline-subtle)] pt-3 flex items-center justify-between">
                                 <span className="text-sm font-semibold">{t('stats.total')}</span>
-                                <span className="text-sm font-bold text-text">{(totalCards ?? 0) + (knownCount ?? 0)}</span>
+                                <span className="text-sm font-bold text-[var(--color-on-surface)]">{(totalCards ?? 0) + (knownCount ?? 0)}</span>
                             </div>
                         </div>
                     </motion.div>
@@ -268,7 +270,7 @@ function StatCard({ icon, value, label, color }: {
         <div className="widget text-center">
             <div className={`flex justify-center ${color}`}>{icon}</div>
             <p className={`text-2xl font-extrabold mt-1 ${color}`}>{value}</p>
-            <p className="text-[10px] text-text-muted mt-0.5">{label}</p>
+            <p className="text-[10px] text-[var(--color-on-surface-muted)] mt-0.5">{label}</p>
         </div>
     );
 }

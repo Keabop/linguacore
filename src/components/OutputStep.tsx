@@ -127,14 +127,14 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
     // No output prompts for this unit — skip
     if (!hasWriting && !hasSpeaking) {
         return (
-            <div className="bg-bg-card border border-border rounded-xl p-6 text-center space-y-4">
-                <PenLine className="w-8 h-8 text-text-muted mx-auto" />
-                <p className="text-sm text-text-secondary">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-6 text-center space-y-4">
+                <PenLine className="w-8 h-8 text-[var(--color-on-surface-muted)] mx-auto" />
+                <p className="text-sm text-[var(--color-on-surface-muted)]">
                     No hay ejercicios de producción para esta unidad todavía.
                 </p>
                 <button
                     onClick={onComplete}
-                    className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="bg-[var(--color-primary)] hover:brightness-90 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Saltar
                 </button>
@@ -149,7 +149,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
             {/* Section header */}
             <div className="space-y-1">
                 <h3 className="text-lg font-bold text-white">Producción</h3>
-                <p className="text-sm text-text-secondary">Practica tu escritura y habla en inglés.</p>
+                <p className="text-sm text-[var(--color-on-surface-muted)]">Practica tu escritura y habla en inglés.</p>
             </div>
 
             {/* Tabs */}
@@ -159,8 +159,8 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         onClick={() => setActiveTab('writing')}
                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
                             activeTab === 'writing'
-                                ? 'bg-primary text-white'
-                                : 'bg-bg-card border border-border text-text-secondary hover:text-white'
+                                ? 'bg-[var(--color-primary)] text-white'
+                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-white'
                         }`}
                     >
                         {writingDone ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <PenLine className="w-4 h-4" />}
@@ -173,8 +173,8 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         onClick={() => setActiveTab('speaking')}
                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
                             activeTab === 'speaking'
-                                ? 'bg-primary text-white'
-                                : 'bg-bg-card border border-border text-text-secondary hover:text-white'
+                                ? 'bg-[var(--color-primary)] text-white'
+                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-white'
                         }`}
                     >
                         {speakingDone ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Mic className="w-4 h-4" />}
@@ -195,14 +195,14 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         <WifiOff className="w-5 h-5 text-amber-400 flex-shrink-0" />
                         <div className="space-y-1">
                             <p className="text-sm font-bold text-white">Sin conexión a internet</p>
-                            <p className="text-xs text-text-secondary leading-relaxed">
+                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                 Los ejercicios de producción necesitan IA. Mientras tanto, puedes aprender vocabulario con los cuentos.
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={() => navigate('/learn')}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         <BookOpen className="w-4 h-4" /> Ir a leer cuentos
                     </button>
@@ -226,7 +226,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         {!speakingAttempted && (
                             <button
                                 onClick={handleDeferSpeaking}
-                                className="w-full flex items-center justify-center gap-2 bg-bg-card border border-border text-text-muted hover:text-text-secondary py-3 rounded-xl text-sm transition-all"
+                                className="w-full flex items-center justify-center gap-2 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface-muted)] py-3 rounded-xl text-sm transition-all"
                             >
                                 <MicOff className="w-4 h-4" />
                                 No puedo hablar ahora
@@ -238,12 +238,12 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     <motion.div
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-bg-card border border-amber-500/20 rounded-xl p-6 text-center space-y-4"
+                        className="bg-[var(--color-card)] border border-amber-500/20 rounded-xl p-6 text-center space-y-4"
                     >
                         <Clock className="w-10 h-10 text-amber-400 mx-auto" />
                         <div className="space-y-2">
                             <p className="text-sm font-bold text-white">Ejercicios de habla pospuestos</p>
-                            <p className="text-xs text-text-secondary leading-relaxed">
+                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                 Estarán disponibles en <span className="text-amber-400 font-bold">{minutesLeft} minutos</span>.
                                 Hablar es parte esencial del aprendizaje — ¡vuelve cuando puedas!
                             </p>
@@ -254,13 +254,13 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                                     clearDeferred(unitId);
                                     setSpeakingDeferred(null);
                                 }}
-                                className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                             >
                                 <Mic className="w-4 h-4" /> Ya puedo hablar
                             </button>
                             <button
                                 onClick={() => navigate('/path')}
-                                className="w-full bg-bg-card border border-border hover:bg-bg-card-hover text-text-secondary py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface-muted)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                             >
                                 Volver a la ruta
                             </button>
@@ -281,7 +281,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     onClick={onComplete}
-                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Continuar al checkpoint
                 </motion.button>

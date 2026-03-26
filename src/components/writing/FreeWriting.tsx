@@ -26,12 +26,12 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
 
     return (
         <div className="space-y-6">
-            <div className="bg-bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
                     <Feather className="w-4 h-4" />
                     Escritura libre
                 </div>
-                <p className="text-sm text-text-secondary leading-relaxed">{instruction}</p>
+                <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{instruction}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -41,7 +41,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
                     </span>
                 ))}
                 {wordLimit && (
-                    <span className="text-xs bg-bg-card-hover text-text-muted border border-border px-3 py-1 rounded-full">
+                    <span className="text-xs bg-[var(--color-card-hover)] text-[var(--color-on-surface-muted)] border border-[var(--color-outline-subtle)] px-3 py-1 rounded-full">
                         {minWords}–{maxWords} palabras
                     </span>
                 )}
@@ -55,7 +55,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
                     disabled={disabled}
                     placeholder="Escribe libremente en inglés..."
-                    className="w-full bg-bg-card border border-border rounded-xl p-5 text-white text-sm leading-relaxed placeholder:text-text-muted resize-none focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all min-h-[180px] disabled:opacity-50"
+                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 text-white text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[180px] disabled:opacity-50"
                     rows={6}
                 />
                 <div className="flex justify-between items-center">
@@ -71,7 +71,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
                             </span>
                         )}
                     </div>
-                    <p className={`text-xs font-medium ${isOverLimit ? 'text-accent-red' : isInRange ? 'text-green-400' : 'text-text-muted'}`}>
+                    <p className={`text-xs font-medium ${isOverLimit ? 'text-accent-red' : isInRange ? 'text-green-400' : 'text-[var(--color-on-surface-muted)]'}`}>
                         {wordCount} / {maxWords}
                     </p>
                 </div>
@@ -80,7 +80,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !isInRange || isOverLimit}
-                className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />

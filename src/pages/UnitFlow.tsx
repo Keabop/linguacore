@@ -91,7 +91,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                 />
             </div>
 
-            <div className="relative z-10 bg-bg-card border border-green-500/30 rounded-2xl p-8 w-full max-w-sm text-center space-y-6 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
+            <div className="relative z-10 bg-[var(--color-card)] border border-green-500/30 rounded-2xl p-8 w-full max-w-sm text-center space-y-6 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
                 <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: [0, 1.3, 1] }}
@@ -113,7 +113,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                         animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
                         tag="h2"
                     />
-                    <p className="text-text-secondary text-sm leading-relaxed">
+                    <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                         Has completado todos los pasos de esta unidad. Sigue avanzando en tu ruta de aprendizaje.
                     </p>
                 </div>
@@ -121,7 +121,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}>
                     <button
                         onClick={onBack}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                     >
                         Volver a la ruta
                     </button>
@@ -162,7 +162,7 @@ export default function UnitFlow() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="text-text-muted text-sm">{t('common.loading')}</div>
+                <div className="text-[var(--color-on-surface-muted)] text-sm">{t('common.loading')}</div>
             </div>
         );
     }
@@ -172,7 +172,7 @@ export default function UnitFlow() {
         return (
             <div className="space-y-6">
                 <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
-                <p className="text-text-muted">Unidad no encontrada.</p>
+                <p className="text-[var(--color-on-surface-muted)]">Unidad no encontrada.</p>
             </div>
         );
     }
@@ -358,7 +358,7 @@ export default function UnitFlow() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-1"
             >
-                <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">
+                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-semibold">
                     {t('path.unit')} {unit.unitNumber}
                 </p>
                 <h1 className="text-2xl font-extrabold leading-tight">{unit.title}</h1>
@@ -387,8 +387,8 @@ export default function UnitFlow() {
                                         ${isCompleted
                                             ? 'bg-green-500/20 text-green-400'
                                             : isCurrent
-                                                ? 'bg-primary/20 text-primary ring-2 ring-primary/30'
-                                                : 'bg-bg-card text-text-muted border border-border'
+                                                ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] ring-2 ring-primary/30'
+                                                : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] border border-[var(--color-outline-subtle)]'
                                         }
                                     `}
                                     title={STEP_LABELS[step.key]}
@@ -430,8 +430,8 @@ export default function UnitFlow() {
                                         ${isCompleted
                                             ? 'text-green-400'
                                             : isCurrent
-                                                ? 'text-primary'
-                                                : 'text-text-muted'
+                                                ? 'text-[var(--color-primary)]'
+                                                : 'text-[var(--color-on-surface-muted)]'
                                         }
                                     `}
                                 >
@@ -462,7 +462,7 @@ function BackButton({ onClick, label }: { onClick: () => void; label: string }) 
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             onClick={onClick}
-            className="flex items-center gap-2 text-text-muted hover:text-text-secondary transition-colors"
+            className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface-muted)] transition-colors"
         >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">{label}</span>
@@ -481,14 +481,14 @@ function StepHeader({
 }) {
     return (
         <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-                <Icon className="w-5 h-5 text-primary" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-primary)]/10">
+                <Icon className="w-5 h-5 text-[var(--color-primary)]" />
             </div>
             <div>
-                <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">
+                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-semibold">
                     {label}
                 </p>
-                <p className="text-sm text-text-secondary leading-relaxed">{description}</p>
+                <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{description}</p>
             </div>
         </div>
     );
@@ -515,41 +515,41 @@ function StoryStep({
                 description="Lee una historia para practicar la gramatica de esta unidad."
             />
 
-            <div className="bg-bg-card border border-border rounded-2xl p-7 space-y-7">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-7 space-y-7">
                 {unitStory ? (
                     <>
-                        <p className="text-text-secondary text-sm leading-relaxed">
+                        <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                             Tienes una historia asignada para esta unidad:
                         </p>
                         <button
                             onClick={() => navigate(`/learn/${unitStory.id}`)}
-                            className="w-full bg-bg-app border border-border rounded-xl p-5 flex items-center justify-between hover:border-primary/40 transition-colors group"
+                            className="w-full bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-5 flex items-center justify-between hover:border-[var(--color-primary)]/40 transition-colors group"
                         >
                             <div className="flex items-center gap-3">
-                                <BookOpen className="w-5 h-5 text-primary" />
-                                <span className="font-bold text-sm group-hover:text-primary transition-colors">
+                                <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
+                                <span className="font-bold text-sm group-hover:text-[var(--color-primary)] transition-colors">
                                     {unitStory.title}
                                 </span>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                            <ChevronRight className="w-4 h-4 text-[var(--color-on-surface-muted)] group-hover:text-[var(--color-primary)] group-hover:translate-x-0.5 transition-all" />
                         </button>
                     </>
                 ) : (
                     <>
-                        <p className="text-text-secondary text-sm leading-relaxed">
+                        <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                             No hay una historia asignada a esta unidad. Puedes explorar las historias disponibles o saltar este paso.
                         </p>
                         <button
                             onClick={onNavigateStories}
-                            className="w-full bg-bg-app border border-border rounded-xl p-5 flex items-center justify-between hover:border-primary/40 transition-colors group"
+                            className="w-full bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-5 flex items-center justify-between hover:border-[var(--color-primary)]/40 transition-colors group"
                         >
                             <div className="flex items-center gap-3">
-                                <Sparkles className="w-5 h-5 text-primary" />
-                                <span className="font-bold text-sm group-hover:text-primary transition-colors">
+                                <Sparkles className="w-5 h-5 text-[var(--color-primary)]" />
+                                <span className="font-bold text-sm group-hover:text-[var(--color-primary)] transition-colors">
                                     Explorar historias
                                 </span>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                            <ChevronRight className="w-4 h-4 text-[var(--color-on-surface-muted)] group-hover:text-[var(--color-primary)] group-hover:translate-x-0.5 transition-all" />
                         </button>
                     </>
                 )}
@@ -557,7 +557,7 @@ function StoryStep({
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                         onClick={onComplete}
-                        className="flex-1 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                        className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                     >
                         {unitStory ? 'Marcar como completado' : 'Saltar por ahora'}
                     </button>
@@ -618,10 +618,10 @@ function VocabStep({
                 }
             />
 
-            <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-6">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 space-y-6">
                 {vocabItems.length > 0 ? (
                     <>
-                        <p className="text-text-secondary text-sm leading-relaxed">
+                        <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                             Toca cada tarjeta para ver la traducción y ejemplo.
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -632,8 +632,8 @@ function VocabStep({
                                     className={`
                                         relative rounded-xl border p-3 text-left transition-all duration-200 min-h-[72px]
                                         ${flipped.has(v.id)
-                                            ? 'bg-primary/10 border-primary/30'
-                                            : 'bg-bg-app border-border hover:border-primary/30'
+                                            ? 'bg-[var(--color-primary)]/10 border-primary/30'
+                                            : 'bg-[var(--color-background)] border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/30'
                                         }
                                     `}
                                 >
@@ -641,13 +641,13 @@ function VocabStep({
                                         <div className="flex flex-col gap-1">
                                             <span className="font-bold text-sm text-white">{v.id}</span>
                                             {v.phonetic && (
-                                                <span className="text-[10px] text-text-muted">{v.phonetic}</span>
+                                                <span className="text-[10px] text-[var(--color-on-surface-muted)]">{v.phonetic}</span>
                                             )}
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-1">
-                                            <span className="font-semibold text-xs text-primary">{v.translations.join(', ')}</span>
-                                            <span className="text-[10px] text-text-secondary italic leading-tight">
+                                            <span className="font-semibold text-xs text-[var(--color-primary)]">{v.translations.join(', ')}</span>
+                                            <span className="text-[10px] text-[var(--color-on-surface-muted)] italic leading-tight">
                                                 {v.examples[0]}
                                             </span>
                                         </div>
@@ -657,27 +657,27 @@ function VocabStep({
                         </div>
                     </>
                 ) : (
-                    <p className="text-text-secondary text-sm leading-relaxed">
+                    <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                         Practica las tarjetas de vocabulario que has acumulado. Este paso es flexible y puedes continuar cuando quieras.
                     </p>
                 )}
 
                 <button
                     onClick={onNavigateReview}
-                    className="w-full bg-bg-app border border-border rounded-xl p-4 flex items-center justify-between hover:border-primary/40 transition-colors group"
+                    className="w-full bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between hover:border-[var(--color-primary)]/40 transition-colors group"
                 >
                     <div className="flex items-center gap-3">
                         <RefreshCw className="w-5 h-5 text-accent-blue" />
-                        <span className="font-bold text-sm group-hover:text-primary transition-colors">
+                        <span className="font-bold text-sm group-hover:text-[var(--color-primary)] transition-colors">
                             Ir a repasar tarjetas
                         </span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-4 h-4 text-[var(--color-on-surface-muted)] group-hover:text-[var(--color-primary)] group-hover:translate-x-0.5 transition-all" />
                 </button>
 
                 <button
                     onClick={onComplete}
-                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                 >
                     Continuar
                 </button>
@@ -731,19 +731,19 @@ function CheckpointStep({
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center py-10"
                 >
-                    <div className="bg-bg-card border border-red-500/30 rounded-2xl p-8 w-full max-w-sm text-center space-y-5">
+                    <div className="bg-[var(--color-card)] border border-red-500/30 rounded-2xl p-8 w-full max-w-sm text-center space-y-5">
                         <div className="space-y-2">
                             <p className="text-5xl font-extrabold text-red-400">
                                 {lastScore}%
                             </p>
-                            <p className="text-text-secondary text-sm leading-relaxed">
+                            <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                                 Necesitas al menos 80% para aprobar. Repasa el material y vuelve a intentarlo.
                             </p>
                         </div>
 
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Intentalo de nuevo
@@ -773,12 +773,12 @@ function EmptyStepCard({
     return (
         <div className="space-y-6">
             <StepHeader icon={Icon} label={title} description={description} />
-            <div className="bg-bg-card border border-border rounded-2xl p-7 text-center space-y-5">
-                <Icon className="w-10 h-10 text-text-muted mx-auto" />
-                <p className="text-text-muted text-sm">{description}</p>
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-7 text-center space-y-5">
+                <Icon className="w-10 h-10 text-[var(--color-on-surface-muted)] mx-auto" />
+                <p className="text-[var(--color-on-surface-muted)] text-sm">{description}</p>
                 <button
                     onClick={onAction}
-                    className="bg-primary hover:bg-primary-dark text-white py-3 px-8 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="bg-[var(--color-primary)] hover:brightness-90 text-white py-3 px-8 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
                 >
                     {actionLabel}
                 </button>

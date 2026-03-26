@@ -176,10 +176,10 @@ export default function StoryReader() {
     if (!story) {
         return (
             <div className="text-center py-12 space-y-4">
-                <p className="text-text-muted">{t('reader.storyNotFound', 'Historia no encontrada')}</p>
+                <p className="text-[var(--color-on-surface-muted)]">{t('reader.storyNotFound', 'Historia no encontrada')}</p>
                 <button
                     onClick={() => navigate('/learn')}
-                    className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-medium transition-all"
+                    className="bg-[var(--color-primary)] hover:brightness-90 text-white px-6 py-3 rounded-xl font-medium transition-all"
                 >
                     {t('reader.backToStories', 'Volver a historias')}
                 </button>
@@ -197,19 +197,19 @@ export default function StoryReader() {
                 >
                     <div className="text-7xl">🎉</div>
                     <h2 className="text-2xl font-bold">{t('reader.storyCompleted')}</h2>
-                    <p className="text-text-secondary">
+                    <p className="text-[var(--color-on-surface-muted)]">
                         {addedWords.size} {t('reader.wordsAdded')}
                     </p>
                     <div className="flex gap-3 justify-center pt-4">
                         <button
                             onClick={() => navigate('/learn')}
-                            className="bg-bg-card hover:bg-bg-card-hover text-text px-6 py-3 rounded-xl font-medium transition-all"
+                            className="bg-[var(--color-card)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] px-6 py-3 rounded-xl font-medium transition-all"
                         >
                             {t('reader.backToStories')}
                         </button>
                         <button
                             onClick={() => navigate('/review')}
-                            className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-medium transition-all"
+                            className="bg-[var(--color-primary)] hover:brightness-90 text-white px-6 py-3 rounded-xl font-medium transition-all"
                         >
                             {t('dashboard.startReview')}
                         </button>
@@ -224,12 +224,12 @@ export default function StoryReader() {
         <div className="space-y-8">
             {/* Story header */}
             <div className="flex items-center gap-3">
-                <button onClick={() => navigate(-1)} className="text-text-muted hover:text-text text-xl">←</button>
+                <button onClick={() => navigate(-1)} className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] text-xl">←</button>
                 <div className="flex-1">
                     <h2 className="text-xl font-bold">{story.title}</h2>
                     <div className="flex items-center gap-2 mt-1">
                         <LevelBadge level={story.level} size="compact" />
-                        <span className="text-xs text-text-muted">
+                        <span className="text-xs text-[var(--color-on-surface-muted)]">
                             {story.estimatedMinutes} {t('reader.minutes')} · {story.wordCount} {t('reader.words')}
                         </span>
                     </div>
@@ -266,9 +266,9 @@ export default function StoryReader() {
                     transition={{ delay: 0.2 }}
                     className="widget space-y-3"
                 >
-                    <h3 className="text-sm font-semibold text-text-secondary flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-[var(--color-on-surface-muted)] flex items-center gap-2">
                         📚 {t('reader.keyVocabulary')}
-                        <span className="text-xs text-text-muted font-normal">({keywords.length})</span>
+                        <span className="text-xs text-[var(--color-on-surface-muted)] font-normal">({keywords.length})</span>
                     </h3>
                     <div className="flex flex-wrap gap-3">
                         {keywords.map((wordId) => {
@@ -295,7 +295,7 @@ export default function StoryReader() {
             {/* Complete button */}
             <button
                 onClick={handleComplete}
-                className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-all active:scale-[0.98]"
+                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white font-bold py-3 rounded-xl transition-all active:scale-[0.98]"
             >
                 ✓ {t('reader.storyCompleted')}
             </button>
@@ -324,32 +324,32 @@ export default function StoryReader() {
                                     <div>
                                         <h3 className="text-xl font-bold text-accent-blue">{selectedWord.id}</h3>
                                         {selectedWord.phonetic && (
-                                            <p className="text-sm text-text-muted mt-0.5">{selectedWord.phonetic}</p>
+                                            <p className="text-sm text-[var(--color-on-surface-muted)] mt-0.5">{selectedWord.phonetic}</p>
                                         )}
                                     </div>
                                     <button
                                         onClick={() => setSelectedWord(null)}
-                                        className="text-text-muted hover:text-text text-xl leading-none p-1"
+                                        className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] text-xl leading-none p-1"
                                     >
                                         ×
                                     </button>
                                 </div>
 
                                 <div>
-                                    <p className="text-xs text-text-muted uppercase tracking-wider">{t('reader.translation')}</p>
+                                    <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">{t('reader.translation')}</p>
                                     <p className="text-base font-medium">{selectedWord.translations.join(', ')}</p>
                                 </div>
 
                                 {selectedWord.examples.length > 0 && (
                                     <div>
-                                        <p className="text-xs text-text-muted uppercase tracking-wider">{t('reader.example')}</p>
-                                        <p className="text-sm text-text-secondary italic">"{selectedWord.examples[0]}"</p>
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">{t('reader.example')}</p>
+                                        <p className="text-sm text-[var(--color-on-surface-muted)] italic">"{selectedWord.examples[0]}"</p>
                                     </div>
                                 )}
 
                                 <div className="flex gap-2 pt-1">
                                     {wordStatus === 'deck' ? (
-                                        <div className="flex-1 bg-primary/15 text-primary text-center py-2.5 rounded-xl text-sm font-medium">
+                                        <div className="flex-1 bg-[var(--color-primary)]/15 text-[var(--color-primary)] text-center py-2.5 rounded-xl text-sm font-medium">
                                             ✓ {t('reader.alreadyAdded')}
                                         </div>
                                     ) : wordStatus === 'known' ? (
@@ -360,13 +360,13 @@ export default function StoryReader() {
                                         <>
                                             <button
                                                 onClick={handleAddWord}
-                                                className="flex-1 bg-primary hover:bg-primary-dark text-white py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
+                                                className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-white py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
                                             >
                                                 + {t('reader.addToDeck')}
                                             </button>
                                             <button
                                                 onClick={handleMarkKnown}
-                                                className="flex-1 bg-bg-card-hover hover:bg-surface-light text-text py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
+                                                className="flex-1 bg-[var(--color-card-hover)] hover:bg-surface-light text-[var(--color-on-surface)] py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
                                             >
                                                 ✓ {t('reader.alreadyKnown')}
                                             </button>

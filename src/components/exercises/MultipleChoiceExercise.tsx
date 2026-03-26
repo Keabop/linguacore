@@ -24,7 +24,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
 
     const getOptionStyle = (option: string) => {
         if (status === 'pending') {
-            return 'bg-bg-app border border-border hover:border-primary/50';
+            return 'bg-[var(--color-background)] border border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/50';
         }
 
         const isSelected = option === selected;
@@ -36,7 +36,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
         if (isSelected && !isCorrectOption) {
             return 'border-red-500 bg-red-500/10';
         }
-        return 'bg-bg-app border border-border opacity-50';
+        return 'bg-[var(--color-background)] border border-[var(--color-outline-subtle)] opacity-50';
     };
 
     const getOptionFeedbackClass = (option: string) => {
@@ -68,9 +68,9 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-bg-card border border-border rounded-2xl p-6 text-center"
+                className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 text-center"
             >
-                <p className="text-xl leading-relaxed text-text-primary">{exercise.question}</p>
+                <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
             </motion.div>
 
             {/* Options */}
@@ -87,7 +87,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                             status === 'pending' ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
                         } ${getOptionFeedbackClass(option)}`}
                     >
-                        <span className="text-text-primary font-medium">{option}</span>
+                        <span className="text-[var(--color-on-surface)] font-medium">{option}</span>
                         {getOptionIcon(option)}
                     </motion.button>
                 ))}
@@ -111,12 +111,12 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                             </p>
                         )}
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-5">
-                        <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
+                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(status === 'correct')}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

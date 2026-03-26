@@ -19,8 +19,8 @@ export default function ReviewModeSelector({ dueCount, onSelect }: Props) {
             className="space-y-10 py-8"
         >
             <div className="text-center space-y-3">
-                <h2 className="text-2xl font-extrabold text-text leading-tight">{t('review.chooseMode')}</h2>
-                <p className="text-text-secondary text-sm leading-relaxed">
+                <h2 className="text-2xl font-extrabold text-[var(--color-on-surface)] leading-tight">{t('review.chooseMode')}</h2>
+                <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                     {dueCount} {t('review.dueCards')}
                 </p>
             </div>
@@ -36,7 +36,7 @@ export default function ReviewModeSelector({ dueCount, onSelect }: Props) {
                     <h3 className="text-lg font-bold text-accent-blue mb-2 leading-tight">
                         {t('review.clozeMode')}
                     </h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
+                    <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">
                         {t('review.clozeDescription')}
                     </p>
                 </motion.button>
@@ -51,7 +51,7 @@ export default function ReviewModeSelector({ dueCount, onSelect }: Props) {
                     <h3 className="text-lg font-bold text-accent-purple mb-2 leading-tight">
                         {t('review.translationMode')}
                     </h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
+                    <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">
                         {t('review.translationDescription')}
                     </p>
                 </motion.button>

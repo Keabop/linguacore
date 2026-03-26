@@ -79,15 +79,15 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-12"
             >
-                <div className={`bg-bg-card border ${getScoreBorderColor()} rounded-2xl p-10 w-full max-w-sm text-center space-y-7`}>
+                <div className={`bg-[var(--color-card)] border ${getScoreBorderColor()} rounded-2xl p-10 w-full max-w-sm text-center space-y-7`}>
                     <div className="space-y-2">
-                        <p className="text-sm text-text-muted uppercase tracking-wider font-medium">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
                             {t('exercises.title')}
                         </p>
                         <p className={`text-6xl font-extrabold ${getScoreColor()}`}>
                             {score}%
                         </p>
-                        <p className="text-text-secondary text-sm">
+                        <p className="text-[var(--color-on-surface-muted)] text-sm">
                             {t('exercises.score', { score })}
                         </p>
                     </div>
@@ -101,14 +101,14 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                             <X className="w-4 h-4" />
                             <span className="font-bold">{total - correctCount}</span>
                         </div>
-                        <div className="text-text-muted">
+                        <div className="text-[var(--color-on-surface-muted)]">
                             / {total}
                         </div>
                     </div>
 
                     <button
                         onClick={() => onComplete(score)}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                     >
                         {t('exercises.finish')}
                     </button>
@@ -155,16 +155,16 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
             {/* Progress indicator */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary font-medium">
+                    <span className="text-[var(--color-on-surface-muted)] font-medium">
                         {t('exercises.progress', { current: currentIndex + 1, total })}
                     </span>
-                    <span className="text-text-muted text-xs">
+                    <span className="text-[var(--color-on-surface-muted)] text-xs">
                         {t('exercises.title')}
                     </span>
                 </div>
-                <div className="h-2 bg-bg-app rounded-full overflow-hidden">
+                <div className="h-2 bg-[var(--color-background)] rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-primary rounded-full"
+                        className="h-full bg-[var(--color-primary)] rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.4, ease: 'easeOut' }}

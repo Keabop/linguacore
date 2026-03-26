@@ -111,19 +111,19 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-text-secondary text-sm">
+                <div className="flex items-center gap-2 text-[var(--color-on-surface-muted)] text-sm">
                     <PenLine className="w-4 h-4" />
                     <span>Escritura</span>
                 </div>
-                <span className="text-xs text-text-muted font-medium">
+                <span className="text-xs text-[var(--color-on-surface-muted)] font-medium">
                     {currentIndex + 1} / {prompts.length}
                 </span>
             </div>
 
             {/* Progress bar */}
-            <div className="h-1.5 bg-bg-card-hover rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[var(--color-card-hover)] rounded-full overflow-hidden">
                 <motion.div
-                    className="h-full bg-primary rounded-full"
+                    className="h-full bg-[var(--color-primary)] rounded-full"
                     animate={{ width: `${((currentIndex + (phase === 'feedback' ? 1 : 0)) / prompts.length) * 100}%` }}
                     transition={{ duration: 0.3 }}
                 />
@@ -144,8 +144,8 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                         exit={{ opacity: 0 }}
                         className="flex flex-col items-center justify-center py-16 space-y-4"
                     >
-                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                        <p className="text-sm text-text-secondary">Evaluando tu escritura...</p>
+                        <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
+                        <p className="text-sm text-[var(--color-on-surface-muted)]">Evaluando tu escritura...</p>
                     </motion.div>
                 )}
 

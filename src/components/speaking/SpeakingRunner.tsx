@@ -37,15 +37,15 @@ export default function SpeakingRunner({ prompts, level, onComplete, onFirstAtte
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-text-secondary text-sm">
+                <div className="flex items-center gap-2 text-[var(--color-on-surface-muted)] text-sm">
                     <Mic className="w-4 h-4" />
                     <span>Habla</span>
                 </div>
-                <span className="text-xs text-text-muted font-medium">{currentIndex + 1} / {prompts.length}</span>
+                <span className="text-xs text-[var(--color-on-surface-muted)] font-medium">{currentIndex + 1} / {prompts.length}</span>
             </div>
 
-            <div className="h-1.5 bg-bg-card-hover rounded-full overflow-hidden">
-                <motion.div className="h-full bg-primary rounded-full"
+            <div className="h-1.5 bg-[var(--color-card-hover)] rounded-full overflow-hidden">
+                <motion.div className="h-full bg-[var(--color-primary)] rounded-full"
                     animate={{ width: `${(currentIndex / prompts.length) * 100}%` }}
                     transition={{ duration: 0.3 }} />
             </div>
