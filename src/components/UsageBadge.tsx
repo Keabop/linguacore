@@ -17,7 +17,7 @@ export function UsageBadge({ remaining, limit, label }: UsageBadgeProps) {
           ? 'bg-red-500/10 text-red-400'
           : isLow
             ? 'bg-amber-500/10 text-amber-400'
-            : 'bg-white/5 text-text-muted'
+            : 'bg-white/5 text-[var(--color-on-surface-muted)]'
       }`}
     >
       {remaining}/{limit} {label}

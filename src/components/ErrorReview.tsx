@@ -63,7 +63,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
             >
-                <p className="text-center text-sm font-semibold text-text-secondary">
+                <p className="text-center text-sm font-semibold text-[var(--color-on-surface-muted)]">
                     {t('review.howWasIt', '¿Cómo te fue?')}
                 </p>
                 <div className="grid grid-cols-4 gap-2">
@@ -108,21 +108,21 @@ export default function ErrorReview({ card, onComplete }: Props) {
                         </span>
                     </div>
                     <div className="space-y-2 text-sm">
-                        <p><span className="text-text-muted">Error:</span> <span className="line-through text-accent-red">{card.originalSentence}</span></p>
-                        <p><span className="text-text-muted">Correcto:</span> <span className="text-green-400 font-semibold">{card.correctedSentence}</span></p>
+                        <p><span className="text-[var(--color-on-surface-muted)]">Error:</span> <span className="line-through text-accent-red">{card.originalSentence}</span></p>
+                        <p><span className="text-[var(--color-on-surface-muted)]">Correcto:</span> <span className="text-green-400 font-semibold">{card.correctedSentence}</span></p>
                     </div>
                 </div>
 
-                <div className="bg-bg-card border border-border rounded-xl p-4">
+                <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4">
                     <div className="flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 text-accent-orange flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-text-secondary leading-relaxed">{card.explanation}</p>
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{card.explanation}</p>
                     </div>
                 </div>
 
                 <button
                     onClick={() => setPhase('rating')}
-                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <ArrowRight className="w-4 h-4" /> {t('review.next', 'Siguiente')}
                 </button>
@@ -137,13 +137,13 @@ export default function ErrorReview({ card, onComplete }: Props) {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
         >
-            <div className="bg-bg-card-hover border border-border-light rounded-xl p-5 space-y-2">
+            <div className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-2">
                 <p className="text-xs text-accent-orange font-semibold uppercase tracking-wider">
                     {card.errorType === 'grammar' ? 'Gramática' :
                      card.errorType === 'vocabulary' ? 'Vocabulario' :
                      card.errorType === 'spelling' ? 'Ortografía' : 'Estilo'}
                 </p>
-                <p className="text-sm text-text-secondary">
+                <p className="text-sm text-[var(--color-on-surface-muted)]">
                     {isStable
                         ? 'Corrige la siguiente oración:'
                         : 'Selecciona la oración correcta:'}
@@ -162,13 +162,13 @@ export default function ErrorReview({ card, onComplete }: Props) {
                         onChange={e => setUserAnswer(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleSubmitFreeForm()}
                         placeholder={t('review.typeAnswer', 'Escribe la corrección...')}
-                        className="w-full bg-bg-card border border-border rounded-xl px-5 py-4 text-sm placeholder:text-text-muted focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all"
+                        className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl px-5 py-4 text-sm placeholder:text-[var(--color-on-surface-muted)] focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all"
                         autoFocus
                     />
                     <button
                         onClick={handleSubmitFreeForm}
                         disabled={!userAnswer.trim()}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
                     >
                         {t('review.check', 'Verificar')}
                     </button>
@@ -179,7 +179,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
                         <button
                             key={i}
                             onClick={() => handleSelectOption(option)}
-                            className="w-full text-left bg-bg-card border border-border rounded-xl p-4 text-sm hover:border-primary/30 hover:bg-bg-card-hover transition-all"
+                            className="w-full text-left bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-sm hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-card-hover)] transition-all"
                         >
                             {option}
                         </button>

@@ -72,10 +72,10 @@ function CategoryBar({ label, score, note }: { label: string; score: number; not
     return (
         <div className="space-y-1.5">
             <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">{label}</span>
+                <span className="text-[var(--color-on-surface-muted)]">{label}</span>
                 <span className="text-white font-semibold">{score}</span>
             </div>
-            <div className="h-2 bg-bg-card-hover rounded-full overflow-hidden">
+            <div className="h-2 bg-[var(--color-card-hover)] rounded-full overflow-hidden">
                 <motion.div
                     className={`h-full rounded-full ${color}`}
                     initial={{ width: 0 }}
@@ -83,7 +83,7 @@ function CategoryBar({ label, score, note }: { label: string; score: number; not
                     transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
                 />
             </div>
-            {note && <p className="text-xs text-text-muted">{note}</p>}
+            {note && <p className="text-xs text-[var(--color-on-surface-muted)]">{note}</p>}
         </div>
     );
 }
@@ -100,11 +100,11 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {/* Score */}
             <div className="text-center space-y-3">
                 <ScoreRing score={data.score} />
-                <p className="text-sm text-text-secondary">{data.encouragement}</p>
+                <p className="text-sm text-[var(--color-on-surface-muted)]">{data.encouragement}</p>
             </div>
 
             {/* Category scores */}
-            <div className="bg-bg-card border border-border rounded-xl p-5 space-y-5">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-5">
                 <CategoryBar label="Gramática" score={data.feedback.grammar.score} note={data.feedback.grammar.note} />
                 <CategoryBar label="Vocabulario" score={data.feedback.vocabulary.score} note={data.feedback.vocabulary.note} />
                 <CategoryBar label="Coherencia" score={data.feedback.coherence.score} note={data.feedback.coherence.note} />
@@ -112,24 +112,24 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
 
             {/* Corrections */}
             {data.corrections.length > 0 && (
-                <div className="bg-bg-card border border-border rounded-xl p-5 space-y-3">
+                <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
                     <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Correcciones</h3>
                     {data.corrections.map((c, i) => (
-                        <div key={i} className="bg-bg-card-hover rounded-lg p-3.5 space-y-1.5">
+                        <div key={i} className="bg-[var(--color-card-hover)] rounded-lg p-3.5 space-y-1.5">
                             <div className="flex items-center gap-2 text-xs">
-                                <span className={`font-semibold ${TYPE_COLORS[c.type] || 'text-text-secondary'}`}>
+                                <span className={`font-semibold ${TYPE_COLORS[c.type] || 'text-[var(--color-on-surface-muted)]'}`}>
                                     {TYPE_LABELS[c.type] || c.type}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <XCircle className="w-3.5 h-3.5 text-accent-red shrink-0" />
-                                <span className="text-text-secondary line-through">{c.original}</span>
+                                <span className="text-[var(--color-on-surface-muted)] line-through">{c.original}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
                                 <span className="text-white">{c.corrected}</span>
                             </div>
-                            <p className="text-xs text-text-muted italic pl-5">{c.explanation}</p>
+                            <p className="text-xs text-[var(--color-on-surface-muted)] italic pl-5">{c.explanation}</p>
                         </div>
                     ))}
                 </div>
@@ -138,7 +138,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {/* Improved version (expandable) */}
             <button
                 onClick={() => setShowImproved(!showImproved)}
-                className="w-full bg-bg-card border border-border rounded-xl p-4 flex items-center justify-between text-sm text-text-secondary hover:text-white transition-colors"
+                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between text-sm text-[var(--color-on-surface-muted)] hover:text-white transition-colors"
             >
                 <span className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-accent-blue" />
@@ -165,7 +165,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {onNext && (
                 <button
                     onClick={onNext}
-                    className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     {nextLabel}
                 </button>

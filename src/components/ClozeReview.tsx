@@ -97,17 +97,17 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 className="widget text-center"
             >
-                <p className="text-xs text-text-muted uppercase tracking-wider mb-4">
+                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-4">
                     {t('review.clozeMode')}
                 </p>
-                <p className="text-xl leading-relaxed text-text">
-                    <span className="text-text-secondary">{clozeData.before}</span>
-                    <span className="inline-block min-w-[80px] border-b-2 border-primary mx-1 text-primary font-bold">
+                <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">
+                    <span className="text-[var(--color-on-surface-muted)]">{clozeData.before}</span>
+                    <span className="inline-block min-w-[80px] border-b-2 border-primary mx-1 text-[var(--color-primary)] font-bold">
                         {status !== 'pending' ? vocabulary.id : '________'}
                     </span>
-                    <span className="text-text-secondary">{clozeData.after}</span>
+                    <span className="text-[var(--color-on-surface-muted)]">{clozeData.after}</span>
                 </p>
-                <p className="text-sm text-text-muted mt-3">
+                <p className="text-sm text-[var(--color-on-surface-muted)] mt-3">
                     ({vocabulary.translations[0]})
                 </p>
             </motion.div>
@@ -131,7 +131,7 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                         <button
                             type="submit"
                             disabled={!answer.trim()}
-                            className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-40 text-white py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 disabled:opacity-40 text-white py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
                         >
                             {t('review.check')} ↵
                         </button>
@@ -139,7 +139,7 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                             <button
                                 type="button"
                                 onClick={handleHint}
-                                className="bg-bg-card hover:bg-bg-card-hover text-text-secondary py-3 px-4 rounded-xl font-medium transition-all text-sm"
+                                className="bg-[var(--color-card)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface-muted)] py-3 px-4 rounded-xl font-medium transition-all text-sm"
                             >
                                 <Lightbulb className="w-4 h-4 inline" /> {t('review.hint')}
                             </button>
@@ -166,9 +166,9 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center"
                 >
-                    <p className="text-lg font-bold text-primary flex items-center justify-center gap-1"><Check className="w-5 h-5" /> {t('review.correct')}</p>
+                    <p className="text-lg font-bold text-[var(--color-primary)] flex items-center justify-center gap-1"><Check className="w-5 h-5" /> {t('review.correct')}</p>
                     {usedHint && (
-                        <p className="text-xs text-text-muted mt-1">
+                        <p className="text-xs text-[var(--color-on-surface-muted)] mt-1">
                             ({t('review.hint')} → {t('review.again')})
                         </p>
                     )}
@@ -182,12 +182,12 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                     className="text-center space-y-3"
                 >
                     <p className="text-lg font-bold text-accent-red flex items-center justify-center gap-1"><X className="w-5 h-5" /> {t('review.incorrect')}</p>
-                    <p className="text-sm text-text-secondary">
-                        {t('review.correctAnswer')}: <span className="text-primary font-bold">{vocabulary.id}</span>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">
+                        {t('review.correctAnswer')}: <span className="text-[var(--color-primary)] font-bold">{vocabulary.id}</span>
                     </p>
                     <button
                         onClick={handleContinue}
-                        className="bg-bg-card hover:bg-bg-card-hover text-text px-6 py-2.5 rounded-xl font-medium transition-all"
+                        className="bg-[var(--color-card)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] px-6 py-2.5 rounded-xl font-medium transition-all"
                     >
                         {t('review.continueNext')} <ArrowRight className="w-4 h-4 inline" />
                     </button>

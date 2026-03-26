@@ -42,7 +42,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.8, opacity: 0 }}
                         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-                        className="relative bg-bg-card rounded-3xl p-8 max-w-sm w-full text-center z-10 space-y-4 border border-border-light shadow-2xl overflow-hidden"
+                        className="relative bg-[var(--color-card)] rounded-3xl p-8 max-w-sm w-full text-center z-10 space-y-4 border border-[var(--color-outline-subtle)] shadow-2xl overflow-hidden"
                     >
                         {/* Aurora background */}
                         <div className="absolute inset-0 z-0 rounded-3xl overflow-hidden">
@@ -93,13 +93,13 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                                 tag="h2"
                             />
 
-                            <p className="text-xl font-bold text-primary">
+                            <p className="text-xl font-bold text-[var(--color-primary)]">
                                 {t('levelUp.unlocked', { level })}
                             </p>
-                            <p className="text-text-secondary text-sm">{t('levelUp.message')}</p>
+                            <p className="text-[var(--color-on-surface-muted)] text-sm">{t('levelUp.message')}</p>
 
-                            <div className="bg-bg-app rounded-xl p-3 border border-border">
-                                <p className="text-sm font-medium text-text">
+                            <div className="bg-[var(--color-background)] rounded-xl p-3 border border-[var(--color-outline-subtle)]">
+                                <p className="text-sm font-medium text-[var(--color-on-surface)]">
                                     <BookOpen className="w-4 h-4 inline" /> {storyCounts[level]} {t('levelUp.newStoriesAvailable')}
                                 </p>
                             </div>
@@ -110,7 +110,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={onClose}
-                                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl text-lg transition-colors"
+                                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white font-bold py-3 rounded-xl text-lg transition-colors"
                                 >
                                     {t('levelUp.continue')}
                                 </motion.button>

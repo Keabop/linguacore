@@ -60,19 +60,19 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-bg-card border border-border rounded-2xl p-6 text-center"
+                className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 text-center"
             >
-                <p className="text-xl leading-relaxed text-text-primary">{exercise.question}</p>
+                <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
             </motion.div>
 
             {/* Answer area */}
             <div
-                className={`min-h-[72px] bg-bg-card border rounded-2xl p-4 transition-all ${
+                className={`min-h-[72px] bg-[var(--color-card)] border rounded-2xl p-4 transition-all ${
                     status === 'correct'
                         ? 'border-emerald-500 bg-emerald-500/10'
                         : status === 'incorrect'
                           ? 'border-red-500 bg-red-500/10'
-                          : 'border-border'
+                          : 'border-[var(--color-outline-subtle)]'
                 }`}
             >
                 <div className="flex flex-wrap gap-3 min-h-[40px] items-center">
@@ -83,7 +83,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="text-sm text-text-muted italic"
+                                className="text-sm text-[var(--color-on-surface-muted)] italic"
                             >
                                 ...
                             </motion.span>
@@ -98,8 +98,8 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                                 layout
                                 onClick={() => handleRemoveWord(word, i)}
                                 disabled={status !== 'pending'}
-                                className={`bg-primary/20 border border-primary/40 rounded-lg px-4 py-2.5 text-sm font-medium text-text-primary transition-all ${
-                                    status === 'pending' ? 'cursor-pointer hover:bg-primary/30 active:scale-95' : 'cursor-default'
+                                className={`bg-[var(--color-primary)]/20 border border-primary/40 rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--color-on-surface)] transition-all ${
+                                    status === 'pending' ? 'cursor-pointer hover:bg-[var(--color-primary)]/30 active:scale-95' : 'cursor-default'
                                 }`}
                             >
                                 {word}
@@ -122,7 +122,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                                 exit="exit"
                                 layout
                                 onClick={() => handlePlaceWord(word, i)}
-                                className="bg-bg-app border border-border rounded-lg px-4 py-2.5 text-sm font-medium text-text-primary cursor-pointer hover:border-primary/50 active:scale-95 transition-all"
+                                className="bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--color-on-surface)] cursor-pointer hover:border-[var(--color-primary)]/50 active:scale-95 transition-all"
                             >
                                 {word}
                             </motion.button>
@@ -136,7 +136,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 <button
                     onClick={handleCheck}
                     disabled={!allPlaced}
-                    className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 disabled:opacity-40 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     {t('exercises.checkAnswer')}
                 </button>
@@ -154,12 +154,12 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                             <Check className="w-5 h-5" /> {t('exercises.correct')}
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-5">
-                        <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
+                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -176,16 +176,16 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                         <p className="text-lg font-bold text-red-400 flex items-center justify-center gap-1.5">
                             <X className="w-5 h-5" /> {t('exercises.incorrect')}
                         </p>
-                        <p className="text-sm text-text-secondary">
-                            <span className="text-primary font-bold">{exercise.correctAnswer}</span>
+                        <p className="text-sm text-[var(--color-on-surface-muted)]">
+                            <span className="text-[var(--color-primary)] font-bold">{exercise.correctAnswer}</span>
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-5">
-                        <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
+                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

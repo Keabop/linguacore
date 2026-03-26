@@ -57,26 +57,26 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
 
     if (!recognitionSupported) {
         return (
-            <div className="bg-bg-card border border-border rounded-xl p-6 text-center space-y-3">
-                <MicOff className="w-8 h-8 text-text-muted mx-auto" />
-                <p className="text-sm text-text-secondary">Tu navegador no soporta reconocimiento de voz.</p>
-                <button onClick={() => onComplete(100)} className="text-sm text-primary underline">Saltar ejercicio</button>
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-6 text-center space-y-3">
+                <MicOff className="w-8 h-8 text-[var(--color-on-surface-muted)] mx-auto" />
+                <p className="text-sm text-[var(--color-on-surface-muted)]">Tu navegador no soporta reconocimiento de voz.</p>
+                <button onClick={() => onComplete(100)} className="text-sm text-[var(--color-primary)] underline">Saltar ejercicio</button>
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <div className="bg-bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-accent-blue text-sm font-semibold">
                     <Volume2 className="w-4 h-4" />
                     Lectura en voz alta
                 </div>
-                <p className="text-sm text-text-secondary leading-relaxed">{instruction}</p>
+                <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{instruction}</p>
             </div>
 
-            <div className="bg-bg-card-hover border border-border-light rounded-xl p-5 space-y-3">
-                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">Lee este texto</p>
+            <div className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
+                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">Lee este texto</p>
                 {!result ? (
                     <p className="text-white text-lg leading-relaxed font-medium">{targetText}</p>
                 ) : (
@@ -97,12 +97,12 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
 
             {(isListening || transcript) && !submitted && (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                    className="bg-bg-card border border-primary/20 rounded-xl p-4">
-                    <p className="text-xs text-text-muted mb-1">Tu voz:</p>
+                    className="bg-[var(--color-card)] border border-primary/20 rounded-xl p-4">
+                    <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">Tu voz:</p>
                     <p className="text-sm text-white">
                         {transcript}
-                        {interimTranscript && <span className="text-text-muted italic"> {interimTranscript}</span>}
-                        {isListening && !transcript && !interimTranscript && <span className="text-text-muted italic">Escuchando...</span>}
+                        {interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic"> {interimTranscript}</span>}
+                        {isListening && !transcript && !interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic">Escuchando...</span>}
                     </p>
                 </motion.div>
             )}
@@ -112,7 +112,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                     <p className={`text-4xl font-extrabold ${result.score >= 80 ? 'text-green-400' : result.score >= 60 ? 'text-accent-orange' : 'text-accent-red'}`}>
                         {result.score}%
                     </p>
-                    <p className="text-sm text-text-secondary">
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">
                         {result.score >= 80 ? '¡Excelente pronunciación!' : result.score >= 60 ? 'Buen intento, ¡sigue practicando!' : 'Necesitas más práctica. ¡Intenta de nuevo!'}
                     </p>
                 </motion.div>
@@ -122,7 +122,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 {!submitted ? (
                     <>
                         <button onClick={handleToggleRecord}
-                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-primary text-white hover:bg-primary-dark'}`}>
+                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-[var(--color-primary)] text-white hover:brightness-90'}`}>
                             {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
@@ -136,11 +136,11 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 ) : (
                     <>
                         <button onClick={handleRetry}
-                            className="flex-1 bg-bg-card border border-border hover:bg-bg-card-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(result?.score ?? 0)}
-                            className="flex-1 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                             Continuar
                         </button>
                     </>

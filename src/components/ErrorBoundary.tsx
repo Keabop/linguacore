@@ -58,7 +58,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                         animate={{ opacity: 1, scale: 1 }}
                         className="flex items-center justify-center min-h-[60vh] px-4"
                     >
-                        <div className="bg-bg-card border border-accent-orange/20 rounded-2xl p-8 max-w-md w-full text-center space-y-5">
+                        <div className="bg-[var(--color-card)] border border-accent-orange/20 rounded-2xl p-8 max-w-md w-full text-center space-y-5">
                             <div className="mx-auto w-14 h-14 rounded-full bg-accent-orange/10 flex items-center justify-center">
                                 <WifiOff className="w-7 h-7 text-accent-orange" />
                             </div>
@@ -66,7 +66,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                                 <h2 className="text-lg font-bold text-white mb-2">
                                     Página no disponible offline
                                 </h2>
-                                <p className="text-sm text-text-muted">
+                                <p className="text-sm text-[var(--color-on-surface-muted)]">
                                     Esta página no se ha cargado previamente y no está disponible sin conexión.
                                     Vuelve al inicio o conéctate a internet para cargarla.
                                 </p>
@@ -92,13 +92,13 @@ export default class ErrorBoundary extends Component<Props, State> {
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex items-center justify-center min-h-[60vh] px-4"
                 >
-                    <div className="bg-bg-card border border-red-500/20 rounded-2xl p-8 max-w-md w-full text-center space-y-5">
+                    <div className="bg-[var(--color-card)] border border-red-500/20 rounded-2xl p-8 max-w-md w-full text-center space-y-5">
                         <div className="mx-auto w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
                             <AlertTriangle className="w-7 h-7 text-red-400" />
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-white mb-2">Algo salió mal</h2>
-                            <p className="text-sm text-text-muted">
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">
                                 Esta página tuvo un error inesperado. Puedes intentar recargarla.
                             </p>
                         </div>

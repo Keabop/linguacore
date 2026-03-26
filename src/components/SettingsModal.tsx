@@ -80,14 +80,14 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                         onClick={onClose}
                     >
                         <div
-                            className="w-full max-w-md bg-bg-card border border-border rounded-2xl overflow-hidden"
+                            className="w-full max-w-md bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl overflow-hidden"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Header */}
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                                <h2 className="text-lg font-bold text-text">{t('settings.title')}</h2>
-                                <button onClick={onClose} className="p-1 rounded-lg hover:bg-bg-app transition-colors">
-                                    <X className="w-5 h-5 text-text-muted" />
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-outline-subtle)]">
+                                <h2 className="text-lg font-bold text-[var(--color-on-surface)]">{t('settings.title')}</h2>
+                                <button onClick={onClose} className="p-1 rounded-lg hover:bg-[var(--color-background)] transition-colors">
+                                    <X className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
                                 </button>
                             </div>
 
@@ -96,12 +96,12 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                 {/* Theme */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        {mode === 'dark' ? <Moon className="w-5 h-5 text-text-muted" /> : <Sun className="w-5 h-5 text-text-muted" />}
-                                        <span className="text-sm font-medium text-text">{t('settings.theme')}</span>
+                                        {mode === 'dark' ? <Moon className="w-5 h-5 text-[var(--color-on-surface-muted)]" /> : <Sun className="w-5 h-5 text-[var(--color-on-surface-muted)]" />}
+                                        <span className="text-sm font-medium text-[var(--color-on-surface)]">{t('settings.theme')}</span>
                                     </div>
                                     <button
                                         onClick={toggleMode}
-                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-bg-app border border-border text-text-secondary hover:text-text transition-colors"
+                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--color-background)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
                                     >
                                         {mode === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
                                     </button>
@@ -110,30 +110,30 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                 {/* Language */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <Globe className="w-5 h-5 text-text-muted" />
-                                        <span className="text-sm font-medium text-text">{t('settings.language')}</span>
+                                        <Globe className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
+                                        <span className="text-sm font-medium text-[var(--color-on-surface)]">{t('settings.language')}</span>
                                     </div>
-                                    <span className="text-xs text-text-muted px-3 py-1.5 rounded-lg bg-bg-app border border-border">
+                                    <span className="text-xs text-[var(--color-on-surface-muted)] px-3 py-1.5 rounded-lg bg-[var(--color-background)] border border-[var(--color-outline-subtle)]">
                                         Español
                                     </span>
                                 </div>
 
                                 {/* Divider */}
-                                <div className="border-t border-border" />
+                                <div className="border-t border-[var(--color-outline-subtle)]" />
 
                                 {/* Plan & Subscription */}
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-3">
-                                        <CreditCard className="w-5 h-5 text-text-muted" />
-                                        <span className="text-sm font-medium text-text">{t('settings.planAndSubscription')}</span>
+                                        <CreditCard className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
+                                        <span className="text-sm font-medium text-[var(--color-on-surface)]">{t('settings.planAndSubscription')}</span>
                                     </div>
 
                                     {isPro && subscription?.subscriptionStatus === 'active' && (
-                                        <div className="bg-bg-app border border-border rounded-xl p-4 space-y-3">
+                                        <div className="bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4 space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <Crown className="w-4 h-4 text-primary" />
-                                                <span className="text-sm font-bold text-text">Plan Pro</span>
-                                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                                                <Crown className="w-4 h-4 text-[var(--color-primary)]" />
+                                                <span className="text-sm font-bold text-[var(--color-on-surface)]">Plan Pro</span>
+                                                <span className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-0.5 rounded-full font-medium">
                                                     {t('account.planPro')}
                                                 </span>
                                             </div>
@@ -147,10 +147,10 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                     )}
 
                                     {isPro && subscription?.subscriptionStatus === 'cancelled' && (
-                                        <div className="bg-bg-app border border-border rounded-xl p-4 space-y-3">
+                                        <div className="bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4 space-y-3">
                                             <div className="flex items-center gap-2">
                                                 <Crown className="w-4 h-4 text-accent-amber" />
-                                                <span className="text-sm font-bold text-text">Plan Pro</span>
+                                                <span className="text-sm font-bold text-[var(--color-on-surface)]">Plan Pro</span>
                                                 <span className="text-xs bg-accent-amber/10 text-accent-amber px-2 py-0.5 rounded-full font-medium">
                                                     Cancela pronto
                                                 </span>
@@ -158,7 +158,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                             <button
                                                 onClick={handleReactivate}
                                                 disabled={actionLoading}
-                                                className="text-xs text-primary hover:text-primary-light transition-colors flex items-center gap-1"
+                                                className="text-xs text-[var(--color-primary)] hover:text-[var(--color-primary)]-light transition-colors flex items-center gap-1"
                                             >
                                                 {actionLoading && <Loader2 className="w-3 h-3 animate-spin" />}
                                                 {t('account.reactivateSubscription')}
@@ -167,13 +167,13 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                     )}
 
                                     {!isPro && (
-                                        <div className="bg-bg-app border border-border rounded-xl p-4 space-y-3">
+                                        <div className="bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4 space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm text-text-muted">{t('account.planFree')}</span>
+                                                <span className="text-sm text-[var(--color-on-surface-muted)]">{t('account.planFree')}</span>
                                             </div>
                                             <button
                                                 onClick={() => { navigate('/pricing'); onClose(); }}
-                                                className="text-xs bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                                                className="text-xs bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg font-medium hover:brightness-90 transition-colors"
                                             >
                                                 {t('account.upgradeToPro')}
                                             </button>
@@ -186,7 +186,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                 </div>
 
                                 {/* Divider */}
-                                <div className="border-t border-border" />
+                                <div className="border-t border-[var(--color-outline-subtle)]" />
 
                                 {/* Logout */}
                                 <button
@@ -219,18 +219,18 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                     onClick={() => setShowCancelConfirm(false)}
                                 >
                                     <div
-                                        className="w-full max-w-sm bg-bg-card border border-border rounded-2xl p-6 space-y-4"
+                                        className="w-full max-w-sm bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 space-y-4"
                                         onClick={e => e.stopPropagation()}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
                                                 <AlertTriangle className="w-5 h-5 text-red-400" />
                                             </div>
-                                            <h3 className="text-base font-bold text-text">{t('account.cancelConfirmTitle')}</h3>
+                                            <h3 className="text-base font-bold text-[var(--color-on-surface)]">{t('account.cancelConfirmTitle')}</h3>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <p className="text-xs text-text-muted font-semibold uppercase tracking-wider">{t('account.cancelConfirmLose')}</p>
+                                            <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">{t('account.cancelConfirmLose')}</p>
                                             <ul className="space-y-1.5">
                                                 {[
                                                     t('account.cancelLoseLevel'),
@@ -246,14 +246,14 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                             </ul>
                                         </div>
 
-                                        <p className="text-xs text-text-muted bg-bg-app rounded-lg p-3">
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] bg-[var(--color-background)] rounded-lg p-3">
                                             {t('account.cancelAccessUntil', { date: 'el final de tu período de facturación' })}
                                         </p>
 
                                         <div className="flex gap-3">
                                             <button
                                                 onClick={() => setShowCancelConfirm(false)}
-                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-primary text-white hover:bg-primary-dark transition-colors"
+                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-[var(--color-primary)] text-white hover:brightness-90 transition-colors"
                                             >
                                                 {t('account.cancelKeep')}
                                             </button>

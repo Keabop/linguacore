@@ -27,14 +27,14 @@ export default function SkillBreakdown({ unitId }: Props) {
         <div className="space-y-3 mt-3">
             {/* Mastery bar */}
             <div className="flex items-center gap-2 text-xs">
-                <span className="text-text-muted">Skills:</span>
-                <div className="flex-1 h-1.5 bg-bg-app rounded-full overflow-hidden">
+                <span className="text-[var(--color-on-surface-muted)]">Skills:</span>
+                <div className="flex-1 h-1.5 bg-[var(--color-background)] rounded-full overflow-hidden">
                     <div
                         className="h-full bg-green-500 rounded-full transition-all"
                         style={{ width: `${skills.length > 0 ? (masteredCount / skills.length) * 100 : 0}%` }}
                     />
                 </div>
-                <span className="text-text-secondary font-bold">{masteredCount}/{skills.length}</span>
+                <span className="text-[var(--color-on-surface-muted)] font-bold">{masteredCount}/{skills.length}</span>
             </div>
 
             {/* Skill list */}
@@ -51,11 +51,11 @@ export default function SkillBreakdown({ unitId }: Props) {
                             ) : isDue ? (
                                 <AlertCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                             ) : card ? (
-                                <Clock className="w-3.5 h-3.5 text-text-muted flex-shrink-0" />
+                                <Clock className="w-3.5 h-3.5 text-[var(--color-on-surface-muted)] flex-shrink-0" />
                             ) : (
-                                <span className="w-3.5 h-3.5 rounded-full border border-border flex-shrink-0" />
+                                <span className="w-3.5 h-3.5 rounded-full border border-[var(--color-outline-subtle)] flex-shrink-0" />
                             )}
-                            <span className={`${isDue ? 'text-amber-400' : isMastered ? 'text-green-400' : 'text-text-muted'}`}>
+                            <span className={`${isDue ? 'text-amber-400' : isMastered ? 'text-green-400' : 'text-[var(--color-on-surface-muted)]'}`}>
                                 {skill.name}
                             </span>
                         </div>

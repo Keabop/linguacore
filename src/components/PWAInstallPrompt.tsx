@@ -62,32 +62,32 @@ export default function PWAInstallPrompt() {
     if (!showIOSHint && !deferredPrompt) return null;
 
     return (
-        <div className="bg-bg-card border border-primary/30 rounded-2xl p-4 flex items-start gap-3 mb-6">
-            <Download className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+        <div className="bg-[var(--color-card)] border border-primary/30 rounded-2xl p-4 flex items-start gap-3 mb-6">
+            <Download className="w-5 h-5 text-[var(--color-primary)] mt-0.5 shrink-0" />
 
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-text">Instala Voxie en tu dispositivo</p>
+                <p className="text-sm font-bold text-[var(--color-on-surface)]">Instala Voxie en tu dispositivo</p>
 
                 {showIOSHint ? (
-                    <p className="text-xs text-text-muted mt-1 leading-relaxed">
-                        Toca <span className="font-semibold text-text-secondary">Compartir</span> y luego{' '}
-                        <span className="font-semibold text-text-secondary">Agregar a inicio</span>.
+                    <p className="text-xs text-[var(--color-on-surface-muted)] mt-1 leading-relaxed">
+                        Toca <span className="font-semibold text-[var(--color-on-surface-muted)]">Compartir</span> y luego{' '}
+                        <span className="font-semibold text-[var(--color-on-surface-muted)]">Agregar a inicio</span>.
                     </p>
                 ) : deferredPrompt ? (
                     <button
                         onClick={install}
-                        className="mt-2 bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+                        className="mt-2 bg-[var(--color-primary)] text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
                     >
                         Instalar ahora
                     </button>
                 ) : (
-                    <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                    <p className="text-xs text-[var(--color-on-surface-muted)] mt-1 leading-relaxed">
                         Abre el menú del navegador y selecciona &quot;Instalar aplicación&quot;.
                     </p>
                 )}
             </div>
 
-            <button onClick={dismiss} className="text-text-muted hover:text-text-secondary transition-colors shrink-0">
+            <button onClick={dismiss} className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface-muted)] transition-colors shrink-0">
                 <X className="w-4 h-4" />
             </button>
         </div>

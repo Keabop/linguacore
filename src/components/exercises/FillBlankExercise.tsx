@@ -40,14 +40,14 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-bg-card border border-border rounded-2xl p-6 text-center"
+                className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 text-center"
             >
-                <p className="text-xl leading-relaxed text-text-primary">
+                <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">
                     {parts.map((part, i) => (
                         <span key={i}>
-                            <span className="text-text-secondary">{part}</span>
+                            <span className="text-[var(--color-on-surface-muted)]">{part}</span>
                             {i < parts.length - 1 && (
-                                <span className="inline-block min-w-[80px] border-b-2 border-primary mx-1 text-primary font-bold">
+                                <span className="inline-block min-w-[80px] border-b-2 border-primary mx-1 text-[var(--color-primary)] font-bold">
                                     {status !== 'pending' ? exercise.correctAnswer : '______'}
                                 </span>
                             )}
@@ -64,12 +64,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     value={answer}
                     onChange={e => setAnswer(e.target.value)}
                     disabled={status !== 'pending'}
-                    className={`w-full bg-bg-app border rounded-xl px-5 py-3.5 text-text-primary focus:outline-none transition-all ${
+                    className={`w-full bg-[var(--color-background)] border rounded-xl px-5 py-3.5 text-[var(--color-on-surface)] focus:outline-none transition-all ${
                         status === 'correct'
                             ? 'border-emerald-500 bg-emerald-500/10'
                             : status === 'incorrect'
                               ? 'border-red-500 bg-red-500/10'
-                              : 'border-border focus:border-primary'
+                              : 'border-[var(--color-outline-subtle)] focus:border-[var(--color-primary)]'
                     }`}
                     autoComplete="off"
                     autoCapitalize="off"
@@ -80,7 +80,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     <button
                         type="submit"
                         disabled={!answer.trim()}
-                        className="w-full bg-primary hover:bg-primary-dark disabled:opacity-40 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 disabled:opacity-40 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                     >
                         {t('exercises.checkAnswer')}
                     </button>
@@ -99,12 +99,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                             <Check className="w-5 h-5" /> {t('exercises.correct')}
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-5">
-                        <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
+                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -121,16 +121,16 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                         <p className="text-lg font-bold text-red-400 flex items-center justify-center gap-1.5">
                             <X className="w-5 h-5" /> {t('exercises.incorrect')}
                         </p>
-                        <p className="text-sm text-text-secondary">
-                            <span className="text-primary font-bold">{exercise.correctAnswer}</span>
+                        <p className="text-sm text-[var(--color-on-surface-muted)]">
+                            <span className="text-[var(--color-primary)] font-bold">{exercise.correctAnswer}</span>
                         </p>
                     </div>
-                    <div className="bg-bg-card border border-border rounded-xl p-5">
-                        <p className="text-sm text-text-secondary leading-relaxed">{exercise.explanation}</p>
+                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

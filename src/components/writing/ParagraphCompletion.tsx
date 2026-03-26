@@ -20,24 +20,24 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
 
     return (
         <div className="space-y-6">
-            <div className="bg-bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-teal-400 text-sm font-semibold">
                     <FileText className="w-4 h-4" />
                     Completar párrafo
                 </div>
-                <p className="text-sm text-text-secondary leading-relaxed">{instruction}</p>
+                <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{instruction}</p>
             </div>
 
             <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-bg-card-hover border border-border-light rounded-xl p-5"
+                className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5"
             >
-                <p className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-2">Contexto</p>
+                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Contexto</p>
                 <p className="text-white text-sm leading-relaxed">{sourceText}</p>
-                <div className="mt-3 border-l-2 border-primary/40 pl-3">
-                    <p className="text-xs text-text-muted italic">Continúa desde aquí...</p>
+                <div className="mt-3 border-l-2 border-[var(--color-primary)]/40 pl-3">
+                    <p className="text-xs text-[var(--color-on-surface-muted)] italic">Continúa desde aquí...</p>
                 </div>
             </motion.div>
 
@@ -57,10 +57,10 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
                     onChange={e => setText(e.target.value)}
                     disabled={disabled}
                     placeholder="Escribe la continuación en inglés..."
-                    className="w-full bg-bg-card border border-border rounded-xl p-4 text-white text-sm leading-relaxed placeholder:text-text-muted resize-none focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all min-h-[120px] disabled:opacity-50"
+                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-white text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[120px] disabled:opacity-50"
                     rows={4}
                 />
-                <p className="text-xs text-text-muted text-right">
+                <p className="text-xs text-[var(--color-on-surface-muted)] text-right">
                     {text.trim().split(/\s+/).filter(Boolean).length} palabras
                 </p>
             </div>
@@ -68,7 +68,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim()}
-                className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />
