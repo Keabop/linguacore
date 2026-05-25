@@ -1,5 +1,5 @@
 -- ============================================
--- LinguaCore — Supabase Schema
+-- Voxie — Supabase Schema
 -- Ejecutar en: Supabase Dashboard → SQL Editor
 -- ============================================
 

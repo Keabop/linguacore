@@ -1,7 +1,7 @@
 import { get, set } from 'idb-keyval';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const QUEUE_KEY = 'LINGUACORE_MUTATION_QUEUE';
+const QUEUE_KEY = 'VOXIE_MUTATION_QUEUE';
 
 export interface QueuedMutation {
     id: string;
@@ -36,17 +36,24 @@ export function isSyncing(): boolean {
 }
 
 export function getLastSyncTime(): number | null {
-    const val = localStorage.getItem('LINGUACORE_LAST_SYNC');
+    let val = localStorage.getItem('VOXIE_LAST_SYNC');
+    if (!val) {
+        val = localStorage.getItem('LINGUACORE_LAST_SYNC');
+    }
     return val ? Number(val) : null;
 }
 
 function setLastSyncTime() {
-    localStorage.setItem('LINGUACORE_LAST_SYNC', String(Date.now()));
+    localStorage.setItem('VOXIE_LAST_SYNC', String(Date.now()));
 }
 
 /** Load the queue from IndexedDB into memory (call once on startup) */
 export async function loadQueue(): Promise<void> {
-    const stored = await get<QueuedMutation[]>(QUEUE_KEY);
+    let stored = await get<QueuedMutation[]>(QUEUE_KEY);
+    if (!stored) {
+        // Fallback for transition
+        stored = await get<QueuedMutation[]>('LINGUACORE_MUTATION_QUEUE');
+    }
     memoryQueue = stored ?? [];
     notify();
 }

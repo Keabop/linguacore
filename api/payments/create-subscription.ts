@@ -6,8 +6,9 @@ import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 // CORS
 // ---------------------------------------------------------------------------
 const ALLOWED_ORIGINS = [
-    'https://linguacore-zeta.vercel.app',
-    'https://voxie.lat',
+    'https://linguacore-zeta.vercel.app', // Producción actual en Vercel
+    'https://voxie.pages.dev',             // Cloudflare Pages estimado
+    'https://voxie.lat',                   // Dominio final reservado
     'https://www.voxie.lat',
     'http://localhost:5173',
     'http://localhost:4173',
