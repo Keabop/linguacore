@@ -53,6 +53,64 @@ function isRateLimited(ip: string): boolean {
     return timestamps.length > MAX_REQUESTS;
 }
 
+function validateInputSize(agent: AgentType, params: any): { valid: boolean; error?: string } {
+    if (!params) return { valid: true };
+
+    switch (agent) {
+        case 'conversation-tutor': {
+            const messages = params.messages;
+            if (!Array.isArray(messages)) {
+                return { valid: false, error: 'Formato de mensajes inválido.' };
+            }
+            if (messages.length > 15) {
+                return { valid: false, error: 'La conversación es demasiado larga. Intenta iniciar un nuevo chat.' };
+            }
+            
+            let totalLength = 0;
+            for (const msg of messages) {
+                if (typeof msg.content !== 'string') {
+                    return { valid: false, error: 'El contenido del mensaje debe ser texto.' };
+                }
+                if (msg.content.length > 1000) {
+                    return { valid: false, error: 'El mensaje es demasiado largo (máximo 1000 caracteres).' };
+                }
+                totalLength += msg.content.length;
+            }
+            
+            if (totalLength > 10000) {
+                return { valid: false, error: 'El historial de chat supera el límite permitido de caracteres.' };
+            }
+            break;
+        }
+        case 'story-generator': {
+            if (params.topic && typeof params.topic === 'string' && params.topic.length > 500) {
+                return { valid: false, error: 'El tema de la historia es demasiado largo (máximo 500 caracteres).' };
+            }
+            break;
+        }
+        case 'vocab-enricher': {
+            if (params.word && typeof params.word === 'string' && params.word.length > 100) {
+                return { valid: false, error: 'La palabra o frase es demasiado larga (máximo 100 caracteres).' };
+            }
+            break;
+        }
+        case 'exercise-creator': {
+            if (params.topic && typeof params.topic === 'string' && params.topic.length > 500) {
+                return { valid: false, error: 'El tema para el ejercicio es demasiado largo (máximo 500 caracteres).' };
+            }
+            break;
+        }
+        case 'writing-evaluator': {
+            if (params.text && typeof params.text === 'string' && params.text.length > 3000) {
+                return { valid: false, error: 'El texto a evaluar es demasiado largo (máximo 3000 caracteres).' };
+            }
+            break;
+        }
+    }
+
+    return { valid: true };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const corsOrigin = getCorsOrigin(req);
     res.setHeader('Access-Control-Allow-Origin', corsOrigin);
@@ -87,6 +145,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (!agent) {
             return res.status(400).json({ error: 'Missing "agent" field in request body' });
+        }
+
+        // --- Validate input size (prevent DOS / token exhaustion) ---
+        const validation = validateInputSize(agent, params);
+        if (!validation.valid) {
+            return res.status(400).json({ error: 'input_too_large', message: validation.error });
         }
 
         // Validate agent name before dispatching
