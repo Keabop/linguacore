@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
+import { env } from './config.js';
 
 export type AgentType = 'story-generator' | 'vocab-enricher' | 'exercise-creator' | 'conversation-tutor' | 'writing-evaluator';
 
@@ -10,7 +11,7 @@ let _genAI: GoogleGenerativeAI | null = null;
 function getGenAI(): GoogleGenerativeAI {
     if (_genAI) return _genAI;
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error(
             'GEMINI_API_KEY environment variable is not set. ' +
