@@ -1,5 +1,5 @@
 ---
-description: Deploy LinguaCore to Vercel production
+description: Deploy Voxie to Vercel production
 ---
 
 # Deploy to Vercel
@@ -17,4 +17,4 @@ $env:PATH = "C:\Program Files\nodejs;" + $env:PATH; & "C:\Program Files\nodejs\n
 ```
 
 3. The deployment URL will be shown in the output. The production URL is:
-   **https://linguacore-zeta.vercel.app**
+   **https://voxie.lat** (or Cloudflare subdomain: **https://voxie.pages.dev**)

@@ -1,7 +1,7 @@
 import { get, set, del } from 'idb-keyval';
 import type { PersistedClient, Persister } from '@tanstack/react-query-persist-client';
 
-const IDB_KEY = 'LINGUACORE_QUERY_CACHE';
+const IDB_KEY = 'VOXIE_QUERY_CACHE';
 
 /**
  * IndexedDB persister for React Query using idb-keyval.
@@ -13,7 +13,12 @@ export function createIdbPersister(): Persister {
             await set(IDB_KEY, client);
         },
         restoreClient: async () => {
-            return await get<PersistedClient>(IDB_KEY);
+            let client = await get<PersistedClient>(IDB_KEY);
+            if (!client) {
+                // Fallback for transition
+                client = await get<PersistedClient>('LINGUACORE_QUERY_CACHE');
+            }
+            return client;
         },
         removeClient: async () => {
             await del(IDB_KEY);
