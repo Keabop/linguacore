@@ -1,3 +1,13 @@
+// Polyfill global 'process' for third-party library compatibility in Edge Runtimes (like Cloudflare Pages)
+if (typeof (globalThis as any).process === 'undefined') {
+    (globalThis as any).process = {
+        env: {},
+        version: 'v18.0.0',
+        versions: { node: '18.0.0' },
+        nextTick: (cb: Function, ...args: any[]) => setTimeout(() => cb(...args), 0),
+    };
+}
+
 // Helper to safely access process.env in runtimes where 'process' is not defined (like Cloudflare Edge)
 function safeGetEnv(key: string): string | undefined {
     return typeof process !== 'undefined' && process.env ? process.env[key] : undefined;
