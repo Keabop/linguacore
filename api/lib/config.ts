@@ -8,6 +8,24 @@ if (typeof (globalThis as any).process === 'undefined') {
     };
 }
 
+// Polyfill global 'fetch' to inject headers.raw() for compatibility with Node-fetch dependent libraries
+const originalFetch = globalThis.fetch;
+if (originalFetch) {
+    globalThis.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+        const response = await originalFetch(input, init);
+        if (response.headers && typeof (response.headers as any).raw !== 'function') {
+            (response.headers as any).raw = function () {
+                const rawHeaders: Record<string, string[]> = {};
+                response.headers.forEach((value, key) => {
+                    rawHeaders[key] = [value];
+                });
+                return rawHeaders;
+            };
+        }
+        return response;
+    };
+}
+
 // Helper to safely access process.env in runtimes where 'process' is not defined (like Cloudflare Edge)
 function safeGetEnv(key: string): string | undefined {
     return typeof process !== 'undefined' && process.env ? process.env[key] : undefined;
