@@ -254,8 +254,16 @@ export const onRequestPost: PagesFunction = async (context) => {
         });
 
     } catch (error: any) {
-        console.error('[Payments Edge] Error:', error);
-        return new Response(JSON.stringify({ error: 'Failed to process subscription request' }), {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : '';
+        const errorDetails = error?.response || error?.cause || null;
+        console.error('[Payments Edge] Error:', error, 'Details:', errorDetails);
+        return new Response(JSON.stringify({ 
+            error: 'Failed to process subscription request',
+            message: errorMessage,
+            stack: errorStack,
+            details: errorDetails
+        }), {
             status: 500,
             headers: corsHeaders,
         });
