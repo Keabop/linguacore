@@ -243,13 +243,13 @@ export const onRequestPost: PagesFunction = async (context) => {
             },
             back_url: backUrl,
             notification_url: notificationUrl,
+            // In Sandbox, use the test payer email from env (set it in Cloudflare to your MP test buyer email)
+            // In Production, use the real Supabase user email
+            payer_email: isSandbox
+                ? (env.MERCADOPAGO_TEST_PAYER_EMAIL || user.email!)
+                : user.email!,
             external_reference: user.id,
         };
-
-        // Only include payer_email in production — in Sandbox, MP will ask at checkout
-        if (!isSandbox) {
-            subscriptionBody.payer_email = user.email!;
-        }
 
         const result = await preApproval.create({ body: subscriptionBody });
 

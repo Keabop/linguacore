@@ -37,6 +37,7 @@ export let env: Record<string, string> = {
     MERCADOPAGO_ACCESS_TOKEN: safeGetEnv('MERCADOPAGO_ACCESS_TOKEN') || '',
     GEMINI_API_KEY: safeGetEnv('GEMINI_API_KEY') || '',
     APP_URL: safeGetEnv('APP_URL') || 'https://voxie.pages.dev',
+    MERCADOPAGO_TEST_PAYER_EMAIL: safeGetEnv('MERCADOPAGO_TEST_PAYER_EMAIL') || '',
 };
 
 export function setEnv(bindings: any) {
@@ -47,5 +48,6 @@ export function setEnv(bindings: any) {
         MERCADOPAGO_ACCESS_TOKEN: bindings.MERCADOPAGO_ACCESS_TOKEN || env.MERCADOPAGO_ACCESS_TOKEN,
         GEMINI_API_KEY: bindings.GEMINI_API_KEY || env.GEMINI_API_KEY,
         APP_URL: bindings.APP_URL || env.APP_URL || 'https://voxie.pages.dev',
+        MERCADOPAGO_TEST_PAYER_EMAIL: bindings.MERCADOPAGO_TEST_PAYER_EMAIL || env.MERCADOPAGO_TEST_PAYER_EMAIL || '',
     };
 }
