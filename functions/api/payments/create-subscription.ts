@@ -254,9 +254,21 @@ export const onRequestPost: PagesFunction = async (context) => {
         });
 
     } catch (error: any) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        let errorMessage = 'Unknown error';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        } else if (typeof error === 'object' && error !== null) {
+            try {
+                errorMessage = error.message || JSON.stringify(error);
+            } catch {
+                errorMessage = String(error);
+            }
+        } else {
+            errorMessage = String(error);
+        }
+
         const errorStack = error instanceof Error ? error.stack : '';
-        const errorDetails = error?.response || error?.cause || null;
+        const errorDetails = error?.response || error?.cause || error || null;
         console.error('[Payments Edge] Error:', error, 'Details:', errorDetails);
         return new Response(JSON.stringify({ 
             error: 'Failed to process subscription request',
