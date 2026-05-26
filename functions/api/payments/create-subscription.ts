@@ -243,7 +243,7 @@ export const onRequestPost: PagesFunction = async (context) => {
                 },
                 back_url: backUrl,
                 notification_url: notificationUrl,
-                payer_email: user.email!,
+                payer_email: accessToken.startsWith('TEST-') ? 'test_user_1295914695@testuser.com' : user.email!,
                 external_reference: user.id,
             } as any,
         });
