@@ -232,21 +232,26 @@ export const onRequestPost: PagesFunction = async (context) => {
         const backUrl = appUrl + '/pricing?status=success';
         const notificationUrl = appUrl + '/api/payments/webhook';
 
-        const result = await preApproval.create({
-            body: {
-                reason: config.reason,
-                auto_recurring: {
-                    frequency: config.frequency,
-                    frequency_type: config.frequency_type,
-                    transaction_amount: config.transaction_amount,
-                    currency_id: 'MXN',
-                },
-                back_url: backUrl,
-                notification_url: notificationUrl,
-                payer_email: accessToken.startsWith('TEST-') ? 'test_user_1295914695@testuser.com' : user.email!,
-                external_reference: user.id,
-            } as any,
-        });
+        const isSandbox = accessToken.startsWith('TEST-');
+        const subscriptionBody: any = {
+            reason: config.reason,
+            auto_recurring: {
+                frequency: config.frequency,
+                frequency_type: config.frequency_type,
+                transaction_amount: config.transaction_amount,
+                currency_id: 'MXN',
+            },
+            back_url: backUrl,
+            notification_url: notificationUrl,
+            external_reference: user.id,
+        };
+
+        // Only include payer_email in production — in Sandbox, MP will ask at checkout
+        if (!isSandbox) {
+            subscriptionBody.payer_email = user.email!;
+        }
+
+        const result = await preApproval.create({ body: subscriptionBody });
 
         return new Response(JSON.stringify({ init_point: result.init_point }), {
             status: 200,
