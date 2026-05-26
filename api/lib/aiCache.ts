@@ -1,6 +1,6 @@
-import { createHash } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import type { AgentType } from './gemini.js';
+import { env } from './config.js';
 
 const CACHEABLE_AGENTS: AgentType[] = [
     'story-generator',
@@ -9,8 +9,8 @@ const CACHEABLE_AGENTS: AgentType[] = [
 ];
 
 function getSupabaseAdmin() {
-    const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const url = env.SUPABASE_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const key = env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !key) return null;
     return createClient(url, key);
 }
@@ -20,12 +20,25 @@ export function isCacheable(agent: AgentType): boolean {
     return CACHEABLE_AGENTS.includes(agent);
 }
 
-/** Generate a deterministic SHA-256 cache key from agent name + params (excluding user-specific fields) */
+/** Deterministic 64-bit string hash (MurmurHash3-like) - synchronous and zero-dependency */
+function hashString(str: string): string {
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0');
+}
+
+/** Generate a deterministic cache key from agent name + params (excluding user-specific fields) */
 export function generateCacheKey(agent: AgentType, params: Record<string, any>): string {
     // Strip user-specific / non-deterministic fields
     const { messages, userId, user_id, ...cacheable } = params ?? {};
     const payload = `${agent}:${JSON.stringify(cacheable)}`;
-    return createHash('sha256').update(payload).digest('hex');
+    return hashString(payload);
 }
 
 /** Look up a cached response. Returns the response object or null. */
