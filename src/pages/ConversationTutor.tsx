@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useConversationHistory, type ConversationSession } from '../hooks/useConversationHistory';
 import { chatWithTutor, type ConversationMessage, type ConversationResponse } from '../lib/ai';
-import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus, Lock } from 'lucide-react';
+import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus, Lock, X } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import AIErrorCard from '../components/AIErrorCard';
@@ -332,14 +332,54 @@ export default function ConversationTutor() {
                     </div>
                 </div>
                 <button onClick={() => setShowEndConfirm(true)}
-                    className="text-xs bg-[var(--color-error)]/10 text-[var(--color-error)] px-4 py-2 rounded-full font-bold hover:bg-[var(--color-error)]/20 hover:-translate-y-0.5 transition-all duration-300 shadow-[var(--shadow-card)]"
+                    className="text-xs bg-[var(--color-error)]/10 text-[var(--color-error)] px-3 py-2 sm:px-4 sm:py-2 rounded-full font-bold hover:bg-[var(--color-error)]/20 hover:-translate-y-0.5 transition-all duration-300 shadow-[var(--shadow-card)] flex items-center gap-1.5 shrink-0"
                     disabled={messages.length === 0}>
-                    {t('chat.endSession')}
+                    <X className="sm:hidden w-4 h-4" />
+                    <span className="hidden sm:inline">{t('chat.endSession')}</span>
                 </button>
             </motion.div>
 
             {/* Chat area */}
-            <div className="flex-1 overflow-y-auto space-y-6 pr-1 pb-4">
+            <div className="flex-1 overflow-y-auto space-y-6 pr-1 pb-4 flex flex-col">
+                {messages.length === 0 && !isLoading && (
+                    <div className="flex flex-col items-center justify-center text-center py-10 px-4 space-y-6 my-auto max-w-md w-full mx-auto">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg animate-pulse">
+                            <Sparkles className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="font-extrabold text-lg text-[var(--color-on-surface)]">¡Conéctate con tu Tutor de IA!</h3>
+                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
+                                Practica tu inglés de forma interactiva. Di "Hello" o selecciona una de nuestras sugerencias temáticas para comenzar la conversación.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2.5 w-full pt-2">
+                            <button onClick={() => sendMessage('Hello! I want to practice casual conversation.')}
+                                className="text-xs font-semibold text-left bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-surface-container)] hover:-translate-y-0.5 transition-all duration-300 p-3.5 rounded-2xl shadow-[var(--shadow-card)] flex items-center gap-3 w-full group">
+                                <span className="text-2xl p-2 rounded-xl bg-purple-500/10 group-hover:scale-110 transition-transform duration-300">💬</span>
+                                <div>
+                                    <p className="text-[var(--color-on-surface)] font-bold text-sm">Charla casual</p>
+                                    <p className="text-[10px] text-[var(--color-on-surface-muted)] font-normal mt-0.5">Plática espontánea sobre cualquier tema cotidiano.</p>
+                                </div>
+                            </button>
+                            <button onClick={() => sendMessage('Hi! Let\'s practice a restaurant roleplay.')}
+                                className="text-xs font-semibold text-left bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-surface-container)] hover:-translate-y-0.5 transition-all duration-300 p-3.5 rounded-2xl shadow-[var(--shadow-card)] flex items-center gap-3 w-full group">
+                                <span className="text-2xl p-2 rounded-xl bg-purple-500/10 group-hover:scale-110 transition-transform duration-300">🍔</span>
+                                <div>
+                                    <p className="text-[var(--color-on-surface)] font-bold text-sm">Roleplay en un Restaurante</p>
+                                    <p className="text-[10px] text-[var(--color-on-surface-muted)] font-normal mt-0.5">Simula ordenar comida y platicar en un café.</p>
+                                </div>
+                            </button>
+                            <button onClick={() => sendMessage('Hello! I want to prepare for a job interview.')}
+                                className="text-xs font-semibold text-left bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-surface-container)] hover:-translate-y-0.5 transition-all duration-300 p-3.5 rounded-2xl shadow-[var(--shadow-card)] flex items-center gap-3 w-full group">
+                                <span className="text-2xl p-2 rounded-xl bg-purple-500/10 group-hover:scale-110 transition-transform duration-300">💼</span>
+                                <div>
+                                    <p className="text-[var(--color-on-surface)] font-bold text-sm">Práctica de Entrevista</p>
+                                    <p className="text-[10px] text-[var(--color-on-surface-muted)] font-normal mt-0.5">Simulación de preguntas y respuestas profesionales.</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                )}
                 <AnimatePresence initial={false}>
                     {messages.map((msg, i) => (
                         <motion.div
@@ -352,9 +392,9 @@ export default function ConversationTutor() {
                             <div className={`max-w-[85%] space-y-2.5`}>
                                 {/* Message bubble */}
                                 <div
-                                    className={`text-sm leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] text-white rounded-2xl rounded-br-sm p-4 shadow-[var(--shadow-elevated)]'
-                                        : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] rounded-2xl rounded-bl-sm p-4 shadow-[var(--shadow-card)]'
+                                    className={`leading-relaxed ${msg.role === 'user'
+                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] text-white rounded-2xl rounded-br-[0.25rem] p-3.5 md:p-4 text-xs md:text-sm shadow-[var(--shadow-elevated)]'
+                                        : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] rounded-2xl rounded-bl-[0.25rem] p-3.5 md:p-4 text-xs md:text-sm shadow-[var(--shadow-card)]'
                                         }`}
                                 >
                                     {msg.content}
@@ -415,14 +455,14 @@ export default function ConversationTutor() {
 
             {/* Suggestions */}
             {suggestions.length > 0 && !isLoading && (
-                <div className="flex gap-3 overflow-x-auto py-4 shrink-0">
+                <div className="flex gap-2.5 overflow-x-auto py-3 shrink-0 -mx-4 px-4 scrollbar-none snap-x snap-mandatory">
                     {suggestions.map((s, i) => (
                         <button
                             key={i}
                             onClick={() => handleSuggestion(s)}
-                            className="text-xs bg-[var(--color-card)] hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] px-4 py-2.5 rounded-full whitespace-nowrap shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                            className="text-xs bg-[var(--color-card)] hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] px-4 py-2.5 rounded-full whitespace-nowrap shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 snap-start"
                         >
-                            <Sparkles className="w-3 h-3 inline mr-1.5" />{s}
+                            <Sparkles className="w-3 h-3 inline mr-1.5 text-[var(--color-primary)]" />{s}
                         </button>
                     ))}
                 </div>
@@ -448,7 +488,7 @@ export default function ConversationTutor() {
                         onChange={e => setInput(e.target.value)}
                         placeholder={t('chat.placeholder')}
                         disabled={isLoading}
-                        className="flex-1 bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)] rounded-full px-5 py-3 text-sm outline-none focus:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                        className="flex-1 bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] placeholder:text-xs md:placeholder:text-sm rounded-full px-5 py-3 text-xs md:text-sm outline-none focus:shadow-[var(--shadow-elevated)] transition-all duration-300"
                         autoComplete="off"
                     />
                     <button
