@@ -13,12 +13,12 @@ export default function AIErrorCard({ error, onRetry, disabled }: Props) {
     const { t } = useTranslation();
 
     return (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-5 space-y-3">
+        <div className="bg-red-500/8 rounded-[2rem] p-6 space-y-4 shadow-[var(--shadow-card)]">
             <p className="text-sm text-red-400">{error}</p>
             <button
                 onClick={onRetry}
                 disabled={disabled || !isOnline}
-                className="flex items-center gap-2 text-sm font-semibold text-white bg-[var(--color-primary)]/15 hover:bg-[var(--color-primary)]/25 px-4 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                className="btn-secondary flex items-center gap-2 text-sm font-semibold"
             >
                 <RefreshCw className="w-4 h-4" />
                 {isOnline ? t('common.retry') : t('common.offlineDisabled')}

@@ -24,19 +24,19 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
 
     const getOptionStyle = (option: string) => {
         if (status === 'pending') {
-            return 'bg-[var(--color-background)] border border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/50';
+            return 'bg-[var(--color-card)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] hover:-translate-y-0.5';
         }
 
         const isSelected = option === selected;
         const isCorrectOption = option.trim().toLowerCase() === exercise.correctAnswer.trim().toLowerCase();
 
         if (isCorrectOption) {
-            return 'border-emerald-500 bg-emerald-500/10';
+            return 'bg-[var(--color-success)]/10 shadow-[0_0_0_3px_var(--color-success)]';
         }
         if (isSelected && !isCorrectOption) {
-            return 'border-red-500 bg-red-500/10';
+            return 'bg-[var(--color-error)]/10 shadow-[0_0_0_3px_var(--color-error)]';
         }
-        return 'bg-[var(--color-background)] border border-[var(--color-outline-subtle)] opacity-50';
+        return 'bg-[var(--color-card)] shadow-[var(--shadow-card)] opacity-50';
     };
 
     const getOptionFeedbackClass = (option: string) => {
@@ -68,7 +68,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 text-center"
+                className="bg-[var(--color-card)] rounded-[2rem] p-6 text-center shadow-[var(--shadow-card)]"
             >
                 <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
             </motion.div>
@@ -83,7 +83,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                         transition={{ delay: i * 0.08, type: 'spring', stiffness: 300, damping: 25 }}
                         onClick={() => handleSelect(option)}
                         disabled={status !== 'pending'}
-                        className={`relative w-full rounded-xl p-5 text-left transition-all flex items-center justify-between gap-3 ${getOptionStyle(option)} ${
+                        className={`relative w-full rounded-2xl p-4 text-left transition-all duration-300 flex items-center justify-between gap-3 ${getOptionStyle(option)} ${
                             status === 'pending' ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
                         } ${getOptionFeedbackClass(option)}`}
                     >
@@ -111,12 +111,12 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                             </p>
                         )}
                     </div>
-                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                    <div className="bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)]">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(status === 'correct')}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

@@ -10,7 +10,7 @@ export default function DBErrorCard({ onReset }: Props) {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[40vh] px-4">
-            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-8 max-w-sm w-full text-center space-y-4">
+            <div className="card p-8 max-w-sm w-full text-center space-y-4 shadow-[var(--shadow-elevated)]">
                 <div className="mx-auto w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center">
                     <DatabaseZap className="w-7 h-7 text-amber-400" />
                 </div>
@@ -21,7 +21,7 @@ export default function DBErrorCard({ onReset }: Props) {
                 {onReset && (
                     <button
                         onClick={onReset}
-                        className="text-sm font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary)]-light transition-colors"
+                        className="text-sm font-semibold text-[var(--color-primary)] hover:brightness-110 transition-all"
                     >
                         {t('common.resetData')}
                     </button>
