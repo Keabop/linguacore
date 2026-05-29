@@ -121,8 +121,8 @@ export default function Layout() {
             >
                 {/* Logo */}
                 <div className={`flex items-center mb-8 transition-all duration-300 ${isNavHovered ? 'px-3.5 mx-3.5 justify-start' : 'px-0 mx-2.5 justify-center'}`}>
-                    <div className="w-11 h-11 flex items-center justify-center shrink-0 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] shadow-lg">
-                        <img src="/logo.png" alt="Voxie" className="w-7 h-7 object-contain" />
+                    <div className="w-11 h-11 flex items-center justify-center shrink-0">
+                        <img src="/logo.png" alt="Voxie" className="w-10 h-10 object-contain" />
                     </div>
                     <AnimatePresence>
                         {isNavHovered && (
