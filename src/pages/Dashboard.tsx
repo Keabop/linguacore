@@ -343,31 +343,31 @@ export default function Dashboard() {
                                         {/* 1. CEFR thin colored top band */}
                                         <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
                                         
-                                        <div className="p-5 flex flex-col flex-1 gap-3">
+                                        <div className="p-6 flex flex-col flex-1 gap-4.5 text-left">
                                             {/* 2. Top row: CEFR badge + Word count */}
-                                            <div className="flex justify-between items-center">
+                                            <div className="flex justify-between items-center text-xs font-mono text-[var(--color-on-surface-muted)]">
                                                 <span
                                                     style={{ color: levelColor, backgroundColor: `${levelColor}20` }}
-                                                    className="px-2.5 py-0.5 text-[9px] font-extrabold rounded-full"
+                                                    className="px-3 py-1 text-xs font-extrabold rounded-full"
                                                 >
                                                     Nivel {story.level}
                                                 </span>
-                                                <span className="text-[9px] font-mono text-[var(--color-on-surface-muted)]">
+                                                <span className="font-mono">
                                                     {story.wordCount} palabras
                                                 </span>
                                             </div>
 
                                             {/* 3. Icon + Title + Spanish Title */}
-                                            <div className="flex items-start gap-3">
-                                                <div className="h-9 w-9 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
-                                                    <StoryIcon storyId={story.id} className="h-4.5 w-4.5 text-[var(--color-primary)]" />
+                                            <div className="flex items-start gap-3.5">
+                                                <div className="h-11 w-11 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
+                                                    <StoryIcon storyId={story.id} className="h-5.5 w-5.5 text-[var(--color-primary)]" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <h3 className="font-extrabold text-xs md:text-sm leading-tight line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">
+                                                    <h3 className="font-extrabold text-base leading-tight line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">
                                                         {story.title}
                                                     </h3>
                                                     {details.spanishTitle && (
-                                                        <p className="text-[9px] italic text-[var(--color-on-surface-muted)]/70 mt-0.5 truncate">
+                                                        <p className="text-xs italic text-[var(--color-on-surface-muted)]/70 mt-0.5 truncate">
                                                             {details.spanishTitle}
                                                         </p>
                                                     )}
@@ -376,7 +376,7 @@ export default function Dashboard() {
 
                                             {/* 4. Description */}
                                             {details.description && (
-                                                <p className="text-[11px] line-clamp-2 leading-relaxed text-[var(--color-on-surface-muted)] flex-1">
+                                                <p className="text-[13px] line-clamp-2 leading-relaxed text-[var(--color-on-surface-muted)] flex-1">
                                                     {details.description}
                                                 </p>
                                             )}

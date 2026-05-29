@@ -332,49 +332,49 @@ export default function StoryList() {
                                             )}
                                         </div>
 
-                                        <div className="p-6 flex flex-col flex-1 gap-4 text-left">
+                                        <div className="p-7 flex flex-col flex-1 gap-5 text-left">
                                             {/* Level Badge and Word Count */}
-                                            <div className="flex justify-between items-center text-[10px] font-mono text-[var(--color-on-surface-muted)]">
+                                            <div className="flex justify-between items-center text-xs font-mono text-[var(--color-on-surface-muted)]">
                                                 <span 
                                                     style={{ color: levelColor, backgroundColor: `${levelColor}15` }} 
-                                                    className="px-3 py-1 text-[10px] font-extrabold rounded-full font-display"
+                                                    className="px-3.5 py-1.5 text-xs font-extrabold rounded-full font-display"
                                                 >
                                                     Nivel {story.level}
                                                 </span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="flex items-center gap-1 font-medium">
-                                                        <Clock className="w-2.5 h-2.5" /> {story.estimatedMinutes} min
+                                                        <Clock className="w-3 h-3" /> {story.estimatedMinutes} min
                                                     </span>
-                                                    <span className="w-1 h-1 rounded-full bg-[var(--color-on-surface-muted)]/35" />
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-on-surface-muted)]/35" />
                                                     <span>{story.wordCount} palabras</span>
                                                 </div>
                                             </div>
 
                                             {/* Story Title & Spanish Translation */}
-                                            <div className="flex items-start gap-3">
-                                                <div className="h-10 w-10 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
+                                            <div className="flex items-start gap-3.5">
+                                                <div className="h-11 w-11 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
                                                     {hasCustomIcon ? (
-                                                        <StoryIcon storyId={story.id} className="h-5 w-5 text-[var(--color-primary)]" />
+                                                        <StoryIcon storyId={story.id} className="h-6 w-6 text-[var(--color-primary)]" />
                                                     ) : (
-                                                        <Sparkles className="h-5 w-5 text-[var(--color-primary)]" />
+                                                        <Sparkles className="h-6 w-6 text-[var(--color-primary)]" />
                                                     )}
                                                 </div>
-                                                <div className="space-y-0.5">
-                                                    <h3 className="font-extrabold text-base leading-tight text-[var(--color-on-surface)] line-clamp-1">{story.title}</h3>
-                                                    <p className="text-[10px] italic text-[var(--color-on-surface-muted)]/85 line-clamp-1">
+                                                <div className="space-y-0.5 min-w-0 flex-1">
+                                                    <h3 className="font-extrabold text-[17.5px] leading-tight text-[var(--color-on-surface)] line-clamp-1">{story.title}</h3>
+                                                    <p className="text-xs italic text-[var(--color-on-surface-muted)]/85 line-clamp-1">
                                                         {details.spanishTitle}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             {/* Description */}
-                                            <p className="text-xs line-clamp-2 leading-relaxed flex-1 text-[var(--color-on-surface-muted)]">
+                                            <p className="text-[13.5px] line-clamp-2 leading-relaxed flex-1 text-[var(--color-on-surface-muted)]">
                                                 {details.description}
                                             </p>
 
                                             {/* Progress bloom */}
                                             <div className="pt-3 border-t border-[var(--color-surface-container-highest)]/20 space-y-1">
-                                                <div className="flex justify-between items-center text-[10px] font-bold">
+                                                <div className="flex justify-between items-center text-xs font-bold">
                                                     <span className="text-[var(--color-on-surface-muted)]">Tu progreso</span>
                                                     <span className="text-[var(--color-primary)]">{storyProgress}%</span>
                                                 </div>
@@ -390,7 +390,7 @@ export default function StoryList() {
 
                                             {/* Action Visual Indicator (entire card is clickable) */}
                                             <div 
-                                                className={`w-full mt-2 py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                                                className={`w-full mt-2 py-3 rounded-full text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 ${
                                                     storyProgress === 100
                                                         ? 'bg-[var(--color-success)]/10 text-[var(--color-success)] hover:bg-[var(--color-success)]/20'
                                                         : 'bg-[var(--color-surface-container-highest)] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]'
