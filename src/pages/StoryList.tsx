@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
@@ -143,7 +143,7 @@ export default function StoryList() {
         return matchesLevel && matchesSearch;
     });
 
-    const readStoryIds = new Set(readStories?.map(r => r.story_id) ?? []);
+    const readStoryIds = useMemo(() => new Set(readStories?.map(r => r.story_id) ?? []), [readStories]);
 
     return (
         <div className="space-y-14">
@@ -388,10 +388,9 @@ export default function StoryList() {
                                                 </div>
                                             </div>
 
-                                            {/* Action Button */}
-                                            <button 
-                                                onClick={() => isUnlocked && navigate(`/learn/${story.id}`)}
-                                                className={`w-full mt-2 py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                                            {/* Action Visual Indicator (entire card is clickable) */}
+                                            <div 
+                                                className={`w-full mt-2 py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                                                     storyProgress === 100
                                                         ? 'bg-[var(--color-success)]/10 text-[var(--color-success)] hover:bg-[var(--color-success)]/20'
                                                         : 'bg-[var(--color-surface-container-highest)] text-[var(--color-primary)] hover:bg-[var(--color-surface-container-high)]'
@@ -399,7 +398,7 @@ export default function StoryList() {
                                             >
                                                 <Eye className="h-4 w-4" />
                                                 {storyProgress === 100 ? 'Releer historia' : storyProgress > 0 ? 'Continuar leyendo' : 'Empezar lectura'}
-                                            </button>
+                                            </div>
                                         </div>
                                     </SpotlightCard>
                                 </motion.div>

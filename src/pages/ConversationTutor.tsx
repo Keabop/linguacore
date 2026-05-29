@@ -243,24 +243,25 @@ export default function ConversationTutor() {
                     {readonlySession.messages.map((msg, i) => (
                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                             <div className="max-w-[85%] space-y-2.5">
-                                <div className={`px-5 py-3.5 text-sm leading-relaxed ${
+                                <div className={`text-sm leading-relaxed ${
                                     msg.role === 'user'
-                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-[2rem] rounded-br-lg shadow-[var(--shadow-elevated)]'
-                                        : 'bg-[var(--color-card)] text-[var(--color-on-surface)] rounded-[2rem] rounded-bl-lg shadow-[var(--shadow-card)]'
+                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] text-white rounded-2xl rounded-br-sm p-4 shadow-[var(--shadow-elevated)]'
+                                        : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] rounded-2xl rounded-bl-sm p-4 shadow-[var(--shadow-card)]'
                                 }`}>
                                     {msg.content}
                                 </div>
                                 {msg.corrections && msg.corrections.length > 0 && (
-                                    <div className="bg-[var(--color-level-b1)]/10 rounded-2xl px-4 py-3 space-y-2 shadow-[var(--shadow-card)]">
-                                        <p className="text-xs font-bold text-[var(--color-level-b1)] flex items-center gap-1.5">
-                                            <AlertCircle className="w-3 h-3" /> {t('chat.corrections')}
+                                    <div className="bg-[var(--color-card)] border-l-2 border-[var(--color-warning)] rounded-xl p-4 shadow-[var(--shadow-card)] mt-2 space-y-2 text-sm text-left">
+                                        <p className="text-xs font-bold text-[var(--color-warning)] flex items-center gap-1.5">
+                                            <AlertCircle className="w-3.5 h-3.5 text-[var(--color-warning)]" />
+                                            <span>💡 {t('chat.corrections', 'Sugerencia del Tutor')}</span>
                                         </p>
                                         {msg.corrections.map((c, ci) => (
                                             <div key={ci} className="text-xs space-y-1">
                                                 <p>
                                                     <span className="line-through text-[var(--color-error)]/70">{c.original}</span>
                                                     {' → '}
-                                                    <span className="text-[var(--color-primary)] font-bold">{c.corrected}</span>
+                                                    <span className="text-[var(--color-success)] font-bold">{c.corrected}</span>
                                                 </p>
                                                 <p className="text-[var(--color-on-surface-muted)] italic leading-relaxed">{c.explanation}</p>
                                             </div>
@@ -351,9 +352,9 @@ export default function ConversationTutor() {
                             <div className={`max-w-[85%] space-y-2.5`}>
                                 {/* Message bubble */}
                                 <div
-                                    className={`px-5 py-3.5 text-sm leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-[2rem] rounded-br-lg shadow-[var(--shadow-elevated)]'
-                                        : 'bg-[var(--color-card)] text-[var(--color-on-surface)] rounded-[2rem] rounded-bl-lg shadow-[var(--shadow-card)]'
+                                    className={`text-sm leading-relaxed ${msg.role === 'user'
+                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] text-white rounded-2xl rounded-br-sm p-4 shadow-[var(--shadow-elevated)]'
+                                        : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] rounded-2xl rounded-bl-sm p-4 shadow-[var(--shadow-card)]'
                                         }`}
                                 >
                                     {msg.content}
@@ -361,16 +362,17 @@ export default function ConversationTutor() {
 
                                 {/* Corrections */}
                                 {msg.corrections && msg.corrections.length > 0 && (
-                                    <div className="bg-[var(--color-level-b1)]/10 rounded-2xl px-4 py-3 space-y-2 shadow-[var(--shadow-card)]">
-                                        <p className="text-xs font-bold text-[var(--color-level-b1)] flex items-center gap-1.5">
-                                            <AlertCircle className="w-3 h-3" /> {t('chat.corrections')}
+                                    <div className="bg-[var(--color-card)] border-l-2 border-[var(--color-warning)] rounded-xl p-4 shadow-[var(--shadow-card)] mt-2 space-y-2 text-sm text-left">
+                                        <p className="text-xs font-bold text-[var(--color-warning)] flex items-center gap-1.5">
+                                            <AlertCircle className="w-3.5 h-3.5 text-[var(--color-warning)]" />
+                                            <span>💡 {t('chat.corrections', 'Sugerencia del Tutor')}</span>
                                         </p>
                                         {msg.corrections.map((c, ci) => (
                                             <div key={ci} className="text-xs space-y-1">
                                                 <p>
                                                     <span className="line-through text-[var(--color-error)]/70">{c.original}</span>
                                                     {' → '}
-                                                    <span className="text-[var(--color-primary)] font-bold">{c.corrected}</span>
+                                                    <span className="text-[var(--color-success)] font-bold">{c.corrected}</span>
                                                 </p>
                                                 <p className="text-[var(--color-on-surface-muted)] italic leading-relaxed">{c.explanation}</p>
                                             </div>
@@ -389,7 +391,7 @@ export default function ConversationTutor() {
                         animate={{ opacity: 1 }}
                         className="flex justify-start"
                     >
-                        <div className="bg-[var(--color-card)] rounded-[2rem] rounded-bl-lg px-5 py-3.5 shadow-[var(--shadow-card)]">
+                        <div className="bg-[var(--color-surface-container-low)] rounded-2xl rounded-bl-sm p-4 shadow-[var(--shadow-card)]">
                             <div className="flex gap-1.5">
                                 <span className="w-2 h-2 bg-[var(--color-on-surface-muted)] rounded-full animate-bounce [animation-delay:0ms]" />
                                 <span className="w-2 h-2 bg-[var(--color-on-surface-muted)] rounded-full animate-bounce [animation-delay:150ms]" />
