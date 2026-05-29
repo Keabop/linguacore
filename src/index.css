@@ -371,7 +371,7 @@
 
 .sidebar-rail {
   position: fixed;
-  left: 1rem;
+  left: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
   background: rgba(255, 255, 255, 0.85);
@@ -395,7 +395,7 @@
 
 .main-content {
   flex: 1;
-  padding-left: 80px;
+  padding-left: 108px;
   min-height: 100dvh;
   display: flex;
   justify-content: center;
