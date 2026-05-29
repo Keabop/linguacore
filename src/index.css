@@ -373,7 +373,7 @@
   position: fixed;
   left: 1.5rem;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(calc(-50% - 32px));
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

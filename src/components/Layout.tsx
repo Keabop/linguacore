@@ -109,7 +109,7 @@ export default function Layout() {
         <div className="app-layout">
             {/* ===== RAIL SIDEBAR — Fluid Scholar ===== */}
             <motion.aside
-                className="sidebar-rail fixed left-6 top-1/2 -translate-y-1/2 bg-white/85 backdrop-blur-xl border border-purple-500/10"
+                className="sidebar-rail fixed left-6 top-1/2 bg-white/85 backdrop-blur-xl border border-purple-500/10"
                 onMouseEnter={() => setIsNavHovered(true)}
                 onMouseLeave={() => setIsNavHovered(false)}
                 animate={{ width: isNavHovered ? 260 : 68 }}
