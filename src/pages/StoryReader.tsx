@@ -117,7 +117,6 @@ export default function StoryReader() {
         if (added) {
             setAddedWords(prev => new Set(prev).add(selectedWord.id));
             setWordStatus('deck');
-            toast.success({ title: `"${selectedWord.id}" ${t('reader.addedToDeck', 'añadida al mazo')}` });
         }
     };
 
@@ -127,7 +126,6 @@ export default function StoryReader() {
         if (marked) {
             setKnownWords(prev => new Set(prev).add(selectedWord.id));
             setWordStatus('known');
-            toast.info({ title: `"${selectedWord.id}" ${t('reader.markedKnown', 'marcada como conocida')}` });
         }
     };
 
