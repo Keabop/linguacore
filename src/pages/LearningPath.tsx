@@ -21,6 +21,7 @@ import {
     Trophy,
     ChevronRight,
     Crown,
+    Sparkles,
 } from 'lucide-react';
 
 type UnitState = 'locked' | 'current' | 'completed';
@@ -75,6 +76,14 @@ export default function LearningPath() {
     const { user: authUser } = useAuth();
     const currentLevel = progressInfo?.currentLevel ?? 'A1';
 
+    const userName = authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0] || 'estudiante';
+    const bannerTitle = t('path.bannerTitle', { name: userName }) !== 'path.bannerTitle'
+        ? t('path.bannerTitle', { name: userName })
+        : `¡Sigue así, ${userName}!`;
+    const bannerSubtitle = t('path.bannerSubtitle') !== 'path.bannerSubtitle'
+        ? t('path.bannerSubtitle')
+        : 'Completa el Checkpoint final esta semana para seguir avanzando en tu ruta de aprendizaje.';
+
     const isLevelAccessible = (level: string) => isPro || level === 'A1';
 
     const units = getUnitsByLevel(currentLevel);
@@ -115,6 +124,43 @@ export default function LearningPath() {
 
     return (
         <div className="space-y-14">
+            {/* 1. Motivational Banner */}
+            <motion.div
+                id="path-gradient-banner"
+                initial={{ y: 15, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="w-full rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))' }}
+            >
+                <div className="absolute inset-0 bg-black/5 mix-blend-overlay pointer-events-none" />
+                <div className="relative z-10 flex items-center gap-4">
+                    <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0">
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.15, 1],
+                                rotate: [0, 10, -10, 0]
+                            }}
+                            transition={{
+                                duration: 3,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            <Sparkles className="h-6 w-6 text-yellow-300 fill-yellow-300" />
+                        </motion.div>
+                    </div>
+                    <div>
+                        <h3 className="font-extrabold text-base md:text-lg font-display leading-tight">
+                            {bannerTitle}
+                        </h3>
+                        <p className="text-white/90 text-xs md:text-sm mt-1">
+                            {bannerSubtitle}
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
+
             {/* Level Header */}
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
@@ -243,11 +289,12 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
             : 'shadow-[var(--shadow-card)]';
 
     const effectivelyLocked = isLocked || tierGated;
+    const cardBg = effectivelyLocked ? 'bg-[var(--color-surface-container)]' : 'bg-[var(--color-card)]';
 
     return (
         <motion.div
             variants={itemVariants}
-            className={`relative mx-2 mt-2 mb-10 last:mb-0 ${effectivelyLocked ? 'opacity-45' : ''}`}
+            className={`relative mx-2 mt-2 mb-10 last:mb-0 transition-opacity duration-300 ${effectivelyLocked ? 'opacity-60' : ''}`}
         >
             {/* Timeline node */}
             <div
@@ -267,17 +314,18 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
 
             {/* Card */}
             <div
-                onClick={tierGated ? undefined : onClick}
+                onClick={effectivelyLocked ? undefined : onClick}
                 className={`
-                    bg-[var(--color-card)] rounded-[2rem] p-6 md:p-8
+                    ${cardBg} rounded-2xl p-6 md:p-8
                     transition-all duration-300 relative overflow-hidden
                     ${cardShadow}
+                    ${isCurrent ? (isAssessment ? 'border-l-4 border-[var(--color-level-b1)]' : 'border-l-4 border-[var(--color-primary)]') : ''}
                     ${!effectivelyLocked ? 'cursor-pointer hover:-translate-y-1' : 'cursor-not-allowed'}
                 `}
             >
                 {/* Tier gate overlay */}
                 {tierGated && (
-                    <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 rounded-[2rem]">
+                    <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 rounded-2xl">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg">
                             <Lock className="w-5 h-5 text-white" />
                         </div>
