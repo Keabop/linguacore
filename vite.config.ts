@@ -3,77 +3,75 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 export default defineConfig({
-    plugins: [
-        react(),
-        tailwindcss(),
-        VitePWA({
-            registerType: 'autoUpdate',
-            devOptions: {
-                enabled: true,
-            },
-            workbox: {
-                globPatterns: ['**/*.{js,css,html,json,svg,png,ico}'],
-                navigateFallback: '/index.html',
-                navigateFallbackDenylist: [/^\/api\//],
-                runtimeCaching: [
-                    {
-                        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-                        handler: 'CacheFirst',
-                        options: {
-                            cacheName: 'google-fonts-cache',
-                            expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-                            cacheableResponse: { statuses: [0, 200] },
-                        },
+    plugins: [react(), tailwindcss(), VitePWA({
+        registerType: 'autoUpdate',
+        devOptions: {
+            enabled: true,
+        },
+        workbox: {
+            globPatterns: ['**/*.{js,css,html,json,svg,png,ico}'],
+            navigateFallback: '/index.html',
+            navigateFallbackDenylist: [/^\/api\//],
+            runtimeCaching: [
+                {
+                    urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+                    handler: 'CacheFirst',
+                    options: {
+                        cacheName: 'google-fonts-cache',
+                        expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                        cacheableResponse: { statuses: [0, 200] },
                     },
-                    {
-                        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-                        handler: 'CacheFirst',
-                        options: {
-                            cacheName: 'gstatic-fonts-cache',
-                            expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-                            cacheableResponse: { statuses: [0, 200] },
-                        },
+                },
+                {
+                    urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+                    handler: 'CacheFirst',
+                    options: {
+                        cacheName: 'gstatic-fonts-cache',
+                        expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                        cacheableResponse: { statuses: [0, 200] },
                     },
-                    {
-                        urlPattern: /\/assets\/.*\.js$/,
-                        handler: 'CacheFirst',
-                        options: {
-                            cacheName: 'js-chunks-cache',
-                            expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 30 },
-                            cacheableResponse: { statuses: [0, 200] },
-                        },
+                },
+                {
+                    urlPattern: /\/assets\/.*\.js$/,
+                    handler: 'CacheFirst',
+                    options: {
+                        cacheName: 'js-chunks-cache',
+                        expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                        cacheableResponse: { statuses: [0, 200] },
                     },
-                    {
-                        urlPattern: /\/api\/.*/,
-                        handler: 'NetworkFirst',
-                        options: {
-                            cacheName: 'api-cache',
-                            expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
-                            cacheableResponse: { statuses: [0, 200] },
-                            networkTimeoutSeconds: 10,
-                        },
+                },
+                {
+                    urlPattern: /\/api\/.*/,
+                    handler: 'NetworkFirst',
+                    options: {
+                        cacheName: 'api-cache',
+                        expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
+                        cacheableResponse: { statuses: [0, 200] },
+                        networkTimeoutSeconds: 10,
                     },
-                ],
-            },
-            manifest: {
-                name: 'Voxie',
-                short_name: 'Voxie',
-                description: 'Aprende inglés con IA',
-                lang: 'es',
-                theme_color: '#6366f1',
-                background_color: '#0f0f23',
-                display: 'standalone',
-                orientation: 'portrait',
-                start_url: '/',
-                icons: [
-                    { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-                    { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-                    { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' as any },
-                ],
-            },
-        }),
-    ],
+                },
+            ],
+        },
+        manifest: {
+            name: 'Voxie',
+            short_name: 'Voxie',
+            description: 'Aprende inglés con IA',
+            lang: 'es',
+            theme_color: '#6366f1',
+            background_color: '#0f0f23',
+            display: 'standalone',
+            orientation: 'portrait',
+            start_url: '/',
+            icons: [
+                { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+                { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+                { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' as any },
+            ],
+        },
+    }), cloudflare()],
     build: {
         target: 'es2020',
         cssMinify: 'lightningcss',
