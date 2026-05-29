@@ -74,11 +74,11 @@ export default function ReviewSession() {
                 className="text-center py-12 space-y-4"
             >
                 <Sparkles className="w-12 h-12 text-[var(--color-on-surface-muted)] mx-auto" />
-                <h2 className="text-2xl font-bold">{t('review.allDone')}</h2>
+                <h2 className="text-2xl font-black tracking-tight">{t('review.allDone')}</h2>
                 <p className="text-[var(--color-on-surface-muted)]">{t('review.comeBack')}</p>
                 <button
                     onClick={() => navigate('/')}
-                    className="btn-primary px-6 py-3 rounded-xl font-bold mt-4"
+                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-6 py-3 rounded-full font-bold mt-4 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
                     {t('reader.backToStories')}
                 </button>
@@ -99,7 +99,7 @@ export default function ReviewSession() {
         } else {
             return (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 py-4">
-                    <h2 className="text-xl font-bold text-center">{t('review.chooseType', '¿Qué quieres repasar?')}</h2>
+                    <h2 className="text-xl font-black tracking-tight text-center">{t('review.chooseType', '¿Qué quieres repasar?')}</h2>
                     {isFree && (
                         <div className="flex justify-center">
                             <UsageBadge remaining={dueCards.length + dueSkillCards.length + dueErrorCards.length} limit={cardLimit} label="repasos hoy" />
@@ -107,7 +107,7 @@ export default function ReviewSession() {
                     )}
                     <div className="space-y-4">
                         {dueCards.length > 0 && (
-                            <button onClick={() => setReviewType('vocab')} className="w-full widget hover:border-[var(--color-primary)]/50 transition-all text-left space-y-1">
+                            <button onClick={() => setReviewType('vocab')} className="w-full bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
                                 <div className="flex items-center gap-3">
                                     <RefreshCw className="w-5 h-5 text-accent-blue" />
                                     <div>
@@ -118,7 +118,7 @@ export default function ReviewSession() {
                             </button>
                         )}
                         {dueSkillCards.length > 0 && (
-                            <button onClick={() => setReviewType('grammar')} className="w-full widget hover:border-[var(--color-primary)]/50 transition-all text-left space-y-1">
+                            <button onClick={() => setReviewType('grammar')} className="w-full bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
                                 <div className="flex items-center gap-3">
                                     <BookOpen className="w-5 h-5 text-accent-purple" />
                                     <div>
@@ -129,7 +129,7 @@ export default function ReviewSession() {
                             </button>
                         )}
                         {dueErrorCards.length > 0 && (
-                            <button onClick={() => setReviewType('errors')} className="w-full widget hover:border-[var(--color-primary)]/50 transition-all text-left space-y-1">
+                            <button onClick={() => setReviewType('errors')} className="w-full bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
                                 <div className="flex items-center gap-3">
                                     <AlertTriangle className="w-5 h-5 text-accent-orange" />
                                     <div>
@@ -140,7 +140,7 @@ export default function ReviewSession() {
                             </button>
                         )}
                         {isFree && totalTruncated > 0 && (
-                            <div className="text-center py-4 space-y-2 border-t border-[var(--color-outline-subtle)] mt-2 pt-4">
+                            <div className="text-center py-4 space-y-2 mt-2 pt-4">
                                 <p className="text-sm text-[var(--color-on-surface-muted)]">
                                     <Lock className="w-3.5 h-3.5 inline mr-1" />
                                     Tienes {totalTruncated} tarjetas mas. Desbloquea repasos ilimitados con Plan Pro
@@ -168,20 +168,20 @@ export default function ReviewSession() {
                 >
                     <style>{`.floating-bar { display: none !important; }`}</style>
                     <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
-                    <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
+                    <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-                        <div className="widget text-center">
-                            <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-extrabold text-accent-blue" />
+                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                            <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-black text-accent-blue" />
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.reviewed')}</p>
                         </div>
-                        <div className="widget text-center">
-                            <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-extrabold ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
+                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                            <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-black ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                         </div>
                     </div>
                     <button
                         onClick={() => navigate('/')}
-                        className="btn-primary px-8 py-3 rounded-xl font-bold"
+                        className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                     >
                         {t('review.backHome')}
                     </button>
@@ -242,18 +242,18 @@ export default function ReviewSession() {
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-12 space-y-5">
                     <style>{`.floating-bar { display: none !important; }`}</style>
                     <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
-                    <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
+                    <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-                        <div className="widget text-center">
-                            <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-extrabold text-accent-blue" />
+                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                            <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-black text-accent-blue" />
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.reviewed')}</p>
                         </div>
-                        <div className="widget text-center">
-                            <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-extrabold ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
+                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                            <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-black ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                         </div>
                     </div>
-                    <button onClick={() => navigate('/')} className="bg-[var(--color-primary)] hover:brightness-90 text-white px-8 py-3 rounded-xl font-bold transition-all">
+                    <button onClick={() => navigate('/')} className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                         {t('review.backHome')}
                     </button>
                 </motion.div>
@@ -309,14 +309,14 @@ export default function ReviewSession() {
             >
                 <style>{`.floating-bar { display: none !important; }`}</style>
                 <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
-                <h2 className="text-2xl font-extrabold">{t('review.sessionDone')}</h2>
+                <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                 <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-                    <div className="widget text-center">
-                        <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-extrabold text-accent-blue" />
+                    <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                        <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-black text-accent-blue" />
                         <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.reviewed')}</p>
                     </div>
-                    <div className="widget text-center">
-                        <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-extrabold ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
+                    <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                        <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-black ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                         <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                     </div>
                 </div>
@@ -333,7 +333,7 @@ export default function ReviewSession() {
                 )}
                 <button
                     onClick={() => navigate('/')}
-                    className="btn-primary px-8 py-3 rounded-xl font-bold"
+                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
                     {t('review.backHome')}
                 </button>
@@ -356,7 +356,7 @@ export default function ReviewSession() {
             {/* Hide floating navbar while reviewing */}
             <style>{`.floating-bar { display: none !important; }`}</style>
             {/* Progress header */}
-            <div className="space-y-2">
+            <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
                     <button
                         onClick={() => setMode(null)}
@@ -368,10 +368,10 @@ export default function ReviewSession() {
                         {totalReviewed}/{initialCount.current ?? dueCards.length}
                     </span>
                 </div>
-                <div className="h-2 bg-[var(--color-background)] rounded-full overflow-hidden">
+                <div className="progress-bloom">
                     <motion.div
                         animate={{ width: `${progressPercent}%` }}
-                        className="h-full bg-[var(--color-primary)] rounded-full"
+                        className="progress-bloom-fill"
                         transition={{ duration: 0.3 }}
                     />
                 </div>

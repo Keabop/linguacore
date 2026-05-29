@@ -40,14 +40,14 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 text-center"
+                className="bg-[var(--color-card)] rounded-[2rem] p-6 text-center shadow-[var(--shadow-card)]"
             >
                 <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">
                     {parts.map((part, i) => (
                         <span key={i}>
                             <span className="text-[var(--color-on-surface-muted)]">{part}</span>
                             {i < parts.length - 1 && (
-                                <span className="inline-block min-w-[80px] border-b-2 border-primary mx-1 text-[var(--color-primary)] font-bold">
+                                <span className="inline-block min-w-[80px] border-b-2 border-[var(--color-primary)] mx-1 text-[var(--color-primary)] font-bold">
                                     {status !== 'pending' ? exercise.correctAnswer : '______'}
                                 </span>
                             )}
@@ -64,12 +64,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     value={answer}
                     onChange={e => setAnswer(e.target.value)}
                     disabled={status !== 'pending'}
-                    className={`w-full bg-[var(--color-background)] border rounded-xl px-5 py-3.5 text-[var(--color-on-surface)] focus:outline-none transition-all ${
+                    className={`w-full bg-[var(--color-surface-container-highest)] rounded-full px-6 py-3.5 text-[var(--color-on-surface)] focus:outline-none transition-all duration-300 ${
                         status === 'correct'
-                            ? 'border-emerald-500 bg-emerald-500/10'
+                            ? 'bg-[var(--color-success)]/10 shadow-[0_0_0_3px_var(--color-success)]'
                             : status === 'incorrect'
-                              ? 'border-red-500 bg-red-500/10'
-                              : 'border-[var(--color-outline-subtle)] focus:border-[var(--color-primary)]'
+                              ? 'bg-[var(--color-error)]/10 shadow-[0_0_0_3px_var(--color-error)]'
+                              : 'shadow-[var(--shadow-card)] focus:shadow-[var(--shadow-elevated)]'
                     }`}
                     autoComplete="off"
                     autoCapitalize="off"
@@ -80,7 +80,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     <button
                         type="submit"
                         disabled={!answer.trim()}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 disabled:opacity-40 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] disabled:opacity-40 text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.checkAnswer')}
                     </button>
@@ -99,12 +99,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                             <Check className="w-5 h-5" /> {t('exercises.correct')}
                         </p>
                     </div>
-                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                    <div className="bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)]">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -125,12 +125,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                             <span className="text-[var(--color-primary)] font-bold">{exercise.correctAnswer}</span>
                         </p>
                     </div>
-                    <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5">
+                    <div className="bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)]">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

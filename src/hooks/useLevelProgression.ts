@@ -148,11 +148,20 @@ export function useLevelProgression() {
     };
 
     // Adapt profile to the shape Layout/Dashboard expect
+    // Validate streak: if last_study_date is not today or yesterday, streak is broken
+    const computeDisplayStreak = (dbStreak: number, lastStudyDate: string | null): number => {
+        if (!lastStudyDate || dbStreak === 0) return 0;
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        if (lastStudyDate === today || lastStudyDate === yesterday) return dbStreak;
+        return 0;
+    };
+
     const userCompat = profile ? {
         currentLevel: profile.current_level,
         unlockedLevels: profile.unlocked_levels,
         totalWordsLearned: profile.total_words_learned,
-        streak: profile.streak,
+        streak: computeDisplayStreak(profile.streak, profile.last_study_date),
         lastStudyDate: profile.last_study_date,
         levelProgress: profile.level_progress,
     } : undefined;

@@ -27,12 +27,14 @@ export default function ReviewModeSelector({ dueCount, onSelect }: Props) {
 
             <div className="space-y-6">
                 <motion.button
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onSelect('cloze')}
-                    className="mode-card w-full text-left"
+                    className="mode-card w-full text-left shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
-                    <Pencil className="w-8 h-8 text-accent-blue mb-4" />
+                    <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 flex items-center justify-center mb-4">
+                        <Pencil className="w-6 h-6 text-accent-blue" />
+                    </div>
                     <h3 className="text-lg font-bold text-accent-blue mb-2 leading-tight">
                         {t('review.clozeMode')}
                     </h3>
@@ -42,12 +44,14 @@ export default function ReviewModeSelector({ dueCount, onSelect }: Props) {
                 </motion.button>
 
                 <motion.button
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onSelect('translation')}
-                    className="mode-card w-full text-left"
+                    className="mode-card w-full text-left shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
-                    <Languages className="w-8 h-8 text-accent-purple mb-4" />
+                    <div className="w-12 h-12 rounded-2xl bg-accent-purple/10 flex items-center justify-center mb-4">
+                        <Languages className="w-6 h-6 text-accent-purple" />
+                    </div>
                     <h3 className="text-lg font-bold text-accent-purple mb-2 leading-tight">
                         {t('review.translationMode')}
                     </h3>

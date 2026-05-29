@@ -10,13 +10,14 @@ import { useCards } from '../hooks/useCards';
 import { useSkillCards } from '../hooks/useSkillCards';
 import { useErrorCards } from '../hooks/useErrorCards';
 import LevelUpModal from '../components/ui/LevelUpModal';
-import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, PartyPopper, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, PartyPopper, AlertTriangle, Sparkles } from 'lucide-react';
 import type { CEFRLevel } from '../lib/db';
 import type { ReadStoryRow, UnitProgressRow } from '../lib/database.types';
 import { allStories, getUnitsByLevel } from '../data';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
+import { storyDetails, CEFR_COLORS } from './StoryList';
 import DBErrorCard from '../components/DBErrorCard';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import { BlurText, CountUp, SpotlightCard } from '../components/reactbits';
@@ -58,7 +59,7 @@ export default function Dashboard() {
     });
 
     const recommended = allStories.filter(s => {
-        const isUnlocked = user?.unlockedLevels.includes(s.level);
+        const isUnlocked = user?.unlockedLevels?.includes(s.level) ?? false;
         const isRead = readStories?.some(r => r.story_id === s.id);
         return isUnlocked && !isRead;
     }).slice(0, 4);
@@ -91,22 +92,50 @@ export default function Dashboard() {
     const allUnitsCompleted = unitsTotal > 0 && unitsCompleted === unitsTotal;
 
     // Loading state: user query hasn't resolved yet
-    if (!user && !progressInfo) return <PageLoader />;
+    if (!user || !progressInfo) return <PageLoader />;
     // Data missing (DB cleared/corrupt)
     if (user === null) return <DBErrorCard onReset={() => window.location.reload()} />;
 
-
-
     return (
-        <div className="space-y-14">
+        <div className="space-y-10">
             <PWAInstallPrompt />
 
-            {/* Greeting */}
+            {/* Greeting — Fluid Scholar: large, tracked tight, font-black */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
                 <BlurText
                     text={getContextualGreeting(t, dueCards.length, user?.streak ?? 0)}
                     delay={80}
-                    className="text-3xl font-extrabold leading-tight"
+                    className="text-3xl md:text-4xl font-black tracking-tight leading-tight"
+                />
+            </motion.div>
+
+            {/* Quick Stats — Bento grid */}
+            <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08 }}
+                className="grid grid-cols-3 gap-4"
+            >
+                <QuickStat 
+                    icon={<Flame className="w-5 h-5" />} 
+                    value={user!.streak} 
+                    label={t('dashboard.streak')} 
+                    accent="from-orange-400 to-rose-400" 
+                    borderAccent="var(--color-tertiary)"
+                />
+                <QuickStat 
+                    icon={<Layers className="w-5 h-5" />} 
+                    value={totalCards} 
+                    label={t('dashboard.totalCards')} 
+                    accent="from-blue-400 to-indigo-400" 
+                    borderAccent="var(--color-primary)"
+                />
+                <QuickStat 
+                    icon={<BookOpen className="w-5 h-5" />} 
+                    value={readStories?.length ?? 0} 
+                    label={t('dashboard.storiesRead')} 
+                    accent="from-[var(--color-primary)] to-[var(--color-primary-container)]" 
+                    borderAccent="var(--color-success)"
                 />
             </motion.div>
 
@@ -115,21 +144,21 @@ export default function Dashboard() {
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 }}
-                    className="relative"
+                    transition={{ delay: 0.12 }}
                 >
                     <SpotlightCard
-                        className={`bg-[var(--color-card)] border rounded-2xl p-5 md:p-8 space-y-5 md:space-y-6 ${{
-                            A1: 'border-[#60A5FA]/20', A2: 'border-[#4ADE80]/20', B1: 'border-[#FBBF24]/20', B2: 'border-[#F87171]/20'
-                        }[currentLevel] || 'border-[var(--color-primary)]/20'}`}
+                        className="bg-[var(--color-card)] rounded-[2rem] p-6 md:p-8 space-y-5 md:space-y-6 shadow-[var(--shadow-elevated)]"
                         spotlightColor={levelSpotlightColor[currentLevel] ?? 'rgba(112, 42, 225, 0.15)'}
                     >
                         {/* Header */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center">
-                                <Map className="w-5 h-5 text-[var(--color-primary)]" />
+                            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-md">
+                                <Map className="w-5 h-5 text-white" />
                             </div>
-                            <h2 className="text-lg font-bold">{t('dashboard.continueLearning')}</h2>
+                            <div>
+                                <h2 className="text-lg font-bold">{t('dashboard.continueLearning')}</h2>
+                                <p className="text-xs text-[var(--color-on-surface-muted)]">{currentLevel} · {unitsCompleted}/{unitsTotal}</p>
+                            </div>
                         </div>
 
                         {allUnitsCompleted ? (
@@ -148,36 +177,46 @@ export default function Dashboard() {
                             </div>
                         ) : firstIncompleteUnit ? (
                             /* Current unit info */
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {/* Unit title + grammar */}
                                 <div className="space-y-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+                                            {t('dashboard.nextMilestone', 'SIGUIENTE HITO')}
+                                        </span>
+                                    </div>
                                     <h3 className="font-bold text-base">{firstIncompleteUnit.title}</h3>
                                     <p className="text-sm text-[var(--color-on-surface-muted)]">{firstIncompleteUnit.grammarTopic}</p>
                                 </div>
 
-                                {/* Mini progress text */}
-                                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">
-                                    {t('dashboard.unitProgress', {
-                                        current: unitsCompleted + 1,
-                                        total: unitsTotal,
-                                        level: currentLevel,
-                                    })}
-                                </p>
-
-                                {/* Progress bar */}
-                                <div className="progress-bloom">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${unitsTotal > 0 ? Math.round((unitsCompleted / unitsTotal) * 100) : 0}%` }}
-                                        className="progress-bloom-fill"
-                                        transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-                                    />
+                                {/* Progress bar — Bloom style */}
+                                <div>
+                                    <div className="flex justify-between text-xs mb-2">
+                                        <span className="text-[var(--color-on-surface-muted)] font-medium">
+                                            {t('dashboard.unitProgress', {
+                                                current: unitsCompleted + 1,
+                                                total: unitsTotal,
+                                                level: currentLevel,
+                                            })}
+                                        </span>
+                                        <span className="font-bold text-[var(--color-primary)]">
+                                            {unitsTotal > 0 ? Math.round((unitsCompleted / unitsTotal) * 100) : 0}%
+                                        </span>
+                                    </div>
+                                    <div className="progress-bloom">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${unitsTotal > 0 ? Math.round((unitsCompleted / unitsTotal) * 100) : 0}%` }}
+                                            className="progress-bloom-fill"
+                                            transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+                                        />
+                                    </div>
                                 </div>
 
-                                {/* Continue button */}
+                                {/* Continue button — gradient pill */}
                                 <button
                                     onClick={() => navigate(`/path/${firstIncompleteUnit.id}`)}
-                                    className="btn-primary w-full sm:w-auto px-6 py-3 text-sm flex items-center justify-center gap-2 mt-3"
+                                    className="btn-primary w-full sm:w-auto px-8 py-3.5 text-sm flex items-center justify-center gap-2"
                                 >
                                     {t('dashboard.continue')}
                                     <ArrowRight className="w-4 h-4" />
@@ -193,27 +232,30 @@ export default function Dashboard() {
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
+                    transition={{ delay: 0.16 }}
                     onClick={() => navigate('/review')}
                     className="cursor-pointer group"
                 >
-                    <SpotlightCard className="story-card" spotlightColor="rgba(112, 42, 225, 0.15)">
-                        <div className="story-card-banner" style={{ height: '130px', background: 'radial-gradient(circle at 30% 30%, rgba(112,42,225,0.12) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(112,42,225,0.08) 0%, transparent 55%), linear-gradient(135deg, var(--color-primary), var(--color-primary-light))' }}>
-                            <div className="space-y-1.5">
-                                <p className="text-sm text-[var(--color-on-primary)]/70 font-medium">{t('dashboard.dueToday')}</p>
-                                <p className="text-2xl font-extrabold text-[var(--color-on-primary)]">
-                                    <CountUp from={0} to={dueCards.length} duration={1.5} className="text-2xl font-extrabold text-[var(--color-on-primary)] inline" /> {t('dashboard.cards')} {t('dashboard.pendingReview')}
-                                </p>
+                    <div className="bg-[var(--color-card)] rounded-[2rem] overflow-hidden shadow-[var(--shadow-elevated)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-float)]">
+                        <div className="p-6 md:p-8" style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-container))' }}>
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                                    <Sparkles className="w-5 h-5 text-white" />
+                                </div>
+                                <p className="text-sm text-white/70 font-medium">{t('dashboard.dueToday')}</p>
                             </div>
+                            <p className="text-3xl font-black text-white tracking-tight">
+                                <CountUp from={0} to={dueCards.length} duration={1.5} className="text-3xl font-black text-white inline" /> {t('dashboard.cards')} {t('dashboard.pendingReview')}
+                            </p>
                         </div>
-                        <div className="story-card-body flex items-center justify-between">
+                        <div className="p-5 md:px-8 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <RefreshCw className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
                                 <span className="font-bold group-hover:text-[var(--color-primary)] transition-colors">{t('dashboard.startReview')}</span>
                             </div>
                             <ArrowRight className="w-5 h-5 text-[var(--color-on-surface-muted)] group-hover:translate-x-1 transition-transform" />
                         </div>
-                    </SpotlightCard>
+                    </div>
                 </motion.div>
             )}
 
@@ -222,18 +264,20 @@ export default function Dashboard() {
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.12 }}
+                    transition={{ delay: 0.18 }}
                     onClick={() => navigate('/review')}
-                    className="widget cursor-pointer group hover:border-[var(--color-primary)]/50 transition-all"
+                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] cursor-pointer group hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <BookOpen className="w-5 h-5 text-[var(--color-primary-light)]" />
+                            <div className="w-10 h-10 rounded-2xl bg-[var(--color-surface-container)] flex items-center justify-center">
+                                <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
+                            </div>
                             <div>
                                 <p className="font-bold group-hover:text-[var(--color-primary)] transition-colors">
                                     {dueSkillCards.length} {t('dashboard.grammarSkills', 'grammar skills')} {t('dashboard.pendingReview')}
                                 </p>
-                                <p className="text-xs text-[var(--color-on-surface-muted)] mt-1">{t('dashboard.grammarReviewDesc', 'Review your grammar knowledge')}</p>
+                                <p className="text-xs text-[var(--color-on-surface-muted)] mt-0.5">{t('dashboard.grammarReviewDesc', 'Review your grammar knowledge')}</p>
                             </div>
                         </div>
                         <ArrowRight className="w-5 h-5 text-[var(--color-on-surface-muted)] group-hover:translate-x-1 transition-transform" />
@@ -243,36 +287,31 @@ export default function Dashboard() {
 
             {/* Error Cards Widget */}
             {totalErrorCards > 0 && (
-                <div className="widget flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5 text-[var(--color-level-b1)]" />
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] flex items-center gap-4"
+                >
+                    <div className="w-10 h-10 rounded-2xl bg-[var(--color-warning)]/10 flex items-center justify-center">
+                        <AlertTriangle className="w-5 h-5 text-[var(--color-warning)]" />
+                    </div>
                     <div>
                         <p className="text-sm font-bold">{totalErrorCards} {t('dashboard.myErrors', 'Mis errores')}</p>
                         {dueErrorCards.length > 0 && (
                             <p className="text-xs text-[var(--color-on-surface-muted)]">{dueErrorCards.length} {t('dashboard.errorsDue', 'errores pendientes')}</p>
                         )}
                     </div>
-                </div>
+                </motion.div>
             )}
 
-            {/* Quick Stats (mobile only) */}
-            <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="grid grid-cols-3 gap-7"
-            >
-                <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} color="text-[var(--color-tertiary)]" />
-                <QuickStat icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('dashboard.totalCards')} color="text-[var(--color-level-a1)]" />
-                <QuickStat icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-[var(--color-primary-light)]" />
-            </motion.div>
-
-            {/* Recommended Stories */}
+            {/* Recommended Stories — Horizontal scroll on mobile, grid on desktop */}
             {recommended && recommended.length > 0 && (
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="space-y-7"
+                    transition={{ delay: 0.24 }}
+                    className="space-y-5"
                 >
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-bold">{t('dashboard.recommended')}</h2>
@@ -284,63 +323,87 @@ export default function Dashboard() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-8">
-                        {recommended.map((story, i) => (
-                            <motion.div
-                                key={story.id}
-                                initial={{ opacity: 0, y: 12 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.25 + i * 0.05 }}
-                            >
-                                <div style={{ perspective: '800px' }}>
-                                    <motion.div
-                                        whileHover={{ rotateX: -3, rotateY: 5, scale: 1.02 }}
-                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    <div className="grid grid-cols-2 gap-5">
+                        {recommended.map((story, i) => {
+                            const levelColor = CEFR_COLORS[story.level] || 'var(--color-primary)';
+                            const details = storyDetails[story.id] || { spanishTitle: '', description: '' };
+
+                            return (
+                                <motion.div
+                                    key={story.id}
+                                    initial={{ opacity: 0, y: 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.28 + i * 0.05 }}
+                                    className="h-full"
+                                >
+                                    <div
                                         onClick={() => navigate(`/learn/${story.id}`)}
-                                        className="story-card"
+                                        className="bg-[var(--color-card)] rounded-2xl overflow-hidden shadow-[var(--shadow-card)] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-float)] group flex flex-col h-full"
                                     >
-                                        <div
-                                            className="story-card-banner relative flex items-center justify-center overflow-hidden"
-                                            style={{ background: getStoryMesh(story.id) }}
-                                        >
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <StoryIcon storyId={story.id} />
+                                        {/* 1. CEFR thin colored top band */}
+                                        <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
+                                        
+                                        <div className="p-6 flex flex-col flex-1 gap-4.5 text-left">
+                                            {/* 2. Top row: CEFR badge + Word count */}
+                                            <div className="flex justify-between items-center text-xs font-mono text-[var(--color-on-surface-muted)]">
+                                                <span
+                                                    style={{ color: levelColor, backgroundColor: `${levelColor}20` }}
+                                                    className="px-3 py-1 text-xs font-extrabold rounded-full"
+                                                >
+                                                    Nivel {story.level}
+                                                </span>
+                                                <span className="font-mono">
+                                                    {story.wordCount} palabras
+                                                </span>
                                             </div>
-                                            <span className="absolute top-3 left-3 z-10">
-                                                <LevelBadge level={story.level} size="compact" />
-                                            </span>
-                                        </div>
-                                        <div className="story-card-body space-y-2.5">
-                                            <h3 className="font-bold text-sm leading-snug line-clamp-2">{story.title}</h3>
-                                            <div className="flex items-center gap-2.5 text-xs text-[var(--color-on-surface-muted)]">
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
-                                                <span>·</span>
-                                                <span>{story.wordCount} {t('reader.words')}</span>
+
+                                            {/* 3. Icon + Title + Spanish Title */}
+                                            <div className="flex items-start gap-3.5">
+                                                <div className="h-11 w-11 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
+                                                    <StoryIcon storyId={story.id} className="h-5.5 w-5.5 text-[var(--color-primary)]" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h3 className="font-extrabold text-base leading-tight line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">
+                                                        {story.title}
+                                                    </h3>
+                                                    {details.spanishTitle && (
+                                                        <p className="text-xs italic text-[var(--color-on-surface-muted)]/70 mt-0.5 truncate">
+                                                            {details.spanishTitle}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
+
+                                            {/* 4. Description */}
+                                            {details.description && (
+                                                <p className="text-[13px] line-clamp-2 leading-relaxed text-[var(--color-on-surface-muted)] flex-1">
+                                                    {details.description}
+                                                </p>
+                                            )}
                                         </div>
-                                    </motion.div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </motion.div>
             )}
 
-            {/* Progress (mobile only) -- unit-based */}
+            {/* Progress (mobile only) — unit-based */}
             {progressInfo && (
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="lg:hidden widget"
+                    transition={{ delay: 0.32 }}
+                    className="lg:hidden bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)]"
                 >
-                    <div className="widget-title">{t('progress.title')}</div>
+                    <div className="text-sm font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-5">{t('progress.title')}</div>
                     <div className="space-y-5">
                         <ProgressItem label={t('progress.unitsCompleted')} current={progressInfo.unitsCompleted} target={progressInfo.unitsTotal} />
                         <div className="pt-3">
                             <div className="flex justify-between text-xs mb-2">
                                 <span className="text-[var(--color-on-surface-muted)]">{t('progress.currentLevel')}</span>
-                                <span className="text-[var(--color-on-surface-muted)] font-bold">{progressInfo.overallPercent}%</span>
+                                <span className="font-bold text-[var(--color-primary)]">{progressInfo.overallPercent}%</span>
                             </div>
                             <div className="progress-bloom">
                                 <motion.div
@@ -353,7 +416,7 @@ export default function Dashboard() {
                         </div>
                         {progressInfo.currentUnitId && (
                             <div className="text-xs text-[var(--color-on-surface-muted)]">
-                                {t('progress.nextUnit')}: <span className="text-[var(--color-on-surface-muted)] font-semibold">{progressInfo.currentUnitId}</span>
+                                {t('progress.nextUnit')}: <span className="font-semibold">{progressInfo.currentUnitId}</span>
                             </div>
                         )}
                     </div>
@@ -365,14 +428,21 @@ export default function Dashboard() {
     );
 }
 
-function QuickStat({ icon, value, label, color }: {
-    icon: React.ReactNode; value: number; label: string; color: string;
+function QuickStat({ icon, value, label, accent, borderAccent }: {
+    icon: React.ReactNode; value: number; label: string; accent: string; borderAccent: string;
 }) {
     return (
-        <div className="widget text-center">
-            <div className={`flex justify-center ${color}`}>{icon}</div>
-            <CountUp from={0} to={value} duration={1.2} className={`text-2xl font-extrabold mt-4 ${color}`} />
-            <p className="text-xs text-[var(--color-on-surface-muted)] mt-2 leading-relaxed">{label}</p>
+        <div 
+            style={{ borderLeftColor: borderAccent }}
+            className="bg-[var(--color-card)] rounded-2xl p-6 shadow-[var(--shadow-card)] text-left hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] border-l-4 transition-all duration-300"
+        >
+            <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[var(--color-on-surface-muted)]">{label}</span>
+                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${accent} flex items-center justify-center text-white shadow-md shrink-0`}>
+                    {icon}
+                </div>
+            </div>
+            <CountUp from={0} to={value} duration={1.2} className="text-2xl font-black mt-2 block" />
         </div>
     );
 }
@@ -386,13 +456,13 @@ function ProgressItem({ label, current, target }: {
         <div>
             <div className="flex justify-between text-xs mb-2">
                 <span className="text-[var(--color-on-surface-muted)]">{label}</span>
-                <span className={`font-bold ${met ? 'text-[var(--color-on-surface-muted)]' : 'text-[var(--color-on-surface-muted)]'}`}>
+                <span className={`font-bold ${met ? 'text-[var(--color-success)]' : 'text-[var(--color-on-surface-muted)]'}`}>
                     {met && <Check className="w-3 h-3 inline mr-1" />}{current}/{target}
                 </span>
             </div>
             <div className="progress-bloom">
                 <div
-                    className={`progress-bloom-fill transition-all duration-500 ${met ? '' : 'opacity-60'}`}
+                    className={`progress-bloom-fill transition-all duration-500 ${met ? '' : 'opacity-70'}`}
                     style={{ width: `${pct}%` }}
                 />
             </div>

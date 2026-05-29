@@ -21,6 +21,7 @@ import {
     Trophy,
     ChevronRight,
     Crown,
+    Sparkles,
 } from 'lucide-react';
 
 type UnitState = 'locked' | 'current' | 'completed';
@@ -75,6 +76,14 @@ export default function LearningPath() {
     const { user: authUser } = useAuth();
     const currentLevel = progressInfo?.currentLevel ?? 'A1';
 
+    const userName = authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0] || 'estudiante';
+    const bannerTitle = t('path.bannerTitle', { name: userName }) !== 'path.bannerTitle'
+        ? t('path.bannerTitle', { name: userName })
+        : `¡Sigue así, ${userName}!`;
+    const bannerSubtitle = t('path.bannerSubtitle') !== 'path.bannerSubtitle'
+        ? t('path.bannerSubtitle')
+        : 'Completa el Checkpoint final esta semana para seguir avanzando en tu ruta de aprendizaje.';
+
     const isLevelAccessible = (level: string) => isPro || level === 'A1';
 
     const units = getUnitsByLevel(currentLevel);
@@ -115,19 +124,58 @@ export default function LearningPath() {
 
     return (
         <div className="space-y-14">
+            {/* 1. Motivational Banner */}
+            <motion.div
+                id="path-gradient-banner"
+                initial={{ y: 15, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="w-full rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))' }}
+            >
+                <div className="absolute inset-0 bg-black/5 mix-blend-overlay pointer-events-none" />
+                <div className="relative z-10 flex items-center gap-4">
+                    <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0">
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.15, 1],
+                                rotate: [0, 10, -10, 0]
+                            }}
+                            transition={{
+                                duration: 3,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            <Sparkles className="h-6 w-6 text-yellow-300 fill-yellow-300" />
+                        </motion.div>
+                    </div>
+                    <div>
+                        <h3 className="font-extrabold text-base md:text-lg font-display leading-tight">
+                            {bannerTitle}
+                        </h3>
+                        <p className="text-white/90 text-xs md:text-sm mt-1">
+                            {bannerSubtitle}
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
+
             {/* Level Header */}
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-5"
             >
-                <Map className="w-6 h-6 text-[var(--color-primary)]" />
-                <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-extrabold">{t('path.title')}</h1>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-md">
+                    <Map className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex items-center gap-4 flex-wrap">
+                    <h1 className="text-3xl font-black tracking-tight">{t('path.title')}</h1>
                     <LevelBadge level={currentLevel} />
                     {levelGated && (
-                        <Link to="/pricing" className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2.5 py-1 rounded-full hover:bg-[var(--color-primary)]/20 transition-colors">
-                            <Crown className="w-3 h-3" /> Plan Pro
+                        <Link to="/pricing" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] px-3.5 py-1.5 rounded-full shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                            <Crown className="w-3.5 h-3.5" /> Plan Pro
                         </Link>
                     )}
                 </div>
@@ -139,10 +187,10 @@ export default function LearningPath() {
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
-                    className="relative pl-6 md:pl-10"
+                    className="relative pl-8 md:pl-12"
                 >
-                    {/* Connector line */}
-                    <div className="absolute left-[11px] md:left-[19px] top-4 bottom-4 w-[2px] bg-[var(--color-outline-subtle)]" />
+                    {/* Connector line — gradient instead of border */}
+                    <div className="absolute left-[13px] md:left-[21px] top-4 bottom-4 w-[3px] rounded-full bg-gradient-to-b from-[var(--color-primary)]/30 via-[var(--color-surface-container-high)] to-[var(--color-surface-container)]" />
 
                     {unitsWithState.map((item, index) => (
                         <UnitCard
@@ -161,10 +209,12 @@ export default function LearningPath() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="widget text-center py-12"
+                    className="widget text-center py-16"
                 >
-                    <BookOpen className="w-10 h-10 text-[var(--color-on-surface-muted)] mx-auto mb-4" />
-                    <p className="text-[var(--color-on-surface-muted)]">
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-container)] flex items-center justify-center mx-auto mb-5">
+                        <BookOpen className="w-7 h-7 text-[var(--color-on-surface-muted)]" />
+                    </div>
+                    <p className="text-[var(--color-on-surface-muted)] text-sm">
                         No hay unidades disponibles para el nivel {currentLevel} todav&iacute;a.
                     </p>
                 </motion.div>
@@ -178,11 +228,11 @@ export default function LearningPath() {
                     transition={{ delay: 0.4 }}
                     className="widget"
                 >
-                    <div className="flex justify-between text-xs mb-4">
-                        <span className="text-[var(--color-on-surface-muted)] font-medium uppercase tracking-wide">
+                    <div className="flex justify-between text-xs mb-5">
+                        <span className="text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider">
                             Progreso del nivel {currentLevel}
                         </span>
-                        <span className="text-[var(--color-on-surface-muted)] font-bold">
+                        <span className="font-black text-sm text-[var(--color-on-surface)]">
                             {completedCount}/{totalCount} &mdash; {levelPercent}%
                         </span>
                     </div>
@@ -220,71 +270,75 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
     const isCompleted = state === 'completed';
     const isCurrent = state === 'current';
 
-    // Node dot colors
+    // Node dot — gradient fills, no borders
     const dotClass = isCompleted
-        ? 'bg-[var(--color-success)] border-[var(--color-success)]/30'
+        ? 'bg-gradient-to-br from-[var(--color-success)] to-[var(--color-success-light)] shadow-md shadow-[var(--color-success)]/30'
         : isCurrent
             ? isAssessment
-                ? 'bg-[var(--color-level-b1)] border-[var(--color-level-b1)]/30'
-                : 'bg-[var(--color-primary)] border-[var(--color-primary)]/30'
-            : 'bg-[var(--color-card)] border-[var(--color-outline-subtle)]';
+                ? 'bg-gradient-to-br from-[var(--color-level-b1)] to-[var(--color-warning-light)] shadow-md shadow-[var(--color-level-b1)]/30'
+                : 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] shadow-md shadow-[var(--color-primary)]/30'
+            : 'bg-[var(--color-surface-container-high)]';
 
-    // Card border styles
-    const cardBorder = isCurrent
+    // Card shadow styles — no borders
+    const cardShadow = isCurrent
         ? isAssessment
-            ? 'border-[var(--color-level-b1)]/40 shadow-[0_0_20px_rgba(251,191,36,0.08)]'
-            : 'border-[var(--color-primary)]/40 shadow-[0_0_20px_rgba(112,42,225,0.08)]'
+            ? 'shadow-[0_4px_24px_rgba(251,191,36,0.12)] hover:shadow-[0_8px_32px_rgba(251,191,36,0.18)]'
+            : 'shadow-[var(--shadow-elevated)] hover:shadow-[var(--shadow-float)]'
         : isCompleted
-            ? 'border-[var(--color-success)]/20'
-            : 'border-[var(--color-outline-subtle)]';
+            ? 'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)]'
+            : 'shadow-[var(--shadow-card)]';
 
     const effectivelyLocked = isLocked || tierGated;
+    const cardBg = effectivelyLocked ? 'bg-[var(--color-surface-container)]' : 'bg-[var(--color-card)]';
 
     return (
         <motion.div
             variants={itemVariants}
-            className={`relative mx-2 mt-2 mb-10 last:mb-0 ${effectivelyLocked ? 'opacity-50' : ''}`}
+            className={`relative mx-2 mt-2 mb-10 last:mb-0 transition-opacity duration-300 ${effectivelyLocked ? 'opacity-60' : ''}`}
         >
             {/* Timeline node */}
             <div
                 className={`
-                    absolute -left-6 md:-left-10 top-6
-                    w-4 h-4 md:w-5 md:h-5 rounded-full
-                    border-[3px] z-10
+                    absolute -left-8 md:-left-12 top-7
+                    w-5 h-5 md:w-6 md:h-6 rounded-full
+                    z-10
                     ${dotClass}
                     ${isCurrent && !isAssessment ? 'ring-4 ring-[var(--color-primary)]/20 animate-pulse' : ''}
                     ${isCurrent && isAssessment ? 'ring-4 ring-[var(--color-level-b1)]/20 animate-pulse' : ''}
                 `}
             >
                 {isCompleted && (
-                    <CheckCircle2 className="w-2.5 h-2.5 md:w-3 md:h-3 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <CheckCircle2 className="w-3 h-3 md:w-3.5 md:h-3.5 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 )}
             </div>
 
             {/* Card */}
             <div
-                onClick={tierGated ? undefined : onClick}
+                onClick={effectivelyLocked ? undefined : onClick}
                 className={`
-                    bg-[var(--color-card)] border rounded-2xl p-5 md:p-7
-                    transition-all duration-200 relative overflow-hidden
-                    ${cardBorder}
-                    ${!effectivelyLocked ? 'cursor-pointer hover:border-[var(--color-primary)]/50 hover:shadow-lg hover:-translate-y-0.5' : 'cursor-not-allowed'}
+                    ${cardBg} rounded-2xl p-6 md:p-8
+                    transition-all duration-300 relative overflow-hidden
+                    ${cardShadow}
+                    ${isCurrent ? (isAssessment ? 'border-l-4 border-[var(--color-level-b1)]' : 'border-l-4 border-[var(--color-primary)]') : ''}
+                    ${!effectivelyLocked ? 'cursor-pointer hover:-translate-y-1' : 'cursor-not-allowed'}
                 `}
             >
                 {/* Tier gate overlay */}
                 {tierGated && (
-                    <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 rounded-2xl">
-                        <Lock className="w-6 h-6 text-[var(--color-primary)]" />
-                        <span className="text-xs font-bold text-[var(--color-primary)]">Plan Pro</span>
+                    <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 rounded-2xl">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg">
+                            <Lock className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-xs font-black text-white tracking-wide">Plan Pro</span>
                     </Link>
                 )}
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-4">
                     {/* Left: content */}
-                    <div className="flex-1 min-w-0 pl-[3px] space-y-4">
+                    <div className="flex-1 min-w-0 space-y-4">
                         {/* Unit number + assessment badge */}
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <span className={`
-                                text-xs font-bold uppercase tracking-wider
+                                text-xs font-black uppercase tracking-widest
                                 ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-on-surface-muted)]'}
                             `}>
                                 {isAssessment
@@ -295,14 +349,14 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
 
                             {/* State pill */}
                             {isCompleted && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-full">
+                                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-success)] bg-[var(--color-success)]/10 px-3 py-1 rounded-full">
                                     <CheckCircle2 className="w-3 h-3" />
                                     {t('path.completed')}
                                 </span>
                             )}
                             {isCurrent && (
                                 <span className={`
-                                    inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full
+                                    inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full
                                     ${isAssessment
                                         ? 'text-[var(--color-level-b1)] bg-[var(--color-level-b1)]/10'
                                         : 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
@@ -313,7 +367,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                                 </span>
                             )}
                             {isLocked && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--color-on-surface-muted)] bg-[var(--color-surface)] px-2 py-0.5 rounded-full">
+                                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-on-surface-muted)] bg-[var(--color-surface-container)] px-3 py-1 rounded-full">
                                     <Lock className="w-3 h-3" />
                                     {t('path.locked')}
                                 </span>
@@ -321,9 +375,9 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                         </div>
 
                         {/* Title */}
-                        <h3 className="text-base font-bold leading-snug">
+                        <h3 className="text-lg font-black leading-snug tracking-tight">
                             {isAssessment && (
-                                <Trophy className="w-4 h-4 inline mr-1.5 text-[var(--color-level-b1)] -mt-0.5" />
+                                <Trophy className="w-5 h-5 inline mr-2 text-[var(--color-level-b1)] -mt-0.5" />
                             )}
                             {unit.title}
                         </h3>
@@ -335,7 +389,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
 
                         {/* Progress checkmarks */}
                         {!isAssessment && (isCurrent || isCompleted) && progress && (
-                            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1">
+                            <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 pt-1">
                                 <ProgressCheck label="Grammar" done={progress.grammar_card_read} />
                                 <ProgressCheck label="Story" done={progress.story_completed} />
                                 <ProgressCheck label="Exercises" done={progress.exercises_score >= 70} />
@@ -350,25 +404,32 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     </div>
 
                     {/* Right: action icon */}
-                    <div className="flex-shrink-0 mt-1">
+                    <div className="flex-shrink-0 mt-2">
                         {isLocked ? (
-                            <Lock className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
+                            <div className="w-10 h-10 rounded-2xl bg-[var(--color-surface-container)] flex items-center justify-center">
+                                <Lock className="w-4 h-4 text-[var(--color-on-surface-muted)]" />
+                            </div>
                         ) : isCompleted ? (
-                            <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />
+                            <div className="w-10 h-10 rounded-2xl bg-[var(--color-success)]/10 flex items-center justify-center">
+                                <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />
+                            </div>
                         ) : (
-                            <ChevronRight className={`w-5 h-5 ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-primary)]'}`} />
+                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${isAssessment ? 'bg-[var(--color-level-b1)]/10' : 'bg-[var(--color-primary)]/10'}`}>
+                                <ChevronRight className={`w-5 h-5 ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-primary)]'}`} />
+                            </div>
                         )}
                     </div>
                 </div>
 
-                {/* CTA for current unit */}
+                {/* CTA for current unit — no border-t, use surface shift */}
                 {isCurrent && (
                     <div className={`
-                        mt-4 pt-3 border-t
-                        ${isAssessment ? 'border-[var(--color-level-b1)]/20' : 'border-[var(--color-outline-subtle)]'}
+                        mt-5 pt-4 rounded-2xl
+                        bg-[var(--color-surface-container-low)]/50
+                        -mx-2 px-4 py-3
                     `}>
                         <span className={`
-                            text-sm font-semibold flex items-center gap-2
+                            text-sm font-bold flex items-center gap-2.5
                             ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-primary)]'}
                         `}>
                             <Play className="w-4 h-4" />
@@ -389,13 +450,13 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
 function ProgressCheck({ label, done }: { label: string; done: boolean }) {
     return (
         <span className={`
-            inline-flex items-center gap-1 text-xs font-medium
+            inline-flex items-center gap-1.5 text-xs font-semibold
             ${done ? 'text-[var(--color-success)]' : 'text-[var(--color-on-surface-muted)]'}
         `}>
             {done ? (
                 <CheckCircle2 className="w-3.5 h-3.5" />
             ) : (
-                <span className="w-3.5 h-3.5 rounded-full border border-current opacity-40" />
+                <span className="w-3.5 h-3.5 rounded-full bg-[var(--color-surface-container-high)] opacity-60" />
             )}
             {label}
         </span>
