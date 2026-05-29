@@ -115,9 +115,27 @@ export default function Dashboard() {
                 transition={{ delay: 0.08 }}
                 className="grid grid-cols-3 gap-4"
             >
-                <QuickStat icon={<Flame className="w-5 h-5" />} value={user!.streak} label={t('dashboard.streak')} accent="from-orange-400 to-rose-400" />
-                <QuickStat icon={<Layers className="w-5 h-5" />} value={totalCards} label={t('dashboard.totalCards')} accent="from-blue-400 to-indigo-400" />
-                <QuickStat icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} accent="from-[var(--color-primary)] to-[var(--color-primary-container)]" />
+                <QuickStat 
+                    icon={<Flame className="w-5 h-5" />} 
+                    value={user!.streak} 
+                    label={t('dashboard.streak')} 
+                    accent="from-orange-400 to-rose-400" 
+                    borderAccent="var(--color-tertiary)"
+                />
+                <QuickStat 
+                    icon={<Layers className="w-5 h-5" />} 
+                    value={totalCards} 
+                    label={t('dashboard.totalCards')} 
+                    accent="from-blue-400 to-indigo-400" 
+                    borderAccent="var(--color-primary)"
+                />
+                <QuickStat 
+                    icon={<BookOpen className="w-5 h-5" />} 
+                    value={readStories?.length ?? 0} 
+                    label={t('dashboard.storiesRead')} 
+                    accent="from-[var(--color-primary)] to-[var(--color-primary-container)]" 
+                    borderAccent="var(--color-success)"
+                />
             </motion.div>
 
             {/* Continue Learning Widget */}
@@ -161,6 +179,11 @@ export default function Dashboard() {
                             <div className="space-y-4">
                                 {/* Unit title + grammar */}
                                 <div className="space-y-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
+                                            SIGUIENTE HITO
+                                        </span>
+                                    </div>
                                     <h3 className="font-bold text-base">{firstIncompleteUnit.title}</h3>
                                     <p className="text-sm text-[var(--color-on-surface-muted)]">{firstIncompleteUnit.grammarTopic}</p>
                                 </div>
@@ -300,39 +323,49 @@ export default function Dashboard() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-5">
-                        {recommended.map((story, i) => (
-                            <motion.div
-                                key={story.id}
-                                initial={{ opacity: 0, y: 12 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.28 + i * 0.05 }}
-                            >
-                                <div
-                                    onClick={() => navigate(`/learn/${story.id}`)}
-                                    className="bg-[var(--color-card)] rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-float)] group"
+                        {recommended.map((story, i) => {
+                            const levelColor = {
+                                A1: 'var(--color-level-a1)',
+                                A2: 'var(--color-level-a2)',
+                                B1: 'var(--color-level-b1)',
+                                B2: 'var(--color-level-b2)',
+                            }[story.level] || 'var(--color-primary)';
+
+                            return (
+                                <motion.div
+                                    key={story.id}
+                                    initial={{ opacity: 0, y: 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.28 + i * 0.05 }}
                                 >
                                     <div
-                                        className="h-36 relative flex items-center justify-center overflow-hidden"
-                                        style={{ background: getStoryMesh(story.id) }}
+                                        onClick={() => navigate(`/learn/${story.id}`)}
+                                        className="bg-[var(--color-card)] rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-float)] group"
                                     >
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <StoryIcon storyId={story.id} />
+                                        <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
+                                        <div
+                                            className="h-36 relative flex items-center justify-center overflow-hidden"
+                                            style={{ background: getStoryMesh(story.id) }}
+                                        >
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <StoryIcon storyId={story.id} />
+                                            </div>
+                                            <span className="absolute top-3 left-3 z-10">
+                                                <LevelBadge level={story.level} size="compact" />
+                                            </span>
                                         </div>
-                                        <span className="absolute top-3 left-3 z-10">
-                                            <LevelBadge level={story.level} size="compact" />
-                                        </span>
-                                    </div>
-                                    <div className="p-5 space-y-2.5">
-                                        <h3 className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors">{story.title}</h3>
-                                        <div className="flex items-center gap-2.5 text-xs text-[var(--color-on-surface-muted)]">
-                                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
-                                            <span>·</span>
-                                            <span>{story.wordCount} {t('reader.words')}</span>
+                                        <div className="p-5 space-y-2.5">
+                                            <h3 className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors">{story.title}</h3>
+                                            <div className="flex items-center gap-2.5 text-xs text-[var(--color-on-surface-muted)]">
+                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
+                                                <span>·</span>
+                                                <span>{story.wordCount} {t('reader.words')}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </motion.div>
             )}
@@ -376,16 +409,21 @@ export default function Dashboard() {
     );
 }
 
-function QuickStat({ icon, value, label, accent }: {
-    icon: React.ReactNode; value: number; label: string; accent: string;
+function QuickStat({ icon, value, label, accent, borderAccent }: {
+    icon: React.ReactNode; value: number; label: string; accent: string; borderAccent: string;
 }) {
     return (
-        <div className="bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] text-center hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
-            <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${accent} mx-auto flex items-center justify-center text-white shadow-md`}>
-                {icon}
+        <div 
+            style={{ borderLeftColor: borderAccent }}
+            className="bg-[var(--color-card)] rounded-2xl p-6 shadow-[var(--shadow-card)] text-left hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] border-l-4 transition-all duration-300"
+        >
+            <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[var(--color-on-surface-muted)]">{label}</span>
+                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${accent} flex items-center justify-center text-white shadow-md shrink-0`}>
+                    {icon}
+                </div>
             </div>
-            <CountUp from={0} to={value} duration={1.2} className="text-2xl font-black mt-3 block" />
-            <p className="text-xs text-[var(--color-on-surface-muted)] mt-1.5 leading-relaxed">{label}</p>
+            <CountUp from={0} to={value} duration={1.2} className="text-2xl font-black mt-2 block" />
         </div>
     );
 }
