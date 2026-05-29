@@ -6,6 +6,7 @@ import { useLevelProgression } from '../hooks/useLevelProgression';
 import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
+import Bilingual from './ui/Bilingual';
 import OfflineBanner from './OfflineBanner';
 import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
@@ -54,14 +55,11 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
                     </div>
                     <AnimatePresence>
                         {expanded && (
-                            <motion.span
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0, transition: { duration: 0 } }}
-                                className="text-sm font-semibold whitespace-nowrap"
-                            >
-                                {t(labelKey)}
-                            </motion.span>
+                            <Bilingual 
+                                textKey={labelKey} 
+                                className="text-sm font-semibold whitespace-nowrap text-[var(--color-on-surface)]" 
+                                subClassName="text-[9px] -mt-0.5 opacity-80"
+                            />
                         )}
                     </AnimatePresence>
                     <AnimatePresence>
@@ -184,6 +182,7 @@ export default function Layout() {
                                         {authUser.user_metadata?.full_name || authUser.email?.split('@')[0]}
                                     </p>
                                     <div className="flex items-center gap-1.5 mt-0.5">
+                                        <Bilingual textKey="progress.currentLevel" className="text-[10px] font-bold text-[var(--color-on-surface-muted)]" />
                                         <LevelBadge level={progressInfo.currentLevel} size="compact" />
                                     </div>
                                 </motion.div>
