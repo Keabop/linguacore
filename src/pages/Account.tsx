@@ -2,17 +2,25 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette } from 'lucide-react';
+import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { useTheme } from '../lib/ThemeContext';
+import { useTheme, type ProTheme } from '../lib/ThemeContext';
 import { useCards } from '../hooks/useCards';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useTier } from '../hooks/useTier';
 import LevelBadge from '../components/ui/LevelBadge';
 import SettingsModal from '../components/SettingsModal';
 import type { ReadStoryRow, CardRow } from '../lib/database.types';
+
+const themes: { id: ProTheme; name: string; color: string; isPro: boolean }[] = [
+    { id: 'purple',     name: 'Fluid Scholar', color: '#702AE1', isPro: false },
+    { id: 'ocean',      name: 'Ocean',         color: '#0891B2', isPro: true },
+    { id: 'forest',     name: 'Forest',        color: '#16A34A', isPro: true },
+    { id: 'midnight',   name: 'Midnight',      color: '#818CF8', isPro: true },
+    { id: 'royal-gold', name: 'Royal Gold',    color: '#D97706', isPro: true },
+];
 
 export default function Account() {
     const { t } = useTranslation();
@@ -164,6 +172,77 @@ export default function Account() {
                         </div>
                     </motion.div>
                 )}
+
+                {/* ===== Apariencia y Colores ===== */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.18 }}
+                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] space-y-4 text-left"
+                >
+                    <div className="flex items-center gap-2">
+                        <Palette className="w-5 h-5 text-[var(--color-primary)]" />
+                        <h2 className="text-sm font-bold text-[var(--color-on-surface-muted)]">Apariencia y Colores</h2>
+                    </div>
+                    
+                    <div className="space-y-1">
+                        <span className="text-xs font-bold block">Gama de Colores de Marca</span>
+                        <span className="text-[10px] block text-[var(--color-on-surface-muted)]">
+                            Personaliza los colores de interfaz de tu Fluid Scholar. Desbloquea estéticas exclusivas con tu suscripción Pro.
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                        {themes.map((theme) => {
+                            const isSelected = proTheme === theme.id;
+                            const progressLocked = theme.isPro && !isPro;
+
+                            return (
+                                <button
+                                    key={theme.id}
+                                    onClick={() => {
+                                        if (!progressLocked) setProTheme(theme.id);
+                                    }}
+                                    disabled={progressLocked}
+                                    className={`p-4 rounded-2xl border-2 text-left flex items-center gap-3 transition-all relative ${
+                                        isSelected
+                                            ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
+                                            : 'border-[var(--color-surface-container)] bg-[var(--color-surface-container-low)] hover:bg-[var(--color-surface-container-high)]/40'
+                                    } ${progressLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                >
+                                    {/* Circle Color Accent Indicator */}
+                                    <span 
+                                        style={{ backgroundColor: theme.color }}
+                                        className="h-4 w-4 rounded-full border border-white shrink-0 block" 
+                                    />
+
+                                    <div className="flex-1 min-w-0">
+                                        <span className="text-xs font-bold block truncate">{theme.name}</span>
+                                        <span className="text-[9px] block text-[var(--color-on-surface-muted)] truncate">
+                                            {theme.isPro ? (
+                                                <span className="inline-flex items-center gap-0.5">
+                                                    <Crown className="h-2.5 w-2.5 text-amber-500 fill-amber-500 shrink-0" /> Exclusivo Pro
+                                                </span>
+                                            ) : 'Gratuito'}
+                                        </span>
+                                    </div>
+
+                                    {isSelected && (
+                                        <span className="absolute top-2 right-2 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white">
+                                            <Check className="h-2.5 w-2.5 text-white stroke-[3px]" />
+                                        </span>
+                                    )}
+
+                                    {progressLocked && (
+                                        <span className="absolute top-2 right-2 text-[var(--color-on-surface-muted)]">
+                                            <Lock className="h-3.5 w-3.5" />
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </motion.div>
 
                 {/* ===== Pro Stats: Activity Heatmap ===== */}
                 {isPro ? (
