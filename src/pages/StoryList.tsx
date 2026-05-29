@@ -17,7 +17,7 @@ import { StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
 import { SpotlightCard } from '../components/reactbits';
 
-const storyDetails: Record<string, { spanishTitle: string; description: string }> = {
+export const storyDetails: Record<string, { spanishTitle: string; description: string }> = {
     'a1-001': { spanishTitle: 'Mi Rutina Diaria', description: 'Una mirada sencilla a las actividades de la mañana.' },
     'a1-002': { spanishTitle: 'Mi Familia', description: 'Aprende vocabulario sobre los miembros de la familia y actividades de fin de semana.' },
     'a1-003': { spanishTitle: 'Mi Mejor Amigo', description: 'Una historia sobre la amistad, pasatiempos y diferencias personales.' },
@@ -63,7 +63,7 @@ const storyDetails: Record<string, { spanishTitle: string; description: string }
     'b2-010': { spanishTitle: 'El Futuro de la Energía', description: 'Una comparativa entre la fusión nuclear, la energía solar y los biocombustibles.' },
 };
 
-const CEFR_COLORS: Record<string, string> = {
+export const CEFR_COLORS: Record<string, string> = {
     A1: '#60A5FA',
     A2: '#4ADE80',
     B1: '#FBBF24',

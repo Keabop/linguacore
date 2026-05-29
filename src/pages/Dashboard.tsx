@@ -17,6 +17,7 @@ import { allStories, getUnitsByLevel } from '../data';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
+import { storyDetails, CEFR_COLORS } from './StoryList';
 import DBErrorCard from '../components/DBErrorCard';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import { BlurText, CountUp, SpotlightCard } from '../components/reactbits';
@@ -324,12 +325,8 @@ export default function Dashboard() {
 
                     <div className="grid grid-cols-2 gap-5">
                         {recommended.map((story, i) => {
-                            const levelColor = {
-                                A1: 'var(--color-level-a1)',
-                                A2: 'var(--color-level-a2)',
-                                B1: 'var(--color-level-b1)',
-                                B2: 'var(--color-level-b2)',
-                            }[story.level] || 'var(--color-primary)';
+                            const levelColor = CEFR_COLORS[story.level] || 'var(--color-primary)';
+                            const details = storyDetails[story.id] || { spanishTitle: '', description: '' };
 
                             return (
                                 <motion.div
@@ -337,30 +334,52 @@ export default function Dashboard() {
                                     initial={{ opacity: 0, y: 12 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.28 + i * 0.05 }}
+                                    className="h-full"
                                 >
                                     <div
                                         onClick={() => navigate(`/learn/${story.id}`)}
-                                        className="bg-[var(--color-card)] rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-float)] group"
+                                        className="bg-[var(--color-card)] rounded-2xl overflow-hidden shadow-[var(--shadow-card)] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-float)] group flex flex-col h-full"
                                     >
-                                        <div style={{ backgroundColor: levelColor }} className="h-1 w-full" />
-                                        <div
-                                            className="h-36 relative flex items-center justify-center overflow-hidden"
-                                            style={{ background: getStoryMesh(story.id) }}
-                                        >
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <StoryIcon storyId={story.id} />
+                                        {/* 1. CEFR thin colored top band */}
+                                        <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
+                                        
+                                        <div className="p-5 flex flex-col flex-1 gap-3">
+                                            {/* 2. Top row: CEFR badge + Word count */}
+                                            <div className="flex justify-between items-center">
+                                                <span
+                                                    style={{ color: levelColor, backgroundColor: `${levelColor}20` }}
+                                                    className="px-2.5 py-0.5 text-[9px] font-extrabold rounded-full"
+                                                >
+                                                    Nivel {story.level}
+                                                </span>
+                                                <span className="text-[9px] font-mono text-[var(--color-on-surface-muted)]">
+                                                    {story.wordCount} palabras
+                                                </span>
                                             </div>
-                                            <span className="absolute top-3 left-3 z-10">
-                                                <LevelBadge level={story.level} size="compact" />
-                                            </span>
-                                        </div>
-                                        <div className="p-5 space-y-2.5">
-                                            <h3 className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors">{story.title}</h3>
-                                            <div className="flex items-center gap-2.5 text-xs text-[var(--color-on-surface-muted)]">
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
-                                                <span>·</span>
-                                                <span>{story.wordCount} {t('reader.words')}</span>
+
+                                            {/* 3. Icon + Title + Spanish Title */}
+                                            <div className="flex items-start gap-3">
+                                                <div className="h-9 w-9 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
+                                                    <StoryIcon storyId={story.id} className="h-4.5 w-4.5 text-[var(--color-primary)]" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h3 className="font-extrabold text-xs md:text-sm leading-tight line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">
+                                                        {story.title}
+                                                    </h3>
+                                                    {details.spanishTitle && (
+                                                        <p className="text-[9px] italic text-[var(--color-on-surface-muted)]/70 mt-0.5 truncate">
+                                                            {details.spanishTitle}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
+
+                                            {/* 4. Description */}
+                                            {details.description && (
+                                                <p className="text-[11px] line-clamp-2 leading-relaxed text-[var(--color-on-surface-muted)] flex-1">
+                                                    {details.description}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
