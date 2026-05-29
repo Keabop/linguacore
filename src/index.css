@@ -409,29 +409,8 @@
 
 /* === NAV ITEMS — Fluid Scholar pill style === */
 .rail-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 14px;
-  margin: 3px 10px;
-  border-radius: 1rem;
-  color: var(--color-on-surface-muted);
-  text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-}
-
-.rail-item:hover {
-  background: var(--color-surface-container);
-  color: var(--color-on-surface);
-  transform: translateX(4px);
-}
-
-.rail-item.active {
-  background: var(--color-card);
-  color: var(--color-primary);
-  font-weight: 700;
-  box-shadow: var(--shadow-card);
 }
 
 /* === FLOATING BOTTOM BAR (mobile) — Glassmorphism === */

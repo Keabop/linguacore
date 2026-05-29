@@ -28,7 +28,15 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
         <NavLink
             to={path}
             className={({ isActive }) =>
-                `rail-item ${isActive ? 'active' : ''}`
+                `rail-item flex items-center gap-3 h-10 my-1 rounded-xl transition-all duration-300 relative select-none ${
+                    expanded 
+                        ? 'px-3 justify-start mx-3' 
+                        : 'px-0 justify-center mx-2'
+                } ${
+                    isActive
+                        ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                        : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
+                }`
             }
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -38,7 +46,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
                     {isActive && (
                         <motion.div
                             layoutId="activeIndicator"
-                            className="absolute -left-2.5 w-1.5 h-8 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-r-full"
+                            className="absolute left-0 w-1 h-6 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-r-full"
                         />
                     )}
                     <div className="w-10 h-10 flex items-center justify-center shrink-0">
@@ -112,9 +120,9 @@ export default function Layout() {
                 }}
             >
                 {/* Logo */}
-                <div className="flex items-center px-2 mb-10">
+                <div className={`flex items-center mb-10 transition-all duration-300 ${isNavHovered ? 'px-3 mx-3 justify-start' : 'px-0 mx-2 justify-center'}`}>
                     <div className="w-10 h-10 flex items-center justify-center shrink-0 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] shadow-lg">
-                        <img src="/logo.png" alt="Voxie" className="w-6 h-6 object-cover brightness-0 invert" />
+                        <img src="/logo.png" alt="Voxie" className="w-6 h-6 object-contain" />
                     </div>
                     <AnimatePresence>
                         {isNavHovered && (
@@ -148,7 +156,15 @@ export default function Layout() {
                     <NavLink
                         to="/account"
                         className={({ isActive }) =>
-                            `mt-auto mx-3 flex items-center gap-3 rounded-2xl py-3 px-3 transition-all hover:bg-[var(--color-surface-container)] ${isActive ? 'bg-[var(--color-surface-container)]' : ''} relative`
+                            `flex items-center gap-3 h-10 mt-auto rounded-xl transition-all duration-300 relative select-none ${
+                                isNavHovered
+                                    ? 'px-3 justify-start mx-3'
+                                    : 'px-0 justify-center mx-2'
+                            } ${
+                                isActive
+                                    ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                                    : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
+                            }`
                         }
                         onMouseEnter={() => setIsProfileHovered(true)}
                         onMouseLeave={() => setIsProfileHovered(false)}
