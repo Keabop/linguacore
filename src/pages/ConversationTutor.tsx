@@ -141,7 +141,7 @@ export default function ConversationTutor() {
     // ── HISTORY VIEW ──
     if (view === 'history') {
         return (
-            <div className="space-y-8">
+            <div className="space-y-8 w-full max-w-full overflow-hidden flex flex-col min-w-0">
                 <style>{`.floating-bar { display: none !important; }`}</style>
 
                 {/* Header */}
@@ -171,7 +171,7 @@ export default function ConversationTutor() {
 
                 {/* Past sessions list */}
                 {sessions.length > 0 && (
-                    <div className="space-y-4">
+                    <div className="space-y-4 w-full max-w-full overflow-hidden flex flex-col min-w-0">
                         <h3 className="text-sm font-bold text-[var(--color-on-surface-muted)] flex items-center gap-2">
                             <History className="w-4 h-4" /> {t('chat.history')}
                         </h3>
@@ -182,13 +182,13 @@ export default function ConversationTutor() {
                             return (
                                 <button key={session.id}
                                     onClick={() => { setReadonlySession(session); setView('readonly'); }}
-                                    className="w-full text-left bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-xs text-[var(--color-on-surface-muted)]">{dateStr}</span>
-                                        <span className="text-xs bg-[var(--color-surface-container)] px-3 py-0.5 rounded-full text-[var(--color-on-surface-muted)] font-medium">{session.level}</span>
+                                    className="w-full min-w-0 max-w-full overflow-hidden text-left bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 space-y-2 flex flex-col justify-between">
+                                    <div className="flex justify-between items-center w-full min-w-0">
+                                        <span className="text-xs text-[var(--color-on-surface-muted)] shrink-0">{dateStr}</span>
+                                        <span className="text-xs bg-[var(--color-surface-container)] px-3 py-0.5 rounded-full text-[var(--color-on-surface-muted)] font-medium shrink-0">{session.level}</span>
                                     </div>
-                                    <p className="text-sm text-[var(--color-on-surface)] truncate font-medium">{preview}</p>
-                                    <p className="text-xs text-[var(--color-on-surface-muted)]">{msgCount} {msgCount === 1 ? 'mensaje' : 'mensajes'}</p>
+                                    <p className="text-sm text-[var(--color-on-surface)] truncate font-medium block w-full min-w-0">{preview}</p>
+                                    <p className="text-xs text-[var(--color-on-surface-muted)] shrink-0">{msgCount} {msgCount === 1 ? 'mensaje' : 'mensajes'}</p>
                                 </button>
                             );
                         })}
