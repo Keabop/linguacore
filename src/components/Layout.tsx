@@ -210,17 +210,7 @@ export default function Layout() {
             <div className="main-content">
                 <div className="main-content-inner">
                     <OfflineBanner syncState={syncState} />
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={location.pathname}
-                            initial={{ opacity: 0, y: 4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -4 }}
-                            transition={{ duration: 0.12, ease: 'easeOut' }}
-                        >
-                            <Outlet />
-                        </motion.div>
-                    </AnimatePresence>
+                    <Outlet />
                 </div>
             </div>
 
