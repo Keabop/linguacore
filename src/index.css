@@ -347,23 +347,31 @@
 
 .sidebar-rail {
   position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: var(--color-surface-container-low);
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(112, 42, 225, 0.08);
+  border-radius: 26px;
+  height: auto;
+  min-height: 410px;
   display: flex;
   flex-direction: column;
-  padding: 32px 0;
+  padding: 24px 0;
   z-index: 50;
-  overflow: hidden;
-  transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border-radius: 0 3rem 3rem 0;
+  overflow: visible;
   box-shadow: var(--shadow-elevated);
+}
+
+.dark .sidebar-rail {
+  background: rgba(20, 2, 32, 0.85);
 }
 
 .main-content {
   flex: 1;
-  margin-left: 68px;
+  padding-left: 80px;
   min-height: 100dvh;
   display: flex;
   justify-content: center;
@@ -610,6 +618,7 @@ span[data-word].in-deck {
 
   .main-content {
     margin-left: 0;
+    padding-left: 0;
   }
 
   .main-content-inner {

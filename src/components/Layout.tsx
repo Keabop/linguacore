@@ -23,12 +23,15 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
     path: string; icon: LucideIcon; labelKey: string; expanded: boolean;
 }) {
     const { t } = useTranslation();
+    const [isHovered, setIsHovered] = useState(false);
     return (
         <NavLink
             to={path}
             className={({ isActive }) =>
                 `rail-item ${isActive ? 'active' : ''}`
             }
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
             {({ isActive }) => (
                 <>
@@ -53,6 +56,20 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
                             </motion.span>
                         )}
                     </AnimatePresence>
+                    <AnimatePresence>
+                        {isHovered && !expanded && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, x: 14, scale: 1 }}
+                                exit={{ opacity: 0, x: -10, scale: 0.95 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                            >
+                                {t(labelKey)}
+                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]" />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </>
             )}
         </NavLink>
@@ -66,7 +83,8 @@ export default function Layout() {
     const { user: authUser } = useAuth();
     const syncState = useSyncManager();
     const scrollRef = useRef<HTMLElement>(null);
-    const [expanded, setExpanded] = useState(false);
+    const [isNavHovered, setIsNavHovered] = useState(false);
+    const [isProfileHovered, setIsProfileHovered] = useState(false);
 
     // Auto-scroll active nav item into view on route change
     useEffect(() => {
@@ -83,19 +101,23 @@ export default function Layout() {
         <div className="app-layout">
             {/* ===== RAIL SIDEBAR — Fluid Scholar ===== */}
             <motion.aside
-                className="sidebar-rail"
-                onMouseEnter={() => setExpanded(true)}
-                onMouseLeave={() => setExpanded(false)}
-                animate={{ width: expanded ? 260 : 68 }}
-                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="sidebar-rail fixed left-4 top-1/2 -translate-y-1/2 bg-white/85 backdrop-blur-xl border border-purple-500/10"
+                onMouseEnter={() => setIsNavHovered(true)}
+                onMouseLeave={() => setIsNavHovered(false)}
+                animate={{ width: isNavHovered ? 188 : 58 }}
+                transition={{ 
+                    type: 'spring', 
+                    stiffness: 240, 
+                    damping: 28 
+                }}
             >
                 {/* Logo */}
-                <div className="flex items-center px-3 mb-10">
-                    <div className="w-11 h-11 flex items-center justify-center shrink-0 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] shadow-lg">
+                <div className="flex items-center px-2 mb-10">
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] shadow-lg">
                         <img src="/logo.png" alt="Voxie" className="w-6 h-6 object-cover brightness-0 invert" />
                     </div>
                     <AnimatePresence>
-                        {expanded && (
+                        {isNavHovered && (
                             <motion.span
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -116,7 +138,7 @@ export default function Layout() {
                             path={item.path}
                             icon={item.icon}
                             labelKey={item.labelKey}
-                            expanded={expanded}
+                            expanded={isNavHovered}
                         />
                     ))}
                 </nav>
@@ -126,14 +148,16 @@ export default function Layout() {
                     <NavLink
                         to="/account"
                         className={({ isActive }) =>
-                            `mt-auto mx-3 flex items-center gap-3 rounded-2xl py-3 px-3 transition-all hover:bg-[var(--color-surface-container)] ${isActive ? 'bg-[var(--color-surface-container)]' : ''}`
+                            `mt-auto mx-3 flex items-center gap-3 rounded-2xl py-3 px-3 transition-all hover:bg-[var(--color-surface-container)] ${isActive ? 'bg-[var(--color-surface-container)]' : ''} relative`
                         }
+                        onMouseEnter={() => setIsProfileHovered(true)}
+                        onMouseLeave={() => setIsProfileHovered(false)}
                     >
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-md">
                             {authUser.email?.charAt(0).toUpperCase() ?? '?'}
                         </div>
                         <AnimatePresence>
-                            {expanded && (
+                            {isNavHovered && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -146,6 +170,20 @@ export default function Layout() {
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         <LevelBadge level={progressInfo.currentLevel} size="compact" />
                                     </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        <AnimatePresence>
+                            {isProfileHovered && !isNavHovered && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10, scale: 0.95 }}
+                                    animate={{ opacity: 1, x: 14, scale: 1 }}
+                                    exit={{ opacity: 0, x: -10, scale: 0.95 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                >
+                                    {t('nav.profile')}
+                                    <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]" />
                                 </motion.div>
                             )}
                         </AnimatePresence>
