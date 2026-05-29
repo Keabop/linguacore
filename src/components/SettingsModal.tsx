@@ -14,14 +14,26 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ open, onClose }: SettingsModalProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { mode, toggleMode } = useTheme();
     const { signOut } = useAuth();
     const { subscription, cancelSubscription, reactivateSubscription } = useSubscription();
     const { isPro } = useTier();
     const navigate = useNavigate();
 
+    const [currentLang, setCurrentLang] = useState(localStorage.getItem('voxie-display-language') || 'es');
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+    const handleLangChange = (lang: string) => {
+        localStorage.setItem('voxie-display-language', lang);
+        setCurrentLang(lang);
+        if (lang === 'bilingual') {
+            i18n.changeLanguage('en');
+        } else {
+            i18n.changeLanguage(lang);
+        }
+        window.dispatchEvent(new Event('voxie-language-changed'));
+    };
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
@@ -113,9 +125,15 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <Globe className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
                                         <span className="text-sm font-medium text-[var(--color-on-surface)]">{t('settings.language')}</span>
                                     </div>
-                                    <span className="text-xs text-[var(--color-on-surface-muted)] px-3 py-1.5 rounded-lg bg-[var(--color-background)] border border-[var(--color-outline-subtle)]">
-                                        Español
-                                    </span>
+                                    <select
+                                        value={currentLang}
+                                        onChange={(e) => handleLangChange(e.target.value)}
+                                        className="text-xs text-[var(--color-on-surface)] font-bold px-3 py-1.5 rounded-lg bg-[var(--color-background)] border border-[var(--color-outline-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 cursor-pointer"
+                                    >
+                                        <option value="es">Español</option>
+                                        <option value="en">English</option>
+                                        <option value="bilingual">Bilingüe (EN + ES)</option>
+                                    </select>
                                 </div>
 
                                 {/* Divider */}
