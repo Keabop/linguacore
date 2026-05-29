@@ -179,9 +179,6 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             setState('passed');
         } else {
             // Determine which topics need review
-            // We can identify from exercises which ones were wrong
-            // Since ExerciseRunner only gives us the final score, we can show
-            // grammar topics from units that had exercises in the assessment
             const units = getUnitsByLevel(level);
             const unitMap = new Map<string, Unit>();
             for (const u of units) {
@@ -226,7 +223,9 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
     if (state === 'loading') {
         return (
             <div className="flex items-center justify-center min-h-[40vh]">
-                <div className="w-8 h-8 border-3 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center animate-pulse">
+                    <div className="w-5 h-5 rounded-full bg-amber-500/40 animate-spin" />
+                </div>
             </div>
         );
     }
@@ -236,15 +235,17 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center min-h-[40vh] space-y-4"
+                className="flex flex-col items-center justify-center min-h-[40vh] space-y-6"
             >
-                <XCircle className="w-12 h-12 text-red-400" />
+                <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                    <XCircle className="w-8 h-8 text-red-400" />
+                </div>
                 <p className="text-[var(--color-on-surface-muted)] text-center">
                     No se encontraron ejercicios para esta evaluaci&oacute;n.
                 </p>
                 <button
                     onClick={onComplete}
-                    className="flex items-center gap-2 text-[var(--color-primary)] font-semibold hover:brightness-110 transition-colors"
+                    className="flex items-center gap-2 text-[var(--color-primary)] font-bold hover:brightness-110 transition-all duration-300"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Volver a la ruta
@@ -261,16 +262,18 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 animate={{ opacity: 1, y: 0 }}
                 className="flex flex-col items-center justify-center min-h-[50vh] space-y-8"
             >
-                <div className="text-center space-y-4">
+                <div className="text-center space-y-5">
                     <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
                     >
-                        <Trophy className="w-16 h-16 text-amber-400 mx-auto" />
+                        <div className="w-20 h-20 rounded-full bg-amber-500/15 flex items-center justify-center mx-auto shadow-[0_4px_24px_rgba(245,158,11,0.15)]">
+                            <Trophy className="w-10 h-10 text-amber-400" />
+                        </div>
                     </motion.div>
 
-                    <h1 className="text-3xl font-extrabold">
+                    <h1 className="text-4xl font-black tracking-tight">
                         {t('assessment.title', { level })}
                     </h1>
 
@@ -280,35 +283,35 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     </p>
                 </div>
 
-                <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 w-full max-w-sm space-y-5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                <div className="bg-[var(--color-card)] rounded-[2rem] p-7 w-full max-w-sm space-y-5 shadow-[var(--shadow-card)]">
+                    <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
                             <CheckCircle2 className="w-5 h-5 text-amber-400" />
                         </div>
                         <div>
-                            <p className="font-bold text-sm">15–20 ejercicios</p>
+                            <p className="font-black text-sm">15–20 ejercicios</p>
                             <p className="text-xs text-[var(--color-on-surface-muted)]">Todos los temas del nivel</p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                    <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
                             <Star className="w-5 h-5 text-amber-400" />
                         </div>
                         <div>
-                            <p className="font-bold text-sm">80% para aprobar</p>
+                            <p className="font-black text-sm">80% para aprobar</p>
                             <p className="text-xs text-[var(--color-on-surface-muted)]">
                                 Necesitas al menos 80% de respuestas correctas
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                    <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
                             <Trophy className="w-5 h-5 text-amber-400" />
                         </div>
                         <div>
-                            <p className="font-bold text-sm">Desbloquea el siguiente nivel</p>
+                            <p className="font-black text-sm">Desbloquea el siguiente nivel</p>
                             <p className="text-xs text-[var(--color-on-surface-muted)]">
                                 {nextLevelMap[level]
                                     ? `Al aprobar, desbloquear\u00e1s el nivel ${nextLevelMap[level]}`
@@ -320,16 +323,18 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
                 <button
                     onClick={loadExercises}
-                    className="w-full max-w-sm bg-amber-500 hover:bg-amber-600 text-black py-3.5 rounded-xl font-bold text-base transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20"
+                    className="w-full max-w-sm bg-gradient-to-br from-amber-500 to-amber-600 text-black py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(245,158,11,0.3)] active:scale-[0.97]"
                 >
                     Comenzar
                 </button>
 
                 <button
                     onClick={onComplete}
-                    className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors text-sm"
+                    className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-all duration-300 text-sm group"
                 >
-                    <ArrowLeft className="w-4 h-4" />
+                    <div className="w-7 h-7 flex items-center justify-center rounded-full bg-[var(--color-surface-container)] group-hover:bg-[var(--color-surface-container-highest)] transition-all duration-300">
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                    </div>
                     Volver a la ruta
                 </button>
             </motion.div>
@@ -346,8 +351,10 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center gap-3"
                 >
-                    <Trophy className="w-5 h-5 text-amber-400" />
-                    <h2 className="text-lg font-bold text-amber-400">
+                    <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center">
+                        <Trophy className="w-4.5 h-4.5 text-amber-400" />
+                    </div>
+                    <h2 className="text-lg font-black tracking-tight text-amber-400">
                         {t('assessment.title', { level })}
                     </h2>
                 </motion.div>
@@ -378,7 +385,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
                         className="relative"
                     >
-                        <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center">
+                        <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center shadow-[0_8px_40px_rgba(245,158,11,0.2)]">
                             <Trophy className="w-12 h-12 text-amber-400" />
                         </div>
                         {/* Sparkle accents */}
@@ -407,7 +414,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         transition={{ delay: 0.3 }}
                         className="text-center space-y-3"
                     >
-                        <h1 className="text-4xl font-extrabold text-amber-400">
+                        <h1 className="text-4xl font-black tracking-tight text-amber-400">
                             {t('levelUp.congratulations')}
                         </h1>
                         <p className="text-[var(--color-on-surface-muted)] text-lg">
@@ -420,12 +427,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="bg-[var(--color-card)] border border-amber-500/30 rounded-2xl p-6 w-full max-w-sm text-center space-y-5"
+                        className="bg-[var(--color-card)] rounded-[2rem] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_rgba(245,158,11,0.12)]"
                     >
-                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">
                             {t('assessment.title', { level })}
                         </p>
-                        <p className="text-6xl font-extrabold text-amber-400">
+                        <p className="text-6xl font-black tracking-tight text-amber-400">
                             {score}%
                         </p>
                         <p className="text-[var(--color-on-surface-muted)] text-sm">
@@ -437,11 +444,13 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.6 }}
-                                className="pt-3 border-t border-amber-500/20"
+                                className="pt-4"
                             >
-                                <p className="text-amber-300 font-bold text-base">
-                                    {t('levelUp.unlocked', { level: nl })}
-                                </p>
+                                <div className="bg-amber-500/10 rounded-2xl py-3 px-4">
+                                    <p className="text-amber-300 font-black text-base">
+                                        {t('levelUp.unlocked', { level: nl })}
+                                    </p>
+                                </div>
                             </motion.div>
                         )}
                     </motion.div>
@@ -452,7 +461,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.7 }}
                         onClick={onComplete}
-                        className="w-full max-w-sm bg-amber-500 hover:bg-amber-600 text-black py-3.5 rounded-xl font-bold text-base transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20"
+                        className="w-full max-w-sm bg-gradient-to-br from-amber-500 to-amber-600 text-black py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(245,158,11,0.3)] active:scale-[0.97]"
                     >
                         Volver a la ruta
                     </motion.button>
@@ -475,12 +484,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                        className="bg-[var(--color-card)] border border-red-500/30 rounded-2xl p-6 w-full max-w-sm text-center space-y-5"
+                        className="bg-[var(--color-card)] rounded-[2rem] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_rgba(239,68,68,0.1)]"
                     >
-                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">
                             {t('assessment.title', { level })}
                         </p>
-                        <p className="text-6xl font-extrabold text-red-400">
+                        <p className="text-6xl font-black tracking-tight text-red-400">
                             {score}%
                         </p>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -494,16 +503,16 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-5 w-full max-w-sm space-y-3"
+                            className="bg-[var(--color-card)] rounded-[2rem] p-6 w-full max-w-sm space-y-4 shadow-[var(--shadow-card)]"
                         >
-                            <p className="text-sm font-bold text-[var(--color-on-surface-muted)]">
+                            <p className="text-sm font-black text-[var(--color-on-surface-muted)]">
                                 Temas a repasar:
                             </p>
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 {failedTopics.map((topic) => (
                                     <div
                                         key={topic.unitId}
-                                        className="flex items-start gap-2.5 text-sm"
+                                        className="flex items-start gap-3 text-sm bg-[var(--color-surface-container)] rounded-2xl p-3"
                                     >
                                         <XCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
                                         <span className="text-[var(--color-on-surface-muted)] leading-snug">
@@ -524,7 +533,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     >
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-amber-500 hover:bg-amber-600 text-black py-3.5 rounded-xl font-bold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                            className="w-full bg-gradient-to-br from-amber-500 to-amber-600 text-black py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(245,158,11,0.3)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             {t('assessment.retry')}
@@ -532,7 +541,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
                         <button
                             onClick={onComplete}
-                            className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/40 text-[var(--color-on-surface-muted)] py-3.5 rounded-xl font-bold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface-muted)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-card)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Volver a la ruta

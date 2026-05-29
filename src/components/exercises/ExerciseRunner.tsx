@@ -49,10 +49,10 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
         return 'text-red-400';
     };
 
-    const getScoreBorderColor = () => {
-        if (score >= 80) return 'border-emerald-500/30';
-        if (score >= 60) return 'border-amber-500/30';
-        return 'border-red-500/30';
+    const getScoreShadow = () => {
+        if (score >= 80) return 'shadow-[0_0_0_3px_var(--color-success)]';
+        if (score >= 60) return 'shadow-[0_0_0_3px_var(--color-warning,theme(colors.amber.500))]';
+        return 'shadow-[0_0_0_3px_var(--color-error)]';
     };
 
     const slideVariants = {
@@ -79,7 +79,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-12"
             >
-                <div className={`bg-[var(--color-card)] border ${getScoreBorderColor()} rounded-2xl p-10 w-full max-w-sm text-center space-y-7`}>
+                <div className={`bg-[var(--color-card)] ${getScoreShadow()} rounded-[2rem] p-10 w-full max-w-sm text-center space-y-7 shadow-[var(--shadow-elevated)]`}>
                     <div className="space-y-2">
                         <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
                             {t('exercises.title')}
@@ -108,7 +108,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
 
                     <button
                         onClick={() => onComplete(score)}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.finish')}
                     </button>
@@ -162,9 +162,9 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                         {t('exercises.title')}
                     </span>
                 </div>
-                <div className="h-2 bg-[var(--color-background)] rounded-full overflow-hidden">
+                <div className="h-2 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-[var(--color-primary)] rounded-full"
+                        className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.4, ease: 'easeOut' }}

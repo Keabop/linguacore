@@ -71,29 +71,30 @@ export default function StoryList() {
 
     return (
         <div className="space-y-14">
+            {/* Header */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="space-y-2">
-                        <h1 className="text-3xl font-extrabold leading-tight">{t('nav.learn')}</h1>
-                        <p className="text-[var(--color-on-surface-muted)] leading-relaxed">{t('storyList.subtitle')}</p>
+                        <h1 className="text-4xl font-black tracking-tight leading-none">{t('nav.learn')}</h1>
+                        <p className="text-[var(--color-on-surface-muted)] leading-relaxed text-sm">{t('storyList.subtitle')}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {isFree && storyUsage && (
                             <UsageBadge remaining={storyUsage.remaining} limit={storyUsage.limit} label="historias esta semana" />
                         )}
                         {storyLimitReached ? (
-                            <div className="text-right space-y-1">
-                                <p className="text-xs text-[var(--color-on-surface-muted)] flex items-center gap-1">
+                            <div className="text-right space-y-1.5 bg-[var(--color-surface-container-low)] rounded-2xl px-4 py-3">
+                                <p className="text-xs text-[var(--color-on-surface-muted)] flex items-center gap-1.5 font-medium">
                                     <Lock className="w-3 h-3" /> Ya generaste tu historia de esta semana
                                 </p>
-                                <Link to="/pricing" className="text-[10px] text-[var(--color-primary)] font-semibold hover:underline">
+                                <Link to="/pricing" className="text-[10px] text-[var(--color-primary)] font-bold hover:underline">
                                     Se reinicia el lunes — o desbloquea con Pro
                                 </Link>
                             </div>
                         ) : (
                             <button
                                 onClick={() => setShowAIModal(true)}
-                                className="btn-primary flex items-center gap-2 active:scale-95 shadow-lg shadow-[var(--color-primary)]/20"
+                                className="btn-primary flex items-center gap-2.5 px-6 py-3 active:scale-95"
                             >
                                 <Sparkles className="w-4 h-4" /> {t('storyList.generateAI')}
                             </button>
@@ -111,12 +112,15 @@ export default function StoryList() {
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="widget border-[var(--color-primary)]/30 space-y-5">
+                        <div className="widget space-y-5">
                             <div className="flex items-center justify-between">
-                                <h3 className="font-bold flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4 text-[var(--color-primary)]" /> {t('storyList.aiTitle')}
+                                <h3 className="font-black tracking-tight flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-sm">
+                                        <Sparkles className="w-4 h-4 text-white" />
+                                    </div>
+                                    {t('storyList.aiTitle')}
                                 </h3>
-                                <button onClick={() => setShowAIModal(false)} className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]">
+                                <button onClick={() => setShowAIModal(false)} className="w-8 h-8 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center text-[var(--color-on-surface-muted)] hover:bg-[var(--color-surface-container-high)] transition-colors duration-200">
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
@@ -132,12 +136,12 @@ export default function StoryList() {
                                 disabled={aiLoading}
                             />
                             {aiError && (
-                                <p className="text-xs text-[var(--color-error)] bg-[var(--color-error)]/10 px-4 py-2 rounded-lg">{aiError}</p>
+                                <p className="text-xs text-[var(--color-error)] bg-[var(--color-error)]/10 px-5 py-3 rounded-2xl font-medium">{aiError}</p>
                             )}
                             <button
                                 onClick={handleGenerateStory}
                                 disabled={aiLoading}
-                                className="btn-primary w-full py-3.5 disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="btn-primary w-full py-3.5 disabled:opacity-50 flex items-center justify-center gap-2.5"
                             >
                                 {aiLoading ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> {t('storyList.aiGenerating')}</>
@@ -161,20 +165,20 @@ export default function StoryList() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: li * 0.08 }}
-                        className="space-y-10"
+                        className="space-y-8"
                     >
                         {/* Level header */}
                         <div className="flex items-center gap-3">
                             <LevelBadge level={level} size="default" />
                             {!isUnlocked && (
-                                <span className="text-[var(--color-on-surface-muted)] text-sm flex items-center gap-1.5">
-                                    <Lock className="w-3.5 h-3.5" /> {t('storyList.locked')}
+                                <span className="text-[var(--color-on-surface-muted)] text-xs flex items-center gap-1.5 bg-[var(--color-surface-container)] px-3 py-1.5 rounded-full font-bold">
+                                    <Lock className="w-3 h-3" /> {t('storyList.locked')}
                                 </span>
                             )}
                         </div>
 
-                        {/* Story grid — 2 columns */}
-                        <div className={`grid grid-cols-2 gap-7 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}>
+                        {/* Story grid */}
+                        <div className={`grid grid-cols-2 gap-6 md:gap-8 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}>
                             {levelStories.map((story, si) => {
                                 const isRead = readStories?.some(r => r.story_id === story.id);
 
@@ -207,23 +211,25 @@ export default function StoryList() {
 
                                                     {/* AI / Read badge */}
                                                     {story.id.startsWith('ai-') && (
-                                                        <span className="absolute top-3 left-3 text-xs bg-[var(--color-primary)]/80 text-[var(--color-on-primary)] px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
+                                                        <span className="absolute top-3 left-3 text-[10px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-3 py-1 rounded-full font-bold shadow-md flex items-center gap-1 z-10">
                                                             <Sparkles className="w-3 h-3" /> AI
                                                         </span>
                                                     )}
                                                     {isRead && (
-                                                        <span className="absolute top-3 right-3 text-xs bg-black/30 text-white px-2.5 py-1 rounded-full font-medium backdrop-blur-sm flex items-center gap-1 z-10">
+                                                        <span className="absolute top-3 right-3 text-[10px] bg-[var(--color-success)]/80 text-white px-3 py-1 rounded-full font-bold backdrop-blur-sm flex items-center gap-1 z-10 shadow-sm">
                                                             <Check className="w-3 h-3" /> {t('storyList.read')}
                                                         </span>
                                                     )}
                                                 </div>
 
                                                 {/* Body */}
-                                                <div className="story-card-body space-y-2.5">
-                                                    <h3 className="font-bold text-sm line-clamp-2 leading-snug">{story.title}</h3>
-                                                    <div className="flex items-center gap-2.5 text-xs text-[var(--color-on-surface-muted)]">
-                                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {story.estimatedMinutes} min</span>
-                                                        <span>·</span>
+                                                <div className="story-card-body space-y-3">
+                                                    <h3 className="font-black text-sm line-clamp-2 leading-snug tracking-tight">{story.title}</h3>
+                                                    <div className="flex items-center gap-3 text-xs text-[var(--color-on-surface-muted)] font-medium">
+                                                        <span className="flex items-center gap-1.5">
+                                                            <Clock className="w-3 h-3" /> {story.estimatedMinutes} min
+                                                        </span>
+                                                        <span className="w-1 h-1 rounded-full bg-[var(--color-on-surface-muted)]/30" />
                                                         <span>{story.wordCount} {t('reader.words')}</span>
                                                     </div>
                                                 </div>

@@ -127,7 +127,7 @@ export default function Pricing() {
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)]/10 px-4 py-3 text-sm text-[var(--color-primary)]"
+                    className="mb-6 flex items-center justify-center gap-2 rounded-full bg-[var(--color-primary)]/10 px-6 py-3 text-sm text-[var(--color-primary)] shadow-[var(--shadow-card)]"
                 >
                     <Loader2 className="size-4 animate-spin" /> Verificando tu suscripción...
                 </motion.div>
@@ -138,24 +138,24 @@ export default function Pricing() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mb-6 flex items-center justify-center gap-2 rounded-xl bg-[var(--color-success)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-success)]"
+                    className="mb-6 flex items-center justify-center gap-2 rounded-full bg-[var(--color-success)]/10 px-6 py-3 text-sm font-semibold text-[var(--color-success)] shadow-[var(--shadow-card)]"
                 >
                     <PartyPopper className="size-5" /> ¡Bienvenido a Pro! Tu plan ya está activo.
                 </motion.div>
             )}
 
             <div className="mb-10 text-center">
-                <h1 className="text-3xl font-bold">Precios</h1>
-                <p className="mt-2 text-[var(--color-on-surface-muted)]">
+                <h1 className="text-4xl font-black tracking-tight text-[var(--color-on-surface)]">Precios</h1>
+                <p className="mt-3 text-[var(--color-on-surface-muted)] text-base">
                     Sin trucos, sin precios falsos, sin compromisos
                 </p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Free Plan */}
-                <div className="rounded-2xl border border-[var(--color-outline-subtle)] bg-[var(--color-card)] p-6">
-                    <h2 className="text-xl font-semibold">Gratis</h2>
-                    <p className="mt-2 text-2xl font-bold">
+                <div className="rounded-[2rem] bg-[var(--color-card)] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                    <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Gratis</h2>
+                    <p className="mt-2 text-2xl font-black tracking-tight">
                         $<CountUp from={0} to={0} duration={1} className="inline" /> <span className="text-base font-normal text-[var(--color-on-surface-muted)]">— Para siempre</span>
                     </p>
 
@@ -166,9 +166,11 @@ export default function Pricing() {
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.3 + i * 0.05 }}
-                                className="flex items-start gap-2 text-sm text-[var(--color-on-surface-muted)]"
+                                className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface-muted)]"
                             >
-                                <Check className="mt-0.5 size-4 shrink-0 text-[var(--color-on-surface-muted)]" />
+                                <div className="mt-0.5 w-5 h-5 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
+                                    <Check className="size-3 text-[var(--color-on-surface-muted)]" />
+                                </div>
                                 {f}
                             </motion.li>
                         ))}
@@ -176,14 +178,12 @@ export default function Pricing() {
                 </div>
 
                 {/* Pro Plan */}
-                <div
-                    className="rounded-2xl border-2 border-[var(--color-primary)] bg-[var(--color-card)] p-6"
-                    style={{
-                        boxShadow: '0 0 20px rgba(112, 42, 225, 0.15), 0 0 40px rgba(112, 42, 225, 0.05)',
-                    }}
-                >
-                    <h2 className="text-xl font-semibold">Plan Pro</h2>
-                    <p className="mt-2 text-2xl font-bold">
+                <div className="rounded-[2rem] bg-[var(--color-card)] p-7 shadow-[var(--shadow-float)] relative overflow-hidden hover:-translate-y-1 transition-all duration-300">
+                    {/* Subtle gradient glow at top */}
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-t-[2rem]" />
+
+                    <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Plan Pro</h2>
+                    <p className="mt-2 text-2xl font-black tracking-tight">
                         $<CountUp from={0} to={129} duration={1.5} className="inline" /> <span className="text-base font-normal text-[var(--color-on-surface-muted)]">MXN/mes</span>
                     </p>
                     <p className="text-sm text-[var(--color-on-surface-muted)]">o $<CountUp from={0} to={1200} duration={2} separator="," className="inline" /> MXN/año</p>
@@ -195,9 +195,11 @@ export default function Pricing() {
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.3 + i * 0.05 }}
-                                className="flex items-start gap-2 text-sm text-[var(--color-on-surface-muted)]"
+                                className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface-muted)]"
                             >
-                                <Check className="mt-0.5 size-4 shrink-0 text-[var(--color-primary)]" />
+                                <div className="mt-0.5 w-5 h-5 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center shrink-0">
+                                    <Check className="size-3 text-[var(--color-primary)]" />
+                                </div>
                                 {f}
                             </motion.li>
                         ))}
@@ -205,7 +207,7 @@ export default function Pricing() {
 
                     <div className="mt-6">
                         {isPro && (
-                            <span className="inline-block rounded-full bg-green-600/20 px-4 py-1.5 text-sm font-medium text-green-400">
+                            <span className="inline-block rounded-full bg-[var(--color-success)]/10 text-[var(--color-success)] px-5 py-2 text-sm font-bold shadow-[var(--shadow-card)]">
                                 Tu plan actual
                             </span>
                         )}
@@ -215,7 +217,7 @@ export default function Pricing() {
                                 <button
                                     onClick={() => handleSubscribe('monthly')}
                                     disabled={loading !== null}
-                                    className="btn-primary flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {loading === 'monthly' && <Loader2 className="size-4 animate-spin" />}
                                     Mensual — $129/mes
@@ -223,7 +225,7 @@ export default function Pricing() {
                                 <button
                                     onClick={() => handleSubscribe('annual')}
                                     disabled={loading !== null}
-                                    className="btn-secondary flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-[var(--color-surface-container)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {loading === 'annual' && <Loader2 className="size-4 animate-spin" />}
                                     Anual — $1,200/año ($100/mes)

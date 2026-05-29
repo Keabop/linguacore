@@ -35,7 +35,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
                     {isActive && (
                         <motion.div
                             layoutId="activeIndicator"
-                            className="absolute -left-3 w-1 h-6 bg-[var(--color-primary)] rounded-r-full"
+                            className="absolute -left-2.5 w-1.5 h-8 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-r-full"
                         />
                     )}
                     <div className="w-10 h-10 flex items-center justify-center shrink-0">
@@ -81,18 +81,18 @@ export default function Layout() {
 
     return (
         <div className="app-layout">
-            {/* ===== RAIL SIDEBAR ===== */}
+            {/* ===== RAIL SIDEBAR — Fluid Scholar ===== */}
             <motion.aside
                 className="sidebar-rail"
                 onMouseEnter={() => setExpanded(true)}
                 onMouseLeave={() => setExpanded(false)}
-                animate={{ width: expanded ? 240 : 68 }}
+                animate={{ width: expanded ? 260 : 68 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
                 {/* Logo */}
                 <div className="flex items-center px-3 mb-10">
-                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img src="/logo.png" alt="Voxie" className="w-7 h-7 rounded-lg object-cover" />
+                    <div className="w-11 h-11 flex items-center justify-center shrink-0 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] shadow-lg">
+                        <img src="/logo.png" alt="Voxie" className="w-6 h-6 object-cover brightness-0 invert" />
                     </div>
                     <AnimatePresence>
                         {expanded && (
@@ -109,7 +109,7 @@ export default function Layout() {
                 </div>
 
                 {/* Nav items */}
-                <nav className="flex-1 space-y-1">
+                <nav className="flex-1 space-y-1 px-1">
                     {navItems.map(item => (
                         <RailNavItem
                             key={item.path}
@@ -126,10 +126,10 @@ export default function Layout() {
                     <NavLink
                         to="/account"
                         className={({ isActive }) =>
-                            `mt-auto pt-6 border-t border-[var(--color-outline-subtle)] px-2 flex items-center gap-3 rounded-xl py-2 transition-colors hover:bg-[var(--color-surface)] ${isActive ? 'bg-[var(--color-surface)]' : ''}`
+                            `mt-auto mx-3 flex items-center gap-3 rounded-2xl py-3 px-3 transition-all hover:bg-[var(--color-surface-container)] ${isActive ? 'bg-[var(--color-surface-container)]' : ''}`
                         }
                     >
-                        <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 flex items-center justify-center text-sm font-bold text-[var(--color-primary)] shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-md">
                             {authUser.email?.charAt(0).toUpperCase() ?? '?'}
                         </div>
                         <AnimatePresence>
@@ -160,10 +160,10 @@ export default function Layout() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.98 }}
-                            transition={{ duration: 0.25 }}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.25, ease: 'easeOut' }}
                         >
                             <Outlet />
                         </motion.div>
@@ -171,7 +171,7 @@ export default function Layout() {
                 </div>
             </div>
 
-            {/* ===== FLOATING BOTTOM BAR (Mobile) ===== */}
+            {/* ===== FLOATING BOTTOM BAR (Mobile) — Glassmorphism ===== */}
             {!/^\/learn\/.+/.test(location.pathname) && (
                 <nav ref={scrollRef} className="floating-bar">
                     {navItems.map(item => (
@@ -186,7 +186,7 @@ export default function Layout() {
                             <span>{t(item.labelKey)}</span>
                         </NavLink>
                     ))}
-                    {/* Profile pill — replaces Stats on mobile */}
+                    {/* Profile pill */}
                     <NavLink
                         to="/account"
                         className={({ isActive }) =>

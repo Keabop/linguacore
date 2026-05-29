@@ -12,12 +12,12 @@ export function UsageBadge({ remaining, limit, label }: UsageBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
+      className={`inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium shadow-sm ${
         isExhausted
-          ? 'bg-red-500/10 text-red-400'
+          ? 'bg-red-500/10 text-red-400 shadow-red-500/5'
           : isLow
-            ? 'bg-amber-500/10 text-amber-400'
-            : 'bg-white/5 text-[var(--color-on-surface-muted)]'
+            ? 'bg-amber-500/10 text-amber-400 shadow-amber-500/5'
+            : 'bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)]'
       }`}
     >
       {remaining}/{limit} {label}

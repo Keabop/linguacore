@@ -45,7 +45,7 @@ export default function Auth() {
         return (
             <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 z-0"><Aurora colorStops={["#702AE1", "#B28CFF", "#FEF3FF"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
-                <div className="relative z-10 w-8 h-8 border-3 border-[var(--color-primary)]/30 border-t-[var(--color-primary)] rounded-full animate-spin" />
+                <div className="relative z-10 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] animate-spin shadow-[var(--shadow-elevated)]" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 90% 50%, 90% 10%, 50% 10%)' }} />
             </div>
         );
     }
@@ -57,16 +57,18 @@ export default function Auth() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="relative z-10 card p-8 max-w-sm w-full text-center space-y-4"
+                    className="relative z-10 bg-[var(--color-card)] rounded-[2rem] p-10 max-w-sm w-full text-center space-y-5 shadow-[var(--shadow-float)]"
                 >
-                    <Mail className="w-10 h-10 text-[var(--color-primary)] mx-auto" />
-                    <h2 className="text-lg font-bold text-[var(--color-on-surface)]">Revisa tu correo</h2>
-                    <p className="text-sm text-[var(--color-on-surface-muted)]">
-                        Te enviamos un enlace de confirmación a <span className="text-[var(--color-on-surface)] font-medium">{email}</span>. Haz clic en el enlace para activar tu cuenta.
+                    <div className="w-16 h-16 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto">
+                        <Mail className="w-8 h-8 text-[var(--color-primary)]" />
+                    </div>
+                    <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)] font-display">Revisa tu correo</h2>
+                    <p className="text-sm text-[var(--color-on-surface-muted)] font-body leading-relaxed">
+                        Te enviamos un enlace de confirmación a <span className="text-[var(--color-on-surface)] font-semibold">{email}</span>. Haz clic en el enlace para activar tu cuenta.
                     </p>
                     <button
                         onClick={() => { setRegistered(false); setMode('login'); }}
-                        className="text-sm text-[var(--color-primary)] font-semibold hover:text-[var(--color-primary-light)] transition-colors"
+                        className="text-sm text-[var(--color-primary)] font-bold hover:text-[var(--color-primary-light)] transition-all duration-300"
                     >
                         Volver al login
                     </button>
@@ -86,34 +88,37 @@ export default function Auth() {
             >
                 {/* Logo + Branding */}
                 <div className="flex flex-col items-center mb-12">
-                    <img
-                        src="/logo.png"
-                        alt="Voxie"
-                        className="w-20 h-20 rounded-2xl object-cover mb-6"
-                    />
-                    <h1 className="text-3xl font-extrabold text-[var(--color-on-surface)] tracking-tight mb-2">Voxie</h1>
-                    <p className="text-sm text-[var(--color-on-surface-muted)]">
+                    <div className="relative mb-6">
+                        <img
+                            src="/logo.png"
+                            alt="Voxie"
+                            className="w-20 h-20 rounded-2xl object-cover shadow-[var(--shadow-elevated)]"
+                        />
+                        <div className="absolute -inset-2 rounded-3xl bg-[var(--color-primary)]/10 blur-xl -z-10" />
+                    </div>
+                    <h1 className="text-3xl font-black text-[var(--color-on-surface)] tracking-tight mb-2 font-display">Voxie</h1>
+                    <p className="text-sm text-[var(--color-on-surface-muted)] font-body">
                         {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
                     </p>
                 </div>
 
                 {/* Form */}
-                <div className="card p-8">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="bg-[var(--color-card)] rounded-[2rem] p-8 shadow-[var(--shadow-float)]">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
-                            <label className="block text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Correo electrónico</label>
+                            <label className="block text-xs text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider mb-2.5 font-body">Correo electrónico</label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 placeholder="tu@correo.com"
                                 required
-                                className="input-soft text-sm w-full"
+                                className="w-full text-sm bg-[var(--color-surface-container-low)] rounded-full px-5 py-3.5 text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 focus:bg-[var(--color-surface-container)] transition-all duration-300 font-body"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Contraseña</label>
+                            <label className="block text-xs text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider mb-2.5 font-body">Contraseña</label>
                             <input
                                 type="password"
                                 value={password}
@@ -121,18 +126,18 @@ export default function Auth() {
                                 placeholder="••••••••"
                                 required
                                 minLength={8}
-                                className="input-soft text-sm w-full"
+                                className="w-full text-sm bg-[var(--color-surface-container-low)] rounded-full px-5 py-3.5 text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 focus:bg-[var(--color-surface-container)] transition-all duration-300 font-body"
                             />
                         </div>
 
                         {error && (
-                            <p className="text-xs text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg px-4 py-2.5">{error}</p>
+                            <p className="text-xs text-[var(--color-error)] bg-[var(--color-error)]/8 rounded-2xl px-5 py-3 font-body">{error}</p>
                         )}
 
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="btn-primary w-full py-4 text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="w-full py-4 text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                         >
                             {submitting ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -147,15 +152,15 @@ export default function Auth() {
 
                     {/* Divider */}
                     <div className="flex items-center gap-4 my-8">
-                        <div className="flex-1 h-px bg-[var(--color-outline-subtle)]" />
-                        <span className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">o</span>
-                        <div className="flex-1 h-px bg-[var(--color-outline-subtle)]" />
+                        <div className="flex-1 h-px bg-[var(--color-surface-container-high)]" />
+                        <span className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-body">o</span>
+                        <div className="flex-1 h-px bg-[var(--color-surface-container-high)]" />
                     </div>
 
                     {/* Google OAuth */}
                     <button
                         onClick={signInWithGoogle}
-                        className="btn-secondary w-full py-4 text-sm flex items-center justify-center gap-3"
+                        className="w-full py-4 text-sm flex items-center justify-center gap-3 bg-[var(--color-surface-container-low)] rounded-full font-semibold text-[var(--color-on-surface)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 shadow-[var(--shadow-card)]"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -168,12 +173,12 @@ export default function Auth() {
                 </div>
 
                 {/* Toggle mode */}
-                <p className="text-center text-sm text-[var(--color-on-surface-muted)] mt-8">
+                <p className="text-center text-sm text-[var(--color-on-surface-muted)] mt-8 font-body">
                     {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
                     {' '}
                     <button
                         onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); }}
-                        className="text-[var(--color-primary)] font-semibold hover:text-[var(--color-primary-light)] transition-colors"
+                        className="text-[var(--color-primary)] font-bold hover:text-[var(--color-primary-light)] transition-all duration-300"
                     >
                         {mode === 'login' ? 'Regístrate' : 'Inicia sesión'}
                     </button>

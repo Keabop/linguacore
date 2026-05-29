@@ -175,11 +175,11 @@ export default function StoryReader() {
 
     if (!story) {
         return (
-            <div className="text-center py-12 space-y-4">
-                <p className="text-[var(--color-on-surface-muted)]">{t('reader.storyNotFound', 'Historia no encontrada')}</p>
+            <div className="text-center py-16 space-y-6">
+                <p className="text-[var(--color-on-surface-muted)] text-lg">{t('reader.storyNotFound', 'Historia no encontrada')}</p>
                 <button
                     onClick={() => navigate('/learn')}
-                    className="bg-[var(--color-primary)] hover:brightness-90 text-white px-6 py-3 rounded-xl font-medium transition-all"
+                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                 >
                     {t('reader.backToStories', 'Volver a historias')}
                 </button>
@@ -193,23 +193,23 @@ export default function StoryReader() {
                 <m.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-12 space-y-4"
+                    className="text-center py-16 space-y-6"
                 >
                     <div className="text-7xl">🎉</div>
-                    <h2 className="text-2xl font-bold">{t('reader.storyCompleted')}</h2>
-                    <p className="text-[var(--color-on-surface-muted)]">
+                    <h2 className="text-3xl font-black tracking-tight">{t('reader.storyCompleted')}</h2>
+                    <p className="text-[var(--color-on-surface-muted)] text-base">
                         {addedWords.size} {t('reader.wordsAdded')}
                     </p>
-                    <div className="flex gap-3 justify-center pt-4">
+                    <div className="flex gap-4 justify-center pt-6">
                         <button
                             onClick={() => navigate('/learn')}
-                            className="bg-[var(--color-card)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] px-6 py-3 rounded-xl font-medium transition-all"
+                            className="bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
                         >
                             {t('reader.backToStories')}
                         </button>
                         <button
                             onClick={() => navigate('/review')}
-                            className="bg-[var(--color-primary)] hover:brightness-90 text-white px-6 py-3 rounded-xl font-medium transition-all"
+                            className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                         >
                             {t('dashboard.startReview')}
                         </button>
@@ -223,11 +223,16 @@ export default function StoryReader() {
         <LazyMotion features={domAnimation}>
         <div className="space-y-8">
             {/* Story header */}
-            <div className="flex items-center gap-3">
-                <button onClick={() => navigate(-1)} className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] text-xl">←</button>
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)] transition-all duration-300 text-xl"
+                >
+                    ←
+                </button>
                 <div className="flex-1">
-                    <h2 className="text-xl font-bold">{story.title}</h2>
-                    <div className="flex items-center gap-2 mt-1">
+                    <h2 className="text-2xl font-black tracking-tight">{story.title}</h2>
+                    <div className="flex items-center gap-2 mt-1.5">
                         <LevelBadge level={story.level} size="compact" />
                         <span className="text-xs text-[var(--color-on-surface-muted)]">
                             {story.estimatedMinutes} {t('reader.minutes')} · {story.wordCount} {t('reader.words')}
@@ -237,7 +242,7 @@ export default function StoryReader() {
             </div>
 
             {/* Tap hint */}
-            <div className="bg-accent-blue/10 text-accent-blue text-xs py-2 px-4 rounded-lg text-center">
+            <div className="bg-[var(--color-primary)]/8 text-[var(--color-primary)] text-xs py-3 px-5 rounded-full text-center shadow-[var(--shadow-card)]">
                 💡 {t('reader.tapToTranslate')}
             </div>
 
@@ -248,7 +253,7 @@ export default function StoryReader() {
                 tabIndex={0}
                 onClick={handleWordClick}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
-                className="widget !p-7 text-lg leading-relaxed tracking-wide focus:outline-none"
+                className="bg-[var(--color-card)] rounded-[2rem] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300"
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(story.content, {
@@ -264,9 +269,9 @@ export default function StoryReader() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="widget space-y-3"
+                    className="bg-[var(--color-card)] rounded-[2rem] p-7 space-y-4 shadow-[var(--shadow-card)]"
                 >
-                    <h3 className="text-sm font-semibold text-[var(--color-on-surface-muted)] flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-[var(--color-on-surface-muted)] flex items-center gap-2">
                         📚 {t('reader.keyVocabulary')}
                         <span className="text-xs text-[var(--color-on-surface-muted)] font-normal">({keywords.length})</span>
                     </h3>
@@ -295,7 +300,7 @@ export default function StoryReader() {
             {/* Complete button */}
             <button
                 onClick={handleComplete}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white font-bold py-3 rounded-xl transition-all active:scale-[0.98]"
+                className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white font-black py-4 rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-base tracking-wide"
             >
                 ✓ {t('reader.storyCompleted')}
             </button>
@@ -310,7 +315,7 @@ export default function StoryReader() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setSelectedWord(null)}
-                            className="fixed inset-0 bg-black/40 z-[55]"
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55]"
                         />
                         <m.div
                             initial={{ opacity: 0, y: 30 }}
@@ -319,54 +324,54 @@ export default function StoryReader() {
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             className="fixed bottom-4 left-4 right-4 z-[60]"
                         >
-                            <div className="widget !shadow-2xl space-y-3 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
+                            <div className="bg-[var(--color-card)] rounded-[2rem] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h3 className="text-xl font-bold text-accent-blue">{selectedWord.id}</h3>
+                                        <h3 className="text-xl font-black tracking-tight text-accent-blue">{selectedWord.id}</h3>
                                         {selectedWord.phonetic && (
                                             <p className="text-sm text-[var(--color-on-surface-muted)] mt-0.5">{selectedWord.phonetic}</p>
                                         )}
                                     </div>
                                     <button
                                         onClick={() => setSelectedWord(null)}
-                                        className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] text-xl leading-none p-1"
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-highest)] transition-all duration-300 text-lg leading-none"
                                     >
                                         ×
                                     </button>
                                 </div>
 
-                                <div>
-                                    <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">{t('reader.translation')}</p>
-                                    <p className="text-base font-medium">{selectedWord.translations.join(', ')}</p>
+                                <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
+                                    <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-1">{t('reader.translation')}</p>
+                                    <p className="text-base font-bold">{selectedWord.translations.join(', ')}</p>
                                 </div>
 
                                 {selectedWord.examples.length > 0 && (
-                                    <div>
-                                        <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">{t('reader.example')}</p>
+                                    <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-1">{t('reader.example')}</p>
                                         <p className="text-sm text-[var(--color-on-surface-muted)] italic">"{selectedWord.examples[0]}"</p>
                                     </div>
                                 )}
 
-                                <div className="flex gap-2 pt-1">
+                                <div className="flex gap-3 pt-2">
                                     {wordStatus === 'deck' ? (
-                                        <div className="flex-1 bg-[var(--color-primary)]/15 text-[var(--color-primary)] text-center py-2.5 rounded-xl text-sm font-medium">
+                                        <div className="flex-1 bg-[var(--color-primary)]/12 text-[var(--color-primary)] text-center py-3 rounded-full text-sm font-bold">
                                             ✓ {t('reader.alreadyAdded')}
                                         </div>
                                     ) : wordStatus === 'known' ? (
-                                        <div className="flex-1 bg-accent-blue/15 text-accent-blue text-center py-2.5 rounded-xl text-sm font-medium">
+                                        <div className="flex-1 bg-accent-blue/12 text-accent-blue text-center py-3 rounded-full text-sm font-bold">
                                             ✓ {t('reader.alreadyKnown')}
                                         </div>
                                     ) : (
                                         <>
                                             <button
                                                 onClick={handleAddWord}
-                                                className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-white py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
+                                                className="flex-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-sm"
                                             >
                                                 + {t('reader.addToDeck')}
                                             </button>
                                             <button
                                                 onClick={handleMarkKnown}
-                                                className="flex-1 bg-[var(--color-card-hover)] hover:bg-surface-light text-[var(--color-on-surface)] py-2.5 rounded-xl font-medium transition-all active:scale-[0.98] text-sm"
+                                                className="flex-1 bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] text-sm"
                                             >
                                                 ✓ {t('reader.alreadyKnown')}
                                             </button>
