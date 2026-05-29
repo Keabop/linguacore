@@ -6,6 +6,12 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
 import { useAuth } from './lib/AuthContext';
 import type { ReactNode, ComponentType } from 'react';
+import Dashboard from './pages/Dashboard';
+import StoryList from './pages/StoryList';
+import ReviewSession from './pages/ReviewSession';
+import Account from './pages/Account';
+import ConversationTutor from './pages/ConversationTutor';
+import Practice from './pages/Practice';
 
 /**
  * Lazy import with retry — handles transient network failures and
@@ -30,15 +36,9 @@ function lazyRetry<T extends ComponentType<any>>(
 
 const Landing = lazyRetry(() => import('./pages/Landing'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
-const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
-const StoryList = lazyRetry(() => import('./pages/StoryList'));
 const StoryReader = lazyRetry(() => import('./pages/StoryReader'));
-const ReviewSession = lazyRetry(() => import('./pages/ReviewSession'));
-const Account = lazyRetry(() => import('./pages/Account'));
-const ConversationTutor = lazyRetry(() => import('./pages/ConversationTutor'));
 const LearningPath = lazyRetry(() => import('./pages/LearningPath'));
 const UnitFlow = lazyRetry(() => import('./pages/UnitFlow'));
-const Practice = lazyRetry(() => import('./pages/Practice'));
 const Pricing = lazyRetry(() => import('./pages/Pricing'));
 
 function SafeRoute({ children }: { children: ReactNode }) {
@@ -77,15 +77,15 @@ export default function App() {
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>
-                    <Route path="/dashboard" element={<SafeRoute><Dashboard /></SafeRoute>} />
-                    <Route path="/learn" element={<SafeRoute><StoryList /></SafeRoute>} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/learn" element={<StoryList />} />
                     <Route path="/learn/:storyId" element={<SafeRoute><StoryReader /></SafeRoute>} />
-                    <Route path="/review" element={<SafeRoute><ReviewSession /></SafeRoute>} />
-                    <Route path="/account" element={<SafeRoute><Account /></SafeRoute>} />
-                    <Route path="/chat" element={<SafeRoute><ConversationTutor /></SafeRoute>} />
+                    <Route path="/review" element={<ReviewSession />} />
+                    <Route path="/account" element={<Account />} />
+                    <Route path="/chat" element={<ConversationTutor />} />
                     <Route path="/path" element={<SafeRoute><LearningPath /></SafeRoute>} />
                     <Route path="/path/:unitId" element={<SafeRoute><UnitFlow /></SafeRoute>} />
-                    <Route path="/practice" element={<SafeRoute><Practice /></SafeRoute>} />
+                    <Route path="/practice" element={<Practice />} />
                     <Route path="/pricing" element={<SafeRoute><Pricing /></SafeRoute>} />
                 </Route>
             </Routes>
