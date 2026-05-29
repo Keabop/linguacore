@@ -217,7 +217,9 @@
     "assessment": "Evaluación de Nivel",
     "startUnit": "Comenzar unidad",
     "continueUnit": "Continuar",
-    "comingSoon": "Esta página se está construyendo. ¡Pronto podrás ver tu ruta de aprendizaje!"
+    "comingSoon": "Esta página se está construyendo. ¡Pronto podrás ver tu ruta de aprendizaje!",
+    "bannerTitle": "¡Sigue así, {{name}}!",
+    "bannerSubtitle": "Completa el Checkpoint final esta semana para seguir avanzando en tu ruta de aprendizaje."
   },
   "grammar": {
     "understood": "Entendido",

@@ -23,23 +23,34 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
     path: string; icon: LucideIcon; labelKey: string; expanded: boolean;
 }) {
     const { t } = useTranslation();
+    const [isHovered, setIsHovered] = useState(false);
     return (
         <NavLink
             to={path}
             className={({ isActive }) =>
-                `rail-item ${isActive ? 'active' : ''}`
+                `rail-item flex items-center gap-3.5 h-12 my-2 rounded-xl transition-all duration-300 relative select-none ${
+                    expanded 
+                        ? 'px-4 justify-start mx-4' 
+                        : 'px-0 justify-center mx-2.5'
+                } ${
+                    isActive
+                        ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                        : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
+                }`
             }
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
             {({ isActive }) => (
                 <>
                     {isActive && (
                         <motion.div
                             layoutId="activeIndicator"
-                            className="absolute -left-3 w-1 h-6 bg-[var(--color-primary)] rounded-r-full"
+                            className="absolute left-0 w-1 h-6 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-r-full"
                         />
                     )}
-                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                        <Icon className="w-5 h-5" />
+                    <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                        <Icon className="w-6 h-6" />
                     </div>
                     <AnimatePresence>
                         {expanded && (
@@ -51,6 +62,20 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded }: {
                             >
                                 {t(labelKey)}
                             </motion.span>
+                        )}
+                    </AnimatePresence>
+                    <AnimatePresence>
+                        {isHovered && !expanded && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, x: 14, scale: 1 }}
+                                exit={{ opacity: 0, x: -10, scale: 0.95 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                            >
+                                {t(labelKey)}
+                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]" />
+                            </motion.div>
                         )}
                     </AnimatePresence>
                 </>
@@ -66,7 +91,8 @@ export default function Layout() {
     const { user: authUser } = useAuth();
     const syncState = useSyncManager();
     const scrollRef = useRef<HTMLElement>(null);
-    const [expanded, setExpanded] = useState(false);
+    const [isNavHovered, setIsNavHovered] = useState(false);
+    const [isProfileHovered, setIsProfileHovered] = useState(false);
 
     // Auto-scroll active nav item into view on route change
     useEffect(() => {
@@ -81,21 +107,25 @@ export default function Layout() {
 
     return (
         <div className="app-layout">
-            {/* ===== RAIL SIDEBAR ===== */}
+            {/* ===== RAIL SIDEBAR — Fluid Scholar ===== */}
             <motion.aside
-                className="sidebar-rail"
-                onMouseEnter={() => setExpanded(true)}
-                onMouseLeave={() => setExpanded(false)}
-                animate={{ width: expanded ? 240 : 68 }}
-                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="sidebar-rail fixed left-6 top-1/2 bg-white/85 backdrop-blur-xl border border-purple-500/10"
+                onMouseEnter={() => setIsNavHovered(true)}
+                onMouseLeave={() => setIsNavHovered(false)}
+                animate={{ width: isNavHovered ? 260 : 68 }}
+                transition={{ 
+                    type: 'spring', 
+                    stiffness: 240, 
+                    damping: 28 
+                }}
             >
                 {/* Logo */}
-                <div className="flex items-center px-3 mb-10">
-                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img src="/logo.png" alt="Voxie" className="w-7 h-7 rounded-lg object-cover" />
+                <div className={`flex items-center mb-6 transition-all duration-300 ${isNavHovered ? 'px-4 mx-4 justify-start' : 'px-0 mx-2.5 justify-center'}`}>
+                    <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                        <img src="/logo.png" alt="Voxie" className="w-12 h-12 object-contain rounded-full shadow-md" />
                     </div>
                     <AnimatePresence>
-                        {expanded && (
+                        {isNavHovered && (
                             <motion.span
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -109,14 +139,14 @@ export default function Layout() {
                 </div>
 
                 {/* Nav items */}
-                <nav className="flex-1 space-y-1">
+                <nav className="flex-1 space-y-4 px-1">
                     {navItems.map(item => (
                         <RailNavItem
                             key={item.path}
                             path={item.path}
                             icon={item.icon}
                             labelKey={item.labelKey}
-                            expanded={expanded}
+                            expanded={isNavHovered}
                         />
                     ))}
                 </nav>
@@ -126,14 +156,24 @@ export default function Layout() {
                     <NavLink
                         to="/account"
                         className={({ isActive }) =>
-                            `mt-auto pt-6 border-t border-[var(--color-outline-subtle)] px-2 flex items-center gap-3 rounded-xl py-2 transition-colors hover:bg-[var(--color-surface)] ${isActive ? 'bg-[var(--color-surface)]' : ''}`
+                            `flex items-center gap-3.5 h-12 mt-6 rounded-xl transition-all duration-300 relative select-none ${
+                                isNavHovered
+                                    ? 'px-4 justify-start mx-4'
+                                    : 'px-0 justify-center mx-2.5'
+                            } ${
+                                isActive
+                                    ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                                    : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
+                            }`
                         }
+                        onMouseEnter={() => setIsProfileHovered(true)}
+                        onMouseLeave={() => setIsProfileHovered(false)}
                     >
-                        <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 flex items-center justify-center text-sm font-bold text-[var(--color-primary)] shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center text-lg font-black text-white shrink-0 shadow-md">
                             {authUser.email?.charAt(0).toUpperCase() ?? '?'}
                         </div>
                         <AnimatePresence>
-                            {expanded && (
+                            {isNavHovered && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -149,6 +189,20 @@ export default function Layout() {
                                 </motion.div>
                             )}
                         </AnimatePresence>
+                        <AnimatePresence>
+                            {isProfileHovered && !isNavHovered && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10, scale: 0.95 }}
+                                    animate={{ opacity: 1, x: 14, scale: 1 }}
+                                    exit={{ opacity: 0, x: -10, scale: 0.95 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                >
+                                    {t('nav.profile')}
+                                    <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]" />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </NavLink>
                 )}
             </motion.aside>
@@ -160,10 +214,10 @@ export default function Layout() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.98 }}
-                            transition={{ duration: 0.25 }}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.25, ease: 'easeOut' }}
                         >
                             <Outlet />
                         </motion.div>
@@ -171,7 +225,7 @@ export default function Layout() {
                 </div>
             </div>
 
-            {/* ===== FLOATING BOTTOM BAR (Mobile) ===== */}
+            {/* ===== FLOATING BOTTOM BAR (Mobile) — Glassmorphism ===== */}
             {!/^\/learn\/.+/.test(location.pathname) && (
                 <nav ref={scrollRef} className="floating-bar">
                     {navItems.map(item => (
@@ -186,7 +240,7 @@ export default function Layout() {
                             <span>{t(item.labelKey)}</span>
                         </NavLink>
                     ))}
-                    {/* Profile pill — replaces Stats on mobile */}
+                    {/* Profile pill */}
                     <NavLink
                         to="/account"
                         className={({ isActive }) =>

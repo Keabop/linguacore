@@ -91,7 +91,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                 />
             </div>
 
-            <div className="relative z-10 bg-[var(--color-card)] border border-green-500/30 rounded-2xl p-8 w-full max-w-sm text-center space-y-6 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
+            <div className="relative z-10 bg-[var(--color-card)] rounded-[2rem] p-10 w-full max-w-sm text-center space-y-8 shadow-[var(--shadow-float)]">
                 <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: [0, 1.3, 1] }}
@@ -103,10 +103,10 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                     </div>
                 </motion.div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                     <SplitText
                         text="¡Unidad completada!"
-                        className="text-2xl font-extrabold text-white"
+                        className="text-3xl font-black tracking-tight text-white"
                         delay={20}
                         splitType="chars"
                         animationFrom={{ opacity: 0, transform: 'translate3d(0,15px,0)' }}
@@ -121,7 +121,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}>
                     <button
                         onClick={onBack}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                     >
                         Volver a la ruta
                     </button>
@@ -361,7 +361,7 @@ export default function UnitFlow() {
                 <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-semibold">
                     {t('path.unit')} {unit.unitNumber}
                 </p>
-                <h1 className="text-2xl font-extrabold leading-tight">{unit.title}</h1>
+                <h1 className="text-3xl font-black tracking-tight leading-tight">{unit.title}</h1>
             </motion.div>
 
             {/* Step indicator (horizontal stepper) */}
@@ -385,10 +385,10 @@ export default function UnitFlow() {
                                     className={`
                                         flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300
                                         ${isCompleted
-                                            ? 'bg-green-500/20 text-green-400'
+                                            ? 'bg-green-500/20 text-green-400 shadow-[0_2px_8px_rgba(34,197,94,0.15)]'
                                             : isCurrent
-                                                ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] ring-2 ring-primary/30'
-                                                : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] border border-[var(--color-outline-subtle)]'
+                                                ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] shadow-[var(--shadow-card)]'
+                                                : 'bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)]'
                                         }
                                     `}
                                     title={STEP_LABELS[step.key]}
@@ -405,7 +405,7 @@ export default function UnitFlow() {
                                     <div
                                         className={`
                                             h-[2px] w-5 sm:w-7 md:w-9 rounded-full transition-colors duration-300
-                                            ${isCompleted ? 'bg-green-500/40' : 'bg-border'}
+                                            ${isCompleted ? 'bg-green-500/40' : 'bg-[var(--color-surface-container-highest)]'}
                                         `}
                                     />
                                 )}
@@ -462,9 +462,11 @@ function BackButton({ onClick, label }: { onClick: () => void; label: string }) 
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             onClick={onClick}
-            className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface-muted)] transition-colors"
+            className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-all duration-300 group"
         >
-            <ArrowLeft className="w-4 h-4" />
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--color-surface-container)] group-hover:bg-[var(--color-surface-container-highest)] group-hover:shadow-[var(--shadow-card)] transition-all duration-300">
+                <ArrowLeft className="w-4 h-4" />
+            </div>
             <span className="text-sm font-medium">{label}</span>
         </motion.button>
     );
@@ -480,8 +482,8 @@ function StepHeader({
     description: string;
 }) {
     return (
-        <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-primary)]/10">
+        <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--color-primary)]/10 shadow-[var(--shadow-card)]">
                 <Icon className="w-5 h-5 text-[var(--color-primary)]" />
             </div>
             <div>
@@ -515,7 +517,7 @@ function StoryStep({
                 description="Lee una historia para practicar la gramatica de esta unidad."
             />
 
-            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-7 space-y-7">
+            <div className="bg-[var(--color-card)] rounded-[2rem] p-8 space-y-7 shadow-[var(--shadow-card)]">
                 {unitStory ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -523,7 +525,7 @@ function StoryStep({
                         </p>
                         <button
                             onClick={() => navigate(`/learn/${unitStory.id}`)}
-                            className="w-full bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-5 flex items-center justify-between hover:border-[var(--color-primary)]/40 transition-colors group"
+                            className="w-full bg-[var(--color-surface-container)] rounded-2xl p-5 flex items-center justify-between hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] transition-all duration-300 group"
                         >
                             <div className="flex items-center gap-3">
                                 <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
@@ -541,7 +543,7 @@ function StoryStep({
                         </p>
                         <button
                             onClick={onNavigateStories}
-                            className="w-full bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-5 flex items-center justify-between hover:border-[var(--color-primary)]/40 transition-colors group"
+                            className="w-full bg-[var(--color-surface-container)] rounded-2xl p-5 flex items-center justify-between hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] transition-all duration-300 group"
                         >
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-5 h-5 text-[var(--color-primary)]" />
@@ -557,7 +559,7 @@ function StoryStep({
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                         onClick={onComplete}
-                        className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                        className="flex-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                     >
                         {unitStory ? 'Marcar como completado' : 'Saltar por ahora'}
                     </button>
@@ -618,7 +620,7 @@ function VocabStep({
                 }
             />
 
-            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 space-y-6">
+            <div className="bg-[var(--color-card)] rounded-[2rem] p-7 space-y-6 shadow-[var(--shadow-card)]">
                 {vocabItems.length > 0 ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -630,10 +632,10 @@ function VocabStep({
                                     key={v.id}
                                     onClick={() => toggleFlip(v.id)}
                                     className={`
-                                        relative rounded-xl border p-3 text-left transition-all duration-200 min-h-[72px]
+                                        relative rounded-2xl p-4 text-left transition-all duration-300 min-h-[72px]
                                         ${flipped.has(v.id)
-                                            ? 'bg-[var(--color-primary)]/10 border-primary/30'
-                                            : 'bg-[var(--color-background)] border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/30'
+                                            ? 'bg-[var(--color-primary)]/10 shadow-[var(--shadow-card)]'
+                                            : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] hover:-translate-y-0.5'
                                         }
                                     `}
                                 >
@@ -664,7 +666,7 @@ function VocabStep({
 
                 <button
                     onClick={onNavigateReview}
-                    className="w-full bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between hover:border-[var(--color-primary)]/40 transition-colors group"
+                    className="w-full bg-[var(--color-surface-container)] rounded-2xl p-5 flex items-center justify-between hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] transition-all duration-300 group"
                 >
                     <div className="flex items-center gap-3">
                         <RefreshCw className="w-5 h-5 text-accent-blue" />
@@ -677,7 +679,7 @@ function VocabStep({
 
                 <button
                     onClick={onComplete}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                 >
                     Continuar
                 </button>
@@ -731,9 +733,9 @@ function CheckpointStep({
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center py-10"
                 >
-                    <div className="bg-[var(--color-card)] border border-red-500/30 rounded-2xl p-8 w-full max-w-sm text-center space-y-5">
-                        <div className="space-y-2">
-                            <p className="text-5xl font-extrabold text-red-400">
+                    <div className="bg-[var(--color-card)] rounded-[2rem] p-10 w-full max-w-sm text-center space-y-6 shadow-[var(--shadow-float)]">
+                        <div className="space-y-3">
+                            <p className="text-5xl font-black tracking-tight text-red-400">
                                 {lastScore}%
                             </p>
                             <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -743,7 +745,7 @@ function CheckpointStep({
 
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Intentalo de nuevo
@@ -773,12 +775,14 @@ function EmptyStepCard({
     return (
         <div className="space-y-6">
             <StepHeader icon={Icon} label={title} description={description} />
-            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-7 text-center space-y-5">
-                <Icon className="w-10 h-10 text-[var(--color-on-surface-muted)] mx-auto" />
+            <div className="bg-[var(--color-card)] rounded-[2rem] p-8 text-center space-y-6 shadow-[var(--shadow-card)]">
+                <div className="w-16 h-16 rounded-2xl bg-[var(--color-surface-container)] flex items-center justify-center mx-auto">
+                    <Icon className="w-8 h-8 text-[var(--color-on-surface-muted)]" />
+                </div>
                 <p className="text-[var(--color-on-surface-muted)] text-sm">{description}</p>
                 <button
                     onClick={onAction}
-                    className="bg-[var(--color-primary)] hover:brightness-90 text-white py-3 px-8 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-3.5 px-8 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                 >
                     {actionLabel}
                 </button>

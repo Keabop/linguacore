@@ -28,7 +28,7 @@ export default function SkillBreakdown({ unitId }: Props) {
             {/* Mastery bar */}
             <div className="flex items-center gap-2 text-xs">
                 <span className="text-[var(--color-on-surface-muted)]">Skills:</span>
-                <div className="flex-1 h-1.5 bg-[var(--color-background)] rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
                     <div
                         className="h-full bg-green-500 rounded-full transition-all"
                         style={{ width: `${skills.length > 0 ? (masteredCount / skills.length) * 100 : 0}%` }}
@@ -53,7 +53,7 @@ export default function SkillBreakdown({ unitId }: Props) {
                             ) : card ? (
                                 <Clock className="w-3.5 h-3.5 text-[var(--color-on-surface-muted)] flex-shrink-0" />
                             ) : (
-                                <span className="w-3.5 h-3.5 rounded-full border border-[var(--color-outline-subtle)] flex-shrink-0" />
+                                <span className="w-3.5 h-3.5 rounded-full bg-[var(--color-surface-container-highest)] flex-shrink-0" />
                             )}
                             <span className={`${isDue ? 'text-amber-400' : isMastered ? 'text-green-400' : 'text-[var(--color-on-surface-muted)]'}`}>
                                 {skill.name}
