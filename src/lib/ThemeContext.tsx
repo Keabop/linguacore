@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 type ColorMode = 'light' | 'dark'
-type ProTheme = 'purple' | 'ocean' | 'forest' | 'midnight'
+type ProTheme = 'purple' | 'ocean' | 'forest' | 'midnight' | 'royal-gold'
 
 interface ThemeContextValue {
   mode: ColorMode

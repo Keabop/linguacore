@@ -166,6 +166,30 @@
   --shadow-float:   0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
+[data-theme="royal-gold"] {
+  --color-primary:              #D97706;
+  --color-primary-light:        #FBBF24;
+  --color-primary-container:    #FEF3C7;
+  --color-background:           #FEFBF3;
+  --color-surface:              #FEFBF3;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-low:    #FEF3C7;
+  --color-surface-container:        #FDE68A;
+  --color-surface-container-high:   #FCD34D;
+  --color-surface-container-highest:#FDE68A;
+  --color-card:                 #FFFFFF;
+  --color-surface-high:         #FCD34D;
+  --color-surface-highest:      #FDE68A;
+  --color-on-surface:           #78350F;
+  --color-on-surface-muted:     #92400E;
+  --color-tertiary:             #B45309;
+  --color-outline:              #F59E0B;
+  --color-outline-subtle:       rgba(217, 119, 6, 0.2);
+  --shadow-card:    0 4px 24px rgba(217, 119, 6, 0.06);
+  --shadow-elevated: 0 8px 32px rgba(217, 119, 6, 0.08);
+  --shadow-float:   0 20px 40px rgba(217, 119, 6, 0.12);
+}
+
 /* === GLOBAL STYLES === */
 @layer base {
   * {
