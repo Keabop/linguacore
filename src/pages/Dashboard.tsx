@@ -58,7 +58,7 @@ export default function Dashboard() {
     });
 
     const recommended = allStories.filter(s => {
-        const isUnlocked = user?.unlockedLevels.includes(s.level);
+        const isUnlocked = user?.unlockedLevels?.includes(s.level) ?? false;
         const isRead = readStories?.some(r => r.story_id === s.id);
         return isUnlocked && !isRead;
     }).slice(0, 4);
@@ -91,7 +91,7 @@ export default function Dashboard() {
     const allUnitsCompleted = unitsTotal > 0 && unitsCompleted === unitsTotal;
 
     // Loading state: user query hasn't resolved yet
-    if (!user && !progressInfo) return <PageLoader />;
+    if (!user || !progressInfo) return <PageLoader />;
     // Data missing (DB cleared/corrupt)
     if (user === null) return <DBErrorCard onReset={() => window.location.reload()} />;
 
@@ -181,7 +181,7 @@ export default function Dashboard() {
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--color-surface-container-low)] text-[var(--color-primary)]">
-                                            SIGUIENTE HITO
+                                            {t('dashboard.nextMilestone', 'SIGUIENTE HITO')}
                                         </span>
                                     </div>
                                     <h3 className="font-bold text-base">{firstIncompleteUnit.title}</h3>
@@ -342,7 +342,7 @@ export default function Dashboard() {
                                         onClick={() => navigate(`/learn/${story.id}`)}
                                         className="bg-[var(--color-card)] rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-float)] group"
                                     >
-                                        <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
+                                        <div style={{ backgroundColor: levelColor }} className="h-1 w-full" />
                                         <div
                                             className="h-36 relative flex items-center justify-center overflow-hidden"
                                             style={{ background: getStoryMesh(story.id) }}
