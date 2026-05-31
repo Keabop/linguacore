@@ -45,7 +45,17 @@ export default function ReviewSession() {
     }
 
     const currentCard = dueCards[0] as Card | undefined;
-    const currentVocab = currentCard ? getVocab(currentCard.wordId) : undefined;
+    const currentVocab = currentCard
+        ? (getVocab(currentCard.wordId) || ({
+            id: currentCard.wordId,
+            word: currentCard.wordId,
+            translations: ['palabra personalizada'],
+            definition: 'Custom word imported by the user.',
+            examples: [`This is the custom word: ${currentCard.wordId}.`],
+            exampleTranslations: ['Esta es la palabra personalizada.'],
+            level: 'B2',
+          } as any))
+        : undefined;
 
     const handleResult = useCallback(async (correct: boolean) => {
         if (!currentCard) return;
