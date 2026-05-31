@@ -192,7 +192,7 @@ export default function Account() {
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2">
                         {themes.map((theme) => {
                             const isSelected = proTheme === theme.id;
                             const progressLocked = theme.isPro && !isPro;
