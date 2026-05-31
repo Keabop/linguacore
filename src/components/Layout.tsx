@@ -118,10 +118,7 @@ export default function Layout() {
 
     const isVertical = position === 'left' || position === 'right';
 
-    const hideFloatingBar = 
-        /^\/learn\/.+/.test(location.pathname) || 
-        location.pathname === '/chat' || 
-        location.pathname === '/review';
+    const hideFloatingBar = /^\/learn\/.+/.test(location.pathname);
 
     // Auto-scroll active nav item into view on route change
     useEffect(() => {

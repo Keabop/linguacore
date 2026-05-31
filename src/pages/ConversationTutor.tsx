@@ -215,7 +215,7 @@ export default function ConversationTutor() {
     // ── READONLY VIEW ──
     if (view === 'readonly' && readonlySession) {
         return (
-            <div className="flex flex-col h-[calc(100dvh-6rem)] max-h-[calc(100dvh-6rem)] overflow-x-hidden">
+            <div className="flex flex-col h-[calc(100dvh-13.5rem)] max-h-[calc(100dvh-13.5rem)] lg:h-[calc(100dvh-6rem)] lg:max-h-[calc(100dvh-6rem)] overflow-x-hidden">
 
                 {/* Header with back button */}
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -276,7 +276,7 @@ export default function ConversationTutor() {
 
     // ── CHAT VIEW (active conversation) ──
     return (
-        <div className="flex flex-col h-[calc(100dvh-6rem)] max-h-[calc(100dvh-6rem)] overflow-x-hidden">
+        <div className="flex flex-col h-[calc(100dvh-13.5rem)] max-h-[calc(100dvh-13.5rem)] lg:h-[calc(100dvh-6rem)] lg:max-h-[calc(100dvh-6rem)] overflow-x-hidden">
 
             {/* End session confirmation modal */}
             {showEndConfirm && (
