@@ -90,6 +90,21 @@ export default function Account() {
     const handleImportWords = async (text: string) => {
         if (!text.trim() || !authUser?.id) return;
         
+        // Check for CSV headers or cell quote delimiters to prevent direct CSV import attempts
+        const lowercaseText = text.toLowerCase();
+        if (
+            lowercaseText.includes('word,translation') || 
+            lowercaseText.includes('cefr level') || 
+            lowercaseText.includes('last review') ||
+            text.includes('","')
+        ) {
+            toast.error({
+                title: 'Formato no permitido',
+                description: 'No se permite importar archivos o texto en formato CSV directamente. Introduce una lista simple de palabras en inglés separadas por comas.'
+            });
+            return;
+        }
+        
         const rawWords = text.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean);
         if (rawWords.length === 0) return;
         
