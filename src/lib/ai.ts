@@ -193,3 +193,40 @@ export async function evaluateWriting(
         text, prompt, level, type, targetGrammar, referenceAnswer,
     });
 }
+
+export interface CareerWord {
+    word: string;
+    translation: string;
+    example: string;
+    exampleTranslation: string;
+}
+
+export async function generateCareerDeck(profession: string, level: string): Promise<CareerWord[]> {
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+    if (!apiKey) throw new Error('API key missing');
+
+    const ai = new GoogleGenerativeAI(apiKey);
+    const model = ai.getGenerativeModel({
+        model: 'gemini-1.5-flash',
+        generationConfig: { responseMimeType: 'application/json' }
+    });
+
+    const prompt = `
+    Eres un lingüista experto en inglés profesional. Genera una lista de 15 palabras o frases esenciales en inglés especializadas para la profesión: "${profession}", adaptadas para el nivel CEFR: "${level}".
+    
+    Debes retornar un JSON array con el siguiente formato exacto de objetos:
+    [
+      {
+        "word": "palabra en inglés (ej. reluctancy)",
+        "translation": "traducción directa en español (ej. renuencia)",
+        "example": "una oración de ejemplo en inglés simple y clara que use la palabra",
+        "exampleTranslation": "la traducción de la oración de ejemplo al español"
+      }
+    ]
+    `;
+
+    const response = await model.generateContent(prompt);
+    const text = response.response.text();
+    return JSON.parse(text) as CareerWord[];
+}
