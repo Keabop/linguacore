@@ -578,8 +578,8 @@ export default function Account() {
                             <Layers className="w-6 h-6" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black tracking-tight text-[var(--color-on-surface)]">
-                                Gestión de Vocabulario y Mazos
+                            <h2 className="text-base font-extrabold tracking-tight text-[var(--color-on-surface)]">
+                                Herramientas de Vocabulario y Mazos
                             </h2>
                             <p className="text-xs text-[var(--color-on-surface-muted)]">
                                 Exporta tu progreso, importa listas de palabras personalizadas o genera mazos profesionales con Inteligencia Artificial.
@@ -616,7 +616,7 @@ export default function Account() {
                                     <span>Importar Vocabulario</span>
                                 </div>
                                 <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
-                                    Sube un archivo CSV FSRS exportado anteriormente o ingresa una lista de palabras en inglés para agregarlas a tu mazo de estudio.
+                                    Agrega vocabulario de forma masiva subiendo archivos CSV de otras aplicaciones (como Anki o Quizlet) o pegando una lista de palabras en inglés separadas por comas.
                                 </p>
                             </div>
                             
