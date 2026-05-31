@@ -166,7 +166,6 @@ export default function ReviewSession() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-12 space-y-5"
                 >
-                    <style>{`.floating-bar { display: none !important; }`}</style>
                     <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
                     <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
@@ -201,7 +200,6 @@ export default function ReviewSession() {
 
         return (
             <div className="space-y-10">
-                <style>{`.floating-bar { display: none !important; }`}</style>
                 {/* Progress header */}
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
@@ -240,7 +238,6 @@ export default function ReviewSession() {
             const accuracy = totalReviewed > 0 ? Math.round((correctCount / totalReviewed) * 100) : 0;
             return (
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-12 space-y-5">
-                    <style>{`.floating-bar { display: none !important; }`}</style>
                     <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
                     <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
@@ -268,7 +265,6 @@ export default function ReviewSession() {
 
         return (
             <div className="space-y-10">
-                <style>{`.floating-bar { display: none !important; }`}</style>
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
                         <button
@@ -307,7 +303,6 @@ export default function ReviewSession() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12 space-y-5"
             >
-                <style>{`.floating-bar { display: none !important; }`}</style>
                 <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
                 <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                 <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
@@ -354,7 +349,6 @@ export default function ReviewSession() {
     return (
         <div className="space-y-10">
             {/* Hide floating navbar while reviewing */}
-            <style>{`.floating-bar { display: none !important; }`}</style>
             {/* Progress header */}
             <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">

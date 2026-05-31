@@ -142,7 +142,6 @@ export default function ConversationTutor() {
     if (view === 'history') {
         return (
             <div className="space-y-8 w-full max-w-full overflow-hidden flex flex-col min-w-0">
-                <style>{`.floating-bar { display: none !important; }`}</style>
 
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -217,7 +216,6 @@ export default function ConversationTutor() {
     if (view === 'readonly' && readonlySession) {
         return (
             <div className="flex flex-col h-[calc(100dvh-6rem)] max-h-[calc(100dvh-6rem)] overflow-x-hidden">
-                <style>{`.floating-bar { display: none !important; }`}</style>
 
                 {/* Header with back button */}
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -279,8 +277,6 @@ export default function ConversationTutor() {
     // ── CHAT VIEW (active conversation) ──
     return (
         <div className="flex flex-col h-[calc(100dvh-6rem)] max-h-[calc(100dvh-6rem)] overflow-x-hidden">
-            {/* Hide floating bottom bar */}
-            <style>{`.floating-bar { display: none !important; }`}</style>
 
             {/* End session confirmation modal */}
             {showEndConfirm && (
