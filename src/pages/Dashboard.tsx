@@ -114,7 +114,7 @@ export default function Dashboard() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 }}
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-3 gap-2.5 sm:gap-4"
             >
                 <QuickStat 
                     icon={<Flame className="w-5 h-5" />} 
@@ -323,7 +323,7 @@ export default function Dashboard() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         {recommended.map((story, i) => {
                             const levelColor = CEFR_COLORS[story.level] || 'var(--color-primary)';
                             const details = storyDetails[story.id] || { spanishTitle: '', description: '' };
@@ -434,15 +434,15 @@ function QuickStat({ icon, value, label, accent, borderAccent }: {
     return (
         <div 
             style={{ borderLeftColor: borderAccent }}
-            className="bg-[var(--color-card)] rounded-2xl p-6 shadow-[var(--shadow-card)] text-left hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] border-l-4 transition-all duration-300"
+            className="bg-[var(--color-card)] rounded-2xl p-3 sm:p-5 md:p-6 shadow-[var(--shadow-card)] text-left hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] border-l-4 transition-all duration-300"
         >
-            <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[var(--color-on-surface-muted)]">{label}</span>
-                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${accent} flex items-center justify-center text-white shadow-md shrink-0`}>
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                <span className="text-[9.5px] sm:text-xs font-bold text-[var(--color-on-surface-muted)] truncate">{label}</span>
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br ${accent} flex items-center justify-center text-white shadow-md shrink-0`}>
                     {icon}
                 </div>
             </div>
-            <CountUp from={0} to={value} duration={1.2} className="text-2xl font-black mt-2 block" />
+            <CountUp from={0} to={value} duration={1.2} className="text-xl sm:text-2xl font-black mt-1.5 sm:mt-2 block" />
         </div>
     );
 }
