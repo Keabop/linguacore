@@ -53,6 +53,7 @@ export default function StoryReader() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentSentenceIdx, setCurrentSentenceIdx] = useState(-1);
     const [playbackRate, setPlaybackRate] = useState(1); // 0.75, 1, 1.25
+    const [accent, setAccent] = useState<'US' | 'UK' | 'AU'>('US');
     const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
     const [showShadowing, setShowShadowing] = useState(false);
@@ -167,10 +168,22 @@ export default function StoryReader() {
         utterance.rate = playbackRate;
         
         const voices = window.speechSynthesis.getVoices();
-        const englishVoice = voices.find(v => v.lang.startsWith('en-') && v.localService) || 
-                             voices.find(v => v.lang.startsWith('en-'));
-        if (englishVoice) {
-            utterance.voice = englishVoice;
+        let selectedVoice = null;
+        if (accent === 'US') {
+            selectedVoice = voices.find(v => v.lang.includes('US') && v.localService) || 
+                            voices.find(v => v.lang.includes('US'));
+        } else if (accent === 'UK') {
+            selectedVoice = voices.find(v => (v.lang.includes('GB') || v.lang.includes('UK')) && v.localService) || 
+                            voices.find(v => (v.lang.includes('GB') || v.lang.includes('UK')));
+        } else if (accent === 'AU') {
+            selectedVoice = voices.find(v => v.lang.includes('AU') && v.localService) || 
+                            voices.find(v => v.lang.includes('AU'));
+        }
+        if (!selectedVoice) {
+            selectedVoice = voices.find(v => v.lang.startsWith('en-'));
+        }
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
         }
         
         utterance.onend = () => {
@@ -194,9 +207,12 @@ export default function StoryReader() {
         
         utteranceRef.current = utterance;
         window.speechSynthesis.speak(utterance);
-    }, [sentences, playbackRate]);
+    }, [sentences, playbackRate, accent]);
 
     const handlePlayPause = () => {
+        if (isListening) {
+            stopListening();
+        }
         if (isPlaying) {
             window.speechSynthesis.cancel();
             setIsPlaying(false);
@@ -229,6 +245,15 @@ export default function StoryReader() {
     };
 
     // --- Shadowing Handlers ---
+    const handleStartShadowing = () => {
+        if (isPlaying) {
+            window.speechSynthesis.cancel();
+            setIsPlaying(false);
+        }
+        resetTranscript();
+        startListening();
+    };
+
     const handleToggleShadowing = () => {
         if (!showShadowing) {
             window.speechSynthesis.cancel();
@@ -450,7 +475,7 @@ export default function StoryReader() {
                 tabIndex={0}
                 onClick={handleWordClick}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
-                className="bg-[var(--color-card)] rounded-[2rem] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300 pb-36"
+                className="bg-[var(--color-card)] rounded-[2rem] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300 pb-48 sm:pb-36 lg:pb-32"
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(processedHTML, {
@@ -539,13 +564,21 @@ export default function StoryReader() {
 
                         <div className="flex flex-col items-center justify-center space-y-4">
                             {isListening ? (
-                                <div className="flex items-center gap-1 h-6">
-                                    {[...Array(5)].map((_, i) => (
+                                <div className="flex items-center gap-1.5 h-8 justify-center">
+                                    {[...Array(6)].map((_, i) => (
                                         <m.div
                                             key={i}
-                                            animate={{ scaleY: [1, 2.5, 1] }}
-                                            transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
-                                            className="w-1 bg-[var(--color-primary)] rounded-full h-3"
+                                            animate={{ 
+                                                scaleY: [1, 2.8, 0.8, 2.2, 1],
+                                                backgroundColor: ['var(--color-primary)', 'var(--color-primary-container)', 'var(--color-primary)']
+                                            }}
+                                            transition={{ 
+                                                repeat: Infinity, 
+                                                duration: 0.8, 
+                                                delay: i * 0.12,
+                                                ease: "easeInOut"
+                                            }}
+                                            className="w-1.5 bg-[var(--color-primary)] rounded-full h-4 origin-center"
                                         />
                                     ))}
                                 </div>
@@ -568,11 +601,11 @@ export default function StoryReader() {
                             )}
                             
                             <button
-                                onClick={isListening ? stopListening : startListening}
+                                onClick={isListening ? stopListening : handleStartShadowing}
                                 className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 cursor-pointer ${
                                     isListening 
                                         ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                                        : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white'
+                                        : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.4)]'
                                 }`}
                             >
                                 <Mic className="w-6 h-6" />
@@ -600,7 +633,7 @@ export default function StoryReader() {
             </button>
 
             {/* Floating Audiobook Player Bar */}
-            <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 backdrop-blur-md rounded-[2.5rem] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300">
+            <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 backdrop-blur-md rounded-[2.5rem] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">Modo Audiolibro</p>
@@ -609,6 +642,27 @@ export default function StoryReader() {
                         </p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Accent Selector */}
+                        <button
+                            onClick={() => {
+                                setAccent(prev => {
+                                    const next = prev === 'US' ? 'UK' : prev === 'UK' ? 'AU' : 'US';
+                                    toast.success({
+                                        title: 'Acento cambiado',
+                                        description: `Acento ajustado a: ${next === 'US' ? 'Inglés Americano' : next === 'UK' ? 'Inglés Británico' : 'Inglés Australiano'}`
+                                    });
+                                    if (isPlaying && currentSentenceIdx !== -1) {
+                                        setTimeout(() => speakSentence(currentSentenceIdx), 50);
+                                    }
+                                    return next;
+                                });
+                            }}
+                            className="w-14 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
+                            title="Acento del sintetizador"
+                        >
+                            {accent === 'US' ? '🇺🇸 US' : accent === 'UK' ? '🇬🇧 UK' : '🇦🇺 AU'}
+                        </button>
+
                         <button
                             onClick={() => {
                                 setPlaybackRate(prev => prev === 0.75 ? 1 : prev === 1 ? 1.25 : 0.75);
