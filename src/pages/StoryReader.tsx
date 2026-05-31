@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { getStory, getVocab, getVocabMap } from '../data';
 import { supabase } from '../lib/supabase';
@@ -11,6 +11,8 @@ import { useCards } from '../hooks/useCards';
 import { toast } from '../lib/toast';
 import DOMPurify from 'dompurify';
 import LevelBadge from '../components/ui/LevelBadge';
+import { useSpeech } from '../hooks/useSpeech';
+import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy } from 'lucide-react';
 
 /** Extract unique word IDs from story HTML content */
 function extractKeywords(html: string): string[] {
@@ -38,6 +40,25 @@ export default function StoryReader() {
     const [knownWords, setKnownWords] = useState<Set<string>>(new Set());
     const [completed, setCompleted] = useState(false);
     const [wordStatuses, setWordStatuses] = useState<Map<string, 'deck' | 'known' | 'none'>>(new Map());
+
+    // --- Audiobook and Speech States ---
+    const {
+        isListening,
+        transcript,
+        startListening,
+        stopListening,
+        resetTranscript
+    } = useSpeech();
+
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentSentenceIdx, setCurrentSentenceIdx] = useState(-1);
+    const [playbackRate, setPlaybackRate] = useState(1); // 0.75, 1, 1.25
+    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+    const [showShadowing, setShowShadowing] = useState(false);
+    const [comparedWords, setComparedWords] = useState<{ word: string; match: boolean }[]>([]);
+    const [shadowingScore, setShadowingScore] = useState(0);
+    const [hasPracticed, setHasPracticed] = useState(false);
 
     // Check static data first, then fallback to AI story from navigation state
     const aiStory = (location.state as any)?.aiStory;
@@ -82,8 +103,186 @@ export default function StoryReader() {
         checkStatuses();
     }, [keywords, addedWords, knownWords, isWordInDeck, isWordKnown]);
 
+    // --- HTML Sentence Wrapping ---
+    const { processedHTML, sentences } = useMemo(() => {
+        if (!story) return { processedHTML: '', sentences: [] };
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(story.content, 'text/html');
+        const paragraphs = Array.from(doc.querySelectorAll('p'));
+        
+        let sentenceCounter = 0;
+        const sentencesText: string[] = [];
+        
+        paragraphs.forEach(p => {
+            const text = p.innerHTML;
+            const parts = text.split(/(?<=[.!?])\s+/);
+            
+            const wrappedParts = parts.map(part => {
+                if (!part.trim()) return '';
+                const cleanTextForSpeech = part.replace(/<[^>]*>/g, '').trim();
+                sentencesText.push(cleanTextForSpeech);
+                const currentIdx = sentenceCounter++;
+                return `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${currentIdx}">${part}</span>`;
+            });
+            
+            p.innerHTML = wrappedParts.join(' ');
+        });
+        
+        return {
+            processedHTML: doc.body.innerHTML,
+            sentences: sentencesText
+        };
+    }, [story]);
+
+    // --- Sentence Highlighting and Auto-Scroll ---
+    useEffect(() => {
+        const allSpans = document.querySelectorAll('.story-sentence');
+        allSpans.forEach(span => {
+            span.classList.remove('bg-[var(--color-primary)]/10', 'text-[var(--color-primary)]', 'font-semibold', 'border-b-2', 'border-[var(--color-primary)]');
+        });
+        
+        if (currentSentenceIdx !== -1) {
+            const activeSpan = document.querySelector(`.story-sentence[data-sentence-idx="${currentSentenceIdx}"]`);
+            if (activeSpan) {
+                activeSpan.classList.add('bg-[var(--color-primary)]/10', 'text-[var(--color-primary)]', 'font-semibold', 'border-b-2', 'border-[var(--color-primary)]');
+                activeSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }, [currentSentenceIdx]);
+
+    // --- Speech Synthesis Control ---
+    const speakSentence = useCallback((idx: number) => {
+        if (idx < 0 || idx >= sentences.length) {
+            setIsPlaying(false);
+            setCurrentSentenceIdx(-1);
+            return;
+        }
+        
+        window.speechSynthesis.cancel();
+        
+        const text = sentences[idx];
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = playbackRate;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const englishVoice = voices.find(v => v.lang.startsWith('en-') && v.localService) || 
+                             voices.find(v => v.lang.startsWith('en-'));
+        if (englishVoice) {
+            utterance.voice = englishVoice;
+        }
+        
+        utterance.onend = () => {
+            setCurrentSentenceIdx(prev => {
+                const next = prev + 1;
+                if (next < sentences.length) {
+                    setTimeout(() => {
+                        speakSentence(next);
+                    }, 300);
+                    return next;
+                } else {
+                    setIsPlaying(false);
+                    return -1;
+                }
+            });
+        };
+        
+        utterance.onerror = () => {
+            setIsPlaying(false);
+        };
+        
+        utteranceRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+    }, [sentences, playbackRate]);
+
+    const handlePlayPause = () => {
+        if (isPlaying) {
+            window.speechSynthesis.cancel();
+            setIsPlaying(false);
+        } else {
+            setIsPlaying(true);
+            const startIdx = currentSentenceIdx === -1 ? 0 : currentSentenceIdx;
+            setCurrentSentenceIdx(startIdx);
+            speakSentence(startIdx);
+        }
+    };
+
+    const handlePrevSentence = () => {
+        if (currentSentenceIdx > 0) {
+            const prev = currentSentenceIdx - 1;
+            setCurrentSentenceIdx(prev);
+            if (isPlaying) {
+                speakSentence(prev);
+            }
+        }
+    };
+
+    const handleNextSentence = () => {
+        if (currentSentenceIdx < sentences.length - 1) {
+            const next = currentSentenceIdx + 1;
+            setCurrentSentenceIdx(next);
+            if (isPlaying) {
+                speakSentence(next);
+            }
+        }
+    };
+
+    // --- Shadowing Handlers ---
+    const handleToggleShadowing = () => {
+        if (!showShadowing) {
+            window.speechSynthesis.cancel();
+            setIsPlaying(false);
+        }
+        setShowShadowing(!showShadowing);
+        setComparedWords([]);
+        setHasPracticed(false);
+        resetTranscript();
+    };
+
+    useEffect(() => {
+        if (!transcript || currentSentenceIdx === -1) return;
+        
+        const target = sentences[currentSentenceIdx];
+        const cleanWord = (w: string) => w.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "").trim();
+        
+        const targetWords = target.split(/\s+/).filter(Boolean);
+        const transcriptWords = transcript.split(/\s+/).map(cleanWord).filter(Boolean);
+        
+        let matchCount = 0;
+        const compared = targetWords.map(word => {
+            const cleaned = cleanWord(word);
+            const match = transcriptWords.includes(cleaned);
+            if (match) matchCount++;
+            return { word, match };
+        });
+        
+        setComparedWords(compared);
+        setShadowingScore(Math.round((matchCount / targetWords.length) * 100));
+        setHasPracticed(true);
+    }, [transcript, currentSentenceIdx, sentences]);
+
+    useEffect(() => {
+        return () => {
+            window.speechSynthesis.cancel();
+        };
+    }, []);
+
     const handleWordClick = useCallback(async (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
+        
+        // Check if sentence span was clicked to jump index
+        const sentenceElement = target.closest('.story-sentence');
+        if (sentenceElement) {
+            const sIdx = parseInt(sentenceElement.getAttribute('data-sentence-idx') || '-1', 10);
+            if (sIdx !== -1 && sIdx !== currentSentenceIdx) {
+                setCurrentSentenceIdx(sIdx);
+                if (isPlaying) {
+                    speakSentence(sIdx);
+                }
+            }
+        }
+
         const wordId = target.getAttribute('data-word');
         if (!wordId) return;
 
@@ -100,7 +299,7 @@ export default function StoryReader() {
                 setWordStatus('none');
             }
         }
-    }, [isWordInDeck, isWordKnown, addedWords, knownWords]);
+    }, [isWordInDeck, isWordKnown, addedWords, knownWords, currentSentenceIdx, isPlaying, speakSentence, vocabMap, isAIStory]);
 
     const handleChipClick = useCallback(async (wordId: string) => {
         const vocab = vocabMap?.get(wordId);
@@ -251,12 +450,12 @@ export default function StoryReader() {
                 tabIndex={0}
                 onClick={handleWordClick}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
-                className="bg-[var(--color-card)] rounded-[2rem] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300"
+                className="bg-[var(--color-card)] rounded-[2rem] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300 pb-36"
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(story.content, {
+                    __html: DOMPurify.sanitize(processedHTML, {
                         ALLOWED_TAGS: ['p', 'span', 'br'],
-                        ALLOWED_ATTR: ['data-word', 'class'],
+                        ALLOWED_ATTR: ['data-word', 'class', 'data-sentence-idx'],
                     })
                 }}
             />
@@ -295,6 +494,103 @@ export default function StoryReader() {
                 </m.div>
             )}
 
+            {/* Shadowing practice widget */}
+            <AnimatePresence>
+                {showShadowing && currentSentenceIdx !== -1 && (
+                    <m.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] border border-[var(--color-primary)]/10 space-y-5 text-center transition-all duration-300"
+                    >
+                        <div className="flex justify-between items-center text-xs shrink-0">
+                            <span className="font-bold text-[var(--color-primary)] uppercase tracking-wider flex items-center gap-1.5">
+                                <Headphones className="w-4 h-4" /> Práctica de Shadowing (Pro)
+                            </span>
+                            <button
+                                onClick={handleToggleShadowing}
+                                className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-all font-bold text-sm"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <p className="text-[10px] text-[var(--color-on-surface-muted)] uppercase tracking-wider">Oración objetivo:</p>
+                            <div className="bg-[var(--color-surface-container-low)] p-4 rounded-2xl">
+                                {comparedWords.length > 0 ? (
+                                    <div className="flex flex-wrap gap-x-1.5 gap-y-1 justify-center text-base font-extrabold leading-relaxed">
+                                        {comparedWords.map((item, idx) => (
+                                            <span
+                                                key={idx}
+                                                className={item.match ? 'text-[var(--color-success)]' : 'text-red-400'}
+                                            >
+                                                {item.word}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-base font-bold text-[var(--color-on-surface)] leading-relaxed italic">
+                                        "{sentences[currentSentenceIdx]}"
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-center justify-center space-y-4">
+                            {isListening ? (
+                                <div className="flex items-center gap-1 h-6">
+                                    {[...Array(5)].map((_, i) => (
+                                        <m.div
+                                            key={i}
+                                            animate={{ scaleY: [1, 2.5, 1] }}
+                                            transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
+                                            className="w-1 bg-[var(--color-primary)] rounded-full h-3"
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="h-6 text-xs text-[var(--color-on-surface-muted)] flex items-center justify-center gap-1.5">
+                                    {hasPracticed ? (
+                                        shadowingScore === 100 ? (
+                                            <span className="text-[var(--color-success)] font-bold flex items-center gap-1">
+                                                <Trophy className="w-4 h-4 fill-[var(--color-success)]/10" /> ¡Pronunciación Perfecta! 100% de acierto
+                                            </span>
+                                        ) : (
+                                            <span className="font-semibold text-[var(--color-on-surface)]">
+                                                Puntuación: {shadowingScore}% de coincidencia
+                                            </span>
+                                        )
+                                    ) : (
+                                        'Presiona el micrófono y lee la oración en voz alta'
+                                    )}
+                                </div>
+                            )}
+                            
+                            <button
+                                onClick={isListening ? stopListening : startListening}
+                                className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 cursor-pointer ${
+                                    isListening 
+                                        ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+                                        : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white'
+                                }`}
+                            >
+                                <Mic className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {transcript && (
+                            <div className="space-y-1.5 text-left bg-[var(--color-surface-container)]/30 p-3.5 rounded-2xl">
+                                <p className="text-[9.5px] text-[var(--color-on-surface-muted)] uppercase tracking-wider">Lo que escuchó la IA:</p>
+                                <p className="text-xs text-[var(--color-on-surface)] leading-relaxed italic">
+                                    "{transcript}"
+                                </p>
+                            </div>
+                        )}
+                    </m.div>
+                )}
+            </AnimatePresence>
+
             {/* Complete button */}
             <button
                 onClick={handleComplete}
@@ -302,6 +598,65 @@ export default function StoryReader() {
             >
                 ✓ {t('reader.storyCompleted')}
             </button>
+
+            {/* Floating Audiobook Player Bar */}
+            <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 backdrop-blur-md rounded-[2.5rem] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">Modo Audiolibro</p>
+                        <p className="text-xs text-[var(--color-on-surface)] truncate font-medium">
+                            {currentSentenceIdx !== -1 ? sentences[currentSentenceIdx] : 'Selecciona una oración para comenzar'}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                            onClick={() => {
+                                setPlaybackRate(prev => prev === 0.75 ? 1 : prev === 1 ? 1.25 : 0.75);
+                            }}
+                            className="w-8 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer"
+                            title="Velocidad de reproducción"
+                        >
+                            {playbackRate}x
+                        </button>
+                        <button
+                            onClick={handleToggleShadowing}
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                                showShadowing 
+                                    ? 'bg-[var(--color-primary)] text-white shadow-md' 
+                                    : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)]'
+                            }`}
+                            title="Practicar Shadowing"
+                        >
+                            <Mic className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+                
+                <div className="flex items-center justify-center gap-4">
+                    <button
+                        onClick={handlePrevSentence}
+                        disabled={currentSentenceIdx <= 0}
+                        className="p-2.5 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+                    >
+                        <SkipBack className="w-4 h-4" />
+                    </button>
+                    
+                    <button
+                        onClick={handlePlayPause}
+                        className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
+                    >
+                        {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white translate-x-0.5" />}
+                    </button>
+                    
+                    <button
+                        onClick={handleNextSentence}
+                        disabled={currentSentenceIdx === -1 || currentSentenceIdx >= sentences.length - 1}
+                        className="p-2.5 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+                    >
+                        <SkipForward className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
 
             {/* Word popup */}
             <AnimatePresence>
