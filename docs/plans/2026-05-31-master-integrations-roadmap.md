@@ -75,6 +75,7 @@
 
 ### Fase 5: Simulador de Examen CEFR y Reporte de Rendimiento Interactivo
 * **Objetivo**: Desarrollar un simulador de diagnóstico de alto rigor académico (equivalente a TOEFL/IELTS/Cambridge) de aproximadamente 100 preguntas, con un centro de reportes interactivo integrado en la aplicación que se actualice dinámicamente con cada intento.
+* **Recomendación Pedagógica (Leyenda)**: **Se presentará una advertencia explícita en pantalla indicando que es altamente recomendable haber alcanzado al menos el Nivel B1 en la ruta de aprendizaje de Voxie antes de iniciar este simulacro formal para evitar la frustración cognitiva.**
 * **Componentes a desarrollar/modificar**:
   - Crear: `src/pages/LevelAssessment.tsx` (Estructura de examen formal de pantalla completa, con guardado automático y temporizador de 60 a 90 minutos).
   - **Estructura del Simulador Riguroso (100 preguntas)**:
