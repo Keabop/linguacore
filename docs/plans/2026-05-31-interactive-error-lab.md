@@ -1,10 +1,81 @@
-import { useState, useEffect } from 'react';
+# Interactive Error Lab Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Implement a fully interactive, gamified "Laboratorio de Errores" (*ErrorLab*) in Voxie (LinguaCore), giving Pro users an engaging 3-step study flow (Analysis, Scrambled Sentence Builder, and Multiple-Choice Quiz) to review their collected language errors, integrated under `/review/lab`.
+
+**Architecture:** 
+1. **Route Registration**: Add `/review/lab` as a protected lazy route under `Layout` in `App.tsx`.
+2. **Component Structure**:
+   - `ErrorLab.tsx` handles state machines for: active card index, active sub-step (0: Analysis, 1: Build, 2: Quiz), scrambled word buttons, and quiz options.
+   - **Step 1 (Analysis)**: Double-card presentation contrasting original and corrected sentences with dynamic explanations.
+   - **Step 2 (Sentence Builder)**: Word scrambling and tap-ordering interactive logic.
+   - **Step 3 (Smart Quiz)**: Multi-choice selection with error distractor logic, which calls `reviewErrorCard(card, Rating.Good)` upon success.
+
+**Tech Stack:** React 19, TypeScript, Tailwind CSS v4, Framer Motion, Supabase, Lucide React, Vitest.
+
+---
+
+### Task 1: Register ErrorLab Protected Route in App.tsx
+
+**Files:**
+- Modify: `src/App.tsx`
+- Create: `src/pages/ErrorLab.tsx` (scaffold)
+
+**Step 1: Create a basic scaffold for `ErrorLab.tsx`**
+Create `src/pages/ErrorLab.tsx` with a basic default export:
+```typescript
+import { useTranslation } from 'react-i18next';
+
+export default function ErrorLab() {
+    const { t } = useTranslation();
+    return (
+        <div className="py-8">
+            <h1 className="text-2xl font-black">Laboratorio de Errores</h1>
+        </div>
+    );
+}
+```
+
+**Step 2: Register dynamic lazy import and route in `src/App.tsx`**
+Open `src/App.tsx`:
+- Import the lazy route (around line 43):
+```typescript
+const ErrorLab = lazyRetry(() => import('./pages/ErrorLab'));
+```
+- Register the route inside Layout routes (around line 83):
+```typescript
+                    <Route path="/review" element={<ReviewSession />} />
+                    <Route path="/review/lab" element={<SafeRoute><ErrorLab /></SafeRoute>} />
+```
+
+**Step 3: Run build check**
+Run: `npm run build`
+Expected: SUCCESS
+
+**Step 4: Commit**
+```bash
+git add src/App.tsx src/pages/ErrorLab.tsx
+git commit -m "feat: register ErrorLab page scaffold and protected route in App.tsx"
+```
+
+---
+
+### Task 2: Implement the Interactive 3-Step Minigame logic in ErrorLab.tsx
+
+**Files:**
+- Modify: `src/pages/ErrorLab.tsx`
+
+**Step 1: Write complete gamified component structure**
+Implement `ErrorLab.tsx` using `useErrorCards` to query cards, manage scrambled words states, and handle quiz generations:
+```typescript
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useErrorCards } from '../hooks/useErrorCards';
 import { useAuth } from '../lib/AuthContext';
-import { ArrowLeft, Sparkles, Check, X, AlertCircle, RefreshCw, Trophy } from 'lucide-react';
+import { ArrowLeft, Sparkles, BookOpen, Check, X, AlertCircle, RefreshCw, Trophy } from 'lucide-react';
 import { Rating } from '../lib/fsrs';
 
 export default function ErrorLab() {
