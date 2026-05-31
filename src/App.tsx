@@ -40,6 +40,7 @@ const StoryReader = lazyRetry(() => import('./pages/StoryReader'));
 const LearningPath = lazyRetry(() => import('./pages/LearningPath'));
 const UnitFlow = lazyRetry(() => import('./pages/UnitFlow'));
 const Pricing = lazyRetry(() => import('./pages/Pricing'));
+const ErrorLab = lazyRetry(() => import('./pages/ErrorLab'));
 
 function SafeRoute({ children }: { children: ReactNode }) {
     const location = useLocation();
@@ -81,6 +82,7 @@ export default function App() {
                     <Route path="/learn" element={<StoryList />} />
                     <Route path="/learn/:storyId" element={<SafeRoute><StoryReader /></SafeRoute>} />
                     <Route path="/review" element={<ReviewSession />} />
+                    <Route path="/review/lab" element={<SafeRoute><ErrorLab /></SafeRoute>} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/chat" element={<ConversationTutor />} />
                     <Route path="/path" element={<SafeRoute><LearningPath /></SafeRoute>} />
