@@ -34,7 +34,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
             className={({ isActive }) =>
                 `rail-item flex items-center transition-all duration-300 relative select-none ${
                     isVertical 
-                        ? `h-12 my-2 rounded-xl ${expanded ? 'px-4 justify-start mx-4' : 'px-0 justify-center mx-2.5'}` 
+                        ? `h-10 rounded-xl ${expanded ? 'px-4 justify-start mx-3' : 'px-0 justify-center mx-2.5'}` 
                         : `h-10 w-10 justify-center mx-0.5 rounded-full`
                 } ${
                     isActive
@@ -56,7 +56,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
                             }
                         />
                     )}
-                    <div className={`${isVertical ? 'w-12 h-12' : 'w-10 h-10'} flex items-center justify-center shrink-0`}>
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
                         <Icon className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
                     <AnimatePresence>
@@ -223,7 +223,7 @@ export default function Layout() {
                 {/* Drag Handle & Logo Section */}
                 <div className={`flex shrink-0 ${
                     isVertical 
-                        ? 'flex-col items-center mb-6 mt-1 w-full' 
+                        ? 'flex-col items-center mb-4 mt-2 w-full' 
                         : 'flex-row items-center mr-4'
                 }`}>
                     
@@ -233,7 +233,7 @@ export default function Layout() {
                         className={`drag-handle flex items-center justify-center cursor-grab active:cursor-grabbing p-1.5 rounded-lg hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] transition-colors shrink-0 relative ${
                             !onboardingShown ? 'drag-handle-glow bg-purple-500/10' : ''
                         } ${
-                            isVertical ? 'mb-4 w-8 h-8' : 'mr-3 w-8 h-8'
+                            isVertical ? 'mb-2 w-8 h-8' : 'mr-3 w-8 h-8'
                         }`}
                         title="Arrastra para reubicar la barra"
                     >
@@ -298,10 +298,10 @@ export default function Layout() {
                 </div>
 
                 {/* Nav items */}
-                <nav className={`flex-1 px-1 ${
+                <nav className={`flex px-1 ${
                     isVertical 
-                        ? 'space-y-4 w-full' 
-                        : 'flex flex-row items-center justify-center space-x-0.5 space-y-0'
+                        ? 'flex-col gap-1 shrink-0 w-full' 
+                        : 'flex-row items-center justify-center space-x-0.5'
                 }`}>
                     {navItems.map(item => (
                         <RailNavItem
@@ -317,13 +317,13 @@ export default function Layout() {
 
                 {/* User area at bottom/right */}
                 {progressInfo && authUser && (
-                    <div className={`shrink-0 ${isVertical ? 'w-full' : 'ml-2 flex items-center h-full'}`}>
+                    <div className={`shrink-0 ${isVertical ? 'w-full mt-auto mb-2' : 'ml-2 flex items-center h-full'}`}>
                         <NavLink
                             to="/account"
                             className={({ isActive }) =>
                                 `flex items-center rounded-xl transition-all duration-300 relative select-none ${
                                     isVertical
-                                        ? `h-12 mt-6 ${isNavHovered ? 'px-4 justify-start mx-4' : 'px-0 mx-2.5 justify-center'}`
+                                        ? `h-10 ${isNavHovered ? 'px-4 justify-start mx-3' : 'px-0 mx-2.5 justify-center'}`
                                         : `h-10 w-10 justify-center rounded-full`
                                 } ${
                                     isActive
