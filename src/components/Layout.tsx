@@ -317,7 +317,7 @@ export default function Layout() {
 
                 {/* User area at bottom/right */}
                 {progressInfo && authUser && (
-                    <div className={`shrink-0 ${isVertical ? 'w-full' : 'ml-2'}`}>
+                    <div className={`shrink-0 ${isVertical ? 'w-full' : 'ml-2 flex items-center h-full'}`}>
                         <NavLink
                             to="/account"
                             className={({ isActive }) =>
