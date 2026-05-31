@@ -118,6 +118,11 @@ export default function Layout() {
 
     const isVertical = position === 'left' || position === 'right';
 
+    const hideFloatingBar = 
+        /^\/learn\/.+/.test(location.pathname) || 
+        location.pathname === '/chat' || 
+        location.pathname === '/review';
+
     // Auto-scroll active nav item into view on route change
     useEffect(() => {
         const container = scrollRef.current;
@@ -386,14 +391,14 @@ export default function Layout() {
 
             {/* ===== MAIN CONTENT ===== */}
             <div className="main-content">
-                <div className="main-content-inner">
+                <div className={`main-content-inner ${hideFloatingBar ? 'no-floating-bar-padding' : ''}`}>
                     <OfflineBanner syncState={syncState} />
                     <Outlet />
                 </div>
             </div>
 
             {/* ===== FLOATING BOTTOM BAR (Mobile Only) — Glassmorphism ===== */}
-            {!/^\/learn\/.+/.test(location.pathname) && (
+            {!hideFloatingBar && (
                 <nav ref={scrollRef} className="floating-bar">
                     {navItems.map(item => (
                         <NavLink
