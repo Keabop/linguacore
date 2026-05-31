@@ -185,21 +185,22 @@ export default function Layout() {
 
             {/* ===== DRAGGABLE RAIL SIDEBAR ===== */}
             <motion.aside
+                key={position}
                 ref={sidebarRef}
                 className={`sidebar-rail pos-${position} fixed bg-white/85 dark:bg-[#1E0A35]/85 backdrop-blur-xl border border-purple-500/10`}
                 onMouseEnter={() => setIsNavHovered(true)}
                 onMouseLeave={() => setIsNavHovered(false)}
                 animate={isVertical ? { 
                     width: isNavHovered ? 260 : 68,
-                    height: 'auto',
+                    height: 480,
                     top: '50%',
                     left: position === 'left' ? '1.5rem' : 'auto',
                     right: position === 'right' ? '1.5rem' : 'auto',
                     x: 0,
                     y: '-50%'
                 } : {
-                    width: '90%',
-                    height: 68,
+                    width: 480,
+                    height: isNavHovered ? 260 : 68,
                     left: '50%',
                     top: position === 'top' ? '1.5rem' : 'auto',
                     bottom: position === 'bottom' ? '1.5rem' : 'auto',
