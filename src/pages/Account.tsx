@@ -578,10 +578,10 @@ export default function Account() {
                             <Layers className="w-6 h-6" />
                         </div>
                         <div>
-                            <h2 className="text-base font-extrabold tracking-tight text-[var(--color-on-surface)]">
+                            <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">
                                 Herramientas de Vocabulario y Mazos
                             </h2>
-                            <p className="text-xs text-[var(--color-on-surface-muted)]">
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">
                                 Exporta tu progreso, importa listas de palabras personalizadas o genera mazos profesionales con Inteligencia Artificial.
                             </p>
                         </div>
@@ -591,17 +591,17 @@ export default function Account() {
                         {/* SECCIÓN EXPORTAR */}
                         <div className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-[var(--color-surface-container)]">
                             <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface)]">
-                                    <Download className="w-4 h-4 text-[var(--color-primary)]" />
+                                <div className="flex items-center gap-2 text-base font-extrabold text-[var(--color-on-surface)]">
+                                    <Download className="w-4.5 h-4.5 text-[var(--color-primary)]" />
                                     <span>Exportar Mazo FSRS</span>
                                 </div>
-                                <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
+                                <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                     Descarga un archivo CSV compatible con Excel y Anki que contiene tu vocabulario, nivel CEFR y estadísticas de repetición espaciada.
                                 </p>
                             </div>
                             <button
                                 onClick={handleExportFSRS}
-                                className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-primary)] hover:text-white text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                                className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-primary)] hover:text-white text-[var(--color-on-surface)] text-sm font-bold py-3.5 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
                             >
                                 <Download className="w-4 h-4" />
                                 Exportar en CSV
@@ -611,11 +611,11 @@ export default function Account() {
                         {/* SECCIÓN IMPORTAR */}
                         <div className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-[var(--color-surface-container)]">
                             <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface)]">
-                                    <Upload className="w-4 h-4 text-[var(--color-primary)]" />
+                                <div className="flex items-center gap-2 text-base font-extrabold text-[var(--color-on-surface)]">
+                                    <Upload className="w-4.5 h-4.5 text-[var(--color-primary)]" />
                                     <span>Importar Vocabulario</span>
                                 </div>
-                                <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
+                                <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                     Agrega vocabulario de forma masiva subiendo archivos CSV de otras aplicaciones (como Anki o Quizlet) o pegando una lista de palabras en inglés separadas por comas.
                                 </p>
                             </div>
@@ -631,7 +631,7 @@ export default function Account() {
                                 />
                                 <label
                                     htmlFor="csv-file-input"
-                                    className={`w-full flex items-center justify-center gap-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer ${
+                                    className={`w-full flex items-center justify-center gap-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-sm font-bold py-3.5 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center ${
                                         importing ? 'opacity-50 pointer-events-none' : ''
                                     }`}
                                 >
@@ -641,7 +641,7 @@ export default function Account() {
                                 
                                 <button
                                     onClick={() => setShowImportArea(!showImportArea)}
-                                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] transition-all duration-300 cursor-pointer"
+                                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-sm font-bold py-3.5 px-4 rounded-xl shadow-[var(--shadow-card)] transition-all duration-300 cursor-pointer"
                                 >
                                     {showImportArea ? (
                                         <>
@@ -661,11 +661,11 @@ export default function Account() {
                         {/* SECCIÓN IA CAREER DECK */}
                         <div className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-[var(--color-surface-container)]">
                             <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface)]">
-                                    <Briefcase className="w-4 h-4 text-[var(--color-primary)]" />
+                                <div className="flex items-center gap-2 text-base font-extrabold text-[var(--color-on-surface)]">
+                                    <Briefcase className="w-4.5 h-4.5 text-[var(--color-primary)]" />
                                     <span>Mazo Profesional IA</span>
                                 </div>
-                                <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
+                                <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                     Genera instantáneamente 15 términos profesionales de alto impacto y ejemplos prácticos basados en tu carrera o industria.
                                 </p>
                             </div>
@@ -675,13 +675,13 @@ export default function Account() {
                                     value={profession}
                                     onChange={(e) => setProfession(e.target.value)}
                                     placeholder="ej: Software Engineer, Doctor..."
-                                    className="flex-1 min-w-0 bg-[var(--color-surface-container)] text-[var(--color-on-surface)] text-xs px-3 py-2.5 rounded-xl border border-[var(--color-surface-container-high)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
+                                    className="flex-1 min-w-0 bg-[var(--color-surface-container)] text-[var(--color-on-surface)] text-sm px-3.5 py-3 rounded-xl border border-[var(--color-surface-container-high)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
                                     disabled={generatingDeck}
                                 />
                                 <button
                                     onClick={() => handleCreateCareerDeck(profession)}
                                     disabled={generatingDeck || !profession.trim()}
-                                    className="flex items-center justify-center bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold p-3 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
+                                    className="flex items-center justify-center bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-sm font-bold p-3.5 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
                                     title="Generar mazo profesional"
                                 >
                                     {generatingDeck ? (
