@@ -87,69 +87,230 @@ export default function Account() {
         }
     };
 
+    const parseCSV = (csvText: string) => {
+        const lines: string[][] = [];
+        let currentLine: string[] = [];
+        let currentCell = '';
+        let inQuotes = false;
+
+        const text = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (inQuotes) {
+                if (char === '"') {
+                    if (i + 1 < text.length && text[i + 1] === '"') {
+                        currentCell += '"';
+                        i++;
+                    } else {
+                        inQuotes = false;
+                    }
+                } else {
+                    currentCell += char;
+                }
+            } else {
+                if (char === '"') {
+                    inQuotes = true;
+                } else if (char === ',') {
+                    currentLine.push(currentCell.trim());
+                    currentCell = '';
+                } else if (char === '\n') {
+                    currentLine.push(currentCell.trim());
+                    lines.push(currentLine);
+                    currentLine = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+        }
+        if (currentCell !== '' || currentLine.length > 0) {
+            currentLine.push(currentCell.trim());
+            lines.push(currentLine);
+        }
+
+        if (lines.length < 2) return [];
+
+        const headers = lines[0].map(h => h.toLowerCase());
+        const wordIdx = headers.indexOf('word');
+        const stateIdx = headers.indexOf('state');
+        const repsIdx = headers.indexOf('reps');
+        const lastReviewIdx = headers.indexOf('last review');
+
+        if (wordIdx === -1) return [];
+
+        const parsed: Array<{
+            word: string;
+            state: number;
+            reps: number;
+            lastReview: string | null;
+        }> = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const row = lines[i];
+            if (row.length <= wordIdx || !row[wordIdx]) continue;
+
+            const word = row[wordIdx].toLowerCase().replace(/^"|"$/g, '').trim();
+            if (!word) continue;
+
+            let state = 0;
+            if (stateIdx !== -1 && row[stateIdx]) {
+                const rawState = row[stateIdx].replace(/^"|"$/g, '').trim().toLowerCase();
+                if (rawState === 'learning') state = 1;
+                else if (rawState === 'review') state = 2;
+                else if (rawState === 'relearning') state = 3;
+            }
+
+            let reps = 0;
+            if (repsIdx !== -1 && row[repsIdx]) {
+                const parsedReps = parseInt(row[repsIdx].replace(/^"|"$/g, '').trim(), 10);
+                if (!isNaN(parsedReps)) reps = parsedReps;
+            }
+
+            let lastReview: string | null = null;
+            if (lastReviewIdx !== -1 && row[lastReviewIdx]) {
+                const rawLastReview = row[lastReviewIdx].replace(/^"|"$/g, '').trim();
+                if (rawLastReview && rawLastReview.toLowerCase() !== 'never') {
+                    try {
+                        const dateVal = new Date(rawLastReview);
+                        if (!isNaN(dateVal.getTime())) {
+                            lastReview = dateVal.toISOString();
+                        }
+                    } catch {
+                        // ignore
+                    }
+                }
+            }
+
+            parsed.push({ word, state, reps, lastReview });
+        }
+
+        return parsed;
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target?.result as string;
+            if (text) {
+                handleImportWords(text);
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    };
+
     const handleImportWords = async (text: string) => {
         if (!text.trim() || !authUser?.id) return;
         
-        // Check for CSV headers or cell quote delimiters to prevent direct CSV import attempts
         const lowercaseText = text.toLowerCase();
-        if (
-            lowercaseText.includes('word,translation') || 
-            lowercaseText.includes('cefr level') || 
-            lowercaseText.includes('last review') ||
-            text.includes('","')
-        ) {
-            toast.error({
-                title: 'Formato no permitido',
-                description: 'No se permite importar archivos o texto en formato CSV directamente. Introduce una lista simple de palabras en inglés separadas por comas.'
-            });
-            return;
-        }
-        
-        const rawWords = text.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean);
-        if (rawWords.length === 0) return;
+        const firstLine = lowercaseText.split('\n')[0] || '';
+        const isCSV = firstLine.split(',').map(h => h.trim().replace(/^"|"$/g, '')).includes('word');
         
         setImporting(true);
         try {
             let importedCount = 0;
-            for (const word of rawWords) {
-                const wordClean = word.toLowerCase();
-                
-                const { error: kwError } = await supabase
-                    .from('known_words')
-                    .upsert({ 
-                        user_id: authUser.id, 
-                        word_id: wordClean,
-                        known_at: new Date().toISOString()
+            if (isCSV) {
+                const parsedRecords = parseCSV(text);
+                if (parsedRecords.length === 0) {
+                    toast.error({
+                        title: 'Error de formato',
+                        description: 'No se encontraron registros válidos en el CSV.'
                     });
-                
-                if (kwError) {
-                    console.error(`Failed to insert into known_words: ${wordClean}`, kwError);
-                    continue;
+                    setImporting(false);
+                    return;
                 }
+                
+                for (const record of parsedRecords) {
+                    const wordClean = record.word;
+                    const { error: kwError } = await supabase
+                        .from('known_words')
+                        .upsert({ 
+                            user_id: authUser.id, 
+                            word_id: wordClean,
+                            known_at: record.lastReview || new Date().toISOString()
+                        });
                     
-                const { error: cardError } = await supabase
-                    .from('cards')
-                    .upsert({
-                        user_id: authUser.id,
-                        word_id: wordClean,
-                        story_id: 'imported',
-                        state: 0,
-                        due: new Date().toISOString(),
-                        stability: 0,
-                        difficulty: 0,
-                        elapsed_days: 0,
-                        scheduled_days: 0,
-                        reps: 0,
-                        lapses: 0,
-                        last_review: null,
-                    }, { onConflict: 'user_id,word_id' });
-                
-                if (cardError) {
-                    console.error(`Failed to insert into cards: ${wordClean}`, cardError);
-                    continue;
+                    if (kwError) {
+                        console.error(`Failed to insert into known_words: ${wordClean}`, kwError);
+                        continue;
+                    }
+
+                    const stability = record.state > 0 ? 2 * record.reps : 0;
+                    const { error: cardError } = await supabase
+                        .from('cards')
+                        .upsert({
+                            user_id: authUser.id,
+                            word_id: wordClean,
+                            story_id: 'imported',
+                            state: record.state,
+                            due: record.lastReview || new Date().toISOString(),
+                            stability,
+                            difficulty: 0,
+                            elapsed_days: 0,
+                            scheduled_days: 0,
+                            reps: record.reps,
+                            lapses: 0,
+                            last_review: record.lastReview,
+                        }, { onConflict: 'user_id,word_id' });
+                    
+                    if (cardError) {
+                        console.error(`Failed to insert into cards: ${wordClean}`, cardError);
+                        continue;
+                    }
+                    
+                    importedCount++;
+                }
+            } else {
+                const rawWords = text.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean);
+                if (rawWords.length === 0) {
+                    setImporting(false);
+                    return;
                 }
                 
-                importedCount++;
+                for (const word of rawWords) {
+                    const wordClean = word.toLowerCase();
+                    
+                    const { error: kwError } = await supabase
+                        .from('known_words')
+                        .upsert({ 
+                            user_id: authUser.id, 
+                            word_id: wordClean,
+                            known_at: new Date().toISOString()
+                        });
+                    
+                    if (kwError) {
+                        console.error(`Failed to insert into known_words: ${wordClean}`, kwError);
+                        continue;
+                    }
+                        
+                    const { error: cardError } = await supabase
+                        .from('cards')
+                        .upsert({
+                            user_id: authUser.id,
+                            word_id: wordClean,
+                            story_id: 'imported',
+                            state: 0,
+                            due: new Date().toISOString(),
+                            stability: 0,
+                            difficulty: 0,
+                            elapsed_days: 0,
+                            scheduled_days: 0,
+                            reps: 0,
+                            lapses: 0,
+                            last_review: null,
+                        }, { onConflict: 'user_id,word_id' });
+                    
+                    if (cardError) {
+                        console.error(`Failed to insert into cards: ${wordClean}`, cardError);
+                        continue;
+                    }
+                    
+                    importedCount++;
+                }
             }
             
             toast.success({
@@ -422,27 +583,46 @@ export default function Account() {
                                     <span>Importar Vocabulario</span>
                                 </div>
                                 <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
-                                    Introduce palabras personalizadas en inglés y agrégalas directamente a tu mazo de estudio FSRS.
+                                    Sube un archivo CSV FSRS exportado anteriormente o ingresa una lista de palabras en inglés para agregarlas a tu mazo de estudio.
                                 </p>
                             </div>
                             
-                            {!showImportArea ? (
-                                <button
-                                    onClick={() => setShowImportArea(true)}
-                                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-primary)] hover:text-white text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                            <div className="space-y-2">
+                                <input
+                                    type="file"
+                                    id="csv-file-input"
+                                    accept=".csv"
+                                    onChange={handleFileChange}
+                                    disabled={importing}
+                                    className="hidden"
+                                />
+                                <label
+                                    htmlFor="csv-file-input"
+                                    className={`w-full flex items-center justify-center gap-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer ${
+                                        importing ? 'opacity-50 pointer-events-none' : ''
+                                    }`}
                                 >
-                                    <ChevronDown className="w-4 h-4" />
-                                    Comenzar Importación
-                                </button>
-                            ) : (
+                                    <Upload className="w-4 h-4" />
+                                    Subir archivo CSV
+                                </label>
+                                
                                 <button
-                                    onClick={() => setShowImportArea(false)}
-                                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl transition-all duration-300 cursor-pointer"
+                                    onClick={() => setShowImportArea(!showImportArea)}
+                                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] transition-all duration-300 cursor-pointer"
                                 >
-                                    <ChevronUp className="w-4 h-4" />
-                                    Ocultar Panel
+                                    {showImportArea ? (
+                                        <>
+                                            <ChevronUp className="w-4 h-4" />
+                                            Ocultar Panel
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown className="w-4 h-4" />
+                                            Pegar texto plano
+                                        </>
+                                    )}
                                 </button>
-                            )}
+                            </div>
                         </div>
 
                         {/* SECCIÓN IA CAREER DECK */}
