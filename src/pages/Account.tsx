@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette, Check } from 'lucide-react';
+import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette, Check, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -13,6 +13,9 @@ import { useTier } from '../hooks/useTier';
 import LevelBadge from '../components/ui/LevelBadge';
 import SettingsModal from '../components/SettingsModal';
 import type { ReadStoryRow, CardRow } from '../lib/database.types';
+import { generateCareerDeck } from '../lib/ai';
+import { getVocab } from '../data';
+import { toast } from '../lib/toast';
 
 const themes: { id: ProTheme; name: string; color: string; isPro: boolean }[] = [
     { id: 'purple',     name: 'Fluid Scholar', color: '#702AE1', isPro: false },
@@ -30,6 +33,214 @@ export default function Account() {
     const { isPro, isFree } = useTier();
     const [settingsOpen, setSettingsOpen] = useState(false);
     const { proTheme, setProTheme } = useTheme();
+    const qc = useQueryClient();
+
+    const [importText, setImportText] = useState('');
+    const [importing, setImporting] = useState(false);
+    const [showImportArea, setShowImportArea] = useState(false);
+    const [profession, setProfession] = useState('');
+    const [generatingDeck, setGeneratingDeck] = useState(false);
+
+    const handleExportFSRS = async () => {
+        try {
+            const { data: cardsData, error } = await supabase
+                .from('cards')
+                .select('*');
+            if (error) throw error;
+            
+            let csvContent = 'data:text/csv;charset=utf-8,\uFEFF'; // Add BOM for Excel compatibility
+            csvContent += 'Word,Translation,CEFR Level,State,Reps,Last Review\n';
+            
+            const typedCards = (cardsData || []) as CardRow[];
+            
+            for (const card of typedCards) {
+                const vocab = getVocab(card.word_id);
+                const word = card.word_id;
+                const translation = vocab?.translations ? vocab.translations.join('; ') : 'Palabra personalizada';
+                const level = vocab?.cefrLevel || 'B2';
+                const state = card.state === 0 ? 'New' : card.state === 1 ? 'Learning' : card.state === 2 ? 'Review' : 'Relearning';
+                const reps = card.reps;
+                const lastReview = card.last_review ? new Date(card.last_review).toISOString().split('T')[0] : 'Never';
+                
+                const row = `"${word}","${translation}","${level}","${state}",${reps},"${lastReview}"`;
+                csvContent += row + '\n';
+            }
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `voxie_fsrs_deck_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast.success({
+                title: 'Exportación completada',
+                description: 'El mazo FSRS se ha descargado correctamente en formato CSV.'
+            });
+        } catch (err: any) {
+            console.error('Failed to export CSV:', err);
+            toast.error({
+                title: 'Error de exportación',
+                description: err.message || 'No se pudo exportar el mazo en CSV.'
+            });
+        }
+    };
+
+    const handleImportWords = async (text: string) => {
+        if (!text.trim() || !authUser?.id) return;
+        
+        const rawWords = text.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean);
+        if (rawWords.length === 0) return;
+        
+        setImporting(true);
+        try {
+            let importedCount = 0;
+            for (const word of rawWords) {
+                const wordClean = word.toLowerCase();
+                
+                const { error: kwError } = await supabase
+                    .from('known_words')
+                    .upsert({ 
+                        user_id: authUser.id, 
+                        word_id: wordClean,
+                        known_at: new Date().toISOString()
+                    });
+                
+                if (kwError) {
+                    console.error(`Failed to insert into known_words: ${wordClean}`, kwError);
+                    continue;
+                }
+                    
+                const { error: cardError } = await supabase
+                    .from('cards')
+                    .upsert({
+                        user_id: authUser.id,
+                        word_id: wordClean,
+                        story_id: 'imported',
+                        state: 0,
+                        due: new Date().toISOString(),
+                        stability: 0,
+                        difficulty: 0,
+                        elapsed_days: 0,
+                        scheduled_days: 0,
+                        reps: 0,
+                        lapses: 0,
+                        last_review: null,
+                    }, { onConflict: 'user_id,word_id' });
+                
+                if (cardError) {
+                    console.error(`Failed to insert into cards: ${wordClean}`, cardError);
+                    continue;
+                }
+                
+                importedCount++;
+            }
+            
+            toast.success({
+                title: 'Importación exitosa',
+                description: `Se han agregado e inicializado en FSRS ${importedCount} palabras.`
+            });
+            
+            setImportText('');
+            setShowImportArea(false);
+            
+            qc.invalidateQueries({ queryKey: ['knownWordsCount', authUser?.id] });
+            qc.invalidateQueries({ queryKey: ['cards', authUser?.id] });
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (err: any) {
+            console.error('Import failed:', err);
+            toast.error({
+                title: 'Error de importación',
+                description: err.message || 'Ocurrió un error inesperado al importar las palabras.'
+            });
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    const handleCreateCareerDeck = async (prof: string) => {
+        if (!prof.trim() || !authUser?.id) return;
+        
+        setGeneratingDeck(true);
+        try {
+            const level = progressInfo?.currentLevel || 'A1';
+            const words = await generateCareerDeck(prof, level);
+            
+            if (!words || words.length === 0) {
+                throw new Error('No se generaron palabras.');
+            }
+            
+            let addedCount = 0;
+            const storyId = `career-${prof.toLowerCase().replace(/\s+/g, '-')}`;
+            
+            for (const item of words) {
+                const wordClean = item.word.toLowerCase();
+                
+                const { error: kwError } = await supabase
+                    .from('known_words')
+                    .upsert({ 
+                        user_id: authUser.id, 
+                        word_id: wordClean,
+                        known_at: new Date().toISOString()
+                    });
+                    
+                if (kwError) {
+                    console.error(`Failed to insert known word ${wordClean}`, kwError);
+                    continue;
+                }
+                
+                const { error: cardError } = await supabase
+                    .from('cards')
+                    .upsert({
+                        user_id: authUser.id,
+                        word_id: wordClean,
+                        story_id: storyId,
+                        state: 0,
+                        due: new Date().toISOString(),
+                        stability: 0,
+                        difficulty: 0,
+                        elapsed_days: 0,
+                        scheduled_days: 0,
+                        reps: 0,
+                        lapses: 0,
+                        last_review: null,
+                    }, { onConflict: 'user_id,word_id' });
+                
+                if (cardError) {
+                    console.error(`Failed to insert card ${wordClean}`, cardError);
+                    continue;
+                }
+                
+                addedCount++;
+            }
+            
+            toast.success({
+                title: `Mazo de ${prof} listo`,
+                description: `Se han generado e importado ${addedCount} palabras profesionales nivel ${level}.`
+            });
+            
+            setProfession('');
+            
+            qc.invalidateQueries({ queryKey: ['knownWordsCount', authUser?.id] });
+            qc.invalidateQueries({ queryKey: ['cards', authUser?.id] });
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (err: any) {
+            console.error('Failed to generate career deck:', err);
+            toast.error({
+                title: 'Error de generación',
+                description: err.message || 'No se pudo contactar con el servicio de IA o la clave de API no está configurada.'
+            });
+        } finally {
+            setGeneratingDeck(false);
+        }
+    };
 
     const { data: readStories } = useQuery({
         queryKey: ['readStories', authUser?.id],
@@ -144,6 +355,161 @@ export default function Account() {
                     <StatCard icon={<Layers className="w-5 h-5" />} value={(totalCards ?? 0) + (knownCount ?? 0)} label={t('dashboard.wordsLearned')} color="text-[var(--color-level-a1)]" />
                     <StatCard icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-[var(--color-primary)]" />
                     <StatCard icon={<RotateCcw className="w-5 h-5" />} value={totalReviews} label={t('stats.totalReviews')} color="text-[var(--color-primary)]" />
+                </motion.div>
+
+                {/* ===== Gestión de Mazos de Vocabulario ===== */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 }}
+                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                            <Layers className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-black tracking-tight text-[var(--color-on-surface)]">
+                                Gestión de Vocabulario y Mazos
+                            </h2>
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">
+                                Exporta tu progreso, importa listas de palabras personalizadas o genera mazos profesionales con Inteligencia Artificial.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* SECCIÓN EXPORTAR */}
+                        <div className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-[var(--color-surface-container)]">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface)]">
+                                    <Download className="w-4 h-4 text-[var(--color-primary)]" />
+                                    <span>Exportar Mazo FSRS</span>
+                                </div>
+                                <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
+                                    Descarga un archivo CSV compatible con Excel y Anki que contiene tu vocabulario, nivel CEFR y estadísticas de repetición espaciada.
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleExportFSRS}
+                                className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-primary)] hover:text-white text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                            >
+                                <Download className="w-4 h-4" />
+                                Exportar en CSV
+                            </button>
+                        </div>
+
+                        {/* SECCIÓN IMPORTAR */}
+                        <div className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-[var(--color-surface-container)]">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface)]">
+                                    <Upload className="w-4 h-4 text-[var(--color-primary)]" />
+                                    <span>Importar Vocabulario</span>
+                                </div>
+                                <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
+                                    Introduce palabras personalizadas en inglés y agrégalas directamente a tu mazo de estudio FSRS.
+                                </p>
+                            </div>
+                            
+                            {!showImportArea ? (
+                                <button
+                                    onClick={() => setShowImportArea(true)}
+                                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-primary)] hover:text-white text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                                >
+                                    <ChevronDown className="w-4 h-4" />
+                                    Comenzar Importación
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setShowImportArea(false)}
+                                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] text-xs font-bold py-3 px-4 rounded-xl transition-all duration-300 cursor-pointer"
+                                >
+                                    <ChevronUp className="w-4 h-4" />
+                                    Ocultar Panel
+                                </button>
+                            )}
+                        </div>
+
+                        {/* SECCIÓN IA CAREER DECK */}
+                        <div className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl flex flex-col justify-between space-y-4 border border-[var(--color-surface-container)]">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-on-surface)]">
+                                    <Briefcase className="w-4 h-4 text-[var(--color-primary)]" />
+                                    <span>Mazo Profesional IA</span>
+                                </div>
+                                <p className="text-[10px] text-[var(--color-on-surface-muted)] leading-relaxed">
+                                    Genera instantáneamente 15 términos profesionales de alto impacto y ejemplos prácticos basados en tu carrera o industria.
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={profession}
+                                    onChange={(e) => setProfession(e.target.value)}
+                                    placeholder="ej: Software Engineer, Doctor..."
+                                    className="flex-1 min-w-0 bg-[var(--color-surface-container)] text-[var(--color-on-surface)] text-xs px-3 py-2.5 rounded-xl border border-[var(--color-surface-container-high)] focus:outline-none focus:border-[var(--color-primary)] transition-all"
+                                    disabled={generatingDeck}
+                                />
+                                <button
+                                    onClick={() => handleCreateCareerDeck(profession)}
+                                    disabled={generatingDeck || !profession.trim()}
+                                    className="flex items-center justify-center bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold p-3 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
+                                    title="Generar mazo profesional"
+                                >
+                                    {generatingDeck ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Wand2 className="w-4 h-4" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* PANEL DE IMPORTACIÓN DESPLEGADO */}
+                    {showImportArea && (
+                        <div className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl space-y-3 border border-[var(--color-surface-container-high)]">
+                            <span className="text-xs font-bold block text-[var(--color-on-surface)]">
+                                Introduce tus palabras:
+                            </span>
+                            <textarea
+                                value={importText}
+                                onChange={(e) => setImportText(e.target.value)}
+                                placeholder="Separadas por comas o saltos de línea, ej:&#10;challenge, outcome, achieve, step-by-step"
+                                className="w-full h-24 bg-[var(--color-surface-container)] text-[var(--color-on-surface)] text-xs p-3 rounded-xl border border-[var(--color-surface-container-high)] focus:outline-none focus:border-[var(--color-primary)] transition-all resize-none"
+                                disabled={importing}
+                            />
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => {
+                                        setImportText('');
+                                        setShowImportArea(false);
+                                    }}
+                                    className="px-4 py-2 rounded-xl text-xs text-[var(--color-on-surface-muted)] hover:bg-[var(--color-surface-container-high)] transition-all cursor-pointer"
+                                    disabled={importing}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={() => handleImportWords(importText)}
+                                    disabled={importing || !importText.trim()}
+                                    className="flex items-center gap-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold px-5 py-2 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
+                                >
+                                    {importing ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Importando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="w-4 h-4" />
+                                            Confirmar Importación
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </motion.div>
 
                 {/* ===== Level Progress ===== */}
