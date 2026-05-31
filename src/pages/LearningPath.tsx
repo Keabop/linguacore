@@ -189,8 +189,8 @@ export default function LearningPath() {
                     animate="visible"
                     className="relative pl-8 md:pl-12"
                 >
-                    {/* Connector line — gradient instead of border */}
-                    <div className="absolute left-[13px] md:left-[21px] top-4 bottom-4 w-[3px] rounded-full bg-gradient-to-b from-[var(--color-primary)]/30 via-[var(--color-surface-container-high)] to-[var(--color-surface-container)]" />
+                    {/* Connector line */}
+                    <div className="timeline-connector" />
 
                     {unitsWithState.map((item, index) => (
                         <UnitCard
@@ -297,7 +297,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
             className={`relative mx-2 mt-2 mb-10 last:mb-0 transition-opacity duration-300 ${effectivelyLocked ? 'opacity-60' : ''}`}
         >
             {/* Timeline node */}
-            <div className="absolute -left-[27px] md:-left-[35px] w-[3px] top-7 flex items-center justify-center z-10">
+            <div className="timeline-node-container">
                 <div
                     className={`
                         w-5 h-5 md:w-6 md:h-6 rounded-full shrink-0 relative
@@ -324,7 +324,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
             >
                 {/* Active Indicator Bar */}
                 {isCurrent && (
-                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${isAssessment ? 'bg-[var(--color-level-b1)]' : 'bg-[var(--color-primary)]'}`} />
+                    <div className={`card-active-indicator ${isAssessment ? 'assessment' : 'primary'}`} />
                 )}
                 {/* Tier gate overlay */}
                 {tierGated && (

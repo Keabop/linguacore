@@ -34,7 +34,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
             className={({ isActive }) =>
                 `rail-item flex items-center transition-all duration-300 relative select-none ${
                     isVertical 
-                        ? `h-10 rounded-xl ${expanded ? 'px-4 justify-start mx-3' : 'px-0 justify-center mx-2.5'}` 
+                        ? `h-12 rounded-xl ${expanded ? 'px-4 justify-start mx-3' : 'px-0 justify-center mx-2.5'}` 
                         : `h-10 w-10 justify-center mx-0.5 rounded-full`
                 } ${
                     isActive
@@ -56,7 +56,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
                             }
                         />
                     )}
-                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
+                    <div className={`${isVertical ? 'w-12 h-12' : 'w-10 h-10'} flex items-center justify-center shrink-0`}>
                         <Icon className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
                     <AnimatePresence>
@@ -223,7 +223,7 @@ export default function Layout() {
                 {/* Drag Handle & Logo Section */}
                 <div className={`flex shrink-0 ${
                     isVertical 
-                        ? 'flex-col items-center mb-4 mt-2 w-full' 
+                        ? 'flex-col items-center mb-2 mt-1 w-full' 
                         : 'flex-row items-center mr-4'
                 }`}>
                     
@@ -233,7 +233,7 @@ export default function Layout() {
                         className={`drag-handle flex items-center justify-center cursor-grab active:cursor-grabbing p-1.5 rounded-lg hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] transition-colors shrink-0 relative ${
                             !onboardingShown ? 'drag-handle-glow bg-purple-500/10' : ''
                         } ${
-                            isVertical ? 'mb-2 w-8 h-8' : 'mr-3 w-8 h-8'
+                            isVertical ? 'mb-1 w-8 h-8' : 'mr-3 w-8 h-8'
                         }`}
                         title="Arrastra para reubicar la barra"
                     >
@@ -248,7 +248,7 @@ export default function Layout() {
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className={`fixed z-[60] bg-[var(--color-card)] text-[var(--color-on-surface)] border border-[var(--color-primary)]/30 p-4 rounded-2xl shadow-[var(--shadow-float)] max-w-[240px] text-left text-xs pointer-events-auto ${
+                                className={`fixed z-[60] bg-[var(--color-card)] text-[var(--color-on-surface)] border border-[var(--color-primary)]/30 p-4 rounded-2xl shadow-[var(--shadow-float)] w-[200px] text-left text-xs pointer-events-auto ${
                                     isVertical 
                                         ? 'left-full ml-4 top-0' 
                                         : position === 'top' 
@@ -317,13 +317,13 @@ export default function Layout() {
 
                 {/* User area at bottom/right */}
                 {progressInfo && authUser && (
-                    <div className={`shrink-0 ${isVertical ? 'w-full mt-auto mb-2' : 'ml-2 flex items-center h-full'}`}>
+                    <div className={`shrink-0 ${isVertical ? 'w-full mt-auto mb-1' : 'ml-2 flex items-center h-full'}`}>
                         <NavLink
                             to="/account"
                             className={({ isActive }) =>
                                 `flex items-center rounded-xl transition-all duration-300 relative select-none ${
                                     isVertical
-                                        ? `h-10 ${isNavHovered ? 'px-4 justify-start mx-3' : 'px-0 mx-2.5 justify-center'}`
+                                        ? `h-12 ${isNavHovered ? 'px-4 justify-start mx-3' : 'px-0 mx-2.5 justify-center'}`
                                         : `h-10 w-10 justify-center rounded-full`
                                 } ${
                                     isActive
