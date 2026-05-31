@@ -35,7 +35,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
                 `rail-item flex items-center transition-all duration-300 relative select-none ${
                     isVertical 
                         ? `h-12 my-2 rounded-xl ${expanded ? 'px-4 justify-start mx-4' : 'px-0 justify-center mx-2.5'}` 
-                        : `h-11 w-11 justify-center mx-1 rounded-full`
+                        : `h-10 w-10 justify-center mx-0.5 rounded-full`
                 } ${
                     isActive
                         ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
@@ -56,7 +56,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
                             }
                         />
                     )}
-                    <div className={`${isVertical ? 'w-12 h-12' : 'w-11 h-11'} flex items-center justify-center shrink-0`}>
+                    <div className={`${isVertical ? 'w-12 h-12' : 'w-10 h-10'} flex items-center justify-center shrink-0`}>
                         <Icon className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
                     <AnimatePresence>
@@ -200,7 +200,7 @@ export default function Layout() {
                     y: '-50%'
                 } : {
                     width: 480,
-                    height: isNavHovered ? 260 : 68,
+                    height: 68,
                     left: '50%',
                     top: position === 'top' ? '1.5rem' : 'auto',
                     bottom: position === 'bottom' ? '1.5rem' : 'auto',
@@ -301,7 +301,7 @@ export default function Layout() {
                 <nav className={`flex-1 px-1 ${
                     isVertical 
                         ? 'space-y-4 w-full' 
-                        : 'flex flex-row items-center justify-center space-x-1 space-y-0'
+                        : 'flex flex-row items-center justify-center space-x-0.5 space-y-0'
                 }`}>
                     {navItems.map(item => (
                         <RailNavItem
@@ -317,14 +317,14 @@ export default function Layout() {
 
                 {/* User area at bottom/right */}
                 {progressInfo && authUser && (
-                    <div className={`shrink-0 ${isVertical ? 'w-full' : 'ml-4'}`}>
+                    <div className={`shrink-0 ${isVertical ? 'w-full' : 'ml-2'}`}>
                         <NavLink
                             to="/account"
                             className={({ isActive }) =>
                                 `flex items-center rounded-xl transition-all duration-300 relative select-none ${
                                     isVertical
-                                        ? `h-12 mt-6 ${isNavHovered ? 'px-4 justify-start mx-4' : 'px-0 justify-center mx-2.5'}`
-                                        : `h-11 justify-center px-3`
+                                        ? `h-12 mt-6 ${isNavHovered ? 'px-4 justify-start mx-4' : 'px-0 mx-2.5 justify-center'}`
+                                        : `h-10 w-10 justify-center rounded-full`
                                 } ${
                                     isActive
                                         ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
