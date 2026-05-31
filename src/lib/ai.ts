@@ -213,9 +213,15 @@ export async function generateCareerDeck(profession: string, level: string): Pro
     });
 
     const prompt = `
-    Eres un lingüista experto en inglés profesional. Genera una lista de 15 palabras o frases esenciales en inglés especializadas para la profesión: "${profession}", adaptadas para el nivel CEFR: "${level}".
+    Eres un lingüista experto en inglés profesional.
     
-    Debes retornar un JSON array con el siguiente formato exacto de objetos:
+    Evalúa críticamente si la ocupación, profesión, hobby, industria o dominio técnico especializado dado: "${profession}" es coherente, real y reconocible (ya sea en inglés o español).
+    
+    Si el término es incoherente, es una cadena aleatoria de caracteres/números (por ejemplo, 'asdf', '12345'), está vacío o carece de cualquier contexto claro del cual se pueda extraer vocabulario técnico o profesional relevante, debes retornar obligatoriamente un arreglo JSON vacío: [].
+    
+    Si el término es válido y coherente, genera una lista de 15 palabras o frases esenciales en inglés especializadas para dicho campo: "${profession}", adaptadas para el nivel CEFR: "${level}".
+    
+    Debes retornar un JSON array con el siguiente formato exacto de objetos (o un arreglo vacío [] si no es válido):
     [
       {
         "word": "palabra en inglés (ej. reluctancy)",

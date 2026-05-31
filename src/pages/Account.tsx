@@ -129,15 +129,36 @@ export default function Account() {
             lines.push(currentLine);
         }
 
-        if (lines.length < 2) return [];
+        if (lines.length === 0) return [];
 
-        const headers = lines[0].map(h => h.toLowerCase());
-        const wordIdx = headers.indexOf('word');
-        const stateIdx = headers.indexOf('state');
-        const repsIdx = headers.indexOf('reps');
-        const lastReviewIdx = headers.indexOf('last review');
+        const firstLine = lines[0].map(h => h.toLowerCase().trim());
+        const headerKeywords = ['word', 'term', 'front', 'vocab', 'concept', 'palabra', 'english'];
+        const otherKeywords = ['state', 'reps', 'last review', 'last_review'];
+        const allKeywords = [...headerKeywords, ...otherKeywords];
 
-        if (wordIdx === -1) return [];
+        const hasHeader = firstLine.some(cell => allKeywords.some(kw => cell.includes(kw)));
+
+        let wordIdx = -1;
+        let stateIdx = -1;
+        let repsIdx = -1;
+        let lastReviewIdx = -1;
+
+        if (hasHeader) {
+            for (const kw of headerKeywords) {
+                wordIdx = firstLine.findIndex(h => h.includes(kw));
+                if (wordIdx !== -1) break;
+            }
+            stateIdx = firstLine.findIndex(h => h.includes('state'));
+            repsIdx = firstLine.findIndex(h => h.includes('reps'));
+            lastReviewIdx = firstLine.findIndex(h => h.includes('last review') || h.includes('last_review'));
+        }
+
+        if (wordIdx === -1) {
+            wordIdx = 0;
+        }
+
+        const startIndex = hasHeader ? 1 : 0;
+        if (lines.length <= startIndex) return [];
 
         const parsed: Array<{
             word: string;
@@ -146,7 +167,7 @@ export default function Account() {
             lastReview: string | null;
         }> = [];
 
-        for (let i = 1; i < lines.length; i++) {
+        for (let i = startIndex; i < lines.length; i++) {
             const row = lines[i];
             if (row.length <= wordIdx || !row[wordIdx]) continue;
 
@@ -208,7 +229,9 @@ export default function Account() {
         
         const lowercaseText = text.toLowerCase();
         const firstLine = lowercaseText.split('\n')[0] || '';
-        const isCSV = firstLine.split(',').map(h => h.trim().replace(/^"|"$/g, '')).includes('word');
+        const csvKeywords = ['word', 'term', 'front', 'vocab', 'concept', 'palabra', 'english', 'state', 'reps', 'last review', 'last_review'];
+        const firstLineCells = firstLine.split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        const isCSV = firstLineCells.some(cell => csvKeywords.some(kw => cell.includes(kw))) || (firstLine.includes(',') && text.trim().includes('\n'));
         
         setImporting(true);
         try {
@@ -339,19 +362,29 @@ export default function Account() {
     };
 
     const handleCreateCareerDeck = async (prof: string) => {
-        if (!prof.trim() || !authUser?.id) return;
+        if (!authUser?.id) return;
+        
+        const cleanProf = prof.trim();
+        const hasLetter = /\p{L}/u.test(cleanProf);
+        if (cleanProf.length < 3 || !hasLetter) {
+            toast.warning({
+                title: 'Entrada no válida',
+                description: 'Por favor, introduce una profesión válida de al menos 3 caracteres.'
+            });
+            return;
+        }
         
         setGeneratingDeck(true);
         try {
             const level = progressInfo?.currentLevel || 'A1';
-            const words = await generateCareerDeck(prof, level);
+            const words = await generateCareerDeck(cleanProf, level);
             
             if (!words || words.length === 0) {
-                throw new Error('No se generaron palabras.');
+                throw new Error('La profesión ingresada no es válida o no es coherente para extraer vocabulario técnico.');
             }
             
             let addedCount = 0;
-            const storyId = `career-${prof.toLowerCase().replace(/\s+/g, '-')}`;
+            const storyId = `career-${cleanProf.toLowerCase().replace(/\s+/g, '-')}`;
             
             for (const item of words) {
                 const wordClean = item.word.toLowerCase();
@@ -395,7 +428,7 @@ export default function Account() {
             }
             
             toast.success({
-                title: `Mazo de ${prof} listo`,
+                title: `Mazo de ${cleanProf} listo`,
                 description: `Se han generado e importado ${addedCount} palabras profesionales nivel ${level}.`
             });
             
