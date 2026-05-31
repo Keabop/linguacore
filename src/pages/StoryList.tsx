@@ -98,6 +98,7 @@ export default function StoryList() {
     const [aiError, setAiError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLevel, setSelectedLevel] = useState<'Todos' | CEFRLevel>('Todos');
+    const readStoryIds = useMemo(() => new Set(readStories?.map(r => r.story_id) ?? []), [readStories]);
 
     if (!user) return null;
 
@@ -142,8 +143,6 @@ export default function StoryList() {
 
         return matchesLevel && matchesSearch;
     });
-
-    const readStoryIds = useMemo(() => new Set(readStories?.map(r => r.story_id) ?? []), [readStories]);
 
     return (
         <div className="space-y-14">

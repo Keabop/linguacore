@@ -1,0 +1,7 @@
+# Exclude AI helper scripts and skills from language statistics
+.claude/** linguist-vendored
+
+# Exclude Supabase backend migrations and schemas from language statistics
+supabase/** linguist-vendored
+supabase-migrations/** linguist-vendored
+supabase-schema.sql linguist-vendored

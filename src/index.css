@@ -407,7 +407,7 @@
   bottom: auto;
   transform: translateY(-50%);
   flex-direction: column;
-  padding: 24px 0;
+  padding: 12px 0;
   height: 480px;
   width: 68px;
 }
@@ -419,7 +419,7 @@
   bottom: auto;
   transform: translateY(-50%);
   flex-direction: column;
-  padding: 24px 0;
+  padding: 12px 0;
   height: 480px;
   width: 68px;
 }
@@ -454,7 +454,7 @@
   top: 50%;
   transform: translateY(calc(-50% - 32px));
   flex-direction: column;
-  padding: 24px 0;
+  padding: 12px 0;
   height: 480px;
   width: 68px;
 }
@@ -901,4 +901,52 @@ span[data-word].in-deck {
 
 .drag-handle-glow {
   animation: drag-handle-pulse 2s infinite ease-in-out;
+}
+
+/* === TIMELINE & ROAD MAP CLASS ENCAPSULATION === */
+
+.timeline-connector {
+  position: absolute;
+  left: 13px;
+  top: 1rem;
+  bottom: 1rem;
+  width: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(to bottom, rgba(112, 42, 225, 0.3), var(--color-surface-container-high), var(--color-surface-container));
+}
+
+.timeline-node-container {
+  position: absolute;
+  left: -27px;
+  width: 3px;
+  top: 1.75rem; /* top-7 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.card-active-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.card-active-indicator.primary {
+  background-color: var(--color-primary);
+}
+
+.card-active-indicator.assessment {
+  background-color: var(--color-level-b1);
+}
+
+@media (min-width: 768px) {
+  .timeline-connector {
+    left: 21px;
+  }
+  .timeline-node-container {
+    left: -35px;
+  }
 }
