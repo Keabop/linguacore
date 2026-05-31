@@ -297,19 +297,19 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
             className={`relative mx-2 mt-2 mb-10 last:mb-0 transition-opacity duration-300 ${effectivelyLocked ? 'opacity-60' : ''}`}
         >
             {/* Timeline node */}
-            <div
-                className={`
-                    absolute -left-8 md:-left-12 top-7
-                    w-5 h-5 md:w-6 md:h-6 rounded-full
-                    z-10
-                    ${dotClass}
-                    ${isCurrent && !isAssessment ? 'ring-4 ring-[var(--color-primary)]/20 animate-pulse' : ''}
-                    ${isCurrent && isAssessment ? 'ring-4 ring-[var(--color-level-b1)]/20 animate-pulse' : ''}
-                `}
-            >
-                {isCompleted && (
-                    <CheckCircle2 className="w-3 h-3 md:w-3.5 md:h-3.5 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                )}
+            <div className="absolute -left-[27px] md:-left-[35px] w-[3px] top-7 flex items-center justify-center z-10">
+                <div
+                    className={`
+                        w-5 h-5 md:w-6 md:h-6 rounded-full shrink-0 relative
+                        ${dotClass}
+                        ${isCurrent && !isAssessment ? 'ring-4 ring-[var(--color-primary)]/20 animate-pulse' : ''}
+                        ${isCurrent && isAssessment ? 'ring-4 ring-[var(--color-level-b1)]/20 animate-pulse' : ''}
+                    `}
+                >
+                    {isCompleted && (
+                        <CheckCircle2 className="w-3 h-3 md:w-3.5 md:h-3.5 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    )}
+                </div>
             </div>
 
             {/* Card */}
@@ -319,10 +319,13 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     ${cardBg} rounded-2xl p-6 md:p-8
                     transition-all duration-300 relative overflow-hidden
                     ${cardShadow}
-                    ${isCurrent ? (isAssessment ? 'border-l-4 border-[var(--color-level-b1)]' : 'border-l-4 border-[var(--color-primary)]') : ''}
                     ${!effectivelyLocked ? 'cursor-pointer hover:-translate-y-1' : 'cursor-not-allowed'}
                 `}
             >
+                {/* Active Indicator Bar */}
+                {isCurrent && (
+                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${isAssessment ? 'bg-[var(--color-level-b1)]' : 'bg-[var(--color-primary)]'}`} />
+                )}
                 {/* Tier gate overlay */}
                 {tierGated && (
                     <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 rounded-2xl">
