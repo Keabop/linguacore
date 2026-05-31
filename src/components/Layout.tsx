@@ -247,7 +247,7 @@ export default function Layout() {
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className={`fixed z-[60] bg-white/95 dark:bg-[#1E0A35]/95 backdrop-blur-xl p-4 rounded-2xl shadow-[var(--shadow-float)] border border-purple-500/20 max-w-[240px] text-left text-xs pointer-events-auto ${
+                                className={`fixed z-[60] bg-[var(--color-card)] text-[var(--color-on-surface)] border border-[var(--color-primary)]/30 p-4 rounded-2xl shadow-[var(--shadow-float)] max-w-[240px] text-left text-xs pointer-events-auto ${
                                     isVertical 
                                         ? 'left-full ml-4 top-0' 
                                         : position === 'top' 
@@ -255,7 +255,7 @@ export default function Layout() {
                                             : 'bottom-full mb-4 left-0'
                                 }`}
                             >
-                                <p className="font-semibold text-[var(--color-on-surface)] leading-relaxed select-none">
+                                <p className="font-semibold leading-relaxed select-none">
                                     💡 <strong>¡Nueva función!</strong> Arrastra la barra desde este tirador para colocarla arriba, abajo, a la izquierda o derecha.
                                 </p>
                                 <button
