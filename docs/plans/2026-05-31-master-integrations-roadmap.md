@@ -73,18 +73,26 @@
 
 ---
 
-### Fase 5: Simulador de Examen CEFR y Reportes Pedagógicos (TOEFL/IELTS Mock)
-* **Objetivo**: Ofrecer simulacros diagnósticos con un rigor académico excepcional de forma segura.
+### Fase 5: Simulador de Examen CEFR y Reporte de Rendimiento Interactivo
+* **Objetivo**: Desarrollar un simulador de diagnóstico de alto rigor académico (equivalente a TOEFL/IELTS/Cambridge) de aproximadamente 100 preguntas, con un centro de reportes interactivo integrado en la aplicación que se actualice dinámicamente con cada intento.
 * **Componentes a desarrollar/modificar**:
-  - Crear: `src/pages/LevelAssessment.tsx` (Actualización de la vista para albergar simulaciones intensivas cronometradas de 30 minutos).
-  - **Estructura del simulador**:
-    - *Reading Section*: 2 textos cortos con preguntas de opción múltiple.
-    - *Listening Section*: 2 fragmentos de audio reproducidos nativamente con preguntas de comprensión.
-    - *Writing Section*: 1 ensayo de 150 palabras sobre un tema asignado.
-  - **Backend de Evaluación (Vercel Serverless / Gemini Pro)**:
-    - Endpoint `/api/assessments/grade`: Recibe las respuestas y el ensayo. Gemini 1.5 Pro evalúa el ensayo bajo la rúbrica oficial (Coherencia y Cohesión, Rango Léxico, Precisión Gramatical).
-    - Retorna el desglose de puntaje simulado equivalente para IELTS (1.0 - 9.0) o TOEFL (0 - 120).
-  - **Reporte Pedagógico PDF**: Generar un archivo PDF visualmente profesional y descargable con su puntaje simulado, desglose por habilidades y el aviso de exención de validez oficial.
+  - Crear: `src/pages/LevelAssessment.tsx` (Estructura de examen formal de pantalla completa, con guardado automático y temporizador de 60 a 90 minutos).
+  - **Estructura del Simulador Riguroso (100 preguntas)**:
+    - *Reading Section (30 preguntas)*: 3 pasajes de lectura académica extensos con preguntas de opción múltiple, inferencia, vocabulario en contexto y emparejamiento de encabezados.
+    - *Listening Section (30 preguntas)*: Pasajes de audio reproducidos nativamente (conversaciones cotidianas, conferencias universitarias) con cuestionarios de comprensión.
+    - *Grammar & Use of English (30 preguntas)*: Ejercicios de rellenar espacios en blanco (*gap-fills*), transformación de palabras, identificación de errores sintácticos y opción múltiple.
+    - *Writing Section (10 puntos equivalentes)*: Redacción formal de dos textos (un correo/carta de 150 palabras y un ensayo argumentativo de 250 palabras).
+  - **Base de Datos y Persistencia (Supabase)**:
+    - Tabla `assessment_attempts`: Registra la fecha, nivel simulado obtenido, puntuación desglosada por habilidad y respuestas crudas.
+    - Tabla `user_active_report`: Almacena el reporte dinámico más reciente. Cada vez que finaliza un examen, se sobrescribe este registro con la información más actualizada.
+  - **Dashboard de Rendimiento en la App (En lugar de PDF)**:
+    - Módulo integrado en el perfil de la cuenta que despliega:
+      - Gráfico radial (*radar chart*) con el desglose de puntajes por habilidad (Lectura, Escucha, Gramática, Escritura).
+      - Rango estimado equivalente en exámenes oficiales (ej. "IELTS: 6.5" o "TOEFL: 85").
+      - Lista inteligente de debilidades conceptuales a reforzar recomendadas directamente por la IA.
+      - **Línea de tiempo de progreso**: Comparador histórico que muestra visualmente el crecimiento a lo largo del tiempo (ej. "Tu nivel subió de A2 a B1 en 3 meses").
+  - **Backend de Evaluación (Gemini 1.5 Pro)**:
+    - Endpoint `/api/assessments/evaluate`: Procesa las respuestas de opción múltiple de forma determinista y envía los ensayos de la sección *Writing* a Gemini 1 Pro para una calificación automatizada basada en criterios de rúbricas internacionales (rango léxico, precisión gramatical, cohesión).
 
 ---
 
