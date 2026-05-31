@@ -369,20 +369,15 @@
   min-height: 100dvh;
 }
 
+/* Base sidebar-rail class - position-specific classes override placement */
 .sidebar-rail {
   position: fixed;
-  left: 1.5rem;
-  top: 50%;
-  transform: translateY(calc(-50% - 32px));
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(112, 42, 225, 0.08);
   border-radius: 26px;
-  height: auto;
   display: flex;
-  flex-direction: column;
-  padding: 24px 0;
   z-index: 50;
   overflow: visible;
   box-shadow: var(--shadow-elevated);
@@ -392,13 +387,107 @@
   background: rgba(20, 2, 32, 0.85);
 }
 
+/* Layout positional adaptations */
+.app-layout.pos-left {
+  flex-direction: row;
+}
+.app-layout.pos-right {
+  flex-direction: row;
+}
+.app-layout.pos-top,
+.app-layout.pos-bottom {
+  flex-direction: column;
+}
+
+/* Sidebar rail position adaptations */
+.sidebar-rail.pos-left {
+  left: 1.5rem;
+  right: auto;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  flex-direction: column;
+  padding: 24px 0;
+}
+
+.sidebar-rail.pos-right {
+  right: 1.5rem;
+  left: auto;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  flex-direction: column;
+  padding: 24px 0;
+}
+
+.sidebar-rail.pos-top {
+  top: 1.5rem;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  flex-direction: row;
+  padding: 0 24px;
+}
+
+.sidebar-rail.pos-bottom {
+  bottom: 1.5rem;
+  top: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  flex-direction: row;
+  padding: 0 24px;
+}
+
+/* Default fallback positioning for rail if pos class is not yet applied */
+.sidebar-rail:not(.pos-left):not(.pos-right):not(.pos-top):not(.pos-bottom) {
+  left: 1.5rem;
+  top: 50%;
+  transform: translateY(calc(-50% - 32px));
+  flex-direction: column;
+  padding: 24px 0;
+}
+
 .main-content {
   flex: 1;
-  padding-left: 108px;
   min-height: 100dvh;
   display: flex;
   justify-content: center;
 }
+
+/* Main Content padding adaptations based on position */
+@media (min-width: 1025px) {
+  .app-layout.pos-left .main-content {
+    padding-left: 108px;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .app-layout.pos-right .main-content {
+    padding-right: 108px;
+    padding-left: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .app-layout.pos-top .main-content {
+    padding-top: 108px;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .app-layout.pos-bottom .main-content {
+    padding-bottom: 108px;
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  /* Fallback padding if pos- class is missing */
+  .app-layout:not(.pos-left):not(.pos-right):not(.pos-top):not(.pos-bottom) .main-content {
+    padding-left: 108px;
+  }
+}
+
 
 .main-content-inner {
   width: 100%;
@@ -731,4 +820,75 @@ span[data-word].in-deck {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: gold-shimmer 2s ease-in-out infinite;
+}
+
+/* === DRAGGABLE SIDEBAR EFFECTS & DROP ZONES === */
+
+/* Glassmorphic overlay drop zone classes */
+.drop-zone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(254, 243, 255, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drop-zone-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dark .drop-zone-overlay {
+  background: rgba(20, 2, 32, 0.3);
+}
+
+.drop-target-area {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(112, 42, 225, 0.02);
+  border: 2px dashed rgba(112, 42, 225, 0.2);
+  border-radius: 2rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 45;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+/* Hover/active state for dragging visual feedback */
+.drop-target-area.active {
+  background: rgba(112, 42, 225, 0.08);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 24px rgba(112, 42, 225, 0.15);
+  transform: scale(1.02);
+}
+
+.dark .drop-target-area {
+  background: rgba(166, 122, 255, 0.01);
+  border-color: rgba(166, 122, 255, 0.15);
+}
+
+.dark .drop-target-area.active {
+  background: rgba(166, 122, 255, 0.08);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 24px rgba(166, 122, 255, 0.2);
+}
+
+/* Drag handle pulse keyframes and class */
+@keyframes drag-handle-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(112, 42, 225, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px 6px rgba(112, 42, 225, 0.2);
+  }
+}
+
+.drag-handle-glow {
+  animation: drag-handle-pulse 2s infinite ease-in-out;
 }
