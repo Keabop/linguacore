@@ -203,7 +203,7 @@ export default function Layout() {
                     x: 0,
                     y: '-50%'
                 } : {
-                    width: 480,
+                    width: 540,
                     height: 68,
                     left: '50%',
                     top: position === 'top' ? '1.5rem' : 'auto',
