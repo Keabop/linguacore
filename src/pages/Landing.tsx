@@ -79,7 +79,7 @@ const FEATURES = [
     {
         icon: GraduationCap,
         title: 'Simulacros oficiales',
-        desc: 'Evaluaciones reales para Cambridge B1/B2 (69-97 reactivos), TOEFL (70 reactivos) e IELTS (80 reactivos) con Speaking oral por IA.',
+        desc: 'Mídete con simulacros completos para exámenes internacionales como TOEFL, IELTS y Cambridge, con simulación de Speaking evaluada por IA.',
         color: 'text-amber-400',
         bg: 'bg-amber-500/10',
     },
