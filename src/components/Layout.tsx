@@ -12,18 +12,18 @@ import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
 import { useSidebarPreferences, type SidebarPosition } from '../hooks/useSidebarPreferences';
 
-const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
+const navItems: { path: string; icon: LucideIcon; labelKey: string; end?: boolean }[] = [
     { path: '/dashboard', icon: Home, labelKey: 'nav.home' },
     { path: '/path', icon: Map, labelKey: 'nav.path' },
     { path: '/learn', icon: BookOpen, labelKey: 'nav.learn' },
     { path: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
     { path: '/practice', icon: PenLine, labelKey: 'nav.practice' },
-    { path: '/review', icon: RefreshCw, labelKey: 'nav.review' },
+    { path: '/review', icon: RefreshCw, labelKey: 'nav.review', end: true },
     { path: '/review/simulator', icon: GraduationCap, labelKey: 'nav.simulator' },
 ];
 
-function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
-    path: string; icon: LucideIcon; labelKey: string; expanded: boolean; position: SidebarPosition;
+function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
+    path: string; icon: LucideIcon; labelKey: string; expanded: boolean; position: SidebarPosition; end?: boolean;
 }) {
     const { t } = useTranslation();
     const [isHovered, setIsHovered] = useState(false);
@@ -32,6 +32,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {
     return (
         <NavLink
             to={path}
+            end={end}
             className={({ isActive }) =>
                 `rail-item flex items-center transition-all duration-300 relative select-none ${
                     isVertical 
@@ -195,7 +196,7 @@ export default function Layout() {
                 onMouseLeave={() => setIsNavHovered(false)}
                 animate={isVertical ? { 
                     width: isNavHovered ? 260 : 68,
-                    height: 480,
+                    height: 540,
                     top: '50%',
                     left: position === 'left' ? '1.5rem' : 'auto',
                     right: position === 'right' ? '1.5rem' : 'auto',
@@ -314,6 +315,7 @@ export default function Layout() {
                             labelKey={item.labelKey}
                             expanded={isNavHovered}
                             position={position}
+                            end={item.end}
                         />
                     ))}
                 </nav>

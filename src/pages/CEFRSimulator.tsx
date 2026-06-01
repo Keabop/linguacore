@@ -406,7 +406,7 @@ export default function CEFRSimulator() {
                                         </div>
 
                                         <div className="pt-4 border-t border-[var(--color-surface-container)] space-y-3">
-                                            <p className="text-[11px] font-semibold text-emerald-400 leading-relaxed">{p.pedagogicalAdvice}</p>
+                                            <p className="text-xs md:text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 leading-relaxed">{p.pedagogicalAdvice}</p>
                                             <div className="flex items-center justify-between text-xs text-[var(--color-on-surface-muted)] pt-1 font-bold">
                                                 <span>⏱️ {p.durationMinutes} minutos</span>
                                                 <span className="flex items-center gap-1 group-hover:text-[var(--color-on-surface)] transition-colors">
