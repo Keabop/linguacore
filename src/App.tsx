@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Toaster } from 'sileo';
+import { Toaster } from './lib/toast';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
@@ -93,17 +93,7 @@ export default function App() {
                     <Route path="/pricing" element={<SafeRoute><Pricing /></SafeRoute>} />
                 </Route>
             </Routes>
-            <Toaster
-                position="top-right"
-                options={{
-                    fill: '#1a1a1a',
-                    styles: {
-                        title: 'text-white!',
-                        description: 'text-white/70!',
-                        badge: 'bg-white/10!',
-                    },
-                }}
-            />
+            <Toaster />
         </BrowserRouter>
     );
 }
