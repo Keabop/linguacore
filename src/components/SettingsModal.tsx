@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown } from 'lucide-react';
+import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
 import { useAuth } from '../lib/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTier } from '../hooks/useTier';
+import { supabase } from '../lib/supabase';
 
 interface SettingsModalProps {
     open: boolean;
@@ -16,10 +17,32 @@ interface SettingsModalProps {
 export default function SettingsModal({ open, onClose }: SettingsModalProps) {
     const { t, i18n } = useTranslation();
     const { mode, toggleMode } = useTheme();
-    const { signOut } = useAuth();
+    const { user, signOut } = useAuth();
     const { subscription, cancelSubscription, reactivateSubscription } = useSubscription();
     const { isPro } = useTier();
     const navigate = useNavigate();
+
+    const [username, setUsername] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || '');
+    const [updatingUsername, setUpdatingUsername] = useState(false);
+    const [usernameSuccess, setUsernameSuccess] = useState(false);
+
+    const handleUpdateUsername = async () => {
+        if (!username.trim()) return;
+        setUpdatingUsername(true);
+        setUsernameSuccess(false);
+        try {
+            const { error } = await supabase.auth.updateUser({
+                data: { full_name: username.trim() }
+            });
+            if (error) throw error;
+            setUsernameSuccess(true);
+            setTimeout(() => setUsernameSuccess(false), 2000);
+        } catch (err) {
+            console.error('Failed to update username:', err);
+        } finally {
+            setUpdatingUsername(false);
+        }
+    };
 
     const [currentLang, setCurrentLang] = useState(localStorage.getItem('voxie-display-language') || 'es');
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -105,6 +128,44 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
 
                             {/* Content */}
                             <div className="p-6 space-y-6">
+                                {/* Username */}
+                                <div className="space-y-2 text-left font-body">
+                                    <div className="flex items-center gap-3">
+                                        <User className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
+                                        <span className="text-sm font-semibold text-[var(--color-on-surface)]">Nombre de usuario</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            placeholder="Escribe tu nombre"
+                                            className="flex-1 text-xs text-[var(--color-on-surface)] font-bold px-3.5 py-2 rounded-xl bg-[var(--color-background)] border border-[var(--color-outline-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                                        />
+                                        <button
+                                            onClick={handleUpdateUsername}
+                                            disabled={updatingUsername || !username.trim()}
+                                            className="px-4 py-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold rounded-xl shadow-md hover:brightness-95 transition-all disabled:opacity-55 shrink-0 flex items-center justify-center min-w-[70px]"
+                                        >
+                                            {updatingUsername ? (
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : usernameSuccess ? (
+                                                '¡Listo!'
+                                            ) : (
+                                                'Guardar'
+                                            )}
+                                        </button>
+                                    </div>
+                                    {usernameSuccess && (
+                                        <p className="text-[10px] font-bold text-[var(--color-success)] animate-pulse">
+                                            ¡Nombre de usuario actualizado con éxito!
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Divider */}
+                                <div className="border-t border-[var(--color-outline-subtle)]" />
+
                                 {/* Theme */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
