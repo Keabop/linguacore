@@ -69,7 +69,7 @@ export function Toaster() {
                 return (
                     <div
                         key={t.id}
-                        className={`p-4 rounded-[1.25rem] border ${styles.bg} ${styles.border} ${styles.text} ${styles.shadow} backdrop-blur-xl pointer-events-auto flex items-start gap-3 w-full relative overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 animate-toast-enter`}
+                        className={`p-4 rounded-[1.25rem] voxie-toast toast-${t.type} pointer-events-auto flex items-start gap-3 w-full relative overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 animate-toast-enter`}
                     >
                         <div className={`p-1.5 rounded-xl ${styles.iconBg} ${styles.iconColor} shrink-0`}>
                             <Icon className="w-4 h-4" />
@@ -99,44 +99,28 @@ function getToastStyles(type: 'success' | 'error' | 'warning' | 'info') {
     switch (type) {
         case 'success':
             return {
-                bg: 'bg-white/70 dark:bg-[#1E0A35]/70',
-                border: 'border-emerald-500/20 dark:border-emerald-400/30',
-                text: 'text-[var(--color-on-surface)]',
                 iconBg: 'bg-emerald-500/10',
                 iconColor: 'text-emerald-500',
-                icon: CheckCircle2,
-                shadow: 'shadow-[0_8px_30px_rgba(34,197,94,0.08)] hover:shadow-[0_8px_30px_rgba(34,197,94,0.15)]'
+                icon: CheckCircle2
             };
         case 'error':
             return {
-                bg: 'bg-white/70 dark:bg-[#1E0A35]/70',
-                border: 'border-rose-500/20 dark:border-rose-400/30',
-                text: 'text-[var(--color-on-surface)]',
                 iconBg: 'bg-rose-500/10',
                 iconColor: 'text-rose-500',
-                icon: XCircle,
-                shadow: 'shadow-[0_8px_30px_rgba(244,63,94,0.08)] hover:shadow-[0_8px_30px_rgba(244,63,94,0.15)]'
+                icon: XCircle
             };
         case 'warning':
             return {
-                bg: 'bg-white/70 dark:bg-[#1E0A35]/70',
-                border: 'border-amber-500/20 dark:border-amber-400/30',
-                text: 'text-[var(--color-on-surface)]',
                 iconBg: 'bg-amber-500/10',
                 iconColor: 'text-amber-500',
-                icon: AlertTriangle,
-                shadow: 'shadow-[0_8px_30px_rgba(245,158,11,0.08)] hover:shadow-[0_8px_30px_rgba(245,158,11,0.15)]'
+                icon: AlertTriangle
             };
         case 'info':
         default:
             return {
-                bg: 'bg-white/70 dark:bg-[#1E0A35]/70',
-                border: 'border-[var(--color-primary)]/20 dark:border-[var(--color-primary)]/30',
-                text: 'text-[var(--color-on-surface)]',
                 iconBg: 'bg-[var(--color-primary)]/10',
                 iconColor: 'text-[var(--color-primary)]',
-                icon: Info,
-                shadow: 'shadow-[0_8px_30px_rgba(112,42,225,0.08)] hover:shadow-[0_8px_30px_rgba(112,42,225,0.15)]'
+                icon: Info
             };
     }
 }
