@@ -801,9 +801,20 @@ span[data-word].in-deck {
   }
 }
 
-/* === SILEO TOAST === */
-[data-sileo-description] {
-  color: rgba(255, 255, 255, 0.7) !important;
+/* === VOXIE CUSTOM TOAST ANIMATIONS === */
+@keyframes toast-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-1rem) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-toast-enter {
+  animation: toast-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* === FLASH ANIMATIONS === */

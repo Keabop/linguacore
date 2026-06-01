@@ -61,6 +61,109 @@ export default function StoryReader() {
     const [shadowingScore, setShadowingScore] = useState(0);
     const [hasPracticed, setHasPracticed] = useState(false);
 
+    // Stable refs for play state synchronization
+    const isPlayingRef = useRef(false);
+    const ignoreNextEndRef = useRef(false);
+
+    // Cache of English-only voices, keyed by accent region
+    const cachedVoicesRef = useRef<Record<string, SpeechSynthesisVoice | null>>({});
+    const [voicesReady, setVoicesReady] = useState(false);
+    const hasShownVoiceWarning = useRef(false);
+
+    // Eagerly load and cache English voices on mount
+    useEffect(() => {
+        // Known English voice name fragments (Windows, Chrome, macOS, Android)
+        const KNOWN_EN_NAMES = [
+            'david', 'zira', 'mark', 'hazel', 'susan', 'george', 'james',  // Windows
+            'google us', 'google uk', 'google english',                      // Chrome
+            'samantha', 'alex', 'daniel', 'karen', 'moira', 'tessa',       // macOS
+            'english',                                                       // generic
+        ];
+
+        const norm = (s: string) => s.toLowerCase().replace(/_/g, '-');
+        const nameNorm = (s: string) => s.toLowerCase();
+
+        const loadVoices = () => {
+            const allVoices = window.speechSynthesis.getVoices();
+            if (allVoices.length === 0) return;
+
+            console.log('[Voxie TTS] ALL system voices:', allVoices.map(v => `${v.name} (${v.lang}) local=${v.localService}`));
+
+            // Strategy 1: Filter by lang code
+            let englishVoices = allVoices.filter(v => norm(v.lang).startsWith('en'));
+
+            // Strategy 2: If no lang-based match, search by known English voice names
+            if (englishVoices.length === 0) {
+                console.warn('[Voxie TTS] No voices with en-* lang code. Searching by name...');
+                englishVoices = allVoices.filter(v =>
+                    KNOWN_EN_NAMES.some(name => nameNorm(v.name).includes(name))
+                );
+            }
+
+            console.log('[Voxie TTS] English voices found:', englishVoices.length, englishVoices.map(v => `${v.name} (${v.lang})`));
+
+            if (englishVoices.length === 0 && !hasShownVoiceWarning.current) {
+                hasShownVoiceWarning.current = true;
+                // Show user-friendly instructions
+                toast.error({
+                    title: '⚠️ No se encontraron voces en inglés',
+                    description: 'Tu sistema no tiene voces en inglés instaladas. Ve a Configuración → Hora e idioma → Voz → Agregar voces → Inglés (Estados Unidos). Luego reinicia el navegador.',
+                });
+            }
+
+            const findBest = (region: string, altRegion?: string) => {
+                // Priority 1: exact lang match, prefer local
+                const exactLocal = englishVoices.find(v => norm(v.lang) === `en-${region}` && v.localService);
+                if (exactLocal) return exactLocal;
+                // Priority 2: exact lang match
+                const exact = englishVoices.find(v => norm(v.lang) === `en-${region}`);
+                if (exact) return exact;
+                // Priority 3: alt region
+                if (altRegion) {
+                    const alt = englishVoices.find(v => norm(v.lang) === `en-${altRegion}`);
+                    if (alt) return alt;
+                }
+                // Priority 4: any voice with region in name
+                const byName = englishVoices.find(v => nameNorm(v.name).includes(region));
+                if (byName) return byName;
+                // Priority 5: any English voice
+                return englishVoices[0] || null;
+            };
+
+            cachedVoicesRef.current = {
+                US: findBest('us'),
+                UK: findBest('gb', 'uk'),
+                AU: findBest('au'),
+            };
+
+            const usVoice = cachedVoicesRef.current.US;
+            const ukVoice = cachedVoicesRef.current.UK;
+            const auVoice = cachedVoicesRef.current.AU;
+            console.log(`[Voxie TTS] Cached → US: ${usVoice?.name ?? 'NONE'} | UK: ${ukVoice?.name ?? 'NONE'} | AU: ${auVoice?.name ?? 'NONE'}`);
+
+            setVoicesReady(true);
+        };
+
+        // Voices may already be loaded
+        loadVoices();
+
+        // Chrome loads voices asynchronously, sometimes with delay
+        window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+
+        // Chrome sometimes needs a nudge - retry a few times
+        const retries = [100, 500, 1500, 3000];
+        const timers = retries.map(ms => setTimeout(loadVoices, ms));
+
+        return () => {
+            window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+            timers.forEach(clearTimeout);
+        };
+    }, []);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
+
     // Check static data first, then fallback to AI story from navigation state
     const aiStory = (location.state as any)?.aiStory;
     const staticStory = storyId ? getStory(storyId) : undefined;
@@ -153,46 +256,56 @@ export default function StoryReader() {
     }, [currentSentenceIdx]);
 
     // --- Speech Synthesis Control ---
+    const cancelSpeech = useCallback(() => {
+        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+            ignoreNextEndRef.current = true;
+            window.speechSynthesis.cancel();
+        }
+    }, []);
+
     const speakSentence = useCallback((idx: number) => {
         if (idx < 0 || idx >= sentences.length) {
             setIsPlaying(false);
             setCurrentSentenceIdx(-1);
             return;
         }
-        
-        window.speechSynthesis.cancel();
-        
+
+        // Cancel any in-progress speech
+        cancelSpeech();
+
         const text = sentences[idx];
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
+
+        // CRITICAL: Set lang FIRST, before voice, to force English phonetics
+        const langTag = accent === 'US' ? 'en-US' : accent === 'UK' ? 'en-GB' : 'en-AU';
+        utterance.lang = langTag;
         utterance.rate = playbackRate;
-        
-        const voices = window.speechSynthesis.getVoices();
-        let selectedVoice = null;
-        if (accent === 'US') {
-            selectedVoice = voices.find(v => v.lang.includes('US') && v.localService) || 
-                            voices.find(v => v.lang.includes('US'));
-        } else if (accent === 'UK') {
-            selectedVoice = voices.find(v => (v.lang.includes('GB') || v.lang.includes('UK')) && v.localService) || 
-                            voices.find(v => (v.lang.includes('GB') || v.lang.includes('UK')));
-        } else if (accent === 'AU') {
-            selectedVoice = voices.find(v => v.lang.includes('AU') && v.localService) || 
-                            voices.find(v => v.lang.includes('AU'));
+
+        // Use pre-cached English voice for this accent
+        const voice = cachedVoicesRef.current[accent] ?? null;
+        if (voice) {
+            utterance.voice = voice;
+            utterance.lang = voice.lang; // sync lang with actual voice
+            console.log(`[Voxie TTS] Speaking with: ${voice.name} (${voice.lang})`);
+        } else {
+            console.warn(`[Voxie TTS] No cached voice for ${accent}, using lang tag: ${langTag}`);
         }
-        if (!selectedVoice) {
-            selectedVoice = voices.find(v => v.lang.startsWith('en-'));
-        }
-        if (selectedVoice) {
-            utterance.voice = selectedVoice;
-        }
-        
+
         utterance.onend = () => {
+            if (ignoreNextEndRef.current) {
+                ignoreNextEndRef.current = false;
+                return;
+            }
+            if (!isPlayingRef.current) return;
+
             setCurrentSentenceIdx(prev => {
                 const next = prev + 1;
                 if (next < sentences.length) {
                     setTimeout(() => {
-                        speakSentence(next);
-                    }, 300);
+                        if (isPlayingRef.current) {
+                            speakSentence(next);
+                        }
+                    }, 350);
                     return next;
                 } else {
                     setIsPlaying(false);
@@ -200,21 +313,34 @@ export default function StoryReader() {
                 }
             });
         };
-        
-        utterance.onerror = () => {
+
+        utterance.onerror = (e) => {
+            if (ignoreNextEndRef.current) {
+                ignoreNextEndRef.current = false;
+                return;
+            }
+            console.error('[Voxie TTS] Speech error:', e);
             setIsPlaying(false);
         };
-        
+
         utteranceRef.current = utterance;
         window.speechSynthesis.speak(utterance);
-    }, [sentences, playbackRate, accent]);
+    }, [sentences, playbackRate, accent, voicesReady, cancelSpeech]);
+
+    // Re-speak current sentence when accent or rate changes mid-playback
+    useEffect(() => {
+        if (isPlaying && currentSentenceIdx !== -1) {
+            speakSentence(currentSentenceIdx);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [accent, playbackRate]);
 
     const handlePlayPause = () => {
         if (isListening) {
             stopListening();
         }
         if (isPlaying) {
-            window.speechSynthesis.cancel();
+            cancelSpeech();
             setIsPlaying(false);
         } else {
             setIsPlaying(true);
@@ -247,7 +373,7 @@ export default function StoryReader() {
     // --- Shadowing Handlers ---
     const handleStartShadowing = () => {
         if (isPlaying) {
-            window.speechSynthesis.cancel();
+            cancelSpeech();
             setIsPlaying(false);
         }
         resetTranscript();
@@ -255,8 +381,8 @@ export default function StoryReader() {
     };
 
     const handleToggleShadowing = () => {
-        if (!showShadowing) {
-            window.speechSynthesis.cancel();
+        if (!showShadowing && isPlaying) {
+            cancelSpeech();
             setIsPlaying(false);
         }
         setShowShadowing(!showShadowing);
@@ -287,6 +413,7 @@ export default function StoryReader() {
         setHasPracticed(true);
     }, [transcript, currentSentenceIdx, sentences]);
 
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
             window.speechSynthesis.cancel();
@@ -645,16 +772,11 @@ export default function StoryReader() {
                         {/* Accent Selector */}
                         <button
                             onClick={() => {
-                                setAccent(prev => {
-                                    const next = prev === 'US' ? 'UK' : prev === 'UK' ? 'AU' : 'US';
-                                    toast.success({
-                                        title: 'Acento cambiado',
-                                        description: `Acento ajustado a: ${next === 'US' ? 'Inglés Americano' : next === 'UK' ? 'Inglés Británico' : 'Inglés Australiano'}`
-                                    });
-                                    if (isPlaying && currentSentenceIdx !== -1) {
-                                        setTimeout(() => speakSentence(currentSentenceIdx), 50);
-                                    }
-                                    return next;
+                                const next = accent === 'US' ? 'UK' : accent === 'UK' ? 'AU' : 'US';
+                                setAccent(next);
+                                toast.success({
+                                    title: 'Acento cambiado',
+                                    description: `Acento ajustado a: ${next === 'US' ? 'Inglés Americano' : next === 'UK' ? 'Inglés Británico' : 'Inglés Australiano'}`
                                 });
                             }}
                             className="w-14 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
