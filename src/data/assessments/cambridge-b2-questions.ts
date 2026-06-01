@@ -12,8 +12,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_2",
@@ -26,8 +25,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_3",
@@ -40,8 +38,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_4",
@@ -54,8 +51,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_5",
@@ -68,8 +64,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_6",
@@ -82,8 +77,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_7",
@@ -96,8 +90,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_8",
@@ -110,8 +103,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "admit",
             "adept"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_9",
@@ -124,8 +116,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_10",
@@ -138,8 +129,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_11",
@@ -152,8 +142,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_12",
@@ -166,8 +155,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_13",
@@ -180,8 +168,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_14",
@@ -194,8 +181,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_15",
@@ -208,8 +194,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_16",
@@ -222,8 +207,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "at",
             "by"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_17",
@@ -236,8 +220,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_18",
@@ -250,8 +233,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_19",
@@ -264,8 +246,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_20",
@@ -278,8 +259,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_21",
@@ -292,8 +272,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_22",
@@ -306,8 +285,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_23",
@@ -320,8 +298,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_24",
@@ -334,8 +311,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "grownup",
             "outgrowth"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_25",
@@ -348,8 +324,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "is being",
             "was being"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_26",
@@ -362,8 +337,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "is being",
             "was being"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_27",
@@ -376,8 +350,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "is being",
             "was being"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_28",
@@ -390,8 +363,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "is being",
             "was being"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_29",
@@ -404,8 +376,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "is being",
             "was being"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_30",
@@ -418,8 +389,7 @@ export const cambridgeB2Questions: AssessmentQuestion[] = [
             "is being",
             "was being"
         ],
-        "correctIndex": 0,
-        "passage": null
+        "correctIndex": 0
     },
     {
         "id": "b2_rd_31",

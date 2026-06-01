@@ -11,7 +11,7 @@ export interface AssessmentQuestion {
     level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
     text: string; // The instruction or question
     dialogue?: DialogueLine[]; // For listening sections
-    passage?: string; // For reading sections
+    passage?: string | null; // For reading sections
     options: string[];
     correctIndex: number;
 }
