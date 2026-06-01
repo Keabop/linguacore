@@ -506,7 +506,9 @@ export default function CEFRSimulator() {
 
     return (
         <div className="py-6 px-4 max-w-4xl mx-auto space-y-8">
-            <style>{`.floating-bar { display: none !important; }`}</style>
+            {state !== 'selection' && state !== 'dashboard' && (
+                <style>{`.floating-bar { display: none !important; }`}</style>
+            )}
             
             <AnimatePresence mode="wait">
                 
