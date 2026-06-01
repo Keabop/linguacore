@@ -186,7 +186,7 @@ export default function Pricing() {
                     <p className="mt-2 text-2xl font-black tracking-tight">
                         $<CountUp from={0} to={129} duration={1.5} className="inline" /> <span className="text-base font-normal text-[var(--color-on-surface-muted)]">MXN/mes</span>
                     </p>
-                    <p className="text-sm text-[var(--color-on-surface-muted)]">o $<CountUp from={0} to={1200} duration={2} separator="," className="inline" /> MXN/año</p>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">o $<CountUp from={0} to={1299} duration={2} separator="," className="inline" /> MXN/año</p>
 
                     <ul className="mt-6 space-y-3">
                         {PRO_FEATURES.map((f, i) => (
@@ -228,7 +228,7 @@ export default function Pricing() {
                                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-[var(--color-surface-container)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {loading === 'annual' && <Loader2 className="size-4 animate-spin" />}
-                                    Anual — $1,200/año ($100/mes)
+                                    Anual — $1,299/año (~$108/mes)
                                 </button>
 
                                 {error && (

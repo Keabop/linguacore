@@ -147,7 +147,7 @@ function FeatureCard({ icon: Icon, title, desc, color, bg, i }: typeof FEATURES[
                     <Icon className={`w-5 h-5 ${color}`} />
                 </div>
                 <h3 className="text-base font-black tracking-tight text-[var(--color-on-surface)] mb-2 font-display">{title}</h3>
-                <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed font-body">{desc}</p>
+                <p className="text-sm text-[var(--color-on-surface)]/80 leading-relaxed font-body font-medium">{desc}</p>
             </SpotlightCard>
         </motion.div>
     );
@@ -308,7 +308,7 @@ function HowItWorksBlock({
             <div className="flex-1 text-center md:text-left">
                 <div className="text-5xl font-black text-[var(--color-primary)]/20 mb-3 tracking-tight font-display">{step}</div>
                 <h3 className="text-xl font-black tracking-tight text-[var(--color-on-surface)] mb-2 font-display">{title}</h3>
-                <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed max-w-md font-body">{desc}</p>
+                <p className="text-sm text-[var(--color-on-surface)]/80 leading-relaxed max-w-md font-body font-medium">{desc}</p>
             </div>
 
             {/* Mockup side */}
@@ -359,22 +359,31 @@ export default function Landing() {
             </nav>
 
             {/* ─── Hero ─── */}
-            <section className="relative z-10 mx-auto max-w-4xl px-6 pt-16 pb-24 text-center">
-                <div className="mb-6">
-                    <SplitText
-                        text="Historias, práctica y IA. Todo para tu inglés."
-                        splitType="words"
-                        delay={30}
-                        tag="h1"
-                        className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.1] tracking-tight font-display"
-                    />
+            <section className="relative z-10 mx-auto max-w-4xl px-6 pt-12 pb-24 text-center flex flex-col items-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary-light)] text-xs font-black tracking-wider uppercase mb-8 backdrop-blur-md border border-[var(--color-primary)]/20 shadow-[var(--shadow-card)]"
+                >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    El Futuro del Inglés con IA
+                </motion.div>
+
+                <div className="mb-6 flex flex-col items-center">
+                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-black leading-[1.1] tracking-tight font-display text-[var(--color-on-surface)] flex flex-wrap justify-center gap-x-3 gap-y-1">
+                        <span>Historias,</span>
+                        <span>práctica y</span>
+                        <span className="bg-gradient-to-r from-[var(--color-primary-light)] to-[#FF8CEF] bg-clip-text text-transparent">IA.</span>
+                        <span className="w-full text-3xl sm:text-4xl md:text-5xl mt-2 bg-gradient-to-r from-[var(--color-on-surface)] via-[var(--color-on-surface)]/90 to-[var(--color-on-surface-muted)] bg-clip-text text-transparent">Todo para tu inglés.</span>
+                    </h1>
                 </div>
 
-                <div className="mb-10">
+                <div className="mb-10 text-center flex justify-center w-full">
                     <BlurText
                         text="Historias interactivas, tutor conversacional con IA, simulacros de certificación oficial (TOEFL, IELTS, Cambridge), laboratorio de errores FSRS y portabilidad de mazos."
-                        delay={80}
-                        className="text-lg sm:text-xl text-[var(--color-on-surface-muted)] max-w-2xl mx-auto leading-relaxed font-body"
+                        delay={30}
+                        className="text-base sm:text-lg text-[var(--color-on-surface)] font-medium max-w-2xl mx-auto leading-relaxed font-body justify-center"
                     />
                 </div>
 
@@ -459,18 +468,18 @@ export default function Landing() {
 
             {/* ─── Features ─── */}
             <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
-                <div className="text-center mb-16">
+                <div className="text-center mb-16 flex flex-col items-center">
                     <BlurText
                         text="Todo lo que necesitas para aprender ingles"
                         delay={60}
-                        className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display"
+                        className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display justify-center"
                     />
                     <motion.p
                         initial={{ opacity: 0, y: 16 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.3, duration: 0.5 }}
-                        className="text-[var(--color-on-surface-muted)] text-lg max-w-xl mx-auto font-body"
+                        className="text-[var(--color-on-surface)]/80 text-base sm:text-lg max-w-xl mx-auto font-body font-medium mt-2"
                     >
                         Seis herramientas con IA que trabajan juntas para darte la experiencia de aprendizaje mas completa.
                     </motion.p>
@@ -491,11 +500,11 @@ export default function Landing() {
 
             {/* ─── How it works — Notion style ─── */}
             <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
-                <div className="text-center mb-16">
+                <div className="text-center mb-16 flex flex-col items-center">
                     <BlurText
                         text="Asi funciona"
                         delay={60}
-                        className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display"
+                        className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display justify-center"
                     />
                 </div>
 
@@ -525,7 +534,7 @@ export default function Landing() {
                     <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display">
                         Precios transparentes
                     </motion.h2>
-                    <motion.p custom={1} variants={fadeUp} className="text-[var(--color-on-surface-muted)] text-lg max-w-xl mx-auto font-body">
+                    <motion.p custom={1} variants={fadeUp} className="text-[var(--color-on-surface)]/80 text-base sm:text-lg max-w-xl mx-auto font-body font-medium">
                         Sin trucos, sin descuentos falsos. El nivel A1 es gratis para siempre.
                     </motion.p>
                 </motion.div>
@@ -539,11 +548,11 @@ export default function Landing() {
                 >
                     {/* Free */}
                     <motion.div custom={0} variants={fadeUp} className="bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-8 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
-                        <div className="text-sm font-bold text-[var(--color-on-surface-muted)] mb-1 font-body">Gratis</div>
+                        <div className="text-sm font-bold text-[var(--color-on-surface)]/70 mb-1 font-body">Gratis</div>
                         <div className="text-3xl font-black tracking-tight text-[var(--color-on-surface)] mb-1 font-display">
                             $<CountUp to={0} from={0} duration={1} className="inline" />
                         </div>
-                        <div className="text-xs text-[var(--color-on-surface-muted)] mb-6 font-body">Para siempre</div>
+                        <div className="text-xs text-[var(--color-on-surface)]/60 mb-6 font-body">Para siempre</div>
                         <ul className="space-y-3">
                             {FREE_ITEMS.map((item, idx) => (
                                 <motion.li
@@ -552,7 +561,7 @@ export default function Landing() {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.1 * idx, duration: 0.3 }}
-                                    className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface-muted)] font-body"
+                                    className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface)]/80 font-body font-medium"
                                 >
                                     <Check className="w-4 h-4 text-[var(--color-success)] shrink-0 mt-0.5" />
                                     {item}
@@ -577,10 +586,10 @@ export default function Landing() {
                             <span className="text-3xl font-black tracking-tight text-[var(--color-on-surface)] font-display">
                                 $<CountUp to={129} from={0} duration={2} className="inline" />
                             </span>
-                            <span className="text-sm text-[var(--color-on-surface-muted)] font-body">/mes</span>
+                            <span className="text-sm text-[var(--color-on-surface)]/70 font-body">/mes</span>
                         </div>
-                        <div className="text-xs text-[var(--color-on-surface-muted)] mb-6 font-body">
-                            o $<CountUp to={1200} from={0} duration={2.5} separator="," className="inline" />/año ($100/mes)
+                        <div className="text-xs text-[var(--color-on-surface)]/60 mb-6 font-body">
+                            o $<CountUp to={1299} from={0} duration={2.5} separator="," className="inline" />/año (~$108/mes)
                         </div>
                         <ul className="space-y-3">
                             {PRO_ITEMS.map((item, idx) => (
@@ -590,7 +599,7 @@ export default function Landing() {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.1 * idx, duration: 0.3 }}
-                                    className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface-muted)] font-body"
+                                    className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface)]/80 font-body font-medium"
                                 >
                                     <Check className="w-4 h-4 text-[var(--color-primary-light)] shrink-0 mt-0.5" />
                                     {item}
@@ -618,8 +627,8 @@ export default function Landing() {
                     <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display">
                         Empieza hoy, gratis
                     </motion.h2>
-                    <motion.p custom={1} variants={fadeUp} className="text-[var(--color-on-surface-muted)] text-lg max-w-lg mx-auto mb-8 font-body">
-                        El nivel A1 es tuyo para siempre. Sin tarjeta de credito, sin compromisos.
+                    <motion.p custom={1} variants={fadeUp} className="text-[var(--color-on-surface)]/80 text-base sm:text-lg max-w-lg mx-auto mb-8 font-body font-medium">
+                        El nivel A1 es tuyo para siempre. Sin tarjeta de crédito, sin compromisos.
                     </motion.p>
                     <motion.div custom={2} variants={fadeUp}>
                         <Link
