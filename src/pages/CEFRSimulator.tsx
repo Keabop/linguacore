@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ArrowLeft, Compass, Shield, Award, Sparkles, Play, 
-    Volume2, Edit3, Activity, ChevronRight, CheckCircle
+    Volume2, Edit3, Activity, ChevronRight, CheckCircle, Crown, Calendar, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { useTier } from '../hooks/useTier';
@@ -82,6 +82,11 @@ export default function CEFRSimulator() {
     const [timeLeft, setTimeLeft] = useState(0);
     const [isTimeUp, setIsTimeUp] = useState(false);
 
+    // Modal state variables
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [showLimitModal, setShowLimitModal] = useState(false);
+    const [limitDaysRemaining, setLimitDaysRemaining] = useState(0);
+
     // Dialogue listening states
     const [audioPlayCount, setAudioPlayCount] = useState<Record<string, number>>({});
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -154,10 +159,7 @@ export default function CEFRSimulator() {
 
     const handleSelectPreset = (preset: TestPreset) => {
         if (preset.isPro && isFree) {
-            toast.error({
-                title: 'Acceso Pro requerido',
-                description: 'Este simulador requiere el plan Voxie Pro.'
-            });
+            setShowUpgradeModal(true);
             return;
         }
 
@@ -168,10 +170,8 @@ export default function CEFRSimulator() {
             if (new Date() < oneWeekLater) {
                 const diffTime = Math.abs(oneWeekLater.getTime() - new Date().getTime());
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                toast.error({
-                    title: 'Límite de tiempo',
-                    description: `Puedes realizar tu siguiente Test en ${diffDays} día(s). ¡Sigue practicando!`
-                });
+                setLimitDaysRemaining(diffDays);
+                setShowLimitModal(true);
                 return;
             }
         }
@@ -213,13 +213,7 @@ export default function CEFRSimulator() {
     // Play Dialogue Listening
     const handlePlayAudio = (qId: string, lines: any[]) => {
         const plays = audioPlayCount[qId] || 0;
-        if (plays >= 2) {
-            toast.error({
-                title: 'Límite alcanzado',
-                description: 'Has alcanzado el límite de 2 reproducciones para este audio.'
-            });
-            return;
-        }
+        if (plays >= 2) return;
 
         setIsPlayingAudio(true);
         setAudioPlayCount(prev => ({ ...prev, [qId]: plays + 1 }));
@@ -532,6 +526,13 @@ export default function CEFRSimulator() {
                                             <span>Reproduciendo diálogo interactivo en curso...</span>
                                         </div>
                                     )}
+
+                                    {/* Inline play limit warning */}
+                                    {(audioPlayCount[questions[currentIdx].id] || 0) >= 2 && (
+                                        <div className="text-[11px] font-bold text-red-400 flex items-center justify-center gap-1.5 pt-1">
+                                            <AlertCircle className="w-3.5 h-3.5" /> Límite de 2 reproducciones alcanzado para este audio.
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -836,6 +837,98 @@ export default function CEFRSimulator() {
                             </div>
                         )}
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Upgrade Pro Modal */}
+            <AnimatePresence>
+                {showUpgradeModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-[var(--color-card)] rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl relative border border-[var(--color-surface-container)] text-left"
+                        >
+                            <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto text-amber-400">
+                                <Crown className="w-8 h-8 fill-amber-400/20" />
+                            </div>
+                            <div className="space-y-2 text-center">
+                                <h3 className="text-2xl font-black text-[var(--color-on-surface)]">Desbloquea Voxie Pro</h3>
+                                <p className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Plan Académico Premium</p>
+                                <p className="text-xs leading-relaxed text-[var(--color-on-surface-muted)] pt-1">
+                                    Los simuladores de certificación oficial (TOEFL, IELTS y Cambridge) y la evaluación experta de ensayos con inteligencia artificial están reservados para miembros Pro.
+                                </p>
+                            </div>
+                            <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-left text-[11px] text-[var(--color-on-surface-muted)] space-y-2 font-bold font-mono">
+                                <p className="flex items-center gap-2">✓ A1, A2, B1 y B2 desbloqueados</p>
+                                <p className="flex items-center gap-2">✓ Evaluaciones avanzadas de redacción</p>
+                                <p className="flex items-center gap-2">✓ Intentos ilimitados en simuladores</p>
+                            </div>
+                            <div className="flex flex-col gap-3 pt-2">
+                                <button
+                                    onClick={() => {
+                                        setShowUpgradeModal(false);
+                                        navigate('/pricing');
+                                    }}
+                                    className="w-full bg-gradient-to-br from-amber-500 to-amber-600 text-black py-3.5 rounded-full font-black text-sm active:scale-97 shadow-md hover:shadow-lg transition-all"
+                                >
+                                    Ver Planes Premium
+                                </button>
+                                <button
+                                    onClick={() => setShowUpgradeModal(false)}
+                                    className="w-full text-xs font-bold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] py-1 transition-all"
+                                >
+                                    Quizás más tarde
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Cooldown Limit Modal */}
+            <AnimatePresence>
+                {showLimitModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-[var(--color-card)] rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl relative border border-[var(--color-surface-container)] text-left"
+                        >
+                            <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center mx-auto text-indigo-400">
+                                <Calendar className="w-8 h-8" />
+                            </div>
+                            <div className="space-y-2 text-center">
+                                <h3 className="text-2xl font-black text-[var(--color-on-surface)]">Espera de Nivelación</h3>
+                                <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Test semanal en curso</p>
+                                <p className="text-xs leading-relaxed text-[var(--color-on-surface-muted)] pt-1">
+                                    Para asegurar un aprendizaje óptimo y dar tiempo a tu cerebro para asimilar los conocimientos, puedes tomar el Test de Nivelación **una vez a la semana**.
+                                </p>
+                            </div>
+                            <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-[11px] text-[var(--color-on-surface-muted)] font-bold text-center">
+                                Podrás tomar tu siguiente test en: <span className="text-amber-500 text-sm font-black ml-1">{limitDaysRemaining} día(s)</span>
+                            </div>
+                            <div className="flex flex-col gap-3 pt-2">
+                                <button
+                                    onClick={() => {
+                                        setShowLimitModal(false);
+                                        navigate('/pricing');
+                                    }}
+                                    className="w-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white py-3.5 rounded-full font-black text-sm active:scale-97 shadow-md transition-all"
+                                >
+                                    Obtener Acceso Ilimitado con Pro
+                                </button>
+                                <button
+                                    onClick={() => setShowLimitModal(false)}
+                                    className="w-full text-xs font-bold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] py-1 transition-all"
+                                >
+                                    Continuar practicando
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
