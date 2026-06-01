@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette, Check, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette, Check, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2, Award, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -451,6 +451,19 @@ export default function Account() {
         }
     };
 
+    const { data: cefrSimulations } = useQuery({
+        queryKey: ['cefrSimulations', authUser?.id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('cefr_simulations' as any)
+                .select('*')
+                .order('attempted_at', { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!authUser?.id,
+    });
+
     const { data: readStories } = useQuery({
         queryKey: ['readStories', authUser?.id],
         queryFn: async () => {
@@ -766,6 +779,119 @@ export default function Account() {
                         </div>
                     </motion.div>
                 )}
+
+                {/* ===== CEFR Simulations History ===== */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.16 }}
+                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                            <Award className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">
+                                Historial de Simulacros CEFR
+                            </h2>
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">
+                                Revisa tus intentos pasados, puntajes por habilidad y el nivel estimado obtenido en los simulacros de examen.
+                            </p>
+                        </div>
+                    </div>
+
+                    {!cefrSimulations || cefrSimulations.length === 0 ? (
+                        <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-6 text-center space-y-4 border border-[var(--color-surface-container)]">
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">
+                                Aún no has realizado ningún simulacro de examen CEFR. ¡Ponte a prueba para medir tus habilidades!
+                            </p>
+                            <Link
+                                to="/review/simulator"
+                                className="inline-flex items-center justify-center bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold px-6 py-3 rounded-full shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                            >
+                                Iniciar Simulacro CEFR
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {cefrSimulations.map((sim: any) => {
+                                // Map test types to human readable titles
+                                const getTestTitle = (type: string) => {
+                                    switch (type) {
+                                        case 'placement': return 'Test de Nivelación';
+                                        case 'official_toefl': return 'Simulacro TOEFL iBT';
+                                        case 'official_ielts': return 'Simulacro IELTS Academic';
+                                        case 'official_cambridge': return 'Simulacro Cambridge B2';
+                                        default: return 'Simulacro de Examen';
+                                    }
+                                };
+
+                                const formattedDate = new Date(sim.attempted_at).toLocaleDateString('es-ES', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                });
+
+                                return (
+                                    <div 
+                                        key={sim.id} 
+                                        className="bg-[var(--color-surface-container-low)] p-5 rounded-2xl border border-[var(--color-surface-container)] hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all duration-300 space-y-4 flex flex-col justify-between"
+                                    >
+                                        <div className="space-y-2">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <h3 className="font-extrabold text-sm text-[var(--color-on-surface)] leading-tight">
+                                                        {getTestTitle(sim.test_type)}
+                                                    </h3>
+                                                    <span className="text-[10px] text-[var(--color-on-surface-muted)] flex items-center gap-1.5 mt-0.5">
+                                                        <Calendar className="w-3.5 h-3.5 shrink-0" /> {formattedDate}
+                                                    </span>
+                                                </div>
+                                                <div className="bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-black px-3 py-1 rounded-full border border-[var(--color-primary)]/20 shrink-0">
+                                                    Nivel {sim.level}
+                                                </div>
+                                            </div>
+
+                                            {/* Skills breakdown grid */}
+                                            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-surface-container-high)] text-[11px] text-[var(--color-on-surface-muted)]">
+                                                <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
+                                                    <span>Lectura:</span>
+                                                    <span className="font-bold text-[var(--color-on-surface)]">{sim.reading_score ?? 0}%</span>
+                                                </div>
+                                                <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
+                                                    <span>Escucha:</span>
+                                                    <span className="font-bold text-[var(--color-on-surface)]">{sim.listening_score ?? 0}%</span>
+                                                </div>
+                                                <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
+                                                    <span>Uso de Inglés:</span>
+                                                    <span className="font-bold text-[var(--color-on-surface)]">{sim.use_of_english_score ?? 0}%</span>
+                                                </div>
+                                                {sim.writing_score !== null && sim.writing_score !== undefined && (
+                                                    <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
+                                                        <span>Escritura:</span>
+                                                        <span className="font-bold text-[var(--color-on-surface)]">{sim.writing_score}%</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-2 border-t border-dashed border-[var(--color-surface-container-high)]">
+                                            <div className="text-[11px] text-[var(--color-on-surface-muted)]">
+                                                Puntaje Promedio: <span className="font-black text-amber-500 text-sm ml-0.5">{sim.score}%</span>
+                                            </div>
+                                            {sim.writing_feedback && (
+                                                <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-500/20">
+                                                    ✔ Feedback IA
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </motion.div>
 
                 {/* ===== Apariencia y Colores ===== */}
                 <motion.div
