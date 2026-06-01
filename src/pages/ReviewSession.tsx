@@ -69,8 +69,6 @@ export default function ReviewSession() {
         setTimeout(() => {
             if (dueCards.length <= 1) {
                 setSessionDone(true);
-                const acc = totalReviewed + 1 > 0 ? Math.round(((correctCount + (correct ? 1 : 0)) / (totalReviewed + 1)) * 100) : 0;
-                toast.success({ title: t('review.sessionDone', '¡Sesión completada!'), description: `${totalReviewed + 1} ${t('review.reviewed', 'repasadas')} · ${acc}% ${t('review.accuracy', 'precisión')}` });
             }
         }, 300);
     }, [currentCard, dueCards.length, reviewCard]);

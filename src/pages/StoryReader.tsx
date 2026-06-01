@@ -503,7 +503,6 @@ export default function StoryReader() {
             qc.invalidateQueries({ queryKey: ['readStories'] });
         }
         setCompleted(true);
-        toast.success({ title: t('reader.storyCompleted', '¡Cuento completado!'), description: `${addedWords.size} ${t('reader.wordsAdded', 'palabras añadidas')}` });
     };
 
     useEffect(() => {
