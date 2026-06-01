@@ -366,14 +366,9 @@ export default function CEFRSimulator() {
                         exit={{ opacity: 0, y: -16 }}
                         className="space-y-8"
                     >
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => navigate('/review')} className="w-9 h-9 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center text-[var(--color-on-surface-muted)]">
-                                <ArrowLeft className="w-5 h-5" />
-                            </button>
-                            <div>
-                                <h1 className="text-3xl font-black tracking-tight">Centro de Certificación</h1>
-                                <p className="text-sm text-[var(--color-on-surface-muted)]">Evalúa tu nivel CEFR real con simuladores interactivos de alto rigor académico.</p>
-                            </div>
+                        <div>
+                            <h1 className="text-3xl font-black tracking-tight">Centro de Certificación</h1>
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">Evalúa tu nivel CEFR real con simuladores interactivos de alto rigor académico.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
