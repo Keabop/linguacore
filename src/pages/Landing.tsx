@@ -9,6 +9,10 @@ import {
     Sparkles,
     ArrowRight,
     Check,
+    Upload,
+    GraduationCap,
+    Briefcase,
+    Activity,
 } from 'lucide-react';
 
 import Aurora from '../components/reactbits/Aurora';
@@ -41,59 +45,73 @@ const FEATURES = [
     {
         icon: BookOpen,
         title: 'Historias interactivas',
-        desc: 'Lee historias generadas por IA adaptadas a tu nivel. Cada palabra nueva se convierte en una tarjeta de repaso.',
+        desc: 'Lee historias generadas por IA adaptadas a tu nivel. Cada palabra nueva se convierte en una tarjeta de repaso FSRS.',
         color: 'text-[var(--color-level-a1)]',
         bg: 'bg-[var(--color-level-a1)]/10',
     },
     {
         icon: MessageCircle,
         title: 'Tutor conversacional',
-        desc: 'Practica conversaciones reales con un tutor IA que corrige tus errores y se adapta a tus temas favoritos.',
+        desc: 'Practica conversaciones reales con un tutor IA que corrige tus errores en tiempo real y se adapta a tus temas favoritos.',
         color: 'text-[var(--color-success)]',
         bg: 'bg-[var(--color-success)]/10',
     },
     {
         icon: Brain,
         title: 'Repetición espaciada (FSRS)',
-        desc: 'Algoritmo científico que programa repasos en el momento óptimo para maximizar tu retención a largo plazo.',
+        desc: 'Algoritmo científico que programa repeticiones en el momento óptimo para maximizar tu retención a largo plazo.',
         color: 'text-[var(--color-primary-light)]',
         bg: 'bg-[var(--color-primary-light)]/10',
     },
     {
-        icon: Route,
-        title: 'Ruta de aprendizaje',
-        desc: 'Curriculum estructurado del A1 al B2 con gramática, vocabulario, ejercicios y evaluaciones por unidad.',
+        icon: Activity,
+        title: 'Laboratorio de errores',
+        desc: 'Tus fallas de redacción se transforman en un minijuego de 3 pasos (Análisis, Reconstrucción y Quiz) para dominarlas.',
+        color: 'text-[var(--color-primary-light)]',
+        bg: 'bg-[var(--color-primary)]/10',
+    },
+    {
+        icon: GraduationCap,
+        title: 'Simulacros oficiales',
+        desc: 'Evaluaciones reales para Cambridge B1/B2 (69-97 reactivos), TOEFL (70 reactivos) e IELTS (80 reactivos) con Speaking oral por IA.',
+        color: 'text-amber-400',
+        bg: 'bg-amber-500/10',
+    },
+    {
+        icon: Briefcase,
+        title: 'Mazos profesionales IA',
+        desc: 'Genera al instante mazos especializados de 15 palabras esenciales adaptados a cualquier industria o profesión.',
+        color: 'text-indigo-400',
+        bg: 'bg-indigo-500/10',
+    },
+    {
+        icon: Upload,
+        title: 'Importación flexible',
+        desc: 'Sube archivos CSV de Anki o Quizlet, o pega listas simples de texto plano para importar vocabulario sin reiniciar.',
         color: 'text-[var(--color-level-b1)]',
         bg: 'bg-[var(--color-level-b1)]/10',
     },
     {
         icon: PenTool,
-        title: 'Evaluación de escritura',
-        desc: 'Escribe textos y recibe correcciones detalladas con explicaciones de cada error gramatical y de estilo.',
+        title: 'Portabilidad y exportación',
+        desc: 'Exporta tu progreso FSRS y tarjetas completas a formato CSV en un solo clic, manteniendo control total de tus datos.',
         color: 'text-[var(--color-level-b2)]',
         bg: 'bg-[var(--color-level-b2)]/10',
-    },
-    {
-        icon: Sparkles,
-        title: 'Errores personalizados',
-        desc: 'Tus errores más frecuentes se convierten en tarjetas de práctica para que no los repitas.',
-        color: 'text-[var(--color-primary-light)]',
-        bg: 'bg-[var(--color-primary)]/10',
     },
 ];
 
 const FREE_ITEMS = [
     'Nivel A1 completo para siempre',
-    '5 mensajes diarios con el tutor',
-    '10 repasos FSRS por dia',
-    '1 historia semanal generada por IA',
+    'Test de Nivelación rápida semanal',
+    'Laboratorio interactivo de errores',
+    'Importación y exportación de vocabulario',
 ];
 
 const PRO_ITEMS = [
-    'Todos los niveles (A1 - B2)',
-    'Tutor y repasos ilimitados',
-    'Historias ilimitadas',
-    'Evaluacion de escritura completa',
+    'Niveles del A1 al C1 con ruta guiada',
+    'Tutor conversacional y repasos ilimitados',
+    'Simulacros oficiales (TOEFL, IELTS, Cambridge)',
+    'Evaluación experta de ensayos y Speaking por IA',
 ];
 
 const HOW_STEPS = [
@@ -344,7 +362,7 @@ export default function Landing() {
             <section className="relative z-10 mx-auto max-w-4xl px-6 pt-16 pb-24 text-center">
                 <div className="mb-6">
                     <SplitText
-                        text="Historias, práctica y AI. Todo lo que necesitas."
+                        text="Historias, práctica y IA. Todo para tu inglés."
                         splitType="words"
                         delay={30}
                         tag="h1"
@@ -354,7 +372,7 @@ export default function Landing() {
 
                 <div className="mb-10">
                     <BlurText
-                        text="Historias adaptadas, tutor conversacional, y repeticion espaciada. Todo con IA que se adapta a tu nivel y corrige tus errores reales."
+                        text="Historias interactivas, tutor conversacional con IA, simulacros de certificación oficial (TOEFL, IELTS, Cambridge), laboratorio de errores FSRS y portabilidad de mazos."
                         delay={80}
                         className="text-lg sm:text-xl text-[var(--color-on-surface-muted)] max-w-2xl mx-auto leading-relaxed font-body"
                     />
