@@ -23,4 +23,3 @@ ALTER TABLE cefr_simulations ENABLE ROW LEVEL SECURITY;
 -- Set up RLS Policy
 CREATE POLICY "Users manage own simulations" ON cefr_simulations
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-``
