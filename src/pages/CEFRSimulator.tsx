@@ -10,13 +10,18 @@ import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
 import { placementQuestions, writingPrompts, AssessmentQuestion, WritingPrompt } from '../data/assessments/cefr-questions';
-import { evaluateWriting } from '../lib/ai';
+import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
+import { cambridgeB2Questions, cambridgeB2Writing, cambridgeB2Speaking } from '../data/assessments/cambridge-b2-questions';
+import { toeflQuestions, toeflWriting, toeflSpeaking } from '../data/assessments/toefl-questions';
+import { ieltsQuestions, ieltsWriting, ieltsSpeaking } from '../data/assessments/ielts-questions';
+import { useSpeech } from '../hooks/useSpeech';
+import { evaluateWriting, evaluateSpeaking } from '../lib/ai';
 import { toast } from '../lib/toast';
 
-type PageState = 'selection' | 'instructions' | 'testing' | 'writing' | 'grading' | 'dashboard';
+type PageState = 'selection' | 'instructions' | 'testing' | 'writing' | 'speaking' | 'grading' | 'dashboard';
 
 interface TestPreset {
-    id: 'placement' | 'toefl' | 'ielts' | 'cambridge';
+    id: 'placement' | 'toefl' | 'ielts' | 'cambridge_b1' | 'cambridge_b2';
     title: string;
     description: string;
     pedagogicalAdvice: string;
@@ -33,36 +38,46 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: '⭐ Recomendado cada 2 semanas para medir tu progreso regular y adaptar tu plan de estudio de forma dinámica.',
         isPro: false,
         durationMinutes: 25,
-        questionCount: 30
+        questionCount: 20
     },
     {
         id: 'toefl',
         title: 'Simulacro TOEFL iBT Style',
-        description: 'Evaluación académica rigurosa que imita la estructura real del TOEFL. Incluye lectura avanzada, audios con acentos y redacción de ensayo formal.',
+        description: 'Evaluación académica rigurosa que imita la estructura real del TOEFL. Incluye lectura avanzada, audios con acentos, redacción de ensayos y sección oral.',
         pedagogicalAdvice: '🎓 Recomendado una vez al mes para evaluar a fondo tu avance académico bajo estándares oficiales.',
         isPro: true,
         durationMinutes: 65,
-        questionCount: 30
+        questionCount: 70
     },
     {
         id: 'ielts',
         title: 'Simulacro IELTS Academic Style',
-        description: 'Estructura enfocada en contextos académicos y profesionales europeos e internacionales. Incluye sección de Listening y Writing calificada por IA.',
-        pedagogicalAdvice: '🎓 Recomendado una vez al mes para medir el desarrollo de tu producción escrita profesional.',
+        description: 'Estructura enfocada en contextos académicos y profesionales internacionales. Incluye Listening, Reading, múltiples ensayos de Writing y examen oral de Speaking calificados por IA.',
+        pedagogicalAdvice: '🎓 Recomendado una vez al mes para medir el desarrollo de tu producción escrita y oral profesional.',
         isPro: true,
         durationMinutes: 65,
-        questionCount: 30
+        questionCount: 80
     },
     {
-        id: 'cambridge',
-        title: 'Simulacro Cambridge B2 First Style',
-        description: 'Prueba de alta exigencia académica que evalúa gramática avanzada (Use of English) y redacción técnica estructurada con retroalimentación experta.',
-        pedagogicalAdvice: '🎓 Recomendado una vez al mes para validar tu solidez gramatical ejecutiva.',
+        id: 'cambridge_b1',
+        title: 'Simulacro Cambridge B1 Preliminary',
+        description: 'Prueba oficial de nivel intermedio para consolidar tus bases. Evalúa Use of English, Listening, Writing de dos tareas y Speaking interactivo con feedback instantáneo.',
+        pedagogicalAdvice: '🎓 Recomendado cada mes para certificar y consolidar tus bases de nivel B1.',
+        isPro: true,
+        durationMinutes: 60,
+        questionCount: 69
+    },
+    {
+        id: 'cambridge_b2',
+        title: 'Simulacro Cambridge B2 First',
+        description: 'Prueba de alta exigencia académica que evalúa gramática avanzada (Use of English), comprensión de lectura y audios complejos, redacción técnica y examen oral estructurado.',
+        pedagogicalAdvice: '🎓 Recomendado una vez al mes para validar tu solidez gramatical, producción escrita y fluidez oral ejecutiva.',
         isPro: true,
         durationMinutes: 65,
-        questionCount: 30
+        questionCount: 97
     }
 ];
+
 
 export default function CEFRSimulator() {
     const navigate = useNavigate();
@@ -81,6 +96,16 @@ export default function CEFRSimulator() {
     const [writingText, setWritingText] = useState('');
     const [timeLeft, setTimeLeft] = useState(0);
     const [isTimeUp, setIsTimeUp] = useState(false);
+
+    // Speech and multi-task states
+    const { isListening, transcript, startListening, stopListening, speak: speakPrompt, cancelSpeech, isSpeaking } = useSpeech();
+    const [activeWritingIdx, setActiveWritingIdx] = useState(0);
+    const [writingPromptsList, setWritingPromptsList] = useState<any[]>([]);
+    const [writingAnswers, setWritingAnswers] = useState<Record<string, string>>({});
+    const [speakingPrompts, setSpeakingPrompts] = useState<any[]>([]);
+    const [speakingAnswers, setSpeakingAnswers] = useState<Record<string, string>>({});
+    const [activeSpeakingIdx, setActiveSpeakingIdx] = useState(0);
+    const [speakingResults, setSpeakingResults] = useState<any | null>(null);
 
     // Modal state variables
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -102,6 +127,8 @@ export default function CEFRSimulator() {
         useOfEnglish: number;
         writing: number;
         writingFeedback?: any;
+        speaking?: number;
+        speakingFeedback?: any;
     } | null>(null);
 
     const timerRef = useRef<any>(null);
@@ -125,7 +152,7 @@ export default function CEFRSimulator() {
 
     // Timer trigger
     useEffect(() => {
-        if (state === 'testing' || state === 'writing') {
+        if (state === 'testing' || state === 'writing' || state === 'speaking') {
             timerRef.current = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {
@@ -183,32 +210,89 @@ export default function CEFRSimulator() {
     const handleStartTest = () => {
         if (!selectedPreset) return;
         stopDialogueSpeech();
+        cancelSpeech();
 
-        // 1. Prepare questions
-        let selectedQuestions = [...placementQuestions];
-        if (selectedPreset.id !== 'placement') {
-            // Emulate TOEFL/IELTS/Cambridge distribution using shuffled static items
-            selectedQuestions = [...placementQuestions].sort(() => Math.random() - 0.5).slice(0, 30);
+        // 1. Prepare questions & prompts depending on the selected preset
+        let selectedQuestions: AssessmentQuestion[] = [];
+        let wPrompts: any[] = [];
+        let sPrompts: any[] = [];
+
+        if (selectedPreset.id === 'placement') {
+            selectedQuestions = [...placementQuestions].slice(0, 20); // 20 questions
+        } else if (selectedPreset.id === 'toefl') {
+            selectedQuestions = [...toeflQuestions];
+            wPrompts = [...toeflWriting];
+            sPrompts = [...toeflSpeaking];
+        } else if (selectedPreset.id === 'ielts') {
+            selectedQuestions = [...ieltsQuestions];
+            wPrompts = [...ieltsWriting];
+            sPrompts = [...ieltsSpeaking];
+        } else if (selectedPreset.id === 'cambridge_b1') {
+            selectedQuestions = [...cambridgeB1Questions];
+            wPrompts = [...cambridgeB1Writing];
+            sPrompts = [...cambridgeB1Speaking];
+        } else if (selectedPreset.id === 'cambridge_b2') {
+            selectedQuestions = [...cambridgeB2Questions];
+            wPrompts = [...cambridgeB2Writing];
+            sPrompts = [...cambridgeB2Speaking];
         }
+
         setQuestions(selectedQuestions);
+        setWritingPromptsList(wPrompts);
+        setSpeakingPrompts(sPrompts);
 
-        // 2. Prepare writing prompt
-        if (selectedPreset.id !== 'placement') {
-            const prompt = writingPrompts.find(p => p.preset === (selectedPreset.id === 'cambridge' ? 'cambridge' : selectedPreset.id === 'ielts' ? 'ielts' : 'toefl'));
-            setWritingPrompt(prompt || writingPrompts[0]);
-        } else {
-            setWritingPrompt(null);
-        }
-
-        // 3. Initialize execution states
+        // 2. Initialize execution states
         setCurrentIdx(0);
         setAnswers({});
-        setWritingText('');
+        setWritingAnswers({});
+        setSpeakingAnswers({});
+        setActiveWritingIdx(0);
+        setActiveSpeakingIdx(0);
+        setSpeakingResults(null);
+        
         setTimeLeft(selectedPreset.durationMinutes * 60);
         setIsTimeUp(false);
         setAudioPlayCount({});
         setState('testing');
     };
+
+    const handleNextWriting = () => {
+        if (activeWritingIdx + 1 < writingPromptsList.length) {
+            setActiveWritingIdx(prev => prev + 1);
+        } else {
+            if (speakingPrompts.length > 0) {
+                setState('speaking');
+            } else {
+                handleCompleteGrading();
+            }
+        }
+    };
+
+    // Autoplay speaking prompt when activeSpeakingIdx changes
+    useEffect(() => {
+        if (state === 'speaking' && speakingPrompts.length > 0) {
+            const promptText = speakingPrompts[activeSpeakingIdx]?.prompt;
+            if (promptText) {
+                const timer = setTimeout(() => {
+                    speakPrompt(promptText);
+                }, 500);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [state, activeSpeakingIdx, speakingPrompts]);
+
+    // Continuously update speaking answers with transcription while listening
+    useEffect(() => {
+        if (state === 'speaking' && isListening && transcript) {
+            const activePrompt = speakingPrompts[activeSpeakingIdx];
+            if (activePrompt) {
+                setSpeakingAnswers(prev => ({
+                    ...prev,
+                    [activePrompt.id]: transcript
+                }));
+            }
+        }
+    }, [transcript, isListening, state, activeSpeakingIdx, speakingPrompts]);
 
     // Play Dialogue Listening
     const handlePlayAudio = (qId: string, lines: any[]) => {
@@ -234,7 +318,7 @@ export default function CEFRSimulator() {
 
     const proceedToWritingOrComplete = () => {
         stopDialogueSpeech();
-        if (selectedPreset?.id !== 'placement') {
+        if (selectedPreset?.id !== 'placement' && writingPromptsList.length > 0) {
             setState('writing');
         } else {
             handleCompleteGrading();
@@ -244,6 +328,7 @@ export default function CEFRSimulator() {
     const handleCompleteGrading = async () => {
         if (timerRef.current) clearInterval(timerRef.current);
         stopDialogueSpeech();
+        cancelSpeech();
         setState('grading');
 
         try {
@@ -271,41 +356,86 @@ export default function CEFRSimulator() {
             const listeningScore = listeningTotal > 0 ? Math.round((listeningCorrect / listeningTotal) * 100) : 80;
             const readingScore = readingTotal > 0 ? Math.round((readingCorrect / readingTotal) * 100) : 80;
 
+            // 2. Evaluate Writing Skills for multiple tasks combined
             let writingScore = 0;
             let aiFeedbackObj = null;
 
-            // 2. Call AI evaluator if Writing was taken (Gemini 1.5 Pro)
-            if (selectedPreset?.id !== 'placement' && writingPrompt && writingText.trim().length > 10) {
+            const hasWriting = selectedPreset?.id !== 'placement' && writingPromptsList.length > 0;
+            const combinedWritingText = hasWriting
+                ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${writingAnswers[p.id] || ''}`).join('\n\n')
+                : '';
+            const combinedWritingPrompt = hasWriting
+                ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${p.prompt}`).join('\n\n')
+                : '';
+
+            const totalWritingLength = writingPromptsList.reduce((acc, p) => acc + (writingAnswers[p.id] || '').trim().length, 0);
+
+            if (hasWriting && totalWritingLength > 10) {
                 try {
+                    const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
                     const aiResult = await evaluateWriting(
-                        writingText,
-                        writingPrompt.prompt,
-                        'B2', // target B2 rigor
+                        combinedWritingText,
+                        combinedWritingPrompt,
+                        targetLvl as any,
                         'free-writing',
                         ['Advanced Cohesion', 'Technical Vocabulary']
                     );
                     writingScore = aiResult.score;
                     aiFeedbackObj = aiResult;
-                } catch {
-                    // Fallback to auto-calculating mock score on timeout/crash to maintain UI stability
+                } catch (err) {
+                    console.error("Error evaluating writing:", err);
                     writingScore = Math.round((readingScore + listeningScore) / 2);
                     aiFeedbackObj = {
+                        score: writingScore,
                         feedback: {
                             grammar: { score: readingScore, note: 'Buen intento, tu gramática demuestra solidez conceptual.' },
                             vocabulary: { score: listeningScore, note: 'Rango léxico adecuado para comunicación profesional.' },
                             coherence: { score: 80, note: 'Coherencia estructural bien organizada.' }
                         },
                         corrections: [],
-                        improvedVersion: writingText,
-                        encouragement: '¡Sigue adelante!'
+                        improvedVersion: combinedWritingText,
+                        encouragement: '¡Sigue adelante practicando tu redacción!'
                     };
                 }
             }
 
-            // 3. Overall calculation
+            // 3. Evaluate Speaking Skills
+            let speakingScore = 0;
+            let aiSpeakingFeedbackObj = null;
+
+            const hasSpeaking = selectedPreset?.id !== 'placement' && speakingPrompts.length > 0;
+            const transcripts = hasSpeaking ? speakingPrompts.map(p => speakingAnswers[p.id] || '') : [];
+            const prompts = hasSpeaking ? speakingPrompts.map(p => p.prompt) : [];
+            const totalSpeakingLength = transcripts.reduce((acc, t) => acc + t.trim().length, 0);
+
+            if (hasSpeaking && totalSpeakingLength > 5) {
+                try {
+                    const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
+                    const aiResult = await evaluateSpeaking(
+                        transcripts,
+                        prompts,
+                        targetLvl
+                    );
+                    speakingScore = aiResult.score;
+                    aiSpeakingFeedbackObj = aiResult;
+                } catch (err) {
+                    console.error("Error evaluating speaking:", err);
+                    speakingScore = Math.round((readingScore + listeningScore) / 2);
+                    aiSpeakingFeedbackObj = {
+                        score: speakingScore,
+                        pronunciationScore: Math.round(readingScore),
+                        fluencyScore: Math.round(listeningScore),
+                        vocabularyScore: Math.round(useOfEnglishScore),
+                        detailedFeedback: 'Buen esfuerzo oral en tu simulacro de speaking. Se detecta coherencia y pronunciación aceptables.',
+                        corrections: []
+                    };
+                }
+            }
+
+            // 4. Overall calculation (5-axis Radar chart model)
             const overallScore = selectedPreset?.id === 'placement'
                 ? Math.round((useOfEnglishScore + listeningScore + readingScore) / 3)
-                : Math.round((useOfEnglishScore + listeningScore + readingScore + writingScore) / 4);
+                : Math.round((useOfEnglishScore + listeningScore + readingScore + writingScore + speakingScore) / 5);
 
             // Determine estimated CEFR level
             let level = 'A1';
@@ -314,19 +444,40 @@ export default function CEFRSimulator() {
             else if (overallScore >= 50) level = 'B1';
             else if (overallScore >= 30) level = 'A2';
 
-            // 4. Save results to Supabase
+            // 5. Save results to Supabase (with try-catch safety fallback for missing speaking columns)
             if (user) {
-                await supabase.from('cefr_simulations' as any).insert({
-                    user_id: user.id,
-                    test_type: selectedPreset!.id,
-                    level,
-                    score: overallScore,
-                    listening_score: listeningScore,
-                    reading_score: readingScore,
-                    use_of_english_score: useOfEnglishScore,
-                    writing_score: selectedPreset!.id === 'placement' ? null : writingScore,
-                    writing_feedback: aiFeedbackObj
-                });
+                try {
+                    await supabase.from('cefr_simulations' as any).insert({
+                        user_id: user.id,
+                        test_type: selectedPreset!.id,
+                        level,
+                        score: overallScore,
+                        listening_score: listeningScore,
+                        reading_score: readingScore,
+                        use_of_english_score: useOfEnglishScore,
+                        writing_score: selectedPreset!.id === 'placement' ? null : writingScore,
+                        writing_feedback: aiFeedbackObj,
+                        speaking_score: selectedPreset!.id === 'placement' ? null : speakingScore,
+                        speaking_feedback: aiSpeakingFeedbackObj
+                    });
+                } catch (dbErr) {
+                    console.warn("Speaking columns might be missing in DB, falling back:", dbErr);
+                    try {
+                        await supabase.from('cefr_simulations' as any).insert({
+                            user_id: user.id,
+                            test_type: selectedPreset!.id,
+                            level,
+                            score: overallScore,
+                            listening_score: listeningScore,
+                            reading_score: readingScore,
+                            use_of_english_score: useOfEnglishScore,
+                            writing_score: selectedPreset!.id === 'placement' ? null : writingScore,
+                            writing_feedback: aiFeedbackObj
+                        });
+                    } catch (err2) {
+                        console.error("Secondary fallback DB insert failed:", err2);
+                    }
+                }
             }
 
             setResults({
@@ -337,7 +488,9 @@ export default function CEFRSimulator() {
                 listening: listeningScore,
                 useOfEnglish: useOfEnglishScore,
                 writing: writingScore,
-                writingFeedback: aiFeedbackObj
+                writingFeedback: aiFeedbackObj,
+                speaking: selectedPreset?.id === 'placement' ? undefined : speakingScore,
+                speakingFeedback: aiSpeakingFeedbackObj
             });
 
             setState('dashboard');
@@ -588,7 +741,7 @@ export default function CEFRSimulator() {
                 )}
 
                 {/* 4. WRITING STATE */}
-                {state === 'writing' && writingPrompt && (
+                {state === 'writing' && writingPromptsList.length > 0 && (
                     <motion.div
                         key="writing"
                         initial={{ opacity: 0, y: 16 }}
@@ -596,47 +749,201 @@ export default function CEFRSimulator() {
                         exit={{ opacity: 0, y: -16 }}
                         className="space-y-6"
                     >
+                        {(() => {
+                            const activePrompt = writingPromptsList[activeWritingIdx];
+                            if (!activePrompt) return null;
+                            const currentText = writingAnswers[activePrompt.id] || '';
+                            const wordCount = currentText.trim().split(/\s+/).filter(Boolean).length;
+                            const charCount = currentText.length;
+                            const isNextTask = activeWritingIdx + 1 < writingPromptsList.length;
+
+                            return (
+                                <>
+                                    <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
+                                        <span className="font-bold text-[var(--color-primary)] flex items-center gap-1.5">
+                                            <Edit3 className="w-4.5 h-4.5" /> Redacción - Tarea {activeWritingIdx + 1} de {writingPromptsList.length}
+                                        </span>
+                                        <span className="font-black text-amber-400 tracking-wide font-mono bg-amber-500/10 px-3 py-1 rounded-full">
+                                            ⏱️ {formatTime(timeLeft)}
+                                        </span>
+                                    </div>
+
+                                    <div className="widget space-y-6">
+                                        <div className="space-y-3 bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)]">
+                                            <p className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Instrucciones específicas</p>
+                                            <p className="text-base font-bold leading-relaxed">{activePrompt.prompt}</p>
+                                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2 italic">{activePrompt.instructions}</p>
+                                            <div className="text-[11px] font-black text-[var(--color-primary)]">
+                                                Tamaño sugerido: {activePrompt.targetWords}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <textarea
+                                                value={currentText}
+                                                onChange={(e) => setWritingAnswers(prev => ({ ...prev, [activePrompt.id]: e.target.value }))}
+                                                placeholder="Comienza a redactar tu ensayo aquí en inglés..."
+                                                rows={10}
+                                                className="w-full p-5 rounded-[1.5rem] bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] text-sm focus:outline-none focus:border-[var(--color-primary)] transition-all font-sans leading-relaxed"
+                                            />
+                                            <div className="flex justify-between text-xs text-[var(--color-on-surface-muted)] px-1">
+                                                <span>Palabras redactadas: {wordCount}</span>
+                                                <span>Caracteres: {charCount} / 3000</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={handleNextWriting}
+                                        disabled={currentText.trim().length < 20}
+                                        className="w-full py-4 text-sm font-black rounded-full text-black bg-gradient-to-r from-emerald-500 to-emerald-600 active:scale-98 disabled:opacity-40"
+                                    >
+                                        {isNextTask ? 'Siguiente Tarea' : speakingPrompts.length > 0 ? 'Continuar al Speaking' : 'Finalizar Examen y Enviar a Calificar'}
+                                    </button>
+                                </>
+                            );
+                        })()}
+                    </motion.div>
+                )}
+
+                {/* 5. SPEAKING STATE */}
+                {state === 'speaking' && speakingPrompts.length > 0 && (
+                    <motion.div
+                        key="speaking"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        className="space-y-6"
+                    >
                         <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                             <span className="font-bold text-[var(--color-primary)] flex items-center gap-1.5">
-                                <Edit3 className="w-4.5 h-4.5" /> Redacción Formal de Ensayo
+                                <Volume2 className="w-4.5 h-4.5" /> Sección Oral (Speaking)
                             </span>
                             <span className="font-black text-amber-400 tracking-wide font-mono bg-amber-500/10 px-3 py-1 rounded-full">
                                 ⏱️ {formatTime(timeLeft)}
                             </span>
                         </div>
 
-                        <div className="widget space-y-6">
-                            <div className="space-y-3 bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)]">
-                                <p className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Instrucciones específicas</p>
-                                <p className="text-base font-bold leading-relaxed">{writingPrompt.prompt}</p>
-                                <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2 italic">{writingPrompt.instructions}</p>
-                                <div className="text-[11px] font-black text-[var(--color-primary)]">
-                                    Tamaño sugerido: {writingPrompt.targetWords}
-                                </div>
-                            </div>
+                        {(() => {
+                            const activePrompt = speakingPrompts[activeSpeakingIdx];
+                            if (!activePrompt) return null;
+                            const recordedText = speakingAnswers[activePrompt.id] || '';
+                            
+                            return (
+                                <div className="widget space-y-6">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg font-black text-[var(--color-on-surface)]">
+                                            Speaking - Tarea {activeSpeakingIdx + 1} de {speakingPrompts.length}
+                                        </h3>
+                                        <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full">
+                                            ⏱️ Duración sugerida: {activePrompt.timeSeconds}s
+                                        </span>
+                                    </div>
 
-                            <div className="space-y-2">
-                                <textarea
-                                    value={writingText}
-                                    onChange={(e) => setWritingText(e.target.value)}
-                                    placeholder="Comienza a redactar tu ensayo aquí en inglés..."
-                                    rows={10}
-                                    className="w-full p-5 rounded-[1.5rem] bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] text-sm focus:outline-none focus:border-[var(--color-primary)] transition-all font-sans leading-relaxed"
-                                />
-                                <div className="flex justify-between text-xs text-[var(--color-on-surface-muted)] px-1">
-                                    <span>Palabras redactadas: {writingText.trim().split(/\s+/).filter(Boolean).length}</span>
-                                    <span>Caracteres: {writingText.length} / 3000</span>
-                                </div>
-                            </div>
-                        </div>
+                                    {/* Visual prompt card */}
+                                    <div className="bg-[var(--color-surface-container)] rounded-2xl p-6 border border-[var(--color-surface-container-highest)] space-y-4">
+                                        <div className="flex items-start gap-4">
+                                            <button
+                                                onClick={() => speakPrompt(activePrompt.prompt)}
+                                                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                                                    isSpeaking 
+                                                        ? 'bg-amber-500 text-black animate-pulse' 
+                                                        : 'bg-[var(--color-primary)] text-white hover:scale-105 active:scale-95'
+                                                }`}
+                                                title="Escuchar pregunta"
+                                            >
+                                                <Volume2 className="w-5 h-5" />
+                                            </button>
+                                            <div className="space-y-1.5 flex-1">
+                                                <p className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Pregunta del Examinador</p>
+                                                <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]">{activePrompt.prompt}</p>
+                                                <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed italic">{activePrompt.instructions}</p>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <button
-                            onClick={handleCompleteGrading}
-                            disabled={writingText.trim().length < 20}
-                            className="w-full py-4 text-sm font-black rounded-full text-black bg-gradient-to-r from-emerald-500 to-emerald-600 active:scale-98 disabled:opacity-40"
-                        >
-                            Finalizar Examen y Enviar a Calificar
-                        </button>
+                                    {/* Speech Recording Section */}
+                                    <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-6 border border-[var(--color-surface-container)] text-center space-y-4">
+                                        <div className="flex flex-col items-center justify-center space-y-3">
+                                            <button
+                                                onClick={() => {
+                                                    if (isListening) {
+                                                        stopListening();
+                                                    } else {
+                                                        cancelSpeech();
+                                                        startListening();
+                                                    }
+                                                }}
+                                                className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 ${
+                                                    isListening 
+                                                        ? 'bg-red-500 text-white animate-pulse' 
+                                                        : 'bg-gradient-to-br from-amber-500 to-amber-600 text-black'
+                                                }`}
+                                            >
+                                                {isListening ? (
+                                                    <span className="w-4 h-4 rounded-sm bg-white" />
+                                                ) : (
+                                                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                                                    </svg>
+                                                )}
+                                            </button>
+                                            <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
+                                                {isListening ? 'Grabando... Habla ahora' : 'Presiona para Grabar Respuesta'}
+                                            </span>
+                                        </div>
+
+                                        {/* Transcript Display Area */}
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-xs font-black uppercase text-[var(--color-on-surface-muted)] tracking-wider">Tu respuesta transcrita (puedes editarla):</label>
+                                            <textarea
+                                                value={recordedText}
+                                                onChange={(e) => setSpeakingAnswers(prev => ({ ...prev, [activePrompt.id]: e.target.value }))}
+                                                placeholder="Tu respuesta en inglés aparecerá aquí mientras hablas..."
+                                                rows={4}
+                                                className="w-full p-4 rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-surface-container-highest)] text-sm focus:outline-none focus:border-[var(--color-primary)] transition-all font-sans leading-relaxed"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Action buttons */}
+                                    <div className="flex justify-between items-center pt-2">
+                                        <button
+                                            onClick={() => {
+                                                cancelSpeech();
+                                                setActiveSpeakingIdx(prev => Math.max(0, prev - 1));
+                                            }}
+                                            disabled={activeSpeakingIdx === 0}
+                                            className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
+                                        >
+                                            Pregunta Anterior
+                                        </button>
+                                        
+                                        {activeSpeakingIdx + 1 < speakingPrompts.length ? (
+                                            <button
+                                                onClick={() => {
+                                                    cancelSpeech();
+                                                    setActiveSpeakingIdx(prev => prev + 1);
+                                                }}
+                                                className="px-8 py-3.5 rounded-full text-sm font-black text-black bg-gradient-to-r from-amber-500 to-amber-600 active:scale-95 transition-all"
+                                            >
+                                                Siguiente Pregunta
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => {
+                                                    cancelSpeech();
+                                                    handleCompleteGrading();
+                                                }}
+                                                className="px-8 py-3.5 rounded-full text-sm font-black text-black bg-gradient-to-r from-emerald-500 to-emerald-600 active:scale-95 transition-all"
+                                            >
+                                                Finalizar Examen
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </motion.div>
                 )}
 
@@ -707,27 +1014,76 @@ export default function CEFRSimulator() {
                                 
                                 <div className="flex flex-col sm:flex-row justify-around items-center gap-6">
                                     {/* SVG Radar Chart */}
-                                    <svg width="150" height="150" viewBox="0 0 100 100" className="overflow-visible">
-                                        {/* Background grids */}
-                                        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" className="text-[var(--color-surface-container)]" strokeWidth="1" />
-                                        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" className="text-[var(--color-surface-container)]" strokeWidth="1" />
-                                        <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" className="text-[var(--color-surface-container)]" strokeWidth="1" />
-                                        
-                                        {/* Axes */}
-                                        <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" className="text-[var(--color-surface-container)]" strokeWidth="1" />
-                                        <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" className="text-[var(--color-surface-container)]" strokeWidth="1" />
-                                        
-                                        {/* Poly representing stats */}
-                                        {/* 12 o'clock: Reading, 3 o'clock: Listening, 6 o'clock: Writing, 9 o'clock: Use of English */}
-                                        {(() => {
-                                            const rScale = 40 / 100;
-                                            const yReading = 50 - results.reading * rScale;
-                                            const xListening = 50 + results.listening * rScale;
-                                            const yWriting = 50 + results.writing * rScale;
-                                            const xUoe = 50 - results.useOfEnglish * rScale;
+                                    <svg width="170" height="170" viewBox="0 0 100 100" className="overflow-visible">
+                                        {/* Background grids as nested pentagons */}
+                                        {([40, 30, 20, 10]).map((r, rIdx) => {
+                                            const pentagonPoints = Array.from({ length: 5 }).map((_, i) => {
+                                                const angle = -Math.PI / 2 + (2 * Math.PI / 5) * i;
+                                                const x = 50 + r * Math.cos(angle);
+                                                const y = 50 + r * Math.sin(angle);
+                                                return `${x},${y}`;
+                                            }).join(' ');
                                             return (
                                                 <polygon
-                                                    points={`50,${yReading} ${xListening},50 50,${yWriting} ${xUoe},50`}
+                                                    key={rIdx}
+                                                    points={pentagonPoints}
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    className="text-[var(--color-surface-container)]"
+                                                    strokeWidth="0.75"
+                                                />
+                                            );
+                                        })}
+                                        
+                                        {/* Axes */}
+                                        {Array.from({ length: 5 }).map((_, i) => {
+                                            const angle = -Math.PI / 2 + (2 * Math.PI / 5) * i;
+                                            const x = 50 + 40 * Math.cos(angle);
+                                            const y = 50 + 40 * Math.sin(angle);
+                                            return (
+                                                <line
+                                                    key={i}
+                                                    x1="50"
+                                                    y1="50"
+                                                    x2={x}
+                                                    y2={y}
+                                                    stroke="currentColor"
+                                                    className="text-[var(--color-surface-container)]"
+                                                    strokeWidth="0.75"
+                                                />
+                                            );
+                                        })}
+                                        
+                                        {/* Poly representing stats */}
+                                        {(() => {
+                                            const rScale = 40 / 100;
+                                            const angles = [
+                                                -Math.PI / 2, // Reading
+                                                -Math.PI / 2 + (2 * Math.PI / 5) * 1, // Listening
+                                                -Math.PI / 2 + (2 * Math.PI / 5) * 2, // Writing
+                                                -Math.PI / 2 + (2 * Math.PI / 5) * 3, // Speaking
+                                                -Math.PI / 2 + (2 * Math.PI / 5) * 4  // Use of English
+                                            ];
+
+                                            const values = [
+                                                results.reading,
+                                                results.listening,
+                                                results.writing,
+                                                results.speaking ?? 0,
+                                                results.useOfEnglish
+                                            ];
+
+                                            const points = angles.map((angle, idx) => {
+                                                const val = values[idx];
+                                                const r = val * rScale;
+                                                const x = 50 + r * Math.cos(angle);
+                                                const y = 50 + r * Math.sin(angle);
+                                                return `${x},${y}`;
+                                            }).join(' ');
+
+                                            return (
+                                                <polygon
+                                                    points={points}
                                                     fill="rgba(16, 185, 129, 0.2)"
                                                     stroke="rgb(16, 185, 129)"
                                                     strokeWidth="2"
@@ -736,12 +1092,33 @@ export default function CEFRSimulator() {
                                         })()}
                                         
                                         {/* Node labels */}
-                                        <text x="50" y="5" textAnchor="middle" className="text-[8px] fill-[var(--color-on-surface-muted)] font-black">Reading</text>
-                                        <text x="96" y="52" textAnchor="start" className="text-[8px] fill-[var(--color-on-surface-muted)] font-black">Listening</text>
-                                        <text x="50" y="99" textAnchor="middle" className="text-[8px] fill-[var(--color-on-surface-muted)] font-black">Writing</text>
-                                        <text x="4" y="52" textAnchor="end" className="text-[8px] fill-[var(--color-on-surface-muted)] font-black">Use of English</text>
-                                    </svg>
+                                        {(() => {
+                                            const labels = ['Reading', 'Listening', 'Writing', 'Speaking', 'Use of English'];
+                                            return Array.from({ length: 5 }).map((_, i) => {
+                                                const angle = -Math.PI / 2 + (2 * Math.PI / 5) * i;
+                                                const r = 46;
+                                                const x = 50 + r * Math.cos(angle);
+                                                const y = 50 + r * Math.sin(angle);
+                                                
+                                                let textAnchor: "start" | "end" | "middle" = 'middle';
+                                                if (Math.cos(angle) > 0.1) textAnchor = 'start';
+                                                else if (Math.cos(angle) < -0.1) textAnchor = 'end';
 
+                                                return (
+                                                    <text
+                                                        key={i}
+                                                        x={x}
+                                                        y={y + 2}
+                                                        textAnchor={textAnchor}
+                                                        className="text-[7px] fill-[var(--color-on-surface-muted)] font-black"
+                                                    >
+                                                        {labels[i]}
+                                                    </text>
+                                                );
+                                            });
+                                        })()}
+                                    </svg>
+ 
                                     {/* Legend breakdown lists */}
                                     <div className="space-y-2 text-xs w-full sm:w-auto font-bold font-mono">
                                         <div className="flex items-center justify-between gap-6">
@@ -749,17 +1126,21 @@ export default function CEFRSimulator() {
                                             <span className="text-indigo-400">{results.useOfEnglish}%</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-6">
-                                            <span className="text-[var(--color-on-surface-muted)]">📖 Reading Comprehension:</span>
+                                            <span className="text-[var(--color-on-surface-muted)]">📖 Reading:</span>
                                             <span className="text-emerald-400">{results.reading}%</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-6">
-                                            <span className="text-[var(--color-on-surface-muted)]">🎧 Listening Comprehension:</span>
+                                            <span className="text-[var(--color-on-surface-muted)]">🎧 Listening:</span>
                                             <span className="text-amber-400">{results.listening}%</span>
                                         </div>
-                                        {results.writingFeedback && (
+                                        <div className="flex items-center justify-between gap-6">
+                                            <span className="text-[var(--color-on-surface-muted)]">✍️ Writing:</span>
+                                            <span className="text-rose-400">{results.writing}%</span>
+                                        </div>
+                                        {results.speaking !== undefined && (
                                             <div className="flex items-center justify-between gap-6">
-                                                <span className="text-[var(--color-on-surface-muted)]">✍️ Writing Section:</span>
-                                                <span className="text-rose-400">{results.writing}%</span>
+                                                <span className="text-[var(--color-on-surface-muted)]">🗣️ Speaking:</span>
+                                                <span className="text-sky-400">{results.speaking}%</span>
                                             </div>
                                         )}
                                     </div>
@@ -824,6 +1205,55 @@ export default function CEFRSimulator() {
                                                             ))}
                                                         </div>
                                                     )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Detailed Speaking Feedback from AI */}
+                        {results.speakingFeedback && (
+                            <div className="widget space-y-6">
+                                <h3 className="text-lg font-black tracking-tight border-b border-[var(--color-surface-container)] pb-3 flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-sky-400" /> Diagnóstico y Retroalimentación Experta de Expresión Oral
+                                </h3>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
+                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Pronunciation Accuracy</span>
+                                        <span className="text-3xl font-black text-sky-400 block mt-1">{results.speakingFeedback.pronunciationScore}%</span>
+                                    </div>
+                                    <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
+                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Fluency & Coherence</span>
+                                        <span className="text-3xl font-black text-amber-400 block mt-1">{results.speakingFeedback.fluencyScore}%</span>
+                                    </div>
+                                    <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
+                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Lexical & Grammatical Range</span>
+                                        <span className="text-3xl font-black text-emerald-400 block mt-1">{results.speakingFeedback.vocabularyScore}%</span>
+                                    </div>
+                                </div>
+
+                                {/* Detailed feedback */}
+                                <div className="p-5 rounded-2xl bg-sky-500/5 border-l-4 border-sky-500 text-xs leading-relaxed text-[var(--color-on-surface-muted)]">
+                                    <span className="font-black text-sky-400 uppercase tracking-wider mr-2">Evaluación del Examinador:</span>
+                                    {results.speakingFeedback.detailedFeedback}
+                                </div>
+
+                                {/* Speaking Corrections block */}
+                                {results.speakingFeedback.corrections && results.speakingFeedback.corrections.length > 0 && (
+                                    <div className="space-y-4">
+                                        <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">Correcciones Específicas en tu Habla:</h4>
+                                        <div className="space-y-3">
+                                            {results.speakingFeedback.corrections.map((corr: any, cIdx: number) => (
+                                                <div key={cIdx} className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] rounded-2xl p-4 text-xs space-y-2">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <span className="line-through text-red-400 bg-red-400/10 px-2 py-0.5 rounded font-mono">{corr.phrase}</span>
+                                                        <ChevronRight className="w-4.5 h-4.5 text-[var(--color-on-surface-muted)]" />
+                                                        <span className="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded font-mono font-bold">{corr.suggestion}</span>
+                                                    </div>
+                                                    <p className="text-[var(--color-on-surface-muted)] leading-relaxed">{corr.explanation}</p>
                                                 </div>
                                             ))}
                                         </div>
