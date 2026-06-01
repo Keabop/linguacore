@@ -236,3 +236,65 @@ export async function generateCareerDeck(profession: string, level: string): Pro
     const text = response.response.text();
     return JSON.parse(text) as CareerWord[];
 }
+
+export interface SpeakingCorrection {
+    phrase: string;
+    suggestion: string;
+    explanation: string;
+}
+
+export interface SpeakingEvaluationResponse {
+    score: number;
+    corrections: SpeakingCorrection[];
+    pronunciationScore: number;
+    fluencyScore: number;
+    vocabularyScore: number;
+    detailedFeedback: string;
+}
+
+export async function evaluateSpeaking(
+    transcripts: string[],
+    prompts: string[],
+    level: string
+): Promise<SpeakingEvaluationResponse> {
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+    if (!apiKey) throw new Error('API key missing');
+
+    const ai = new GoogleGenerativeAI(apiKey);
+    const model = ai.getGenerativeModel({
+        model: 'gemini-1.5-flash',
+        generationConfig: { responseMimeType: 'application/json' }
+    });
+
+    const promptText = `
+    Eres un examinador de inglés oficial (Cambridge/TOEFL). Evalúa las siguientes respuestas habladas (transcritas) para el nivel CEFR: "${level}".
+
+    Prompts del examinador:
+    ${prompts.map((p, i) => `[Pregunta ${i+1}]: ${p}`).join('\n')}
+
+    Respuestas transcritas del candidato:
+    ${transcripts.map((t, i) => `[Respuesta ${i+1}]: ${t}`).join('\n')}
+
+    Genera un informe analítico riguroso. Debes retornar un JSON con este formato exacto:
+    {
+      "score": 85,
+      "pronunciationScore": 80,
+      "fluencyScore": 85,
+      "vocabularyScore": 90,
+      "detailedFeedback": "retroalimentación general en español",
+      "corrections": [
+        {
+          "phrase": "frase con error",
+          "suggestion": "sugerencia corregida",
+          "explanation": "explicación del error"
+        }
+      ]
+    }
+    `;
+
+    const response = await model.generateContent(promptText);
+    const text = response.response.text();
+    return JSON.parse(text) as SpeakingEvaluationResponse;
+}
+
