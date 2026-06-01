@@ -3,7 +3,7 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
-import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User, GripVertical, GripHorizontal } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User, GripVertical, GripHorizontal, GraduationCap } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import Bilingual from './ui/Bilingual';
@@ -19,6 +19,7 @@ const navItems: { path: string; icon: LucideIcon; labelKey: string }[] = [
     { path: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
     { path: '/practice', icon: PenLine, labelKey: 'nav.practice' },
     { path: '/review', icon: RefreshCw, labelKey: 'nav.review' },
+    { path: '/review/simulator', icon: GraduationCap, labelKey: 'nav.simulator' },
 ];
 
 function RailNavItem({ path, icon: Icon, labelKey, expanded, position }: {

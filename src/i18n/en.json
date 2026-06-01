@@ -7,7 +7,8 @@
     "stats": "Stats",
     "path": "Learning Path",
     "practice": "Practice",
-    "profile": "Profile"
+    "profile": "Profile",
+    "simulator": "CEFR Simulator"
   },
   "dashboard": {
     "greeting": "Hello!",

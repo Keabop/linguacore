@@ -7,7 +7,8 @@
     "stats": "Estadísticas",
     "path": "Ruta de Aprendizaje",
     "practice": "Práctica",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "simulator": "Simulador CEFR"
   },
   "dashboard": {
     "greeting": "¡Hola!",
