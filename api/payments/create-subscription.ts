@@ -215,7 +215,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         return res.status(200).json({ init_point: result.init_point });
     } catch (error: any) {
+        let errorMessage = 'Unknown error';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        } else if (typeof error === 'object' && error !== null) {
+            try {
+                errorMessage = error.message || JSON.stringify(error);
+            } catch {
+                errorMessage = String(error);
+            }
+        } else {
+            errorMessage = String(error);
+        }
+
+        const errorStack = error instanceof Error ? error.stack : '';
         console.error('[Payments] Error:', error);
-        return res.status(500).json({ error: 'Failed to process subscription request' });
+        console.error('[Payments] Error cause:', error?.cause);
+        console.error('[Payments] Error response:', error?.response);
+
+        return res.status(500).json({ 
+            error: 'Failed to process subscription request',
+            message: errorMessage,
+            stack: errorStack,
+            status: error?.status || 500,
+            cause: error?.cause || null,
+            response: error?.response || null,
+        });
     }
 }

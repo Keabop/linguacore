@@ -273,13 +273,17 @@ export const onRequestPost: PagesFunction = async (context) => {
         }
 
         const errorStack = error instanceof Error ? error.stack : '';
-        const errorDetails = error?.response || error?.cause || error || null;
-        console.error('[Payments Edge] Error:', error, 'Details:', errorDetails);
+        console.error('[Payments Edge] Error:', error);
+        console.error('[Payments Edge] Error cause:', error?.cause);
+        console.error('[Payments Edge] Error response:', error?.response);
+
         return new Response(JSON.stringify({ 
             error: 'Failed to process subscription request',
             message: errorMessage,
             stack: errorStack,
-            details: errorDetails
+            status: error?.status || 500,
+            cause: error?.cause || null,
+            response: error?.response || null,
         }), {
             status: 500,
             headers: corsHeaders,
