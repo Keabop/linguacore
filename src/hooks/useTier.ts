@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useMemo } from 'react';
+import type { Profile } from '../lib/database.types';
 
 export type Tier = 'free' | 'pro';
 
@@ -47,17 +48,16 @@ export function useTier(): TierInfo {
   const { user } = useAuth();
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile-tier', user?.id],
+    queryKey: ['profile', user?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('tier, trial_started_at, trial_ends_at')
+        .select('*')
         .eq('id', user!.id)
         .single();
-      return data;
+      return data as Profile | null;
     },
     enabled: !!user?.id,
-    staleTime: 60_000,
   });
 
   return useMemo(() => {

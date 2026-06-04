@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import type { Profile } from '../lib/database.types';
 
 interface SubscriptionInfo {
     tier: 'free' | 'pro';
@@ -13,25 +14,25 @@ export function useSubscription() {
     const { user, session } = useAuth();
     const qc = useQueryClient();
 
-    const { data: subscription, isLoading } = useQuery({
-        queryKey: ['subscription', user?.id],
+    const { data: profile, isLoading } = useQuery({
+        queryKey: ['profile', user?.id],
         queryFn: async () => {
             const { data } = await supabase
                 .from('profiles')
-                .select('tier, subscription_id, subscription_status, created_at')
+                .select('*')
                 .eq('id', user!.id)
                 .single();
-            if (!data) return null;
-            return {
-                tier: data.tier,
-                subscriptionId: data.subscription_id,
-                subscriptionStatus: data.subscription_status,
-                createdAt: data.created_at,
-            } as SubscriptionInfo;
+            return data as Profile | null;
         },
         enabled: !!user?.id,
-        staleTime: 30_000,
     });
+
+    const subscription = profile ? {
+        tier: profile.tier,
+        subscriptionId: profile.subscription_id,
+        subscriptionStatus: profile.subscription_status,
+        createdAt: profile.created_at,
+    } as SubscriptionInfo : null;
 
     const manageSubscription = async (action: 'cancel' | 'reactivate') => {
         if (!session?.access_token) throw new Error('No session');

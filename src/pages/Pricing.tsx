@@ -66,7 +66,7 @@ export default function Pricing() {
                 }
 
                 // Refetch tier data so UI updates immediately
-                qc.invalidateQueries({ queryKey: ['profile-tier'] });
+                qc.invalidateQueries({ queryKey: ['profile'] });
             } catch {
                 // Verification failed silently — webhook will handle it later
                 console.warn('[Pricing] Verify failed, relying on webhook');
