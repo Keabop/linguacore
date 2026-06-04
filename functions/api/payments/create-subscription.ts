@@ -81,6 +81,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         });
     }
 
+    const diagnostics: any = {};
     try {
         const { plan, action } = await request.json() as {
             plan?: 'monthly' | 'annual';
@@ -88,6 +89,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         };
 
         const accessToken = env.MERCADOPAGO_ACCESS_TOKEN;
+        diagnostics.accessTokenPrefix = accessToken ? accessToken.slice(0, 10) + '...' : null;
         if (!accessToken) {
             console.error('[Payments Edge] Missing MERCADOPAGO_ACCESS_TOKEN');
             return new Response(JSON.stringify({ error: 'Payment provider not configured' }), {
@@ -251,6 +253,10 @@ export const onRequestPost: PagesFunction = async (context) => {
             external_reference: user.id,
         };
 
+        diagnostics.isSandbox = isSandbox;
+        diagnostics.payerEmail = subscriptionBody.payer_email;
+        diagnostics.testPayerEmailEnv = env.MERCADOPAGO_TEST_PAYER_EMAIL || null;
+
         const result = await preApproval.create({ body: subscriptionBody });
 
         return new Response(JSON.stringify({ init_point: result.init_point }), {
@@ -284,6 +290,7 @@ export const onRequestPost: PagesFunction = async (context) => {
             status: error?.status || 500,
             cause: error?.cause || null,
             response: error?.response || null,
+            diagnostics
         }), {
             status: 500,
             headers: corsHeaders,

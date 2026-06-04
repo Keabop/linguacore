@@ -79,6 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({ error: 'Unauthorized — valid Supabase session required' });
     }
 
+    const diagnostics: any = {};
     try {
         const { plan, action } = req.body as {
             plan?: 'monthly' | 'annual';
@@ -86,6 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+        diagnostics.accessTokenPrefix = accessToken ? accessToken.slice(0, 10) + '...' : null;
         if (!accessToken) {
             console.error('[Payments] Missing MERCADOPAGO_ACCESS_TOKEN');
             return res.status(500).json({ error: 'Payment provider not configured' });
@@ -197,21 +199,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const backUrl = appUrl + '/pricing?status=success';
         const notificationUrl = appUrl + '/api/payments/webhook';
 
-        const result = await preApproval.create({
-            body: {
-                reason: config.reason,
-                auto_recurring: {
-                    frequency: config.frequency,
-                    frequency_type: config.frequency_type,
-                    transaction_amount: config.transaction_amount,
-                    currency_id: 'MXN',
-                },
-                back_url: backUrl,
-                notification_url: notificationUrl,
-                payer_email: user.email!,
-                external_reference: user.id,
-            } as any,
-        });
+        const isSandbox = accessToken.startsWith('TEST-');
+        const subscriptionBody: any = {
+            reason: config.reason,
+            auto_recurring: {
+                frequency: config.frequency,
+                frequency_type: config.frequency_type,
+                transaction_amount: config.transaction_amount,
+                currency_id: 'MXN',
+            },
+            back_url: backUrl,
+            notification_url: notificationUrl,
+            payer_email: isSandbox
+                ? (process.env.MERCADOPAGO_TEST_PAYER_EMAIL || 'test_user_8814871934088369636@testuser.com')
+                : user.email!,
+            external_reference: user.id,
+        };
+
+        diagnostics.isSandbox = isSandbox;
+        diagnostics.payerEmail = subscriptionBody.payer_email;
+        diagnostics.testPayerEmailEnv = process.env.MERCADOPAGO_TEST_PAYER_EMAIL || null;
+
+        const result = await preApproval.create({ body: subscriptionBody });
 
         return res.status(200).json({ init_point: result.init_point });
     } catch (error: any) {
@@ -240,6 +249,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             status: error?.status || 500,
             cause: error?.cause || null,
             response: error?.response || null,
+            diagnostics
         });
     }
 }
