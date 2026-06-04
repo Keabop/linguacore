@@ -42,6 +42,7 @@ const UnitFlow = lazyRetry(() => import('./pages/UnitFlow'));
 const Pricing = lazyRetry(() => import('./pages/Pricing'));
 const ErrorLab = lazyRetry(() => import('./pages/ErrorLab'));
 const CEFRSimulator = lazyRetry(() => import('./pages/CEFRSimulator'));
+const AdminDashboard = lazyRetry(() => import('./pages/AdminDashboard'));
 
 function SafeRoute({ children }: { children: ReactNode }) {
     const location = useLocation();
@@ -58,6 +59,15 @@ function RequireAuth({ children }: { children: ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <PageLoader />;
     if (!user) return <Navigate to="/" replace />;
+    return <>{children}</>;
+}
+
+const ADMIN_EMAIL = 'luiszwazagamer@gmail.com';
+
+function RequireAdmin({ children }: { children: ReactNode }) {
+    const { user, loading } = useAuth();
+    if (loading) return <PageLoader />;
+    if (!user || user.email !== ADMIN_EMAIL) return <Navigate to="/dashboard" replace />;
     return <>{children}</>;
 }
 
@@ -91,6 +101,7 @@ export default function App() {
                     <Route path="/path/:unitId" element={<SafeRoute><UnitFlow /></SafeRoute>} />
                     <Route path="/practice" element={<Practice />} />
                     <Route path="/pricing" element={<SafeRoute><Pricing /></SafeRoute>} />
+                    <Route path="/admin" element={<SafeRoute><RequireAdmin><AdminDashboard /></RequireAdmin></SafeRoute>} />
                 </Route>
             </Routes>
             <Toaster />

@@ -3,13 +3,14 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
-import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User, GripVertical, GripHorizontal, GraduationCap } from 'lucide-react';
+import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User, GripVertical, GripHorizontal, GraduationCap, Shield } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
 import Bilingual from './ui/Bilingual';
 import OfflineBanner from './OfflineBanner';
 import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
+import { useAdmin } from '../hooks/useAdmin';
 import { useSidebarPreferences, type SidebarPosition } from '../hooks/useSidebarPreferences';
 
 const navItems: { path: string; icon: LucideIcon; labelKey: string; end?: boolean }[] = [
@@ -105,6 +106,7 @@ export default function Layout() {
     const location = useLocation();
     const { progressInfo } = useLevelProgression();
     const { user: authUser } = useAuth();
+    const { isAdmin } = useAdmin();
     const syncState = useSyncManager();
     const scrollRef = useRef<HTMLElement>(null);
     const sidebarRef = useRef<HTMLElement>(null);
@@ -412,6 +414,7 @@ export default function Layout() {
                             <span>{t(item.labelKey)}</span>
                         </NavLink>
                     ))}
+
                     {/* Profile pill */}
                     <NavLink
                         to="/account"
@@ -423,6 +426,22 @@ export default function Layout() {
                         <span>{t('nav.profile')}</span>
                     </NavLink>
                 </nav>
+            )}
+
+            {/* ===== FLOATING ADMIN BUTTON (Top-Left, Admin Only) ===== */}
+            {isAdmin && (
+                <NavLink
+                    to="/admin"
+                    className={({ isActive }) =>
+                        `fixed top-4 left-4 z-[55] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 ${
+                            isActive
+                                ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-purple-500/30'
+                                : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] border border-white/10 hover:shadow-xl'
+                        }`
+                    }
+                >
+                    <Shield className="w-5 h-5" />
+                </NavLink>
             )}
         </div>
     );
