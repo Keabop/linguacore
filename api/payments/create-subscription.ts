@@ -211,8 +211,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             back_url: backUrl,
             notification_url: notificationUrl,
             payer_email: isSandbox
-                ? (process.env.MERCADOPAGO_TEST_PAYER_EMAIL || 'test_user_8814871934088369636@testuser.com')
-                : user.email!,
+                ? (process.env.MERCADOPAGO_TEST_PAYER_EMAIL?.trim() || 'test_user_8814871934088369636@testuser.com')
+                : user.email!.trim(),
             external_reference: user.id,
         };
 

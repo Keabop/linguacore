@@ -248,8 +248,8 @@ export const onRequestPost: PagesFunction = async (context) => {
             // In Sandbox, use the test payer email (created via MP API for this app)
             // In Production, use the real Supabase user email
             payer_email: isSandbox
-                ? (env.MERCADOPAGO_TEST_PAYER_EMAIL || 'test_user_8814871934088369636@testuser.com')
-                : user.email!,
+                ? (env.MERCADOPAGO_TEST_PAYER_EMAIL?.trim() || 'test_user_8814871934088369636@testuser.com')
+                : user.email!.trim(),
             external_reference: user.id,
         };
 
