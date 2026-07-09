@@ -29,3 +29,9 @@ dist-ssr
 
 # PWA dev service worker
 dev-dist
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
