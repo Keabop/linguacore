@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { User, GripVertical, GripHorizontal, Shield } from 'lucide-react';
 import {
@@ -12,10 +12,53 @@ import LevelBadge from './ui/LevelBadge';
 import { LeafMark } from './ui/Wordmark';
 import Bilingual from './ui/Bilingual';
 import OfflineBanner from './OfflineBanner';
+import PageLoader from './PageLoader';
 import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
 import { useSidebarPreferences, type SidebarPosition } from '../hooks/useSidebarPreferences';
+
+// Rail geometry in px. The rail is placed with left/top/width/height only, so it can animate
+// between any two of these boxes, including the one that follows the pointer while dragging.
+const RAIL_GAP = 24;
+const RAIL_THICK = 68;
+const RAIL_LONG = 540;
+const RAIL_EXPANDED = 260;
+
+type RailBox = { left: number; top: number; width: number; height: number };
+
+const isVerticalPos = (pos: SidebarPosition) => pos === 'left' || pos === 'right';
+
+function dockedBox(pos: SidebarPosition, expanded: boolean, vw: number, vh: number): RailBox {
+    if (isVerticalPos(pos)) {
+        const width = expanded ? RAIL_EXPANDED : RAIL_THICK;
+        return { width, height: RAIL_LONG, top: (vh - RAIL_LONG) / 2, left: pos === 'left' ? RAIL_GAP : vw - RAIL_GAP - width };
+    }
+    return { width: RAIL_LONG, height: RAIL_THICK, left: (vw - RAIL_LONG) / 2, top: pos === 'top' ? RAIL_GAP : vh - RAIL_GAP - RAIL_THICK };
+}
+
+/** The edge closest to the pointer is where the rail will dock. */
+function nearestEdge(x: number, y: number, vw: number, vh: number): SidebarPosition {
+    const distances: [SidebarPosition, number][] = [['left', x], ['right', vw - x], ['top', y], ['bottom', vh - y]];
+    return distances.reduce((best, d) => (d[1] < best[1] ? d : best))[0];
+}
+
+const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), Math.max(min, max));
+
+/** While dragging, the rail already has the shape of where it will land and keeps its grip under the pointer. */
+function draggedBox(pos: SidebarPosition, x: number, y: number, vw: number, vh: number): RailBox {
+    const vertical = isVerticalPos(pos);
+    const width = vertical ? RAIL_THICK : RAIL_LONG;
+    const height = vertical ? RAIL_LONG : RAIL_THICK;
+    // The grip sits at the start of the rail: near the top when vertical, near the left when horizontal
+    const left = vertical ? x - width / 2 : x - 40;
+    const top = vertical ? y - 32 : y - height / 2;
+    return { width, height, left: clamp(left, 8, vw - width - 8), top: clamp(top, 8, vh - height - 8) };
+}
+
+const KEY_TO_EDGE: Record<string, SidebarPosition> = {
+    ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'top', ArrowDown: 'bottom',
+};
 
 const navItems: { path: string; icon: AnimatedIcon; labelKey: string; end?: boolean }[] = [
     { path: '/dashboard', icon: HouseIcon, labelKey: 'nav.home' },
@@ -42,12 +85,12 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
             end={end}
             className={({ isActive }) =>
                 `rail-item flex items-center transition-all duration-300 relative select-none ${
-                    isVertical 
-                        ? `h-12 rounded-xl ${expanded ? 'px-4 justify-start mx-3' : 'px-0 justify-center mx-2.5'}` 
+                    isVertical
+                        ? `h-12 rounded-xl ${expanded ? 'px-4 justify-start mx-3' : 'px-0 justify-center mx-2.5'}`
                         : `h-10 w-10 justify-center mx-0.5 rounded-full`
                 } ${
                     isActive
-                        ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] font-bold'
+                        ? 'text-[var(--color-primary)] font-bold'
                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
                 }`
             }
@@ -58,12 +101,11 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
             {({ isActive }) => (
                 <>
                     {isActive && (
-                        <motion.div
-                            layoutId="activeIndicator"
-                            className={isVertical 
-                                ? "absolute left-0 w-1 h-6 bg-[var(--color-primary)] rounded-r-full"
-                                : "absolute bottom-0 h-1 w-6 bg-[var(--color-primary)] rounded-t-full"
-                            }
+                        <motion.span
+                            layoutId="rail-active-pill"
+                            aria-hidden="true"
+                            className="absolute inset-0 -z-10 rounded-[inherit] bg-[var(--color-primary-container)]"
+                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                         />
                     )}
                     <div className={`${isVertical ? 'w-12 h-12' : 'w-10 h-10'} flex items-center justify-center shrink-0`}>
@@ -71,9 +113,9 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                     </div>
                     <AnimatePresence>
                         {expanded && isVertical && (
-                            <Bilingual 
-                                textKey={labelKey} 
-                                className="text-sm font-semibold whitespace-nowrap text-[var(--color-on-surface)]" 
+                            <Bilingual
+                                textKey={labelKey}
+                                className="text-sm font-semibold whitespace-nowrap text-[var(--color-on-surface)]"
                                 subClassName="text-[9px] -mt-0.5 opacity-80"
                             />
                         )}
@@ -117,17 +159,27 @@ export default function Layout() {
     const syncState = useSyncManager();
     const scrollRef = useRef<HTMLElement>(null);
     const sidebarRef = useRef<HTMLElement>(null);
-    const dragControls = useDragControls();
 
     const [isNavHovered, setIsNavHovered] = useState(false);
     const [isProfileHovered, setIsProfileHovered] = useState(false);
-    
+
     // Sidebar preferences hook state
     const { position, onboardingShown, updatePosition, completeOnboarding } = useSidebarPreferences();
-    const [isDragging, setIsDragging] = useState(false);
-    const [activeDropZone, setActiveDropZone] = useState<SidebarPosition | null>(null);
+    const [drag, setDrag] = useState<{ x: number; y: number; zone: SidebarPosition } | null>(null);
+    const [viewport, setViewport] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }));
 
-    const isVertical = position === 'left' || position === 'right';
+    useEffect(() => {
+        const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
+    // While dragging, everything inside the rail already takes the shape of the target edge
+    const railPos = drag?.zone ?? position;
+    const isVertical = isVerticalPos(railPos);
+    const railBox = drag
+        ? draggedBox(drag.zone, drag.x, drag.y, viewport.w, viewport.h)
+        : dockedBox(position, isNavHovered, viewport.w, viewport.h);
 
     const hideFloatingBar = /^\/learn\/.+/.test(location.pathname);
 
@@ -142,108 +194,99 @@ export default function Layout() {
         }
     }, [location.pathname]);
 
-    // Handle drag target calculations
-    const handleDrag = (_event: any, info: any) => {
-        const x = info.point.x;
-        const y = info.point.y;
-        const w = window.innerWidth;
-        const h = window.innerHeight;
+    const pointerTo = (e: { clientX: number; clientY: number }) => ({
+        x: e.clientX, y: e.clientY, zone: nearestEdge(e.clientX, e.clientY, viewport.w, viewport.h),
+    });
 
-        const distToLeft = x;
-        const distToRight = w - x;
-        const distToTop = y;
-        const distToBottom = h - y;
-
-        const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
-
-        if (minDist === distToLeft) {
-            setActiveDropZone('left');
-        } else if (minDist === distToRight) {
-            setActiveDropZone('right');
-        } else if (minDist === distToTop) {
-            setActiveDropZone('top');
-        } else {
-            setActiveDropZone('bottom');
-        }
+    const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        setIsNavHovered(false);
+        setDrag(pointerTo(e));
     };
 
-    const handleDragEnd = async () => {
-        setIsDragging(false);
-        if (activeDropZone) {
-            await updatePosition(activeDropZone);
-        }
-        setActiveDropZone(null);
+    // Listened on the window: the grip is re-created when the rail turns, so it can't hold the pointer
+    const isDragging = drag !== null;
+    const dragRef = useRef(drag);
+    dragRef.current = drag;
+    useEffect(() => {
+        if (!isDragging) return;
+        const move = (e: PointerEvent) => setDrag(pointerTo(e));
+        const end = () => {
+            const zone = dragRef.current?.zone;
+            setDrag(null);
+            if (zone && zone !== position) updatePosition(zone);
+        };
+        const cancel = () => setDrag(null);
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', end);
+        window.addEventListener('pointercancel', cancel);
+        return () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', end);
+            window.removeEventListener('pointercancel', cancel);
+        };
+    }, [isDragging, position, viewport]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const moveWithKeys = (e: React.KeyboardEvent) => {
+        const edge = KEY_TO_EDGE[e.key];
+        if (!edge) return;
+        e.preventDefault();
+        if (edge !== position) updatePosition(edge);
     };
 
     return (
         <div className={`app-layout pos-${position}`}>
-            
-            {/* ===== DROP TARGETS OVERLAY DURING ACTIVE DRAGGING ===== */}
-            {isDragging && (
-                <div className="drop-zone-overlay">
-                    <div className={`drop-target-area col-start-1 row-start-2 ${activeDropZone === 'left' ? 'active' : ''}`}>
-                        <span>Alinear Izquierda</span>
-                    </div>
-                    <div className={`drop-target-area col-start-3 row-start-2 ${activeDropZone === 'right' ? 'active' : ''}`}>
-                        <span>Alinear Derecha</span>
-                    </div>
-                    <div className={`drop-target-area col-start-2 row-start-1 ${activeDropZone === 'top' ? 'active' : ''}`}>
-                        <span>Alinear Arriba</span>
-                    </div>
-                    <div className={`drop-target-area col-start-2 row-start-3 ${activeDropZone === 'bottom' ? 'active' : ''}`}>
-                        <span>Alinear Abajo</span>
-                    </div>
-                </div>
-            )}
+
+            {/* ===== WHERE THE RAIL WILL LAND WHILE DRAGGING ===== */}
+            <AnimatePresence>
+                {drag && (
+                    <motion.div
+                        aria-hidden="true"
+                        className="rail-drop-slot"
+                        initial={{ opacity: 0, ...dockedBox(drag.zone, false, viewport.w, viewport.h) }}
+                        animate={{ opacity: 1, ...dockedBox(drag.zone, false, viewport.w, viewport.h) }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* ===== DRAGGABLE RAIL SIDEBAR ===== */}
             <motion.aside
-                key={position}
                 ref={sidebarRef}
-                className={`sidebar-rail pos-${position} fixed bg-[var(--color-card)] border border-[var(--color-outline-variant)]`}
-                onMouseEnter={() => setIsNavHovered(true)}
+                className={`sidebar-rail pos-${railPos} fixed bg-[var(--color-card)] border border-[var(--color-outline-variant)] ${drag ? 'is-dragging' : ''}`}
+                onMouseEnter={() => { if (!drag) setIsNavHovered(true); }}
                 onMouseLeave={() => setIsNavHovered(false)}
-                animate={isVertical ? { 
-                    width: isNavHovered ? 260 : 68,
-                    height: 540,
-                    top: '50%',
-                    left: position === 'left' ? '1.5rem' : 'auto',
-                    right: position === 'right' ? '1.5rem' : 'auto',
-                    x: 0,
-                    y: '-50%'
-                } : {
-                    width: 540,
-                    height: 68,
-                    left: '50%',
-                    top: position === 'top' ? '1.5rem' : 'auto',
-                    bottom: position === 'bottom' ? '1.5rem' : 'auto',
-                    x: '-50%',
-                    y: 0
-                }}
-                transition={{ 
-                    type: 'spring', 
-                    stiffness: 240, 
-                    damping: 28 
-                }}
-                drag
-                dragListener={false}
-                dragControls={dragControls}
-                dragMomentum={false}
-                onDragStart={() => setIsDragging(true)}
-                onDrag={handleDrag}
-                onDragEnd={handleDragEnd}
+                initial={false}
+                animate={railBox}
+                transition={drag
+                    ? { type: 'spring', stiffness: 700, damping: 48, mass: 0.6 }
+                    : { type: 'spring', stiffness: 260, damping: 30 }}
             >
+                {/* Fades in when the rail turns between vertical and horizontal */}
+                <motion.div
+                    key={isVertical ? 'vertical' : 'horizontal'}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.18 }}
+                    className={`flex h-full w-full ${isVertical ? 'flex-col' : 'flex-row items-center'}`}
+                >
                 {/* Drag Handle & Logo Section */}
                 <div className={`flex shrink-0 ${
-                    isVertical 
-                        ? 'flex-col items-center mb-2 mt-1 w-full' 
+                    isVertical
+                        ? 'flex-col items-center mb-2 mt-1 w-full'
                         : 'flex-row items-center mr-4'
                 }`}>
-                    
+
                     {/* Drag Handle */}
                     <div
-                        onPointerDown={(e) => dragControls.start(e)}
-                        className={`drag-handle flex items-center justify-center cursor-grab active:cursor-grabbing p-1.5 rounded-lg hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] transition-colors shrink-0 relative ${
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Mover la barra: arrástrala o usa las flechas"
+                        onPointerDown={startDrag}
+                        onKeyDown={moveWithKeys}
+                        className={`drag-handle touch-none flex items-center justify-center cursor-grab active:cursor-grabbing p-1.5 rounded-lg hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] transition-colors shrink-0 relative ${
                             !onboardingShown ? 'drag-handle-glow bg-[var(--color-primary)]/10' : ''
                         } ${
                             isVertical ? 'mb-1 w-8 h-8' : 'mr-3 w-8 h-8'
@@ -262,10 +305,10 @@ export default function Layout() {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 className={`fixed z-[60] bg-[var(--color-card)] text-[var(--color-on-surface)] border border-[var(--color-primary)]/30 p-4 rounded-2xl shadow-[var(--shadow-float)] w-[200px] text-left text-xs pointer-events-auto ${
-                                    isVertical 
-                                        ? 'left-full ml-4 top-0' 
-                                        : position === 'top' 
-                                            ? 'top-full mt-4 left-0' 
+                                    isVertical
+                                        ? 'left-full ml-4 top-0'
+                                        : position === 'top'
+                                            ? 'top-full mt-4 left-0'
                                             : 'bottom-full mb-4 left-0'
                                 }`}
                             >
@@ -288,7 +331,7 @@ export default function Layout() {
 
                     {/* Logo */}
                     <div className={`flex items-center transition-all duration-300 ${
-                        isVertical 
+                        isVertical
                             ? (isNavHovered ? 'px-4 mx-4 justify-start w-full' : 'px-0 mx-2.5 justify-center')
                             : 'justify-start'
                     }`}>
@@ -312,8 +355,8 @@ export default function Layout() {
 
                 {/* Nav items */}
                 <nav className={`flex px-1 ${
-                    isVertical 
-                        ? 'flex-col gap-1 shrink-0 w-full' 
+                    isVertical
+                        ? 'flex-col gap-1 shrink-0 w-full'
                         : 'flex-row items-center justify-center space-x-0.5'
                 }`}>
                     {navItems.map(item => (
@@ -323,7 +366,7 @@ export default function Layout() {
                             icon={item.icon}
                             labelKey={item.labelKey}
                             expanded={isNavHovered}
-                            position={position}
+                            position={railPos}
                             end={item.end}
                         />
                     ))}
@@ -396,13 +439,20 @@ export default function Layout() {
                         </NavLink>
                     </div>
                 )}
+                </motion.div>
             </motion.aside>
 
             {/* ===== MAIN CONTENT ===== */}
             <div className="main-content">
                 <div className={`main-content-inner ${hideFloatingBar ? 'no-floating-bar-padding' : ''}`}>
                     <OfflineBanner syncState={syncState} />
-                    <Outlet />
+                    {/* Pages without their own boundary show the sprout while their code loads,
+                        then fade in instead of appearing at once */}
+                    <Suspense fallback={<PageLoader />}>
+                        <div key={location.pathname} className="page-enter">
+                            <Outlet />
+                        </div>
+                    </Suspense>
                 </div>
             </div>
 

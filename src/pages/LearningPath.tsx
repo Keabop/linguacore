@@ -281,10 +281,6 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     ${!effectivelyLocked ? 'cursor-pointer hover:-translate-y-1' : 'cursor-not-allowed'}
                 `}
             >
-                {/* Active Indicator Bar */}
-                {isCurrent && (
-                    <div className={`card-active-indicator ${isAssessment ? 'assessment' : 'primary'}`} />
-                )}
                 {/* Tier gate overlay */}
                 {tierGated && (
                     <Link to="/pricing" className="absolute inset-0 z-10 bg-[color-mix(in_oklch,var(--color-level-ink)_45%,transparent)] flex flex-col items-center justify-center gap-3 rounded-2xl">
