@@ -17,7 +17,7 @@ import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen, AlertTriangle, Lock }
 import { toast } from '../lib/toast';
 import { useTier } from '../hooks/useTier';
 import { UsageBadge } from '../components/UsageBadge';
-import { CountUp } from '../components/reactbits';
+import CountUp from '../components/reactbits/CountUp';
 
 export default function ReviewSession() {
     const { t } = useTranslation();

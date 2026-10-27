@@ -3,16 +3,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import type { CEFRLevel, Profile, UnitProgressRow } from '../lib/database.types';
 
-// Import static data directly — no DB needed for these
-import {
-    a1Units, a2Units, b1Units, b2Units,
-} from '../data/curriculum';
-
-const ALL_UNITS = [...a1Units, ...a2Units, ...b1Units, ...b2Units];
-
-function getUnitsForLevel(level: CEFRLevel) {
-    return ALL_UNITS.filter(u => u.level === level).sort((a, b) => a.unitNumber - b.unitNumber);
-}
+// Unit metadata only: the full curriculum would land in the entry bundle via Layout
+import { getUnitsByLevel } from '../data/curriculum/units';
 
 export const LEVEL_REQUIREMENTS: Record<CEFRLevel, {
     minWords: number;
@@ -73,8 +65,7 @@ export function useLevelProgression() {
 
     // Fetch unit progress for current level
     const currentLevel = profile?.current_level ?? 'A1';
-    const levelUnits = getUnitsForLevel(currentLevel);
-    const levelUnitIds = levelUnits.map(u => u.id);
+    const levelUnitIds = getUnitsByLevel(currentLevel).map(u => u.id);
 
     const { data: unitProgressRecords } = useQuery({
         queryKey: ['unit-progress-level', currentLevel, userId],
@@ -102,16 +93,16 @@ export function useLevelProgression() {
             }
         }
 
-        const unitsTotal = levelUnits.length;
+        const unitsTotal = levelUnitIds.length;
         let unitsCompleted = 0;
         let currentUnitId: string | null = null;
 
-        for (const unit of levelUnits) {
-            const progress = progressMap.get(unit.id);
+        for (const unitId of levelUnitIds) {
+            const progress = progressMap.get(unitId);
             if (progress?.completed_at) {
                 unitsCompleted++;
             } else if (currentUnitId === null) {
-                currentUnitId = unit.id;
+                currentUnitId = unitId;
             }
         }
 
