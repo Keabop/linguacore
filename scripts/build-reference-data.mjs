@@ -30,15 +30,18 @@ for (const row of rows) {
 }
 writeFileSync(`${OUT}/cefrj-vocabulary.json`, JSON.stringify(vocabulary));
 
-// CMUdict, only for the words of the list (first pronunciation of each)
+// CMUdict, only for the words of the list. Every variant is kept: homographs (read, live, close)
+// have several, and the right one depends on the meaning, so it is chosen per vocabulary card.
 const wanted = new Set(vocabulary.map(([w]) => w));
 const pronunciations = {};
 for (const line of readFileSync(cmuPath, 'utf8').split('\n')) {
     const match = line.match(/^(\S+?)(?:\(\d+\))?\s+([^#]+)/);
     if (!match) continue;
     const word = match[1].toLowerCase();
-    if (wanted.has(word) && !(word in pronunciations)) pronunciations[word] = match[2].trim();
+    if (!wanted.has(word)) continue;
+    (pronunciations[word] ??= []).push(match[2].trim());
 }
 writeFileSync(`${OUT}/pronunciations.json`, JSON.stringify(pronunciations));
 
-console.log(`${vocabulary.length} vocabulary entries, ${Object.keys(pronunciations).length} pronunciations`);
+const homographs = Object.values(pronunciations).filter(v => v.length > 1).length;
+console.log(`${vocabulary.length} vocabulary entries, ${Object.keys(pronunciations).length} pronunciations (${homographs} with variants)`);

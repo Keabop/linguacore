@@ -1,9 +1,11 @@
-// ARPAbet (CMU Pronouncing Dictionary) to IPA, General American. Used to give new vocabulary
-// entries a phonetic transcription from content/reference/pronunciations.json.
+// ARPAbet (CMU Pronouncing Dictionary) to IPA in the Cambridge Dictionary's American style:
+// General American (the accent of the app's audio) with length marks, so learners can tell
+// ship /ʃɪp/ from sheep /ʃiːp/. Gives vocabulary cards their transcription from
+// content/reference/pronunciations.json.
 
 const VOWELS: Record<string, string> = {
-    AA: 'ɑ', AE: 'æ', AH: 'ʌ', AO: 'ɔ', AW: 'aʊ', AY: 'aɪ', EH: 'e', ER: 'ɝ',
-    EY: 'eɪ', IH: 'ɪ', IY: 'i', OW: 'oʊ', OY: 'ɔɪ', UH: 'ʊ', UW: 'u',
+    AA: 'ɑː', AE: 'æ', AH: 'ʌ', AO: 'ɔː', AW: 'aʊ', AY: 'aɪ', EH: 'e', ER: 'ɝː',
+    EY: 'eɪ', IH: 'ɪ', IY: 'iː', OW: 'oʊ', OY: 'ɔɪ', UH: 'ʊ', UW: 'uː',
 };
 
 const CONSONANTS: Record<string, string> = {
@@ -16,7 +18,7 @@ const CONSONANTS: Record<string, string> = {
 const ONSETS = new Set([
     'B L', 'B R', 'D R', 'D W', 'F L', 'F R', 'G L', 'G R', 'K L', 'K R', 'K W', 'P L', 'P R',
     'S K', 'S L', 'S M', 'S N', 'S P', 'S T', 'S W', 'SH R', 'T R', 'T W', 'TH R', 'HH Y', 'K Y',
-    'P Y', 'B Y', 'F Y', 'M Y', 'V Y', 'S K R', 'S K W', 'S P L', 'S P R', 'S T R', 'S K Y',
+    'P Y', 'B Y', 'F Y', 'G Y', 'M Y', 'V Y', 'S K R', 'S K W', 'S P L', 'S P R', 'S T R', 'S K Y',
 ]);
 
 interface Phone { symbol: string; stress: number } // stress -1 for consonants
@@ -34,6 +36,9 @@ const isVowel = (p: Phone) => p.symbol in VOWELS;
 function vowelIpa(p: Phone): string {
     if (p.symbol === 'AH' && p.stress === 0) return 'ə';
     if (p.symbol === 'ER' && p.stress === 0) return 'ɚ';
+    // Unstressed i and u are short ("happy" /ˈhæpi/, "influence" /ˈɪnfluəns/)
+    if (p.symbol === 'IY' && p.stress === 0) return 'i';
+    if (p.symbol === 'UW' && p.stress === 0) return 'u';
     return VOWELS[p.symbol];
 }
 

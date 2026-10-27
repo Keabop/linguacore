@@ -2,19 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { arpabetToIpa } from './arpabet';
 import pronunciations from '../../content/reference/pronunciations.json';
 
-const ipa = (word: string) => arpabetToIpa((pronunciations as Record<string, string>)[word]);
+const variants = pronunciations as Record<string, string[]>;
+const ipa = (word: string, variant = 0) => arpabetToIpa(variants[word][variant]);
 
 describe('arpabetToIpa', () => {
     it.each([
         ['cat', '/kæt/'],
+        ['sheep', '/ʃiːp/'],
         ['about', '/əˈbaʊt/'],
-        ['water', '/ˈwɔtɚ/'],
-        ['student', '/ˈstudənt/'],
-        ['teacher', '/ˈtitʃɚ/'],
+        ['water', '/ˈwɔːtɚ/'],
+        ['student', '/ˈstuːdənt/'],
+        ['teacher', '/ˈtiːtʃɚ/'],
         ['understand', '/ˌʌndɚˈstænd/'],
-        ['computer', '/kəmˈpjutɚ/'],
+        ['computer', '/kəmˈpjuːtɚ/'],
         ['family', '/ˈfæməli/'],
         ['breakfast', '/ˈbrekfəst/'],
+        ['bird', '/bɝːd/'],
+        ['ambiguity', '/ˌæmbɪˈɡjuːəti/'],
+        ['happy', '/ˈhæpi/'],
     ])('%s → %s', (word, expected) => {
         expect(ipa(word)).toBe(expected);
     });
@@ -25,8 +30,12 @@ describe('arpabetToIpa', () => {
     });
 
     it('converts every pronunciation in the reference data', () => {
-        for (const [word, arpabet] of Object.entries(pronunciations as Record<string, string>)) {
-            expect(arpabetToIpa(arpabet), word).toMatch(/^\/[^A-Z0-9]+\/$/);
+        for (const [word, list] of Object.entries(variants)) {
+            for (const arpabet of list) expect(arpabetToIpa(arpabet), word).toMatch(/^\/[^A-Z0-9]+\/$/);
         }
+    });
+
+    it('keeps both readings of homographs', () => {
+        expect([ipa('read', 0), ipa('read', 1)].sort()).toEqual(['/red/', '/riːd/']);
     });
 });
