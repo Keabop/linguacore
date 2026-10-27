@@ -42,7 +42,7 @@ describe('generateWithFallback', () => {
         await expect(generateWithFallback('hi')).resolves.toBe('{"ok":true}');
         expect(generateContent).toHaveBeenCalledWith(expect.objectContaining({
             model: 'gemini-2.5-flash-lite',
-            config: { responseMimeType: 'application/json' },
+            config: { responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } },
         }));
     });
 
@@ -68,6 +68,6 @@ describe('generateWithFallback', () => {
     it('gives up after the last model', async () => {
         generateContent.mockRejectedValue(new ApiError({ message: 'busy', status: 503 }));
         await expect(generateWithFallback('hi')).rejects.toThrow('busy');
-        expect(generateContent).toHaveBeenCalledTimes(3);
+        expect(generateContent).toHaveBeenCalledTimes(2);
     });
 });
