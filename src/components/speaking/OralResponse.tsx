@@ -4,6 +4,7 @@ import { Mic, MicOff, Loader2, RotateCcw, MessageCircle } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
 import { evaluateWriting } from '../../lib/ai';
 import type { CEFRLevel } from '../../lib/db';
+import { MicIcon } from '../icons';
 
 interface Props {
     instruction: string;
@@ -109,7 +110,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                     <>
                         <button onClick={handleToggleRecord}
                             className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-[var(--color-on-primary)] animate-pulse' : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90'}`}>
-                            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                            {isListening ? <MicOff className="w-4 h-4" /> : <MicIcon size={16} aria-hidden="true" />}
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
                         {transcript && !isListening && (

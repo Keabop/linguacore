@@ -1104,12 +1104,6 @@ span[data-word].in-deck {
   font-weight: 700;
   line-height: 1;
 }
-.streak-chip.is-bumped svg { animation: streak-bump 600ms var(--ease-spring); }
-@keyframes streak-bump {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.45) rotate(-8deg); }
-  100% { transform: scale(1); }
-}
 
 /* Achievement moments (see lib/celebrate.ts). Only these use the spring easing. */
 .celebrate-pop { animation: celebrate-pop 380ms var(--ease-spring); }
@@ -1160,5 +1154,5 @@ span[data-word].in-deck {
 .plant-picker .plant { width: 2.6rem; height: 3.2rem; }
 
 @media (prefers-reduced-motion: reduce) {
-  .celebrate-pop, .answer-nudge, .streak-chip.is-bumped svg { animation: none !important; }
+  .celebrate-pop, .answer-nudge { animation: none !important; }
 }

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
+import PlayOnMount from '../icons/PlayOnMount';
+import { CheckIcon } from '../icons';
 
 interface MultipleChoiceExerciseProps {
     exercise: GrammarExercise;
@@ -103,7 +105,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                     <div className="text-center">
                         {status === 'correct' ? (
                             <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
-                                <Check className="w-5 h-5" /> {t('exercises.correct')}
+                                <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
                             </p>
                         ) : (
                             <p className="text-lg font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5">

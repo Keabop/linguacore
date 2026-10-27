@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
 import { answersMatch } from '../../lib/normalizeAnswer';
+import PlayOnMount from '../icons/PlayOnMount';
+import { CheckIcon } from '../icons';
 
 interface WordOrderExerciseProps {
     exercise: GrammarExercise;
@@ -151,7 +153,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 >
                     <div className="text-center">
                         <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
-                            <Check className="w-5 h-5" /> {t('exercises.correct')}
+                            <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
                         </p>
                     </div>
                     <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)]">
