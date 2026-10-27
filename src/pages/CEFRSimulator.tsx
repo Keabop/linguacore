@@ -6,6 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
+import { shuffleQuestion } from '../lib/shuffle';
 import { placementQuestions, writingPrompts, AssessmentQuestion, WritingPrompt } from '../data/assessments/cefr-questions';
 import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
 import { cambridgeB2Questions, cambridgeB2Writing, cambridgeB2Speaking } from '../data/assessments/cambridge-b2-questions';
@@ -234,7 +235,7 @@ export default function CEFRSimulator() {
             sPrompts = [...cambridgeB2Speaking];
         }
 
-        setQuestions(selectedQuestions);
+        setQuestions(selectedQuestions.map(shuffleQuestion));
         setWritingPromptsList(wPrompts);
         setSpeakingPrompts(sPrompts);
 

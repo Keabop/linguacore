@@ -966,7 +966,7 @@ export const b1Exercises: GrammarExercise[] = [
     type: 'word-order',
     question: 'Ordena las palabras para formar una oración correcta:',
     correctAnswer: 'She asked if I had seen her keys.',
-    scrambledWords: ['had', 'if', 'keys.', 'asked', 'I', 'she', 'seen', 'She', 'her'],
+    scrambledWords: ['had', 'if', 'keys.', 'asked', 'I', 'seen', 'She', 'her'],
     explanation: 'Pregunta indirecta con "if": orden normal sujeto + verbo. "Have you seen" → "if I had seen".',
   },
 
