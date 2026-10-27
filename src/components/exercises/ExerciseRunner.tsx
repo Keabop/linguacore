@@ -44,9 +44,9 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
     const score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
 
     const getScoreColor = () => {
-        if (score >= 80) return 'text-emerald-400';
-        if (score >= 60) return 'text-amber-400';
-        return 'text-red-400';
+        if (score >= 80) return 'text-[var(--color-success)]';
+        if (score >= 60) return 'text-[var(--color-tertiary-ink)]';
+        return 'text-[var(--color-error)]';
     };
 
     const getScoreShadow = () => {
@@ -79,7 +79,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-12"
             >
-                <div className={`bg-[var(--color-card)] ${getScoreShadow()} rounded-[2rem] p-10 w-full max-w-sm text-center space-y-7 shadow-[var(--shadow-elevated)]`}>
+                <div className={`bg-[var(--color-card)] ${getScoreShadow()} rounded-[var(--radius-lg)] p-10 w-full max-w-sm text-center space-y-7 shadow-[var(--shadow-elevated)]`}>
                     <div className="space-y-2">
                         <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
                             {t('exercises.title')}
@@ -93,11 +93,11 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                     </div>
 
                     <div className="flex items-center justify-center gap-6 text-sm">
-                        <div className="flex items-center gap-1.5 text-emerald-400">
+                        <div className="flex items-center gap-1.5 text-[var(--color-success)]">
                             <Check className="w-4 h-4" />
                             <span className="font-bold">{correctCount}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-red-400">
+                        <div className="flex items-center gap-1.5 text-[var(--color-error)]">
                             <X className="w-4 h-4" />
                             <span className="font-bold">{total - correctCount}</span>
                         </div>
@@ -108,7 +108,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
 
                     <button
                         onClick={() => onComplete(score)}
-                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
+                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.finish')}
                     </button>
@@ -164,7 +164,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                 </div>
                 <div className="h-2 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full"
+                        className="h-full bg-[var(--color-primary)] rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.4, ease: 'easeOut' }}

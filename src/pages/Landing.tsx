@@ -1,767 +1,422 @@
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-    BookOpen,
-    MessageCircle,
-    Brain,
-    Route,
-    PenTool,
-    Sparkles,
-    ArrowRight,
-    Check,
-    Upload,
-    GraduationCap,
-    Briefcase,
-    Activity,
-    Home,
-    Map,
-    PenLine,
-    RefreshCw,
-    Flame,
-    Layers,
-} from 'lucide-react';
-
-import Aurora from '../components/reactbits/Aurora';
-import SplitText from '../components/reactbits/SplitText';
-import BlurText from '../components/reactbits/BlurText';
-import SpotlightCard from '../components/reactbits/SpotlightCard';
-import Magnet from '../components/reactbits/Magnet';
-import CountUp from '../components/reactbits/CountUp';
+import { motion, MotionConfig } from 'framer-motion';
+import { ArrowRight, BookOpen, Brain, Check, GraduationCap, MessageCircle, RotateCcw, Upload, Briefcase, Activity } from 'lucide-react';
+import Wordmark from '../components/ui/Wordmark';
+import LevelBadge from '../components/ui/LevelBadge';
+import Garden from '../components/garden/Garden';
+import Plant from '../components/garden/Plant';
+import PlayOnMount from '../components/icons/PlayOnMount';
+import { CheckIcon } from '../components/icons';
+import { celebrateCorrect, nudgeWrong } from '../lib/celebrate';
+import type { CEFRLevel } from '../lib/db';
 
 /* ------------------------------------------------------------------ */
-/*  Animation helpers                                                  */
+/*  Content (counts come from src/data: units.ts and stories.ts)       */
 /* ------------------------------------------------------------------ */
-const fadeUp = {
-    hidden: { opacity: 0, y: 24 },
-    visible: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: { delay: i * 0.1, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
-    }),
-};
 
-const stagger = {
-    visible: { transition: { staggerChildren: 0.08 } },
-};
+const STAGES: {
+    level: CEFRLevel; name: string; units: number; stories: number; canDo: string; sample: string[];
+    plant: { stage: 'seed' | 'sprout' | 'grown'; height: number; noBloom?: boolean };
+}[] = [
+    {
+        level: 'A1', name: 'Semilla', units: 8, stories: 10,
+        canDo: 'Te presentas, hablas de tu día y de lo que te gusta.',
+        sample: ['Introducing Yourself', 'My Daily Life', 'At the Market'],
+        plant: { stage: 'seed', height: 30 },
+    },
+    {
+        level: 'A2', name: 'Brote', units: 10, stories: 10,
+        canDo: 'Cuentas lo que hiciste, haces planes y comparas.',
+        sample: ['What Did You Do Yesterday?', 'Travel Stories', 'My Plans for the Future'],
+        plant: { stage: 'sprout', height: 38 },
+    },
+    {
+        level: 'B1', name: 'Hoja', units: 12, stories: 11,
+        canDo: 'Hablas de experiencias y cuentas lo que otros dijeron.',
+        sample: ['Life Experiences', 'Back in the Day', 'What Did They Say?'],
+        plant: { stage: 'grown', height: 42, noBloom: true },
+    },
+    {
+        level: 'B2', name: 'Flor', units: 14, stories: 13,
+        canDo: 'Imaginas escenarios, matizas y escribes con detalle.',
+        sample: ['What If Things Had Been Different?', 'I Wish I Could...', 'Painting with Words'],
+        plant: { stage: 'grown', height: 48 },
+    },
+];
 
-/* ------------------------------------------------------------------ */
-/*  Data                                                               */
-/* ------------------------------------------------------------------ */
-const FEATURES = [
-    {
-        icon: BookOpen,
-        title: 'Historias interactivas',
-        desc: 'Lee historias generadas por IA adaptadas a tu nivel. Cada palabra nueva se convierte en una tarjeta de repaso FSRS.',
-        color: 'text-[var(--color-level-a1)]',
-        bg: 'bg-[var(--color-level-a1)]/10',
-    },
-    {
-        icon: MessageCircle,
-        title: 'Tutor conversacional',
-        desc: 'Practica conversaciones reales con un tutor IA que corrige tus errores en tiempo real y se adapta a tus temas favoritos.',
-        color: 'text-[var(--color-success)]',
-        bg: 'bg-[var(--color-success)]/10',
-    },
-    {
-        icon: Brain,
-        title: 'Repetición espaciada (FSRS)',
-        desc: 'Algoritmo científico que programa repeticiones en el momento óptimo para maximizar tu retención a largo plazo.',
-        color: 'text-[var(--color-primary-light)]',
-        bg: 'bg-[var(--color-primary-light)]/10',
-    },
-    {
-        icon: Activity,
-        title: 'Laboratorio de errores',
-        desc: 'Tus fallas de redacción se transforman en un minijuego de 3 pasos (Análisis, Reconstrucción y Quiz) para dominarlas.',
-        color: 'text-[var(--color-primary-light)]',
-        bg: 'bg-[var(--color-primary)]/10',
-    },
-    {
-        icon: GraduationCap,
-        title: 'Simulacros oficiales',
-        desc: 'Mídete con simulacros completos para exámenes internacionales como TOEFL, IELTS y Cambridge, con simulación de Speaking evaluada por IA.',
-        color: 'text-amber-400',
-        bg: 'bg-amber-500/10',
-    },
-    {
-        icon: Briefcase,
-        title: 'Mazos profesionales IA',
-        desc: 'Genera al instante mazos especializados de 15 palabras esenciales adaptados a cualquier industria o profesión.',
-        color: 'text-indigo-400',
-        bg: 'bg-indigo-500/10',
-    },
-    {
-        icon: Upload,
-        title: 'Importación flexible',
-        desc: 'Sube archivos CSV de Anki o Quizlet, o pega listas simples de texto plano para importar vocabulario sin reiniciar.',
-        color: 'text-[var(--color-level-b1)]',
-        bg: 'bg-[var(--color-level-b1)]/10',
-    },
-    {
-        icon: PenTool,
-        title: 'Portabilidad y exportación',
-        desc: 'Exporta tu progreso FSRS y tarjetas completas a formato CSV en un solo clic, manteniendo control total de tus datos.',
-        color: 'text-[var(--color-level-b2)]',
-        bg: 'bg-[var(--color-level-b2)]/10',
-    },
+const SESSION = [
+    { icon: BookOpen, title: 'Lees', desc: '44 historias de tu nivel. Toca cualquier palabra para ver su traducción y guardarla en tu mazo.' },
+    { icon: MessageCircle, title: 'Practicas', desc: 'Gramática, escritura y speaking en cada unidad, y un tutor con IA para conversar de lo que quieras.' },
+    { icon: Brain, title: 'Repasas', desc: 'Tus tarjetas vuelven con repetición espaciada (FSRS), justo antes de que las olvides.' },
+    { icon: Activity, title: 'Corriges', desc: 'Los errores que detecta el tutor se vuelven minijuegos en tu laboratorio de errores.' },
 ];
 
 const FREE_ITEMS = [
-    'Nivel A1 completo para siempre',
-    'Test de Nivelación rápida semanal',
-    'Laboratorio interactivo de errores',
-    'Importación y exportación de vocabulario',
+    'Nivel A1 completo, para siempre',
+    'Test de nivelación',
+    'Laboratorio de errores',
+    'Importar y exportar tu vocabulario',
 ];
 
 const PRO_ITEMS = [
-    'Niveles del A1 al C1 con ruta guiada',
+    'Niveles A1 a B2 con ruta guiada',
     'Tutor conversacional y repasos ilimitados',
-    'Simulacros oficiales (TOEFL, IELTS, Cambridge)',
-    'Evaluación experta de ensayos y Speaking por IA',
+    'Simulacros TOEFL, IELTS y Cambridge',
+    'Evaluación de escritura y speaking con IA',
+    'Plantas extra para tu jardín',
 ];
 
-const HOW_STEPS = [
-    {
-        step: '01',
-        title: 'Crea tu cuenta',
-        desc: 'Registrate gratis en 30 segundos con email o Google. El nivel A1 es tuyo para siempre.',
-    },
-    {
-        step: '02',
-        title: 'Estudia a tu ritmo',
-        desc: 'Lee historias, practica con el tutor, y repasa vocabulario. La IA se adapta a tus errores.',
-    },
-    {
-        step: '03',
-        title: 'Avanza de nivel',
-        desc: 'Completa unidades, pasa evaluaciones y desbloquea niveles del A1 al B2.',
-    },
+const TRY_QUESTIONS = [
+    { sentence: ['She', 'to work by bus.'], options: ['go', 'goes', 'going'], answer: 'goes', why: 'Con he, she e it el verbo lleva -s: she goes.' },
+    { sentence: ['I', 'from Mexico.'], options: ['am', 'is', 'are'], answer: 'am', why: 'Con I siempre va am: I am from Mexico.' },
+    { sentence: ['There', 'two cats in the garden.'], options: ['is', 'are', 'be'], answer: 'are', why: 'Con plural (two cats) se usa there are.' },
 ];
 
+const reveal = {
+    initial: { opacity: 0, y: 8 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.2 },
+    transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] as const },
+};
+
 /* ------------------------------------------------------------------ */
-/*  Components                                                         */
+/*  Hero exercise: three A1 questions, each right answer plants one    */
 /* ------------------------------------------------------------------ */
 
-function FeatureCard({ icon: Icon, title, desc, color, bg, i }: typeof FEATURES[0] & { i: number }) {
-    return (
-        <motion.div custom={i} variants={fadeUp}>
-            <SpotlightCard
-                className="h-full bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
-                spotlightColor="rgba(112, 42, 225, 0.12)"
-            >
-                <div className={`w-12 h-12 ${bg} rounded-2xl flex items-center justify-center mb-5`}>
-                    <Icon className={`w-5 h-5 ${color}`} />
-                </div>
-                <h3 className="text-base font-black tracking-tight text-[var(--color-on-surface)] mb-2 font-display">{title}</h3>
-                <p className="text-sm text-[var(--color-on-surface)]/80 leading-relaxed font-body font-medium">{desc}</p>
-            </SpotlightCard>
-        </motion.div>
-    );
-}
+function TryIt() {
+    const [index, setIndex] = useState(0);
+    const [picked, setPicked] = useState<string | null>(null);
+    const [correct, setCorrect] = useState(0);
+    const optionRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-function MockupSignup() {
-    return (
-        <div className="bg-[var(--color-card)]/80 backdrop-blur-sm rounded-[2rem] p-6 space-y-4 shadow-[var(--shadow-card)]">
-            <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded-xl bg-[var(--color-primary)]/30 flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-lg bg-[var(--color-primary)]/60" />
-                </div>
-                <span className="text-sm font-black text-[var(--color-on-surface)]">Voxie</span>
-            </div>
-            <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">Crea tu cuenta gratis</p>
-            <div className="space-y-2">
-                <div className="h-9 bg-[var(--color-surface-container-low)] rounded-full px-3 flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[var(--color-on-surface)]/10" />
-                    <div className="h-2 w-28 bg-[var(--color-on-surface)]/10 rounded-full" />
-                </div>
-                <div className="h-9 bg-[var(--color-surface-container-low)] rounded-full px-3 flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[var(--color-on-surface)]/10" />
-                    <div className="h-2 w-20 bg-[var(--color-on-surface)]/10 rounded-full" />
-                </div>
-            </div>
-            <div className="h-9 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full flex items-center justify-center gap-2 shadow-[var(--shadow-card)]">
-                <div className="h-2 w-24 bg-white/40 rounded-full" />
-            </div>
-            <div className="flex items-center gap-2 justify-center">
-                <div className="h-px flex-1 bg-[var(--color-surface-container-high)]" />
-                <span className="text-[10px] text-[var(--color-on-surface-muted)]">o continúa con</span>
-                <div className="h-px flex-1 bg-[var(--color-surface-container-high)]" />
-            </div>
-            <div className="h-8 bg-[var(--color-surface-container-low)] rounded-full flex items-center justify-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-[var(--color-on-surface)]/10" />
-                <div className="h-2 w-16 bg-[var(--color-on-surface)]/10 rounded-full" />
-            </div>
-        </div>
-    );
-}
+    const done = index >= TRY_QUESTIONS.length;
+    const q = TRY_QUESTIONS[Math.min(index, TRY_QUESTIONS.length - 1)];
+    const isRight = picked === q.answer;
 
-function MockupStory() {
+    const choose = (option: string) => {
+        if (picked) return;
+        setPicked(option);
+        if (option === q.answer) setCorrect(c => c + 1);
+    };
+
+    // Runs after React has applied the right/wrong classes, so the animation class survives
+    useEffect(() => {
+        if (!picked) return;
+        const el = optionRefs.current[picked];
+        if (picked === q.answer) celebrateCorrect(el);
+        else nudgeWrong(el);
+    }, [picked, q.answer]);
+
+    const next = () => {
+        setPicked(null);
+        setIndex(i => i + 1);
+    };
+
+    const restart = () => {
+        setIndex(0);
+        setPicked(null);
+        setCorrect(0);
+    };
+
     return (
-        <div className="bg-[var(--color-card)]/80 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)]">
-            {/* Story header */}
-            <div className="bg-[var(--color-surface-container-low)] px-5 py-3.5 flex items-center gap-2">
-                <div className="w-5 h-5 rounded-xl bg-[var(--color-level-a1)]/20 flex items-center justify-center">
-                    <div className="w-2.5 h-2.5 rounded-lg bg-[var(--color-level-a1)]/60" />
-                </div>
-                <div className="h-2 w-32 bg-[var(--color-on-surface)]/10 rounded-full" />
-                <div className="ml-auto h-5 w-10 bg-[var(--color-primary)]/20 rounded-full flex items-center justify-center">
-                    <div className="h-1.5 w-6 bg-[var(--color-primary)]/50 rounded-full" />
-                </div>
+        <div className="card p-5 sm:p-6 space-y-5 text-left" aria-labelledby="try-title">
+            <div className="flex items-baseline justify-between gap-3">
+                <h2 id="try-title" className="text-xl font-extrabold">Pruébalo ahora</h2>
+                <span className="text-xs font-mono text-[var(--color-on-surface-variant)]">
+                    {done ? '3 / 3' : `${index + 1} / 3`}
+                </span>
             </div>
-            {/* Story text */}
-            <div className="px-5 py-5 space-y-2">
-                <div className="h-2 w-full bg-[var(--color-on-surface)]/8 rounded-full" />
-                <div className="h-2 w-5/6 bg-[var(--color-on-surface)]/8 rounded-full" />
-                <div className="flex items-center gap-1 flex-wrap mt-3">
-                    <div className="h-2 w-10 bg-[var(--color-on-surface)]/8 rounded-full" />
-                    <div className="h-2 w-14 bg-[var(--color-on-surface)]/8 rounded-full" />
-                    <span className="text-[10px] text-[var(--color-primary)] font-bold underline decoration-dotted cursor-pointer">morning</span>
-                    <div className="h-2 w-12 bg-[var(--color-on-surface)]/8 rounded-full" />
-                    <div className="h-2 w-8 bg-[var(--color-on-surface)]/8 rounded-full" />
-                </div>
-                <div className="h-2 w-4/5 bg-[var(--color-on-surface)]/8 rounded-full" />
-                {/* Tooltip popup */}
-                <div className="bg-[var(--color-surface-container)] rounded-2xl p-3 mt-2 space-y-1.5 shadow-[var(--shadow-card)]">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-[var(--color-primary)]">morning</span>
-                        <div className="h-3 w-8 bg-[var(--color-success)]/20 rounded-full" />
-                    </div>
-                    <div className="h-1.5 w-16 bg-[var(--color-on-surface)]/10 rounded-full" />
-                    <div className="h-5 w-full bg-[var(--color-primary)]/15 rounded-xl flex items-center justify-center">
-                        <div className="h-1.5 w-20 bg-[var(--color-primary)]/40 rounded-full" />
+
+            <Garden
+                total={3}
+                completed={correct}
+                species="girasol"
+                grow={false}
+                label={`${correct} de 3 respuestas correctas`}
+                className="!h-24"
+            />
+
+            {done ? (
+                <div className="space-y-4" role="status">
+                    <p className="text-lg font-bold">
+                        {correct === 3 ? 'Tres de tres. Tu jardín ya floreció.' : `Plantaste ${correct} de 3.`}
+                    </p>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">
+                        Crea tu cuenta para guardar tu jardín y seguir con la unidad 1 del nivel A1.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                        <Link to="/auth" className="btn-primary px-5 py-3 text-sm inline-flex items-center gap-2">
+                            Guardar mi jardín <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                        </Link>
+                        <button onClick={restart} className="btn-secondary px-5 py-3 text-sm inline-flex items-center gap-2">
+                            <RotateCcw className="w-4 h-4" aria-hidden="true" /> Otra vez
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    );
-}
+            ) : (
+                <>
+                    <p className="font-display text-2xl font-bold tracking-tight">
+                        {q.sentence[0]}{' '}
+                        <span className="inline-block min-w-16 border-b-[3px] border-[var(--color-tertiary)] text-center px-2">
+                            {picked ?? '?'}
+                        </span>{' '}
+                        {q.sentence[1]}
+                    </p>
 
-function MockupPath() {
-    const units = [
-        { label: 'Introducing Yourself', done: true },
-        { label: 'Daily Routines', done: true },
-        { label: 'Present Tense', active: true },
-        { label: 'My Family', locked: true },
-    ];
-    return (
-        <div className="bg-[var(--color-card)]/80 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)]">
-            <div className="bg-[var(--color-surface-container-low)] px-5 py-3.5">
-                <div className="h-2 w-24 bg-[var(--color-on-surface)]/10 rounded-full mb-1" />
-                <div className="flex items-center gap-2 mt-1">
-                    <div className="h-1.5 bg-[var(--color-surface-container)] rounded-full flex-1 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full" style={{ width: '40%' }} />
+                    <div className="grid gap-2" role="group" aria-label="Opciones">
+                        {q.options.map((option) => {
+                            const state = !picked ? '' : option === q.answer ? 'right' : option === picked ? 'wrong' : 'dim';
+                            return (
+                                <button
+                                    key={option}
+                                    ref={(el) => { optionRefs.current[option] = el; }}
+                                    onClick={() => choose(option)}
+                                    disabled={!!picked}
+                                    className={`flex items-center justify-between rounded-[var(--radius-sm)] border-[1.5px] px-4 py-3 text-left font-medium transition-colors duration-[var(--dur-short)] ${
+                                        state === 'right'
+                                            ? 'border-[var(--color-primary)] bg-[var(--color-primary-container)]'
+                                            : state === 'wrong'
+                                                ? 'border-[var(--color-error)] bg-[var(--color-error-light)]'
+                                                : state === 'dim'
+                                                    ? 'border-[var(--color-outline-variant)] opacity-60'
+                                                    : 'border-[var(--color-outline-variant)] bg-[var(--color-card)] hover:border-[var(--color-on-surface-muted)]'
+                                    }`}
+                                >
+                                    {option}
+                                    {state === 'right' && <PlayOnMount icon={CheckIcon} size={20} className="text-[var(--color-primary)]" />}
+                                </button>
+                            );
+                        })}
                     </div>
-                    <span className="text-[9px] text-[var(--color-on-surface-muted)]">2/5 A1</span>
-                </div>
-            </div>
-            <div className="px-4 py-4 space-y-2">
-                {units.map((u, i) => (
-                    <div key={i} className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl ${
-                        u.active ? 'bg-[var(--color-primary)]/8 shadow-[var(--shadow-card)]' :
-                        u.done ? 'bg-[var(--color-success)]/5' :
-                        'bg-[var(--color-surface-container-low)] opacity-50'
-                    }`}>
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                            u.done ? 'bg-[var(--color-success)]/20' : u.active ? 'bg-[var(--color-primary)]/20' : 'bg-[var(--color-on-surface)]/5'
-                        }`}>
-                            <div className={`w-2 h-2 rounded-full ${
-                                u.done ? 'bg-[var(--color-success)]' : u.active ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-on-surface)]/20'
-                            }`} />
-                        </div>
-                        <div className="flex-1">
-                            <div className={`text-[10px] font-semibold ${u.active ? 'text-[var(--color-primary)]' : u.done ? 'text-[var(--color-on-surface-muted)]' : 'text-[var(--color-on-surface-muted)]'}`}>
-                                {u.label}
-                            </div>
-                        </div>
-                        {u.active && (
-                            <div className="h-5 w-14 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full flex items-center justify-center">
-                                <div className="h-1.5 w-8 bg-white/40 rounded-full" />
+
+                    <div aria-live="polite" className="min-h-[1.5rem]">
+                        {picked && (
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <p className="text-sm text-[var(--color-on-surface-muted)]">
+                                    <strong className={isRight ? 'text-[var(--color-primary)]' : 'text-[var(--color-error)]'}>
+                                        {isRight ? 'Correcto.' : 'Casi.'}
+                                    </strong>{' '}
+                                    {q.why}
+                                </p>
+                                <button onClick={next} className="btn-primary px-5 py-2.5 text-sm" autoFocus>
+                                    {index === TRY_QUESTIONS.length - 1 ? 'Ver mi jardín' : 'Siguiente'}
+                                </button>
                             </div>
                         )}
-                        {u.done && <Check className="w-3 h-3 text-[var(--color-success)] shrink-0" />}
                     </div>
-                ))}
-            </div>
+                </>
+            )}
         </div>
-    );
-}
-
-const HOW_MOCKUPS = [MockupSignup, MockupStory, MockupPath];
-
-function HowItWorksBlock({
-    step,
-    title,
-    desc,
-    reverse,
-    mockupIndex,
-}: {
-    step: string;
-    title: string;
-    desc: string;
-    reverse: boolean;
-    mockupIndex: number;
-}) {
-    const Mockup = HOW_MOCKUPS[mockupIndex];
-    return (
-        <motion.div
-            initial={{ opacity: 0, x: reverse ? 60 : -60 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className={`flex flex-col md:flex-row items-center gap-8 md:gap-12 ${reverse ? 'md:flex-row-reverse' : ''}`}
-        >
-            {/* Text side */}
-            <div className="flex-1 text-center md:text-left">
-                <div className="text-5xl font-black text-[var(--color-primary)]/20 mb-3 tracking-tight font-display">{step}</div>
-                <h3 className="text-xl font-black tracking-tight text-[var(--color-on-surface)] mb-2 font-display">{title}</h3>
-                <p className="text-sm text-[var(--color-on-surface)]/80 leading-relaxed max-w-md font-body font-medium">{desc}</p>
-            </div>
-
-            {/* Mockup side */}
-            <div className="flex-1 w-full max-w-sm">
-                <Mockup />
-            </div>
-        </motion.div>
     );
 }
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
+
 export default function Landing() {
     return (
-        <div className="min-h-screen bg-[var(--color-background)] text-[var(--color-on-surface)] overflow-x-hidden">
-            {/* Aurora background */}
-            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                <Aurora
-                    colorStops={["#702AE1", "#B28CFF", "#FEF3FF"]}
-                    speed={0.3}
-                    blend={0.6}
-                    amplitude={0.8}
-                    className="w-full h-full"
-                />
-            </div>
+        <MotionConfig reducedMotion="user">
+            <div className="min-h-screen bg-[var(--color-background)] text-[var(--color-on-surface)]">
+                <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn-primary px-4 py-2 text-sm">
+                    Saltar al contenido
+                </a>
 
-            {/* ─── Navbar ─── */}
-            <nav className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-                <div className="flex items-center gap-2.5">
-                    <img src="/logo.png" alt="Voxie" className="w-8 h-8 rounded-xl object-cover shadow-[var(--shadow-card)]" />
-                    <span className="text-lg font-black tracking-tight font-display">Voxie</span>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Link
-                        to="/auth"
-                        className="text-sm font-semibold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-all duration-300 px-4 py-2"
-                    >
-                        Iniciar sesion
-                    </Link>
-                    <Link
-                        to="/auth"
-                        className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full px-5 py-2.5 text-sm font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
-                    >
-                        Empezar gratis
-                    </Link>
-                </div>
-            </nav>
-
-            {/* ─── Hero ─── */}
-            <section className="relative z-10 mx-auto max-w-4xl px-6 pt-12 pb-24 text-center flex flex-col items-center">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary-light)] text-xs font-black tracking-wider uppercase mb-8 backdrop-blur-md border border-[var(--color-primary)]/20 shadow-[var(--shadow-card)]"
-                >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    El Futuro del Inglés con IA
-                </motion.div>
-
-                <div className="mb-6 flex flex-col items-center">
-                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-black leading-[1.1] tracking-tight font-display text-[var(--color-on-surface)] flex flex-wrap justify-center gap-x-3 gap-y-1">
-                        <span>Historias,</span>
-                        <span>práctica y</span>
-                        <span className="bg-gradient-to-r from-[var(--color-primary-light)] to-[#FF8CEF] bg-clip-text text-transparent">IA.</span>
-                        <span className="w-full text-3xl sm:text-4xl md:text-5xl mt-2 bg-gradient-to-r from-[var(--color-on-surface)] via-[var(--color-on-surface)]/90 to-[var(--color-on-surface-muted)] bg-clip-text text-transparent">Todo para tu inglés.</span>
-                    </h1>
-                </div>
-
-                <div className="mb-10 text-center flex justify-center w-full">
-                    <BlurText
-                        text="Historias interactivas, tutor conversacional con IA, simulacros de certificación oficial (TOEFL, IELTS, Cambridge), laboratorio de errores FSRS y portabilidad de mazos."
-                        delay={30}
-                        className="text-base sm:text-lg text-[var(--color-on-surface)] font-medium max-w-2xl mx-auto leading-relaxed font-body justify-center"
-                    />
-                </div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.5 }}
-                    className="flex justify-center"
-                >
-                    <Magnet padding={50}>
-                        <Link
-                            to="/auth"
-                            className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full px-8 py-4 text-base font-bold inline-flex items-center gap-2 shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300"
-                        >
-                            Comenzar gratis
-                            <ArrowRight className="w-4 h-4" />
+                {/* Nav: wordmark left, actions right */}
+                <header className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 py-5">
+                    <Link to="/" aria-label="Voxie, inicio"><Wordmark className="text-2xl" /></Link>
+                    <nav className="flex items-center gap-1 sm:gap-3" aria-label="Principal">
+                        <a href="#precios" className="hidden sm:inline-block text-sm font-semibold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] px-3 py-2 whitespace-nowrap">
+                            Precios
+                        </a>
+                        <Link to="/auth" className="text-sm font-semibold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] px-3 py-2 whitespace-nowrap">
+                            Entrar
                         </Link>
-                    </Magnet>
-                </motion.div>
+                        <Link to="/auth" className="btn-primary px-4 sm:px-5 py-2.5 text-sm whitespace-nowrap">
+                            Empezar gratis
+                        </Link>
+                    </nav>
+                </header>
 
-                {/* Hero visual — app preview mockup with 3D perspective tilt */}
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="mt-16 relative"
-                    style={{ perspective: 1200 }}
-                >
-                    <motion.div
-                        style={{ rotateX: 4 }}
-                        className="relative mx-auto max-w-3xl rounded-[2rem] bg-[var(--color-card)]/50 backdrop-blur-sm p-2 shadow-[var(--shadow-float)]"
-                    >
-                        {/* Fake browser bar */}
-                        <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-surface-container-low)] rounded-t-[1.75rem]">
-                            <div className="flex gap-1.5">
-                                <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-level-b2)]/60" />
-                                <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-level-b1)]/60" />
-                                <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-success)]/60" />
+                <main id="main">
+                    {/* Hero */}
+                    <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 pt-6 pb-20 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:gap-14 md:pt-12">
+                        <div className="space-y-6 text-left min-w-0">
+                            <h1 className="text-[clamp(2.6rem,7vw,4.75rem)] font-extrabold leading-[0.98] tracking-[-0.035em] [overflow-wrap:anywhere]">
+                                Tu inglés <span className="text-[var(--color-primary)]">crece</span> un poco cada día.
+                            </h1>
+                            <p className="max-w-xl text-lg text-[var(--color-on-surface-muted)]">
+                                Voxie te lleva de A1 a B2 con historias de tu nivel, un tutor con IA y repasos que llegan justo cuando los necesitas.
+                            </p>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <Link to="/auth" className="btn-primary px-6 py-3.5 text-base inline-flex items-center gap-2">
+                                    Empezar gratis <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                                </Link>
+                                <a href="#como-crece" className="btn-secondary px-6 py-3.5 text-base">Ver cómo funciona</a>
                             </div>
-                            <div className="flex-1 mx-4">
-                                <div className="bg-[var(--color-surface-container)]/80 rounded-full px-4 py-1.5 text-xs text-[var(--color-on-surface-muted)] text-center">
-                                    voxie.lat
-                                </div>
-                            </div>
+                            <p className="text-sm text-[var(--color-on-surface-variant)]">El nivel A1 es gratis para siempre. Sin tarjeta.</p>
                         </div>
-                        {/* App mockup content */}
-                        <div className="grid grid-cols-12 gap-0 min-h-[380px] text-left">
-                            {/* High-Fidelity Sidebar Navigation */}
-                            <div className="col-span-3 bg-[var(--color-surface-container-low)]/50 p-4 border-r border-[var(--color-surface-container)] flex flex-col justify-between hidden sm:flex">
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-2 mb-6">
-                                        <img src="/logo.png" alt="Voxie" className="w-6 h-6 rounded-lg object-cover shadow-[var(--shadow-card)]" />
-                                        <span className="text-xs font-black tracking-tight text-[var(--color-on-surface)]">Voxie</span>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        {[
-                                            { label: 'Inicio', icon: Home, active: true },
-                                            { label: 'Ruta', icon: Map },
-                                            { label: 'Lecturas', icon: BookOpen },
-                                            { label: 'Tutor IA', icon: MessageCircle },
-                                            { label: 'Redacción', icon: PenLine },
-                                            { label: 'Repasos', icon: RefreshCw },
-                                            { label: 'Simulacros', icon: GraduationCap },
-                                        ].map((item) => {
-                                            const Icon = item.icon;
-                                            return (
-                                                <div
-                                                    key={item.label}
-                                                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all ${
-                                                        item.active
-                                                            ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] shadow-[var(--shadow-card)]'
-                                                            : 'text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
-                                                    }`}
-                                                >
-                                                    <Icon className="w-3.5 h-3.5 shrink-0" />
-                                                    <span>{item.label}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                                {/* Mock User Profile at Bottom of Sidebar */}
-                                <div className="flex items-center gap-2 pt-4 border-t border-[var(--color-surface-container)] font-body">
-                                    <div className="w-6 h-6 rounded-full bg-[var(--color-primary)]/20 text-[var(--color-primary)] font-black text-[9px] flex items-center justify-center shrink-0">
-                                        JD
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-[9px] font-black text-[var(--color-on-surface)] truncate">John Doe</div>
-                                        <div className="text-[7.5px] font-bold text-[var(--color-on-surface-muted)] truncate">Estudiante Pro</div>
-                                    </div>
-                                    <span className="text-[8px] font-black text-[var(--color-success)] bg-[var(--color-success)]/10 px-1.5 py-0.5 rounded-full shrink-0">B2</span>
-                                </div>
-                            </div>
+                        <TryIt />
+                    </section>
 
-                            {/* High-Fidelity Main Dashboard Area */}
-                            <div className="col-span-12 sm:col-span-9 p-5 space-y-5 bg-gradient-to-br from-[var(--color-card)] to-[var(--color-surface-container-low)]/30">
-                                {/* Dashboard Greeting */}
-                                <div>
-                                    <h4 className="text-base font-black tracking-tight text-[var(--color-on-surface)]">¡Hola, John! 👋</h4>
-                                    <p className="text-[9.5px] text-[var(--color-on-surface-muted)] font-medium">Tienes 8 repasos pendientes y un simulacro listo.</p>
-                                </div>
+                    {/* How your English grows: the four stages */}
+                    <section id="como-crece" className="bg-[var(--color-surface-container-low)] py-20" aria-labelledby="stages-title">
+                        <div className="mx-auto max-w-6xl px-4 sm:px-6 space-y-10">
+                            <motion.div {...reveal} className="max-w-2xl space-y-3 text-left">
+                                <h2 id="stages-title" className="text-[clamp(2rem,4.5vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em]">
+                                    Cuatro etapas, de semilla a flor.
+                                </h2>
+                                <p className="text-[var(--color-on-surface-muted)]">
+                                    Cada nivel CEFR es una etapa. Cada unidad que completas es una planta nueva en tu jardín.
+                                </p>
+                            </motion.div>
 
-                                {/* Bento Grid Stats */}
-                                <div className="grid grid-cols-3 gap-2.5">
-                                    {[
-                                        { label: 'Racha', value: '12 días', icon: Flame, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-                                        { label: 'Tarjetas FSRS', value: '347 vocabs', icon: Layers, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                                        { label: 'Nivel CEFR', value: 'B2 Avanzado', icon: GraduationCap, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-                                    ].map((stat) => {
-                                        const Icon = stat.icon;
-                                        return (
-                                            <div key={stat.label} className="bg-[var(--color-surface-container-low)]/80 border border-[var(--color-surface-container)]/30 rounded-2xl p-2.5 space-y-1 relative overflow-hidden group hover:scale-[1.02] transition-all">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[8px] font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider">{stat.label}</span>
-                                                    <div className={`p-1 rounded-lg ${stat.bg} shrink-0`}>
-                                                        <Icon className={`w-3 h-3 ${stat.color}`} />
-                                                    </div>
-                                                </div>
-                                                <div className="text-xs font-black text-[var(--color-on-surface)]">{stat.value}</div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                            <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                {STAGES.map((s, i) => (
+                                    <motion.li
+                                        key={s.level}
+                                        {...reveal}
+                                        transition={{ ...reveal.transition, delay: i * 0.06 }}
+                                        className="card flex flex-col gap-4 p-5 text-left"
+                                    >
+                                        <div className="garden !h-28" style={{ gridTemplateColumns: '1fr' }}>
+                                            <Plant species="girasol" stage={s.plant.stage} height={s.plant.height} noBloom={s.plant.noBloom} />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <LevelBadge level={s.level} />
+                                            <h3 className="text-xl font-extrabold">{s.name}</h3>
+                                        </div>
+                                        <p className="text-sm text-[var(--color-on-surface-muted)]">{s.canDo}</p>
+                                        <ul className="space-y-1 text-sm">
+                                            {s.sample.map(title => (
+                                                <li key={title} className="flex gap-2">
+                                                    <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-primary)]" />
+                                                    <span lang="en">{title}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <p className="mt-auto text-xs font-mono text-[var(--color-on-surface-variant)]">
+                                            {s.units} unidades · {s.stories} historias
+                                        </p>
+                                    </motion.li>
+                                ))}
+                            </ol>
+                        </div>
+                    </section>
 
-                                {/* Main Active Task Widget - Continue Learning & Error Lab */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {/* Guided Route Unit */}
-                                    <div className="bg-[var(--color-surface-container-low)]/80 border border-[var(--color-surface-container)]/30 rounded-2xl p-3.5 space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[8px] font-extrabold text-[var(--color-primary-light)] uppercase tracking-wider">Unidad Activa</span>
-                                            <span className="text-[8.5px] font-bold text-[var(--color-on-surface-muted)]">75% Completado</span>
+                    {/* A study session, in order */}
+                    <section className="mx-auto max-w-6xl px-4 sm:px-6 py-20" aria-labelledby="session-title">
+                        <div className="grid gap-10 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                            <motion.div {...reveal} className="space-y-3 text-left md:sticky md:top-10 md:self-start">
+                                <h2 id="session-title" className="text-[clamp(2rem,4.5vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em]">
+                                    Así se riega, cada día.
+                                </h2>
+                                <p className="text-[var(--color-on-surface-muted)]">
+                                    Una sesión en Voxie tiene cuatro pasos. Puedes hacerlos en diez minutos o en una hora.
+                                </p>
+                            </motion.div>
+
+                            <ol className="space-y-3">
+                                {SESSION.map(({ icon: Icon, title, desc }, i) => (
+                                    <motion.li key={title} {...reveal} className="card flex gap-4 p-5 text-left">
+                                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)]">
+                                            <Icon className="h-5 w-5" aria-hidden="true" />
+                                        </span>
+                                        <div>
+                                            <h3 className="text-lg font-extrabold">
+                                                <span className="font-mono text-sm text-[var(--color-on-surface-variant)] mr-2">{i + 1}</span>
+                                                {title}
+                                            </h3>
+                                            <p className="text-sm text-[var(--color-on-surface-muted)]">{desc}</p>
                                         </div>
-                                        <h5 className="text-[11px] font-black text-[var(--color-on-surface)] leading-tight">Unit 4: Job Interviews & Professional Networking</h5>
-                                        <div className="w-full h-1.5 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
-                                            <div className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)]" style={{ width: '75%' }} />
-                                        </div>
-                                        <div className="pt-1 flex items-center justify-between">
-                                            <span className="text-[8px] text-[var(--color-on-surface-muted)] font-medium">Siguiente: Simulacro Técnico</span>
-                                            <div className="px-2.5 py-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-[8px] font-bold rounded-lg shadow-sm hover:translate-y-[-0.5px] transition-all">
-                                                Continuar
-                                            </div>
-                                        </div>
+                                    </motion.li>
+                                ))}
+                            </ol>
+                        </div>
+                    </section>
+
+                    {/* Exams and work */}
+                    <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-20" aria-label="Exámenes y trabajo">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <motion.article {...reveal} className="card p-6 sm:p-8 space-y-3 text-left">
+                                <GraduationCap className="h-7 w-7 text-[var(--color-primary)]" aria-hidden="true" />
+                                <h2 className="text-2xl font-extrabold">Para tu examen</h2>
+                                <p className="text-[var(--color-on-surface-muted)]">
+                                    Simulacros de TOEFL, IELTS y Cambridge B1/B2 con reading, listening, writing y speaking evaluado por IA.
+                                </p>
+                            </motion.article>
+                            <motion.article {...reveal} className="card p-6 sm:p-8 space-y-3 text-left">
+                                <div className="flex gap-2 text-[var(--color-primary)]">
+                                    <Briefcase className="h-7 w-7" aria-hidden="true" />
+                                    <Upload className="h-7 w-7" aria-hidden="true" />
+                                </div>
+                                <h2 className="text-2xl font-extrabold">Para tu trabajo</h2>
+                                <p className="text-[var(--color-on-surface-muted)]">
+                                    Genera un mazo de 15 palabras para tu profesión. Importa tarjetas de Anki o Quizlet y exporta tu progreso en CSV cuando quieras.
+                                </p>
+                            </motion.article>
+                        </div>
+                    </section>
+
+                    {/* Pricing */}
+                    <section id="precios" className="bg-[var(--color-surface-container-low)] py-20" aria-labelledby="pricing-title">
+                        <div className="mx-auto max-w-4xl px-4 sm:px-6 space-y-10">
+                            <motion.div {...reveal} className="space-y-3 text-left md:text-center">
+                                <h2 id="pricing-title" className="text-[clamp(2rem,4.5vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em]">
+                                    Empieza gratis. Crece con Pro.
+                                </h2>
+                                <p className="text-[var(--color-on-surface-muted)]">Precios en pesos mexicanos. Cancelas cuando quieras.</p>
+                            </motion.div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <motion.div {...reveal} className="card p-7 flex flex-col gap-5 text-left">
+                                    <div>
+                                        <h3 className="text-lg font-extrabold">Gratis</h3>
+                                        <p className="mt-1"><span className="font-display text-4xl font-extrabold">$0</span> <span className="text-sm text-[var(--color-on-surface-muted)]">para siempre</span></p>
                                     </div>
+                                    <ul className="space-y-2.5 text-sm">
+                                        {FREE_ITEMS.map(item => (
+                                            <li key={item} className="flex gap-2.5"><Check className="h-4 w-4 shrink-0 mt-0.5 text-[var(--color-primary)]" aria-hidden="true" />{item}</li>
+                                        ))}
+                                    </ul>
+                                    <Link to="/auth" className="btn-secondary mt-auto py-3 text-center text-sm">Crear cuenta gratis</Link>
+                                </motion.div>
 
-                                    {/* Laboratorio de Errores Widget */}
-                                    <div className="bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-primary-container)]/10 border border-[var(--color-primary)]/10 rounded-2xl p-3.5 flex flex-col justify-between">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-1">
-                                                <Activity className="w-3.5 h-3.5 text-[var(--color-primary-light)] animate-pulse" />
-                                                <span className="text-[8px] font-extrabold text-[var(--color-primary-light)] uppercase tracking-wider">Laboratorio de Errores</span>
-                                            </div>
-                                            <h5 className="text-[11px] font-black text-[var(--color-on-surface)] leading-tight">¡Tienes 8 errores por corregir!</h5>
-                                            <p className="text-[8.5px] text-[var(--color-on-surface-muted)] leading-relaxed font-medium">Reconstruye tus oraciones con FSRS y conviértelas en aprendizaje permanente.</p>
-                                        </div>
-                                        <div className="pt-2 flex items-center justify-end">
-                                            <div className="px-2.5 py-1 bg-[var(--color-surface-container)] text-[var(--color-primary-light)] text-[8px] font-bold rounded-lg border border-[var(--color-primary)]/20 hover:bg-[var(--color-primary)]/5 transition-all">
-                                                Entrar al Lab
-                                            </div>
-                                        </div>
+                                <motion.div {...reveal} className="card p-7 flex flex-col gap-5 text-left border-2 border-[var(--color-primary)]">
+                                    <div>
+                                        <h3 className="text-lg font-extrabold">Pro</h3>
+                                        <p className="mt-1"><span className="font-display text-4xl font-extrabold">$129</span> <span className="text-sm text-[var(--color-on-surface-muted)]">al mes</span></p>
+                                        <p className="text-xs text-[var(--color-on-surface-variant)]">o $1,299 al año (unos $108 al mes)</p>
                                     </div>
-                                </div>
+                                    <ul className="space-y-2.5 text-sm">
+                                        {PRO_ITEMS.map(item => (
+                                            <li key={item} className="flex gap-2.5"><Check className="h-4 w-4 shrink-0 mt-0.5 text-[var(--color-primary)]" aria-hidden="true" />{item}</li>
+                                        ))}
+                                    </ul>
+                                    <Link to="/auth" className="btn-primary mt-auto py-3 text-center text-sm">Empezar con Pro</Link>
+                                </motion.div>
                             </div>
                         </div>
-                    </motion.div>
-                    {/* Glow under the card */}
-                    <div className="absolute inset-x-0 -bottom-8 h-32 bg-gradient-to-b from-[var(--color-primary)]/10 to-transparent blur-2xl pointer-events-none" />
-                </motion.div>
-            </section>
+                    </section>
+                </main>
 
-            {/* ─── Features ─── */}
-            <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
-                <div className="text-center mb-16 flex flex-col items-center">
-                    <BlurText
-                        text="Todo lo que necesitas para aprender ingles"
-                        delay={60}
-                        className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display justify-center"
-                    />
-                    <motion.p
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.3, duration: 0.5 }}
-                        className="text-[var(--color-on-surface)]/80 text-base sm:text-lg max-w-xl mx-auto font-body font-medium mt-2"
-                    >
-                        Seis herramientas con IA que trabajan juntas para darte la experiencia de aprendizaje mas completa.
-                    </motion.p>
-                </div>
-
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.1 }}
-                    variants={stagger}
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                    {FEATURES.map((f, i) => (
-                        <FeatureCard key={f.title} {...f} i={i} />
-                    ))}
-                </motion.div>
-            </section>
-
-            {/* ─── How it works — Notion style ─── */}
-            <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
-                <div className="text-center mb-16 flex flex-col items-center">
-                    <BlurText
-                        text="Asi funciona"
-                        delay={60}
-                        className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display justify-center"
-                    />
-                </div>
-
-                <div className="space-y-16 md:space-y-24">
-                    {HOW_STEPS.map((item, i) => (
-                        <HowItWorksBlock
-                            key={item.step}
-                            step={item.step}
-                            title={item.title}
-                            desc={item.desc}
-                            reverse={i % 2 !== 0}
-                            mockupIndex={i}
-                        />
-                    ))}
-                </div>
-            </section>
-
-            {/* ─── Pricing preview ─── */}
-            <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                    variants={stagger}
-                    className="text-center mb-16"
-                >
-                    <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display">
-                        Precios transparentes
-                    </motion.h2>
-                    <motion.p custom={1} variants={fadeUp} className="text-[var(--color-on-surface)]/80 text-base sm:text-lg max-w-xl mx-auto font-body font-medium">
-                        Sin trucos, sin descuentos falsos. El nivel A1 es gratis para siempre.
-                    </motion.p>
-                </motion.div>
-
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.1 }}
-                    variants={stagger}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"
-                >
-                    {/* Free */}
-                    <motion.div custom={0} variants={fadeUp} className="bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-8 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
-                        <div className="text-sm font-bold text-[var(--color-on-surface)]/70 mb-1 font-body">Gratis</div>
-                        <div className="text-3xl font-black tracking-tight text-[var(--color-on-surface)] mb-1 font-display">
-                            $<CountUp to={0} from={0} duration={1} className="inline" />
-                        </div>
-                        <div className="text-xs text-[var(--color-on-surface)]/60 mb-6 font-body">Para siempre</div>
-                        <ul className="space-y-3">
-                            {FREE_ITEMS.map((item, idx) => (
-                                <motion.li
-                                    key={item}
-                                    initial={{ opacity: 0, x: -12 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: 0.1 * idx, duration: 0.3 }}
-                                    className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface)]/80 font-body font-medium"
-                                >
-                                    <Check className="w-4 h-4 text-[var(--color-success)] shrink-0 mt-0.5" />
-                                    {item}
-                                </motion.li>
-                            ))}
-                        </ul>
-                        <Link
-                            to="/auth"
-                            className="mt-6 block w-full text-center bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] font-bold text-sm py-3.5 rounded-full transition-all duration-300 shadow-[var(--shadow-card)]"
-                        >
-                            Crear cuenta gratis
+                {/* Footer as a statement */}
+                <footer className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 pb-10 space-y-10">
+                    <div className="space-y-6 text-left">
+                        <p className="font-display text-[clamp(2.4rem,7vw,5rem)] font-extrabold leading-[0.98] tracking-[-0.04em]">
+                            Riega tu inglés <span className="text-[var(--color-primary)]">hoy</span>.
+                        </p>
+                        <Link to="/auth" className="btn-primary px-6 py-3.5 text-base inline-flex items-center gap-2">
+                            Crear cuenta gratis <ArrowRight className="w-4 h-4" aria-hidden="true" />
                         </Link>
-                    </motion.div>
-
-                    {/* Pro */}
-                    <motion.div custom={1} variants={fadeUp} className="relative bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-8 shadow-[var(--shadow-elevated)] pro-glow-border hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300">
-                        <div className="absolute -top-3 right-6 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-[11px] font-bold px-4 py-1.5 rounded-full shadow-[var(--shadow-card)]">
-                            Recomendado
-                        </div>
-                        <div className="text-sm font-bold text-[var(--color-primary-light)] mb-1 font-body">Plan Pro</div>
-                        <div className="flex items-baseline gap-1 mb-1">
-                            <span className="text-3xl font-black tracking-tight text-[var(--color-on-surface)] font-display">
-                                $<CountUp to={129} from={0} duration={2} className="inline" />
-                            </span>
-                            <span className="text-sm text-[var(--color-on-surface)]/70 font-body">/mes</span>
-                        </div>
-                        <div className="text-xs text-[var(--color-on-surface)]/60 mb-6 font-body">
-                            o $<CountUp to={1299} from={0} duration={2.5} separator="," className="inline" />/año (~$108/mes)
-                        </div>
-                        <ul className="space-y-3">
-                            {PRO_ITEMS.map((item, idx) => (
-                                <motion.li
-                                    key={item}
-                                    initial={{ opacity: 0, x: -12 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: 0.1 * idx, duration: 0.3 }}
-                                    className="flex items-start gap-2.5 text-sm text-[var(--color-on-surface)]/80 font-body font-medium"
-                                >
-                                    <Check className="w-4 h-4 text-[var(--color-primary-light)] shrink-0 mt-0.5" />
-                                    {item}
-                                </motion.li>
-                            ))}
-                        </ul>
-                        <Link
-                            to="/auth"
-                            className="mt-6 block w-full text-center text-sm py-3.5 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
-                        >
-                            Empezar con Pro
-                        </Link>
-                    </motion.div>
-                </motion.div>
-            </section>
-
-            {/* ─── Final CTA ─── */}
-            <section className="relative z-10 mx-auto max-w-4xl px-6 py-24 text-center">
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.3 }}
-                    variants={stagger}
-                >
-                    <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-black tracking-tight mb-4 font-display">
-                        Empieza hoy, gratis
-                    </motion.h2>
-                    <motion.p custom={1} variants={fadeUp} className="text-[var(--color-on-surface)]/80 text-base sm:text-lg max-w-lg mx-auto mb-8 font-body font-medium">
-                        El nivel A1 es tuyo para siempre. Sin tarjeta de crédito, sin compromisos.
-                    </motion.p>
-                    <motion.div custom={2} variants={fadeUp}>
-                        <Link
-                            to="/auth"
-                            className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full px-10 py-4 text-base font-bold inline-flex items-center gap-2 shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300"
-                        >
-                            Crear cuenta gratis
-                            <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </motion.div>
-                </motion.div>
-            </section>
-
-            {/* ─── Footer ─── */}
-            <footer className="relative z-10 bg-[var(--color-surface-container-low)] py-8 px-6">
-                <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                        <img src="/logo.png" alt="Voxie" className="w-5 h-5 rounded-lg object-cover" />
-                        <span className="text-sm font-bold text-[var(--color-on-surface-muted)] font-display">Voxie</span>
                     </div>
-                    <p className="text-xs text-[var(--color-on-surface-muted)] font-body">
-                        © {new Date().getFullYear()} Voxie. Todos los derechos reservados.
-                    </p>
-                </div>
-            </footer>
-
-            {/* Pro card glow animation */}
-            <style>{`
-                .pro-glow-border {
-                    animation: proGlow 3s ease-in-out infinite alternate;
-                }
-                @keyframes proGlow {
-                    0% {
-                        box-shadow: 0 0 8px rgba(112, 42, 225, 0.15), 0 0 20px rgba(112, 42, 225, 0.05);
-                    }
-                    100% {
-                        box-shadow: 0 0 16px rgba(112, 42, 225, 0.3), 0 0 40px rgba(112, 42, 225, 0.1);
-                    }
-                }
-            `}</style>
-        </div>
+                    <div className="flex flex-col gap-3 border-t border-[var(--color-outline-variant)] pt-6 text-sm text-[var(--color-on-surface-variant)] sm:flex-row sm:items-center sm:justify-between">
+                        <Wordmark className="text-lg" markClassName="w-5 h-5" />
+                        <p>© {new Date().getFullYear()} Voxie</p>
+                    </div>
+                </footer>
+            </div>
+        </MotionConfig>
     );
 }

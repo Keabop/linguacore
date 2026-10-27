@@ -1,48 +1,3 @@
-// ── Mesh‑gradient palettes (layered radial‑gradients) ──────────────────
-export const storyMeshes: Record<string, string> = {
-    // A1 ── cool blues & soft teals
-    'a1-001': 'radial-gradient(circle at 20% 30%, #3b82f680 0%, transparent 55%), radial-gradient(circle at 80% 70%, #6366f160 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%)',
-    'a1-002': 'radial-gradient(circle at 70% 20%, #f472b660 0%, transparent 50%), radial-gradient(circle at 25% 80%, #a78bfa50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1e1b2e 0%, #0f0d1a 100%)',
-    'a1-003': 'radial-gradient(circle at 30% 40%, #fbbf2460 0%, transparent 50%), radial-gradient(circle at 80% 60%, #f9731650 0%, transparent 50%), radial-gradient(circle at 50% 50%, #1c1917 0%, #0f0e0c 100%)',
-    'a1-004': 'radial-gradient(circle at 25% 25%, #60a5fa60 0%, transparent 50%), radial-gradient(circle at 75% 75%, #818cf850 0%, transparent 55%), radial-gradient(circle at 50% 50%, #171e2e 0%, #0c1220 100%)',
-    'a1-005': 'radial-gradient(circle at 60% 30%, #34d39960 0%, transparent 50%), radial-gradient(circle at 30% 70%, #22d3ee50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #0f1f1a 0%, #0a1610 100%)',
-    'a1-006': 'radial-gradient(circle at 40% 25%, #fb923c60 0%, transparent 50%), radial-gradient(circle at 70% 80%, #fbbf2450 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1c1810 0%, #110f08 100%)',
-    'a1-007': 'radial-gradient(circle at 35% 35%, #a78bfa60 0%, transparent 50%), radial-gradient(circle at 75% 65%, #c084fc50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1a1528 0%, #0e0b1a 100%)',
-    'a1-008': 'radial-gradient(circle at 50% 20%, #4ade8060 0%, transparent 50%), radial-gradient(circle at 20% 80%, #22c55e50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #0f1a14 0%, #081210 100%)',
-    'a1-009': 'radial-gradient(circle at 65% 40%, #e879f960 0%, transparent 50%), radial-gradient(circle at 25% 70%, #d946ef50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1e1224 0%, #120a18 100%)',
-    'a1-010': 'radial-gradient(circle at 45% 30%, #f8717160 0%, transparent 50%), radial-gradient(circle at 70% 75%, #fb923c50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1c1210 0%, #120a08 100%)',
-
-    // A2 ── warmer, slightly richer
-    'a2-001': 'radial-gradient(circle at 30% 30%, #22d3ee60 0%, transparent 50%), radial-gradient(circle at 70% 70%, #14b8a650 0%, transparent 55%), radial-gradient(circle at 50% 50%, #0f1c1c 0%, #081414 100%)',
-    'a2-002': 'radial-gradient(circle at 60% 25%, #60a5fa60 0%, transparent 50%), radial-gradient(circle at 30% 75%, #3b82f650 0%, transparent 55%), radial-gradient(circle at 50% 50%, #111827 0%, #0a0f1a 100%)',
-    'a2-003': 'radial-gradient(circle at 40% 35%, #f59e0b60 0%, transparent 50%), radial-gradient(circle at 75% 70%, #d9770650 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1a1608 0%, #110e05 100%)',
-    'a2-004': 'radial-gradient(circle at 50% 30%, #a78bfa60 0%, transparent 50%), radial-gradient(circle at 25% 70%, #8b5cf650 0%, transparent 55%), radial-gradient(circle at 50% 50%, #16122a 0%, #0d0a1c 100%)',
-    'a2-005': 'radial-gradient(circle at 30% 30%, #34d39960 0%, transparent 50%), radial-gradient(circle at 75% 65%, #a7f3d050 0%, transparent 50%), radial-gradient(circle at 50% 50%, #0f1f16 0%, #081410 100%)',
-    'a2-006': 'radial-gradient(circle at 55% 25%, #fb923c60 0%, transparent 50%), radial-gradient(circle at 30% 75%, #ef444450 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1c1410 0%, #120c08 100%)',
-    'a2-007': 'radial-gradient(circle at 40% 40%, #fbbf2460 0%, transparent 50%), radial-gradient(circle at 70% 60%, #fb923c50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1a1608 0%, #110e05 100%)',
-    'a2-008': 'radial-gradient(circle at 35% 30%, #4ade8060 0%, transparent 50%), radial-gradient(circle at 65% 70%, #22c55e50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #0f1a14 0%, #081210 100%)',
-    'a2-009': 'radial-gradient(circle at 50% 20%, #e879f960 0%, transparent 50%), radial-gradient(circle at 30% 80%, #f472b650 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1e1224 0%, #120a18 100%)',
-    'a2-010': 'radial-gradient(circle at 45% 35%, #38bdf860 0%, transparent 50%), radial-gradient(circle at 70% 65%, #60a5fa50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #111827 0%, #0a0f1a 100%)',
-
-    // B1 ── deeper, more dramatic
-    'b1-001': 'radial-gradient(circle at 30% 25%, #ef444460 0%, transparent 50%), radial-gradient(circle at 70% 75%, #f9731650 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1c1210 0%, #120a08 100%)',
-    'b1-002': 'radial-gradient(circle at 60% 30%, #22d3ee60 0%, transparent 50%), radial-gradient(circle at 30% 70%, #06b6d450 0%, transparent 55%), radial-gradient(circle at 50% 50%, #0c1a1e 0%, #081216 100%)',
-    'b1-003': 'radial-gradient(circle at 40% 25%, #fbbf2460 0%, transparent 50%), radial-gradient(circle at 65% 75%, #f59e0b50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1a1608 0%, #110e05 100%)',
-    'b1-004': 'radial-gradient(circle at 50% 30%, #a78bfa60 0%, transparent 50%), radial-gradient(circle at 25% 70%, #7c3aed50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #16122a 0%, #0d0a1c 100%)',
-    'b1-005': 'radial-gradient(circle at 35% 35%, #f472b660 0%, transparent 50%), radial-gradient(circle at 75% 65%, #ec489950 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1e1220 0%, #120a14 100%)',
-    'b1-006': 'radial-gradient(circle at 45% 25%, #34d39960 0%, transparent 50%), radial-gradient(circle at 65% 75%, #10b98150 0%, transparent 55%), radial-gradient(circle at 50% 50%, #0f1a16 0%, #081210 100%)',
-    'b1-007': 'radial-gradient(circle at 30% 30%, #4ade8060 0%, transparent 50%), radial-gradient(circle at 70% 70%, #22c55e50 0%, transparent 55%), radial-gradient(circle at 50% 50%, #0f1a14 0%, #081210 100%)',
-    'b1-008': 'radial-gradient(circle at 55% 20%, #60a5fa60 0%, transparent 50%), radial-gradient(circle at 35% 80%, #3b82f650 0%, transparent 55%), radial-gradient(circle at 50% 50%, #111827 0%, #0a0f1a 100%)',
-    'b1-009': 'radial-gradient(circle at 40% 35%, #fb923c60 0%, transparent 50%), radial-gradient(circle at 70% 65%, #fbbf2450 0%, transparent 55%), radial-gradient(circle at 50% 50%, #1a1608 0%, #110e05 100%)',
-    'b1-010': 'radial-gradient(circle at 50% 30%, #ef444460 0%, transparent 50%), radial-gradient(circle at 30% 70%, #4ade8050 0%, transparent 55%), radial-gradient(circle at 50% 50%, #141614 0%, #0a0e0a 100%)',
-};
-
-export const fallbackMesh = 'radial-gradient(circle at 40% 30%, rgba(99,102,241,0.06) 0%, transparent 55%), radial-gradient(circle at 70% 70%, rgba(99,102,241,0.04) 0%, transparent 55%), linear-gradient(135deg, #18181B, #09090B)';
-
-export function getStoryMesh(storyId: string): string {
-    return storyMeshes[storyId] ?? fallbackMesh;
-}
-
 // ── SVG thematic icons ─────────────────────────────────────────────────
 const storyIconPaths: Record<string, React.ReactNode> = {
     'a1-001': <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83M12 8a4 4 0 100 8 4 4 0 000-8z" />,
@@ -89,7 +44,7 @@ export function StoryIcon({ storyId, className }: { storyId: string; className?:
             strokeWidth="1.2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={className ?? 'w-10 h-10 text-white/20'}
+            className={className ?? 'w-10 h-10 text-[var(--color-on-surface-muted)]'}
         >
             {icon}
         </svg>

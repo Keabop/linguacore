@@ -36,20 +36,20 @@ const TYPE_LABELS: Record<string, string> = {
 
 const TYPE_COLORS: Record<string, string> = {
     grammar: 'text-accent-blue',
-    vocabulary: 'text-purple-400',
+    vocabulary: 'text-[var(--color-primary)]',
     spelling: 'text-accent-orange',
-    style: 'text-teal-400',
+    style: 'text-[var(--color-accent-blue)]',
 };
 
 function ScoreRing({ score }: { score: number }) {
-    const color = score >= 80 ? 'text-green-400' : score >= 60 ? 'text-accent-orange' : 'text-accent-red';
+    const color = score >= 80 ? 'text-[var(--color-success)]' : score >= 60 ? 'text-accent-orange' : 'text-accent-red';
     const circumference = 2 * Math.PI * 40;
     const offset = circumference - (score / 100) * circumference;
 
     return (
         <div className="relative w-24 h-24 mx-auto">
             <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
-                <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6" className="text-bg-card-hover" />
+                <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6" className="text-[var(--color-surface-container-high)]" />
                 <motion.circle
                     cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6"
                     className={color}
@@ -68,12 +68,12 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 function CategoryBar({ label, score, note }: { label: string; score: number; note: string }) {
-    const color = score >= 80 ? 'bg-green-500' : score >= 60 ? 'bg-accent-orange' : 'bg-accent-red';
+    const color = score >= 80 ? 'bg-[var(--color-success)]' : score >= 60 ? 'bg-accent-orange' : 'bg-accent-red';
     return (
         <div className="space-y-1.5">
             <div className="flex justify-between text-sm">
                 <span className="text-[var(--color-on-surface-muted)]">{label}</span>
-                <span className="text-white font-semibold">{score}</span>
+                <span className="text-[var(--color-on-surface)] font-semibold">{score}</span>
             </div>
             <div className="h-2 bg-[var(--color-card-hover)] rounded-full overflow-hidden">
                 <motion.div
@@ -113,7 +113,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {/* Corrections */}
             {data.corrections.length > 0 && (
                 <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                    <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Correcciones</h3>
+                    <h3 className="text-sm font-semibold text-[var(--color-on-surface)] uppercase tracking-wider">Correcciones</h3>
                     {data.corrections.map((c, i) => (
                         <div key={i} className="bg-[var(--color-card-hover)] rounded-lg p-3.5 space-y-1.5">
                             <div className="flex items-center gap-2 text-xs">
@@ -126,8 +126,8 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                                 <span className="text-[var(--color-on-surface-muted)] line-through">{c.original}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
-                                <span className="text-white">{c.corrected}</span>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-success)] shrink-0" />
+                                <span className="text-[var(--color-on-surface)]">{c.corrected}</span>
                             </div>
                             <p className="text-xs text-[var(--color-on-surface-muted)] italic pl-5">{c.explanation}</p>
                         </div>
@@ -138,7 +138,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {/* Improved version (expandable) */}
             <button
                 onClick={() => setShowImproved(!showImproved)}
-                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between text-sm text-[var(--color-on-surface-muted)] hover:text-white transition-colors"
+                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between text-sm text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
             >
                 <span className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-accent-blue" />
@@ -154,8 +154,8 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="bg-green-500/8 border border-green-500/20 rounded-xl p-5">
-                            <p className="text-sm text-white leading-relaxed">{data.improvedVersion}</p>
+                        <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-5">
+                            <p className="text-sm text-[var(--color-on-surface)] leading-relaxed">{data.improvedVersion}</p>
                         </div>
                     </motion.div>
                 )}
@@ -165,7 +165,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {onNext && (
                 <button
                     onClick={onNext}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     {nextLabel}
                 </button>

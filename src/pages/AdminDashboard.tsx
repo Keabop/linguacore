@@ -43,8 +43,6 @@ function fmtDate(iso: string | null): string {
     return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// All avatars use the Voxie primary purple to keep things consistent
-const AVATAR_GRADIENT = 'from-[var(--color-primary)] to-[var(--color-primary-container)]';
 
 function getInitials(name: string | null, email: string | null): string {
     if (name) {
@@ -77,10 +75,10 @@ function StatTile({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.4, ease: 'easeOut' }}
-            className="rounded-[1.5rem] p-5 bg-[var(--color-card)] border border-white/[0.06] shadow-[var(--shadow-card)] flex items-center gap-4"
+            className="rounded-[1.5rem] p-5 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] shadow-[var(--shadow-card)] flex items-center gap-4"
         >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-md shrink-0">
-                <Icon className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-md shrink-0">
+                <Icon className="w-5 h-5 text-[var(--color-on-primary)]" />
             </div>
             <div>
                 <p className="text-[10px] font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider">{label}</p>
@@ -116,18 +114,18 @@ function UserCard({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="group rounded-[1.5rem] bg-[var(--color-card)] border border-white/[0.06] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300 overflow-hidden"
+            className="group rounded-[1.5rem] bg-[var(--color-card)] border border-[var(--color-outline-subtle)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300 overflow-hidden"
         >
             {/* Main Row */}
             <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5">
                 {/* Avatar */}
                 <div className="relative shrink-0">
-                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br ${AVATAR_GRADIENT} flex items-center justify-center text-white font-black text-sm sm:text-base shadow-md`}>
+                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-[var(--color-on-primary)] font-black text-sm sm:text-base shadow-md`}>
                         {initials}
                     </div>
                     {/* Online dot */}
                     {isActive && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[var(--color-card)] shadow-sm" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[var(--color-success)] border-2 border-[var(--color-card)] shadow-sm" />
                     )}
                 </div>
 
@@ -136,7 +134,7 @@ function UserCard({
                     <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm sm:text-base font-black text-[var(--color-on-surface)] truncate">{displayName}</h3>
                         {user.tier === 'pro' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-[9px] font-black uppercase tracking-wider shrink-0">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-tertiary)]/20 border border-[var(--color-tertiary)]/30 text-[var(--color-tertiary-ink)] text-[9px] font-black uppercase tracking-wider shrink-0">
                                 <Crown className="w-2.5 h-2.5" /> Pro
                             </span>
                         )}
@@ -152,7 +150,7 @@ function UserCard({
                         <LevelBadge level={user.current_level} size="compact" />
                     </div>
                     <div className="flex items-center gap-1 text-[var(--color-on-surface)]">
-                        <Flame className="w-3.5 h-3.5 text-orange-400" />
+                        <Flame className="w-3.5 h-3.5 text-[var(--color-tertiary-ink)]" />
                         <span className="text-xs font-bold">{user.streak}</span>
                     </div>
                     <div className="flex items-center gap-1 text-[var(--color-on-surface)]">
@@ -168,8 +166,8 @@ function UserCard({
                     disabled={isPending}
                     className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-black transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-sm active:scale-95 ${
                         user.tier === 'free'
-                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-lg hover:shadow-amber-500/20'
-                            : 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
+                            ? 'bg-[var(--color-tertiary)] text-[var(--color-on-error)] hover:shadow-lg hover:shadow-[var(--color-tertiary)]/20'
+                            : 'bg-[var(--color-error)]/10 text-[var(--color-error)] border border-[var(--color-error)]/20 hover:bg-[var(--color-error)]/20'
                     }`}
                 >
                     {isPending ? (
@@ -184,7 +182,7 @@ function UserCard({
                 {/* Expand toggle */}
                 <button
                     onClick={() => setExpanded(!expanded)}
-                    className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:bg-white/5 transition-all cursor-pointer"
+                    className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container)] transition-all cursor-pointer"
                 >
                     {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
@@ -194,7 +192,7 @@ function UserCard({
             <div className="flex sm:hidden items-center gap-3 px-5 pb-3 -mt-1">
                 <LevelBadge level={user.current_level} size="compact" />
                 <div className="flex items-center gap-1">
-                    <Flame className="w-3 h-3 text-orange-400" />
+                    <Flame className="w-3 h-3 text-[var(--color-tertiary-ink)]" />
                     <span className="text-[11px] font-bold text-[var(--color-on-surface)]">{user.streak}</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -214,7 +212,7 @@ function UserCard({
                         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                         className="overflow-hidden"
                     >
-                        <div className="px-5 pb-5 pt-2 border-t border-white/[0.05]">
+                        <div className="px-5 pb-5 pt-2 border-t border-[var(--color-outline-subtle)]">
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <DetailCell label="Estado suscripción" value={user.subscription_status} />
                                 <DetailCell label="Registrado" value={fmtDate(user.created_at)} />
@@ -230,24 +228,18 @@ function UserCard({
                                         const words = p?.words ?? 0;
                                         const maxWords = 100; // estimated max for visual proportion
                                         const pct = Math.min(100, Math.round((words / maxWords) * 100));
-                                        const barColors: Record<string, string> = {
-                                            A1: 'from-purple-300 to-purple-400',
-                                            A2: 'from-purple-400 to-purple-500',
-                                            B1: 'from-purple-500 to-purple-600',
-                                            B2: 'from-purple-600 to-purple-700',
-                                        };
                                         return (
                                             <div key={lvl} className="space-y-1">
                                                 <div className="flex justify-between text-[10px]">
                                                     <span className="font-bold text-[var(--color-on-surface)]">{lvl}</span>
                                                     <span className="text-[var(--color-on-surface-muted)]">{words}w</span>
                                                 </div>
-                                                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-1.5 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
                                                     <motion.div
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${pct}%` }}
                                                         transition={{ delay: 0.1, duration: 0.4 }}
-                                                        className={`h-full bg-gradient-to-r ${barColors[lvl]} rounded-full`}
+                                                        className="h-full bg-[var(--color-primary)] rounded-full"
                                                     />
                                                 </div>
                                             </div>
@@ -281,10 +273,10 @@ function LevelDistribution({ profiles }: { profiles: AdminUser[] }) {
     const counts = levels.map(lvl => profiles.filter(p => p.current_level === lvl).length);
     const total = profiles.length;
     const colors = [
-        'bg-purple-300',
-        'bg-purple-400',
-        'bg-purple-500',
-        'bg-purple-700',
+        'bg-[var(--color-primary)]',
+        'bg-[var(--color-primary)]',
+        'bg-[var(--color-primary)]',
+        'bg-[var(--color-primary)]',
     ];
 
     return (
@@ -293,13 +285,13 @@ function LevelDistribution({ profiles }: { profiles: AdminUser[] }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
         >
-            <div className="rounded-[1.5rem] bg-[var(--color-card)] p-5 sm:p-6 shadow-[var(--shadow-card)] border border-white/[0.06]">
+            <div className="rounded-[1.5rem] bg-[var(--color-card)] p-5 sm:p-6 shadow-[var(--shadow-card)] border border-[var(--color-outline-subtle)]">
                 <div className="flex items-center gap-2 mb-4">
                     <BarChart3 className="w-4 h-4 text-[var(--color-primary)]" />
                     <h3 className="text-sm font-black text-[var(--color-on-surface)]">Distribución por Nivel</h3>
                 </div>
                 {/* Segmented bar */}
-                <div className="flex rounded-full overflow-hidden h-3 bg-white/5 mb-4">
+                <div className="flex rounded-full overflow-hidden h-3 bg-[var(--color-surface-container)] mb-4">
                     {levels.map((lvl, i) => {
                         const pct = (counts[i] / total) * 100;
                         if (pct === 0) return null;
@@ -450,8 +442,8 @@ export default function AdminDashboard() {
                 className="flex items-center justify-between"
             >
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg">
-                        <Shield className="w-6 h-6 text-white" />
+                    <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
+                        <Shield className="w-6 h-6 text-[var(--color-on-primary)]" />
                     </div>
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-black text-[var(--color-on-surface)] tracking-tight">
@@ -497,7 +489,7 @@ export default function AdminDashboard() {
                         placeholder="Buscar por nombre, correo o ID..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-card)] border border-white/[0.06] text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 transition-all shadow-[var(--shadow-card)]"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 transition-all shadow-[var(--shadow-card)]"
                     />
                 </div>
 
@@ -505,7 +497,7 @@ export default function AdminDashboard() {
                 <select
                     value={filterTier}
                     onChange={e => setFilterTier(e.target.value as typeof filterTier)}
-                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-white/[0.06] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
+                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
                 >
                     <option value="all">Todos los tiers</option>
                     <option value="pro">Solo Pro ✨</option>
@@ -516,7 +508,7 @@ export default function AdminDashboard() {
                 <select
                     value={filterLevel}
                     onChange={e => setFilterLevel(e.target.value as typeof filterLevel)}
-                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-white/[0.06] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
+                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
                 >
                     <option value="all">Todos los niveles</option>
                     <option value="A1">A1 · Principiante</option>
@@ -544,7 +536,7 @@ export default function AdminDashboard() {
 
             {/* ── Error ── */}
             {error && (
-                <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+                <div className="p-5 rounded-2xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-sm text-[var(--color-error)]">
                     <p className="font-bold">No se pudieron cargar los usuarios</p>
                     <p className="text-xs mt-1 opacity-80">Verifica las políticas RLS en Supabase.</p>
                 </div>

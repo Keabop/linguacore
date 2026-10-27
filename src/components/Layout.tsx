@@ -3,9 +3,13 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
-import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User, GripVertical, GripHorizontal, GraduationCap, Shield } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { User, GripVertical, GripHorizontal, Shield } from 'lucide-react';
+import {
+    BookOpenIcon, GraduationCapIcon, HouseIcon, MapIcon, MessageCircleIcon, PencilIcon, RefreshCwIcon,
+    type AnimatedIcon, type AnimatedIconHandle,
+} from './icons';
 import LevelBadge from './ui/LevelBadge';
+import { LeafMark } from './ui/Wordmark';
 import Bilingual from './ui/Bilingual';
 import OfflineBanner from './OfflineBanner';
 import { useSyncManager } from '../hooks/useSyncManager';
@@ -13,21 +17,23 @@ import { useAuth } from '../lib/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
 import { useSidebarPreferences, type SidebarPosition } from '../hooks/useSidebarPreferences';
 
-const navItems: { path: string; icon: LucideIcon; labelKey: string; end?: boolean }[] = [
-    { path: '/dashboard', icon: Home, labelKey: 'nav.home' },
-    { path: '/path', icon: Map, labelKey: 'nav.path' },
-    { path: '/learn', icon: BookOpen, labelKey: 'nav.learn' },
-    { path: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
-    { path: '/practice', icon: PenLine, labelKey: 'nav.practice' },
-    { path: '/review', icon: RefreshCw, labelKey: 'nav.review', end: true },
-    { path: '/review/simulator', icon: GraduationCap, labelKey: 'nav.simulator' },
+const navItems: { path: string; icon: AnimatedIcon; labelKey: string; end?: boolean }[] = [
+    { path: '/dashboard', icon: HouseIcon, labelKey: 'nav.home' },
+    { path: '/path', icon: MapIcon, labelKey: 'nav.path' },
+    { path: '/learn', icon: BookOpenIcon, labelKey: 'nav.learn' },
+    { path: '/chat', icon: MessageCircleIcon, labelKey: 'nav.chat' },
+    { path: '/practice', icon: PencilIcon, labelKey: 'nav.practice' },
+    { path: '/review', icon: RefreshCwIcon, labelKey: 'nav.review', end: true },
+    { path: '/review/simulator', icon: GraduationCapIcon, labelKey: 'nav.simulator' },
 ];
 
 function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
-    path: string; icon: LucideIcon; labelKey: string; expanded: boolean; position: SidebarPosition; end?: boolean;
+    path: string; icon: AnimatedIcon; labelKey: string; expanded: boolean; position: SidebarPosition; end?: boolean;
 }) {
     const { t } = useTranslation();
     const [isHovered, setIsHovered] = useState(false);
+    // The whole item, not only the glyph, triggers the icon animation
+    const iconRef = useRef<AnimatedIconHandle>(null);
     const isVertical = position === 'left' || position === 'right';
 
     return (
@@ -41,12 +47,13 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                         : `h-10 w-10 justify-center mx-0.5 rounded-full`
                 } ${
                     isActive
-                        ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                        ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] font-bold'
                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
                 }`
             }
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            aria-label={t(labelKey)}
+            onMouseEnter={() => { setIsHovered(true); iconRef.current?.startAnimation(); }}
+            onMouseLeave={() => { setIsHovered(false); iconRef.current?.stopAnimation(); }}
         >
             {({ isActive }) => (
                 <>
@@ -54,13 +61,13 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                         <motion.div
                             layoutId="activeIndicator"
                             className={isVertical 
-                                ? "absolute left-0 w-1 h-6 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-r-full"
-                                : "absolute bottom-0 h-1 w-6 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-t-full"
+                                ? "absolute left-0 w-1 h-6 bg-[var(--color-primary)] rounded-r-full"
+                                : "absolute bottom-0 h-1 w-6 bg-[var(--color-primary)] rounded-t-full"
                             }
                         />
                     )}
                     <div className={`${isVertical ? 'w-12 h-12' : 'w-10 h-10'} flex items-center justify-center shrink-0`}>
-                        <Icon className="w-5 h-5 md:w-6 md:h-6" />
+                        <Icon ref={iconRef} size={22} aria-hidden="true" />
                     </div>
                     <AnimatePresence>
                         {expanded && isVertical && (
@@ -79,17 +86,17 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                                 exit={isVertical ? { opacity: 0, x: -10, scale: 0.95 } : { opacity: 0, y: position === 'top' ? -10 : 10, scale: 0.95 }}
                                 transition={{ duration: 0.15 }}
                                 className={isVertical
-                                    ? "absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
-                                    : `absolute px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
+                                    ? "absolute left-full px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                    : `absolute px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
                                         position === 'top' ? 'top-full mt-2.5 left-1/2 -translate-x-1/2' : 'bottom-full mb-2.5 left-1/2 -translate-x-1/2'
                                     }`
                                 }
                             >
                                 {t(labelKey)}
                                 <div className={isVertical
-                                    ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]"
+                                    ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[var(--color-on-surface)]"
                                     : `absolute left-1/2 -translate-x-1/2 border-x-4 border-x-transparent ${
-                                        position === 'top' ? 'bottom-full border-b-4 border-b-[#3A264B]' : 'top-full border-t-4 border-t-[#3A264B]'
+                                        position === 'top' ? 'bottom-full border-b-4 border-b-[var(--color-on-surface)]' : 'top-full border-t-4 border-t-[var(--color-on-surface)]'
                                     }`
                                 } />
                             </motion.div>
@@ -193,7 +200,7 @@ export default function Layout() {
             <motion.aside
                 key={position}
                 ref={sidebarRef}
-                className={`sidebar-rail pos-${position} fixed bg-white/85 dark:bg-[#1E0A35]/85 backdrop-blur-xl border border-purple-500/10`}
+                className={`sidebar-rail pos-${position} fixed bg-[var(--color-card)] border border-[var(--color-outline-variant)]`}
                 onMouseEnter={() => setIsNavHovered(true)}
                 onMouseLeave={() => setIsNavHovered(false)}
                 animate={isVertical ? { 
@@ -237,7 +244,7 @@ export default function Layout() {
                     <div
                         onPointerDown={(e) => dragControls.start(e)}
                         className={`drag-handle flex items-center justify-center cursor-grab active:cursor-grabbing p-1.5 rounded-lg hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] transition-colors shrink-0 relative ${
-                            !onboardingShown ? 'drag-handle-glow bg-purple-500/10' : ''
+                            !onboardingShown ? 'drag-handle-glow bg-[var(--color-primary)]/10' : ''
                         } ${
                             isVertical ? 'mb-1 w-8 h-8' : 'mr-3 w-8 h-8'
                         }`}
@@ -271,7 +278,7 @@ export default function Layout() {
                                         e.preventDefault();
                                         completeOnboarding();
                                     }}
-                                    className="mt-3 w-full py-1.5 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-[10px] font-black rounded-full shadow-md text-center hover:scale-102 active:scale-98 transition-all duration-200 cursor-pointer"
+                                    className="mt-3 w-full py-1.5 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-[10px] font-black rounded-full shadow-md text-center hover:scale-102 active:scale-98 transition-all duration-200 cursor-pointer"
                                 >
                                     Entendido
                                 </button>
@@ -285,8 +292,8 @@ export default function Layout() {
                             ? (isNavHovered ? 'px-4 mx-4 justify-start w-full' : 'px-0 mx-2.5 justify-center')
                             : 'justify-start'
                     }`}>
-                        <div className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center shrink-0">
-                            <img src="/logo.png" alt="Voxie" className="w-10 h-10 md:w-11 md:h-11 object-contain rounded-full shadow-md" />
+                        <div className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center shrink-0 rounded-full bg-[var(--color-primary-container)]">
+                            <LeafMark className="w-6 h-6" />
                         </div>
                         <AnimatePresence>
                             {isNavHovered && isVertical && (
@@ -294,9 +301,9 @@ export default function Layout() {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0, transition: { duration: 0 } }}
-                                    className="ml-3 text-xl font-extrabold text-[var(--color-on-surface)] tracking-tight"
+                                    className="ml-2 text-xl font-display font-extrabold text-[var(--color-on-surface)] tracking-[-0.04em]"
                                 >
-                                    Voxie
+                                    voxie
                                 </motion.span>
                             )}
                         </AnimatePresence>
@@ -334,14 +341,14 @@ export default function Layout() {
                                         : `h-10 w-10 justify-center rounded-full`
                                 } ${
                                     isActive
-                                        ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                                        ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] font-bold'
                                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
                                 }`
                             }
                             onMouseEnter={() => setIsProfileHovered(true)}
                             onMouseLeave={() => setIsProfileHovered(false)}
                         >
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center text-base md:text-lg font-black text-white shrink-0 shadow-md">
+                            <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-base md:text-lg font-black text-[var(--color-on-primary)] shrink-0 shadow-md">
                                 {authUser.email?.charAt(0).toUpperCase() ?? '?'}
                             </div>
                             <AnimatePresence>
@@ -357,7 +364,7 @@ export default function Layout() {
                                         </p>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             <Bilingual textKey="progress.currentLevel" className="text-[10px] font-bold text-[var(--color-on-surface-muted)]" />
-                                            <LevelBadge level={progressInfo.currentLevel} size="compact" />
+                                            <LevelBadge level={progressInfo.currentLevel} size="compact" withStage />
                                         </div>
                                     </motion.div>
                                 )}
@@ -370,17 +377,17 @@ export default function Layout() {
                                         exit={isVertical ? { opacity: 0, x: -10, scale: 0.95 } : { opacity: 0, y: position === 'top' ? -10 : 10, scale: 0.95 }}
                                         transition={{ duration: 0.15 }}
                                         className={isVertical
-                                            ? "absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
-                                            : `absolute px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
+                                            ? "absolute left-full px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                            : `absolute px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
                                                 position === 'top' ? 'top-full mt-2.5 left-1/2 -translate-x-1/2' : 'bottom-full mb-2.5 left-1/2 -translate-x-1/2'
                                             }`
                                         }
                                     >
                                         {t('nav.profile')}
                                         <div className={isVertical
-                                            ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]"
+                                            ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[var(--color-on-surface)]"
                                             : `absolute left-1/2 -translate-x-1/2 border-x-4 border-x-transparent ${
-                                                position === 'top' ? 'bottom-full border-b-4 border-b-[#3A264B]' : 'top-full border-t-4 border-t-[#3A264B]'
+                                                position === 'top' ? 'bottom-full border-b-4 border-b-[var(--color-on-surface)]' : 'top-full border-t-4 border-t-[var(--color-on-surface)]'
                                             }`
                                         } />
                                     </motion.div>
@@ -399,7 +406,7 @@ export default function Layout() {
                 </div>
             </div>
 
-            {/* ===== FLOATING BOTTOM BAR (Mobile Only) — Glassmorphism ===== */}
+            {/* ===== FLOATING BOTTOM BAR (Mobile Only) ===== */}
             {!hideFloatingBar && (
                 <nav ref={scrollRef} className="floating-bar">
                     {navItems.map(item => (
@@ -410,7 +417,7 @@ export default function Layout() {
                                 isActive ? 'active' : ''
                             }
                         >
-                            <item.icon className="w-5 h-5" />
+                            <item.icon size={20} isAnimated={false} aria-hidden="true" />
                             <span>{t(item.labelKey)}</span>
                         </NavLink>
                     ))}
@@ -432,15 +439,16 @@ export default function Layout() {
             {isAdmin && (
                 <NavLink
                     to="/admin"
+                    aria-label="Admin"
                     className={({ isActive }) =>
                         `fixed top-4 left-4 z-[55] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 ${
                             isActive
-                                ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-purple-500/30'
-                                : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] border border-white/10 hover:shadow-xl'
+                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                                : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] border border-[var(--color-outline-variant)]'
                         }`
                     }
                 >
-                    <Shield className="w-5 h-5" />
+                    <Shield className="w-5 h-5" aria-hidden="true" />
                 </NavLink>
             )}
         </div>

@@ -70,7 +70,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
                     {[
                         { rating: Rating.Again, label: t('review.again', 'Otra vez'), color: 'bg-accent-red/10 border-accent-red/20 text-accent-red' },
                         { rating: Rating.Hard, label: t('review.hard', 'Difícil'), color: 'bg-accent-orange/10 border-accent-orange/20 text-accent-orange' },
-                        { rating: Rating.Good, label: t('review.good', 'Bien'), color: 'bg-green-500/10 border-green-500/20 text-green-400' },
+                        { rating: Rating.Good, label: t('review.good', 'Bien'), color: 'bg-[var(--color-success)]/10 border-[var(--color-success)]/20 text-[var(--color-success)]' },
                         { rating: Rating.Easy, label: t('review.easy', 'Fácil'), color: 'bg-accent-blue/10 border-accent-blue/20 text-accent-blue' },
                     ].map(({ rating, label, color }) => (
                         <button
@@ -95,12 +95,12 @@ export default function ErrorReview({ card, onComplete }: Props) {
             >
                 <div className={`rounded-xl p-5 border space-y-3 ${
                     isCorrect
-                        ? 'bg-green-500/8 border-green-500/20'
+                        ? 'bg-[var(--color-success)]/8 border-[var(--color-success)]/20'
                         : 'bg-accent-red/8 border-accent-red/20'
                 }`}>
                     <div className="flex items-center gap-2">
                         {isCorrect
-                            ? <CheckCircle2 className="w-5 h-5 text-green-400" />
+                            ? <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />
                             : <XCircle className="w-5 h-5 text-accent-red" />
                         }
                         <span className="font-bold text-sm">
@@ -109,7 +109,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
                     </div>
                     <div className="space-y-2 text-sm">
                         <p><span className="text-[var(--color-on-surface-muted)]">Error:</span> <span className="line-through text-accent-red">{card.originalSentence}</span></p>
-                        <p><span className="text-[var(--color-on-surface-muted)]">Correcto:</span> <span className="text-green-400 font-semibold">{card.correctedSentence}</span></p>
+                        <p><span className="text-[var(--color-on-surface-muted)]">Correcto:</span> <span className="text-[var(--color-success)] font-semibold">{card.correctedSentence}</span></p>
                     </div>
                 </div>
 
@@ -122,7 +122,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
 
                 <button
                     onClick={() => setPhase('rating')}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <ArrowRight className="w-4 h-4" /> {t('review.next', 'Siguiente')}
                 </button>
@@ -168,7 +168,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
                     <button
                         onClick={handleSubmitFreeForm}
                         disabled={!userAnswer.trim()}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
                     >
                         {t('review.check', 'Verificar')}
                     </button>
