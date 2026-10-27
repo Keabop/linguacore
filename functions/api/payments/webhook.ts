@@ -21,12 +21,15 @@ export const onRequestPost: PagesFunction = async (context) => {
 
         // Sin la clave secreta no hay cómo validar; se sigue porque la suscripción se vuelve a
         // consultar a Mercado Pago, pero cualquiera podría disparar esa consulta.
+        // Con firma, sólo se procesa el id firmado (el de la URL); el cuerpo no va firmado.
         const webhookSecret = env.MERCADOPAGO_WEBHOOK_SECRET;
+        let signedId: string | null = null;
         if (webhookSecret) {
-            const valid = await verifyMercadoPagoSignature({
+            signedId = url.searchParams.get('data.id');
+            const valid = signedId !== null && await verifyMercadoPagoSignature({
                 xSignature: request.headers.get('x-signature'),
                 xRequestId: request.headers.get('x-request-id'),
-                dataId: url.searchParams.get('data.id'),
+                dataId: signedId,
                 secret: webhookSecret,
             });
             if (!valid) {
@@ -48,7 +51,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         // 3. Captura tolerante y "todoterreno" de Mercado Pago
         // Obtener el tipo de evento y el ID del pago o suscripción de cualquier parte
         const eventType = body.type || body.topic || query.topic || '';
-        const subscriptionId = body.data?.id || body.id || query.id || '';
+        const subscriptionId = signedId ?? (body.data?.id || body.id || query.id || '');
 
         // Aceptamos tanto 'subscription_preapproval' como 'preapproval'
         const isSubscriptionEvent = eventType === 'subscription_preapproval' || eventType === 'preapproval';

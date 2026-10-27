@@ -60,6 +60,11 @@ describe('generateWithFallback', () => {
         expect(generateContent).toHaveBeenCalledTimes(1);
     });
 
+    it('explains a blocked response instead of returning empty text', async () => {
+        generateContent.mockResolvedValueOnce({ text: undefined, promptFeedback: { blockReason: 'SAFETY' } });
+        await expect(generateWithFallback('hi')).rejects.toThrow('Gemini returned no text (SAFETY)');
+    });
+
     it('gives up after the last model', async () => {
         generateContent.mockRejectedValue(new ApiError({ message: 'busy', status: 503 }));
         await expect(generateWithFallback('hi')).rejects.toThrow('busy');
