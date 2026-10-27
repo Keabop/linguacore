@@ -1048,8 +1048,9 @@ span[data-word].in-deck {
 .plant-picker input:disabled + label .plant { opacity: 0.55; }
 .plant-picker .plant { width: 2.6rem; height: 3.2rem; }
 
-/* Page loader: soil, then the stem draws up, then two leaves open; it fades and starts again */
-.sprout-loader { overflow: visible; }
+/* Page loader: the stem draws up, two leaves open (800ms, SPROUT_GROW_MS in PageLoader.tsx),
+   then the plant sways while it waits. --sprout-offset continues the growth across loaders. */
+.sprout-loader { overflow: visible; --sprout-offset: 0ms; }
 .sprout-loader-soil { fill: var(--color-soil); }
 .sprout-loader-stem {
   fill: none;
@@ -1057,27 +1058,23 @@ span[data-word].in-deck {
   stroke-width: 2.6;
   stroke-linecap: round;
   stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: sprout-stem 1.8s var(--ease-out) infinite;
+  animation: sprout-stem 450ms var(--ease-out) calc(0ms - var(--sprout-offset)) both;
 }
 .sprout-loader-leaf {
   fill: var(--color-primary);
   transform-box: fill-box;
-  transform: scale(0);
-  animation: sprout-leaf 1.8s var(--ease-out) infinite;
+  animation: sprout-leaf 350ms var(--ease-out) both;
 }
-.sprout-loader-leaf-r { transform-origin: 0% 100%; animation-delay: 0.1s; }
-.sprout-loader-leaf-l { transform-origin: 100% 100%; fill: var(--color-primary-light); animation-delay: 0.22s; }
-@keyframes sprout-stem {
-  0% { stroke-dashoffset: 1; opacity: 1; }
-  40%, 80% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
+.sprout-loader-leaf-r { transform-origin: 0% 100%; animation-delay: calc(350ms - var(--sprout-offset)); }
+.sprout-loader-leaf-l { transform-origin: 100% 100%; fill: var(--color-primary-light); animation-delay: calc(450ms - var(--sprout-offset)); }
+.sprout-loader-plant {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sprout-sway 2.4s var(--ease-in-out) calc(800ms - var(--sprout-offset)) infinite alternate both;
 }
-@keyframes sprout-leaf {
-  0%, 30% { transform: scale(0); opacity: 1; }
-  55%, 80% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1); opacity: 0; }
-}
+@keyframes sprout-stem { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes sprout-leaf { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes sprout-sway { from { transform: rotate(0deg); } 50% { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
 
 /* Story cards: the corner leaves sway a little when the card is hovered */
 .story-card-leaves { transform-origin: 100% 90%; transition: transform var(--dur-long) var(--ease-out); }
@@ -1086,7 +1083,7 @@ span[data-word].in-deck {
 @media (prefers-reduced-motion: reduce) {
   .celebrate-pop, .answer-nudge { animation: none !important; }
   .sprout-loader-stem { animation: none; stroke-dashoffset: 0; }
-  .sprout-loader-leaf { animation: none; transform: scale(1); }
+  .sprout-loader-leaf, .sprout-loader-plant { animation: none; transform: none; }
   .sprout-loader { animation: loader-breathe 2s var(--ease-in-out) infinite; }
   .story-card-leaves { transition: none; }
 }

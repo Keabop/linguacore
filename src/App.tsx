@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { Toaster } from './lib/toast';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
-import PageLoader from './components/PageLoader';
+import PageLoader, { afterSproutGrows } from './components/PageLoader';
 import { useAuth } from './lib/AuthContext';
 import type { ReactNode, ComponentType } from 'react';
 
@@ -24,7 +24,8 @@ function lazyRetry<T extends ComponentType<any>>(
                     setTimeout(() => resolve(attempt(remaining - 1)), 1000),
                 );
             });
-        return attempt(retries);
+        // The page waits for the loader's sprout to finish growing, so it never shows half a plant
+        return Promise.all([attempt(retries), afterSproutGrows()]).then(([module]) => module);
     });
 }
 
