@@ -73,7 +73,7 @@ Always provide 2 suggested responses the student could use to continue the conve
     ];
 
     const lastMessage = chatHistory[chatHistory.length - 1]?.parts[0]?.text || 'Hello!';
-    const text = await chatWithFallback(systemPrompt, history, lastMessage);
+    const text = await chatWithFallback(history, lastMessage);
 
     const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
     try {

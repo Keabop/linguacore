@@ -2,6 +2,7 @@ import { env, setEnv } from '../../../server/lib/config.js';
 import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../../../server/lib/cors.js';
 import { getPreapproval, mapSubscriptionStatus } from '../../../server/lib/mercadopago.js';
+import { verifyMercadoPagoSignature } from '../../../server/lib/webhookSignature.js';
 
 // ---------------------------------------------------------------------------
 // Cloudflare Pages Function Entry Point
@@ -10,13 +11,34 @@ export const onRequestPost: PagesFunction = async (context) => {
     const { request, env: bindings } = context;
     setEnv(bindings); // Inyectar variables de entorno de Cloudflare
 
-    const corsHeaders = getCorsHeaders(request, 'POST, OPTIONS', 'Content-Type');
+    const corsHeaders = getCorsHeaders(request, 'POST, OPTIONS', 'Content-Type, x-signature, x-request-id');
 
     // Mercado Pago requiere 200 para todos los eventos, incluso fallidos, para evitar reintentos infinitos
     try {
         // 1. Extraer parámetros del Query String de la URL
         const url = new URL(request.url);
         const query = Object.fromEntries(url.searchParams.entries());
+
+        // Sin la clave secreta no hay cómo validar; se sigue porque la suscripción se vuelve a
+        // consultar a Mercado Pago, pero cualquiera podría disparar esa consulta.
+        // Con firma, sólo se procesa el id firmado (el de la URL); el cuerpo no va firmado.
+        const webhookSecret = env.MERCADOPAGO_WEBHOOK_SECRET;
+        let signedId: string | null = null;
+        if (webhookSecret) {
+            signedId = url.searchParams.get('data.id');
+            const valid = signedId !== null && await verifyMercadoPagoSignature({
+                xSignature: request.headers.get('x-signature'),
+                xRequestId: request.headers.get('x-request-id'),
+                dataId: signedId,
+                secret: webhookSecret,
+            });
+            if (!valid) {
+                console.warn('[Webhook Edge] Invalid x-signature, notification rejected');
+                return new Response(JSON.stringify({ received: false }), { status: 401, headers: corsHeaders });
+            }
+        } else {
+            console.warn('[Webhook Edge] MERCADOPAGO_WEBHOOK_SECRET not set; signature not checked');
+        }
 
         // 2. Extraer cuerpo JSON si existe
         let body: any = {};
@@ -29,7 +51,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         // 3. Captura tolerante y "todoterreno" de Mercado Pago
         // Obtener el tipo de evento y el ID del pago o suscripción de cualquier parte
         const eventType = body.type || body.topic || query.topic || '';
-        const subscriptionId = body.data?.id || body.id || query.id || '';
+        const subscriptionId = signedId ?? (body.data?.id || body.id || query.id || '');
 
         // Aceptamos tanto 'subscription_preapproval' como 'preapproval'
         const isSubscriptionEvent = eventType === 'subscription_preapproval' || eventType === 'preapproval';
@@ -112,6 +134,6 @@ export const onRequestPost: PagesFunction = async (context) => {
 export const onRequestOptions: PagesFunction = async (context) => {
     return new Response(null, {
         status: 204,
-        headers: getCorsHeaders(context.request, 'POST, OPTIONS', 'Content-Type'),
+        headers: getCorsHeaders(context.request, 'POST, OPTIONS', 'Content-Type, x-signature, x-request-id'),
     });
 };
