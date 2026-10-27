@@ -80,15 +80,15 @@ const FEATURES = [
         icon: GraduationCap,
         title: 'Simulacros oficiales',
         desc: 'Mídete con simulacros completos para exámenes internacionales como TOEFL, IELTS y Cambridge, con simulación de Speaking evaluada por IA.',
-        color: 'text-amber-400',
-        bg: 'bg-amber-500/10',
+        color: 'text-[var(--color-tertiary-ink)]',
+        bg: 'bg-[var(--color-tertiary)]/10',
     },
     {
         icon: Briefcase,
         title: 'Mazos profesionales IA',
         desc: 'Genera al instante mazos especializados de 15 palabras esenciales adaptados a cualquier industria o profesión.',
-        color: 'text-indigo-400',
-        bg: 'bg-indigo-500/10',
+        color: 'text-[var(--color-primary)]',
+        bg: 'bg-[var(--color-primary)]/10',
     },
     {
         icon: Upload,
@@ -146,8 +146,8 @@ function FeatureCard({ icon: Icon, title, desc, color, bg, i }: typeof FEATURES[
     return (
         <motion.div custom={i} variants={fadeUp}>
             <SpotlightCard
-                className="h-full bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
-                spotlightColor="rgba(112, 42, 225, 0.12)"
+                className="h-full bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                spotlightColor="color-mix(in_oklch,var(--color-primary)_12%,transparent)"
             >
                 <div className={`w-12 h-12 ${bg} rounded-2xl flex items-center justify-center mb-5`}>
                     <Icon className={`w-5 h-5 ${color}`} />
@@ -161,7 +161,7 @@ function FeatureCard({ icon: Icon, title, desc, color, bg, i }: typeof FEATURES[
 
 function MockupSignup() {
     return (
-        <div className="bg-[var(--color-card)]/80 backdrop-blur-sm rounded-[2rem] p-6 space-y-4 shadow-[var(--shadow-card)]">
+        <div className="bg-[var(--color-card)]/80 rounded-[var(--radius-lg)] p-6 space-y-4 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded-xl bg-[var(--color-primary)]/30 flex items-center justify-center">
                     <div className="w-3 h-3 rounded-lg bg-[var(--color-primary)]/60" />
@@ -197,7 +197,7 @@ function MockupSignup() {
 
 function MockupStory() {
     return (
-        <div className="bg-[var(--color-card)]/80 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)]">
+        <div className="bg-[var(--color-card)]/80 rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-card)]">
             {/* Story header */}
             <div className="bg-[var(--color-surface-container-low)] px-5 py-3.5 flex items-center gap-2">
                 <div className="w-5 h-5 rounded-xl bg-[var(--color-level-a1)]/20 flex items-center justify-center">
@@ -244,7 +244,7 @@ function MockupPath() {
         { label: 'My Family', locked: true },
     ];
     return (
-        <div className="bg-[var(--color-card)]/80 backdrop-blur-sm rounded-[2rem] overflow-hidden shadow-[var(--shadow-card)]">
+        <div className="bg-[var(--color-card)]/80 rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-card)]">
             <div className="bg-[var(--color-surface-container-low)] px-5 py-3.5">
                 <div className="h-2 w-24 bg-[var(--color-on-surface)]/10 rounded-full mb-1" />
                 <div className="flex items-center gap-2 mt-1">
@@ -370,7 +370,7 @@ export default function Landing() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary-light)] text-xs font-black tracking-wider uppercase mb-8 backdrop-blur-md border border-[var(--color-primary)]/20 shadow-[var(--shadow-card)]"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary-light)] text-xs font-black tracking-wider uppercase mb-8 border border-[var(--color-primary)]/20 shadow-[var(--shadow-card)]"
                 >
                     <Sparkles className="w-3.5 h-3.5" />
                     El Futuro del Inglés con IA
@@ -420,7 +420,7 @@ export default function Landing() {
                 >
                     <motion.div
                         style={{ rotateX: 4 }}
-                        className="relative mx-auto max-w-3xl rounded-[2rem] bg-[var(--color-card)]/50 backdrop-blur-sm p-2 shadow-[var(--shadow-float)]"
+                        className="relative mx-auto max-w-3xl rounded-[var(--radius-lg)] bg-[var(--color-card)]/50 p-2 shadow-[var(--shadow-float)]"
                     >
                         {/* Fake browser bar */}
                         <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-surface-container-low)] rounded-t-[1.75rem]">
@@ -495,13 +495,13 @@ export default function Landing() {
                                 {/* Bento Grid Stats */}
                                 <div className="grid grid-cols-3 gap-2.5">
                                     {[
-                                        { label: 'Racha', value: '12 días', icon: Flame, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-                                        { label: 'Tarjetas FSRS', value: '347 vocabs', icon: Layers, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                                        { label: 'Nivel CEFR', value: 'B2 Avanzado', icon: GraduationCap, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                                        { label: 'Racha', value: '12 días', icon: Flame, color: 'text-[var(--color-tertiary-ink)]', bg: 'bg-[var(--color-tertiary)]/10' },
+                                        { label: 'Tarjetas FSRS', value: '347 vocabs', icon: Layers, color: 'text-[var(--color-accent-blue)]', bg: 'bg-[var(--color-accent-blue)]/10' },
+                                        { label: 'Nivel CEFR', value: 'B2 Avanzado', icon: GraduationCap, color: 'text-[var(--color-primary)]', bg: 'bg-[var(--color-primary)]/10' },
                                     ].map((stat) => {
                                         const Icon = stat.icon;
                                         return (
-                                            <div key={stat.label} className="bg-[var(--color-surface-container-low)]/80 border border-[var(--color-surface-container)]/30 rounded-2xl p-2.5 space-y-1 relative overflow-hidden group hover:scale-[1.02] transition-all">
+                                            <div key={stat.label} className="bg-[var(--color-surface-container-low)]/80 border border-[var(--color-surface-container)]/30 rounded-2xl p-2.5 space-y-1 relative overflow-hidden group hover:-translate-y-px transition-all">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[8px] font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider">{stat.label}</span>
                                                     <div className={`p-1 rounded-lg ${stat.bg} shrink-0`}>
@@ -640,7 +640,7 @@ export default function Landing() {
                     className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"
                 >
                     {/* Free */}
-                    <motion.div custom={0} variants={fadeUp} className="bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-8 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                    <motion.div custom={0} variants={fadeUp} className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                         <div className="text-sm font-bold text-[var(--color-on-surface)]/70 mb-1 font-body">Gratis</div>
                         <div className="text-3xl font-black tracking-tight text-[var(--color-on-surface)] mb-1 font-display">
                             $<CountUp to={0} from={0} duration={1} className="inline" />
@@ -670,7 +670,7 @@ export default function Landing() {
                     </motion.div>
 
                     {/* Pro */}
-                    <motion.div custom={1} variants={fadeUp} className="relative bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-8 shadow-[var(--shadow-elevated)] pro-glow-border hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300">
+                    <motion.div custom={1} variants={fadeUp} className="relative bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 shadow-[var(--shadow-elevated)] pro-glow-border hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300">
                         <div className="absolute -top-3 right-6 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-[11px] font-bold px-4 py-1.5 rounded-full shadow-[var(--shadow-card)]">
                             Recomendado
                         </div>
@@ -755,10 +755,10 @@ export default function Landing() {
                 }
                 @keyframes proGlow {
                     0% {
-                        box-shadow: 0 0 8px rgba(112, 42, 225, 0.15), 0 0 20px rgba(112, 42, 225, 0.05);
+                        box-shadow: 0 0 8px color-mix(in_oklch,var(--color-primary)_15%,transparent), 0 0 20px color-mix(in_oklch,var(--color-primary)_5%,transparent);
                     }
                     100% {
-                        box-shadow: 0 0 16px rgba(112, 42, 225, 0.3), 0 0 40px rgba(112, 42, 225, 0.1);
+                        box-shadow: 0 0 16px color-mix(in_oklch,var(--color-primary)_30%,transparent), 0 0 40px color-mix(in_oklch,var(--color-primary)_10%,transparent);
                     }
                 }
             `}</style>

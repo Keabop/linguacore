@@ -82,7 +82,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 ) : (
                     <p className="text-lg leading-relaxed font-medium">
                         {result.targetWords.map((w, i) => (
-                            <span key={i} className={`${result.matches[i] ? 'text-green-400' : 'text-accent-red underline decoration-wavy'} mr-1`}>
+                            <span key={i} className={`${result.matches[i] ? 'text-[var(--color-success)]' : 'text-accent-red underline decoration-wavy'} mr-1`}>
                                 {w}
                             </span>
                         ))}
@@ -109,7 +109,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
 
             {result && (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-2">
-                    <p className={`text-4xl font-extrabold ${result.score >= 80 ? 'text-green-400' : result.score >= 60 ? 'text-accent-orange' : 'text-accent-red'}`}>
+                    <p className={`text-4xl font-extrabold ${result.score >= 80 ? 'text-[var(--color-success)]' : result.score >= 60 ? 'text-accent-orange' : 'text-accent-red'}`}>
                         {result.score}%
                     </p>
                     <p className="text-sm text-[var(--color-on-surface-muted)]">
@@ -122,13 +122,13 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 {!submitted ? (
                     <>
                         <button onClick={handleToggleRecord}
-                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-[var(--color-primary)] text-white hover:brightness-90'}`}>
+                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-[var(--color-on-primary)] animate-pulse' : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90'}`}>
                             {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
                         {transcript && !isListening && (
                             <button onClick={handleSubmit}
-                                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                                className="flex-1 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                                 Evaluar
                             </button>
                         )}
@@ -140,7 +140,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(result?.score ?? 0)}
-                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                             Continuar
                         </button>
                     </>

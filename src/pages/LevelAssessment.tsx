@@ -223,8 +223,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
     if (state === 'loading') {
         return (
             <div className="flex items-center justify-center min-h-[40vh]">
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center animate-pulse">
-                    <div className="w-5 h-5 rounded-full bg-amber-500/40 animate-spin" />
+                <div className="w-10 h-10 rounded-full bg-[var(--color-tertiary)]/10 flex items-center justify-center animate-pulse">
+                    <div className="w-5 h-5 rounded-full bg-[var(--color-tertiary)]/40 animate-spin" />
                 </div>
             </div>
         );
@@ -237,8 +237,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 animate={{ opacity: 1, y: 0 }}
                 className="flex flex-col items-center justify-center min-h-[40vh] space-y-6"
             >
-                <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
-                    <XCircle className="w-8 h-8 text-red-400" />
+                <div className="w-16 h-16 rounded-2xl bg-[var(--color-error)]/10 flex items-center justify-center">
+                    <XCircle className="w-8 h-8 text-[var(--color-error)]" />
                 </div>
                 <p className="text-[var(--color-on-surface-muted)] text-center">
                     No se encontraron ejercicios para esta evaluaci&oacute;n.
@@ -268,8 +268,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
                     >
-                        <div className="w-20 h-20 rounded-full bg-amber-500/15 flex items-center justify-center mx-auto shadow-[0_4px_24px_rgba(245,158,11,0.15)]">
-                            <Trophy className="w-10 h-10 text-amber-400" />
+                        <div className="w-20 h-20 rounded-full bg-[var(--color-tertiary)]/15 flex items-center justify-center mx-auto shadow-[0_4px_24px_color-mix(in_oklch,var(--color-tertiary)_15%,transparent)]">
+                            <Trophy className="w-10 h-10 text-[var(--color-tertiary-ink)]" />
                         </div>
                     </motion.div>
 
@@ -283,10 +283,10 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     </p>
                 </div>
 
-                <div className="bg-[var(--color-card)] rounded-[2rem] p-7 w-full max-w-sm space-y-5 shadow-[var(--shadow-card)]">
+                <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 w-full max-w-sm space-y-5 shadow-[var(--shadow-card)]">
                     <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                            <CheckCircle2 className="w-5 h-5 text-amber-400" />
+                        <div className="w-11 h-11 rounded-2xl bg-[var(--color-tertiary)]/10 flex items-center justify-center flex-shrink-0">
+                            <CheckCircle2 className="w-5 h-5 text-[var(--color-tertiary-ink)]" />
                         </div>
                         <div>
                             <p className="font-black text-sm">15–20 ejercicios</p>
@@ -295,8 +295,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                            <Star className="w-5 h-5 text-amber-400" />
+                        <div className="w-11 h-11 rounded-2xl bg-[var(--color-tertiary)]/10 flex items-center justify-center flex-shrink-0">
+                            <Star className="w-5 h-5 text-[var(--color-tertiary-ink)]" />
                         </div>
                         <div>
                             <p className="font-black text-sm">80% para aprobar</p>
@@ -307,8 +307,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                            <Trophy className="w-5 h-5 text-amber-400" />
+                        <div className="w-11 h-11 rounded-2xl bg-[var(--color-tertiary)]/10 flex items-center justify-center flex-shrink-0">
+                            <Trophy className="w-5 h-5 text-[var(--color-tertiary-ink)]" />
                         </div>
                         <div>
                             <p className="font-black text-sm">Desbloquea el siguiente nivel</p>
@@ -323,7 +323,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
                 <button
                     onClick={loadExercises}
-                    className="w-full max-w-sm bg-gradient-to-br from-amber-500 to-amber-600 text-black py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(245,158,11,0.3)] active:scale-[0.97]"
+                    className="w-full max-w-sm bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-tertiary)_30%,transparent)] active:scale-[0.97]"
                 >
                     Comenzar
                 </button>
@@ -351,10 +351,10 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center gap-3"
                 >
-                    <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center">
-                        <Trophy className="w-4.5 h-4.5 text-amber-400" />
+                    <div className="w-9 h-9 rounded-full bg-[var(--color-tertiary)]/15 flex items-center justify-center">
+                        <Trophy className="w-4.5 h-4.5 text-[var(--color-tertiary-ink)]" />
                     </div>
-                    <h2 className="text-lg font-black tracking-tight text-amber-400">
+                    <h2 className="text-lg font-black tracking-tight text-[var(--color-tertiary-ink)]">
                         {t('assessment.title', { level })}
                     </h2>
                 </motion.div>
@@ -385,8 +385,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
                         className="relative"
                     >
-                        <div className="w-24 h-24 rounded-full bg-amber-500/20 flex items-center justify-center shadow-[0_8px_40px_rgba(245,158,11,0.2)]">
-                            <Trophy className="w-12 h-12 text-amber-400" />
+                        <div className="w-24 h-24 rounded-full bg-[var(--color-tertiary)]/20 flex items-center justify-center shadow-[0_8px_40px_color-mix(in_oklch,var(--color-tertiary)_20%,transparent)]">
+                            <Trophy className="w-12 h-12 text-[var(--color-tertiary-ink)]" />
                         </div>
                         {/* Sparkle accents */}
                         <motion.div
@@ -395,7 +395,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             transition={{ delay: 0.4 }}
                             className="absolute -top-1 -right-1"
                         >
-                            <Star className="w-6 h-6 text-amber-300 fill-amber-300" />
+                            <Star className="w-6 h-6 text-[var(--color-tertiary-ink)] fill-[var(--color-tertiary)]" />
                         </motion.div>
                         <motion.div
                             initial={{ scale: 0, opacity: 0 }}
@@ -403,7 +403,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             transition={{ delay: 0.5 }}
                             className="absolute -bottom-1 -left-2"
                         >
-                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                            <Star className="w-4 h-4 text-[var(--color-tertiary-ink)] fill-[var(--color-tertiary)]" />
                         </motion.div>
                     </motion.div>
 
@@ -414,7 +414,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         transition={{ delay: 0.3 }}
                         className="text-center space-y-3"
                     >
-                        <h1 className="text-4xl font-black tracking-tight text-amber-400">
+                        <h1 className="text-4xl font-black tracking-tight text-[var(--color-tertiary-ink)]">
                             {t('levelUp.congratulations')}
                         </h1>
                         <p className="text-[var(--color-on-surface-muted)] text-lg">
@@ -427,12 +427,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="bg-[var(--color-card)] rounded-[2rem] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_rgba(245,158,11,0.12)]"
+                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_color-mix(in_oklch,var(--color-tertiary)_12%,transparent)]"
                     >
                         <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">
                             {t('assessment.title', { level })}
                         </p>
-                        <p className="text-6xl font-black tracking-tight text-amber-400">
+                        <p className="text-6xl font-black tracking-tight text-[var(--color-tertiary-ink)]">
                             {score}%
                         </p>
                         <p className="text-[var(--color-on-surface-muted)] text-sm">
@@ -446,8 +446,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                                 transition={{ delay: 0.6 }}
                                 className="pt-4"
                             >
-                                <div className="bg-amber-500/10 rounded-2xl py-3 px-4">
-                                    <p className="text-amber-300 font-black text-base">
+                                <div className="bg-[var(--color-tertiary)]/10 rounded-2xl py-3 px-4">
+                                    <p className="text-[var(--color-tertiary-ink)] font-black text-base">
                                         {t('levelUp.unlocked', { level: nl })}
                                     </p>
                                 </div>
@@ -461,7 +461,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.7 }}
                         onClick={onComplete}
-                        className="w-full max-w-sm bg-gradient-to-br from-amber-500 to-amber-600 text-black py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(245,158,11,0.3)] active:scale-[0.97]"
+                        className="w-full max-w-sm bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-tertiary)_30%,transparent)] active:scale-[0.97]"
                     >
                         Volver a la ruta
                     </motion.button>
@@ -484,12 +484,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                        className="bg-[var(--color-card)] rounded-[2rem] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_rgba(239,68,68,0.1)]"
+                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_color-mix(in_oklch,var(--color-error)_10%,transparent)]"
                     >
                         <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">
                             {t('assessment.title', { level })}
                         </p>
-                        <p className="text-6xl font-black tracking-tight text-red-400">
+                        <p className="text-6xl font-black tracking-tight text-[var(--color-error)]">
                             {score}%
                         </p>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -503,7 +503,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="bg-[var(--color-card)] rounded-[2rem] p-6 w-full max-w-sm space-y-4 shadow-[var(--shadow-card)]"
+                            className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 w-full max-w-sm space-y-4 shadow-[var(--shadow-card)]"
                         >
                             <p className="text-sm font-black text-[var(--color-on-surface-muted)]">
                                 Temas a repasar:
@@ -514,7 +514,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                                         key={topic.unitId}
                                         className="flex items-start gap-3 text-sm bg-[var(--color-surface-container)] rounded-2xl p-3"
                                     >
-                                        <XCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                                        <XCircle className="w-4 h-4 text-[var(--color-error)] mt-0.5 flex-shrink-0" />
                                         <span className="text-[var(--color-on-surface-muted)] leading-snug">
                                             {topic.grammarTopic}
                                         </span>
@@ -533,7 +533,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     >
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-gradient-to-br from-amber-500 to-amber-600 text-black py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(245,158,11,0.3)] active:scale-[0.97] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-tertiary)_30%,transparent)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             {t('assessment.retry')}

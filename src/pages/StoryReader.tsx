@@ -601,7 +601,7 @@ export default function StoryReader() {
                 tabIndex={0}
                 onClick={handleWordClick}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
-                className="bg-[var(--color-card)] rounded-[2rem] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300 pb-48 sm:pb-36 lg:pb-32"
+                className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300 pb-48 sm:pb-36 lg:pb-32"
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(processedHTML, {
@@ -617,7 +617,7 @@ export default function StoryReader() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-[var(--color-card)] rounded-[2rem] p-7 space-y-4 shadow-[var(--shadow-card)]"
+                    className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 space-y-4 shadow-[var(--shadow-card)]"
                 >
                     <h3 className="text-sm font-bold text-[var(--color-on-surface-muted)] flex items-center gap-2">
                         📚 {t('reader.keyVocabulary')}
@@ -652,7 +652,7 @@ export default function StoryReader() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] border border-[var(--color-primary)]/10 space-y-5 text-center transition-all duration-300"
+                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] border border-[var(--color-primary)]/10 space-y-5 text-center transition-all duration-300"
                     >
                         <div className="flex justify-between items-center text-xs shrink-0">
                             <span className="font-bold text-[var(--color-primary)] uppercase tracking-wider flex items-center gap-1.5">
@@ -674,7 +674,7 @@ export default function StoryReader() {
                                         {comparedWords.map((item, idx) => (
                                             <span
                                                 key={idx}
-                                                className={item.match ? 'text-[var(--color-success)]' : 'text-red-400'}
+                                                className={item.match ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}
                                             >
                                                 {item.word}
                                             </span>
@@ -730,8 +730,8 @@ export default function StoryReader() {
                                 onClick={isListening ? stopListening : handleStartShadowing}
                                 className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 cursor-pointer ${
                                     isListening 
-                                        ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                                        : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.4)]'
+                                        ? 'bg-[var(--color-error)] hover:bg-[var(--color-error)] text-[var(--color-on-error)] animate-pulse' 
+                                        : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-[var(--color-on-primary)] shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.4)]'
                                 }`}
                             >
                                 <Mic className="w-6 h-6" />
@@ -759,7 +759,7 @@ export default function StoryReader() {
             </button>
 
             {/* Floating Audiobook Player Bar */}
-            <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 backdrop-blur-md rounded-[2.5rem] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
+            <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">Modo Audiolibro</p>
@@ -797,7 +797,7 @@ export default function StoryReader() {
                             onClick={handleToggleShadowing}
                             className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                                 showShadowing 
-                                    ? 'bg-[var(--color-primary)] text-white shadow-md' 
+                                    ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-md' 
                                     : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)]'
                             }`}
                             title="Practicar Shadowing"
@@ -843,7 +843,7 @@ export default function StoryReader() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setSelectedWord(null)}
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55]"
+                            className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)] z-[55]"
                         />
                         <m.div
                             initial={{ opacity: 0, y: 30 }}
@@ -852,7 +852,7 @@ export default function StoryReader() {
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             className="fixed bottom-4 left-4 right-4 z-[60]"
                         >
-                            <div className="bg-[var(--color-card)] rounded-[2rem] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
+                            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="text-xl font-black tracking-tight text-accent-blue">{selectedWord.id}</h3>

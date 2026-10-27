@@ -60,18 +60,18 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-[var(--color-card)] rounded-[2rem] p-6 text-center shadow-[var(--shadow-card)]"
+                className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 text-center shadow-[var(--shadow-card)]"
             >
                 <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
             </motion.div>
 
             {/* Answer area */}
             <div
-                className={`min-h-[72px] bg-[var(--color-card)] rounded-[2rem] p-4 transition-all duration-300 ${
+                className={`min-h-[72px] bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 transition-all duration-300 ${
                     status === 'correct'
-                        ? 'bg-[var(--color-success)]/10 shadow-[0_0_0_3px_var(--color-success)]'
+                        ? 'bg-[var(--color-success)]/10 shadow-[0_0_0_3px_var(--color-success)] border-flash-correct'
                         : status === 'incorrect'
-                          ? 'bg-[var(--color-error)]/10 shadow-[0_0_0_3px_var(--color-error)]'
+                          ? 'bg-[var(--color-error)]/10 shadow-[0_0_0_3px_var(--color-error)] border-flash-incorrect'
                           : 'shadow-[var(--shadow-card)]'
                 }`}
             >
@@ -136,7 +136,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 <button
                     onClick={handleCheck}
                     disabled={!allPlaced}
-                    className="w-full bg-[var(--color-primary)] hover:scale-[1.02] disabled:opacity-40 text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
+                    className="w-full bg-[var(--color-primary)] hover:-translate-y-px disabled:opacity-40 text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
                 >
                     {t('exercises.checkAnswer')}
                 </button>
@@ -150,16 +150,16 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                     className="space-y-5"
                 >
                     <div className="text-center">
-                        <p className="text-lg font-bold text-emerald-400 flex items-center justify-center gap-1.5">
+                        <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
                             <Check className="w-5 h-5" /> {t('exercises.correct')}
                         </p>
                     </div>
-                    <div className="bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)]">
+                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)]">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-[var(--color-primary)] hover:scale-[1.02] text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
+                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -173,19 +173,19 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                     className="space-y-5"
                 >
                     <div className="text-center space-y-2">
-                        <p className="text-lg font-bold text-red-400 flex items-center justify-center gap-1.5">
+                        <p className="text-lg font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5">
                             <X className="w-5 h-5" /> {t('exercises.incorrect')}
                         </p>
                         <p className="text-sm text-[var(--color-on-surface-muted)]">
                             <span className="text-[var(--color-primary)] font-bold">{exercise.correctAnswer}</span>
                         </p>
                     </div>
-                    <div className="bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)]">
+                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)]">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-[var(--color-primary)] hover:scale-[1.02] text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
+                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

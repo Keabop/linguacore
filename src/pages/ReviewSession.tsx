@@ -115,7 +115,7 @@ export default function ReviewSession() {
                     )}
                     <div className="space-y-4">
                         {dueCards.length > 0 && (
-                            <button onClick={() => setReviewType('vocab')} className="w-full bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
+                            <button onClick={() => setReviewType('vocab')} className="w-full bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
                                 <div className="flex items-center gap-3">
                                     <RefreshCw className="w-5 h-5 text-accent-blue" />
                                     <div>
@@ -126,7 +126,7 @@ export default function ReviewSession() {
                             </button>
                         )}
                         {dueSkillCards.length > 0 && (
-                            <button onClick={() => setReviewType('grammar')} className="w-full bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
+                            <button onClick={() => setReviewType('grammar')} className="w-full bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
                                 <div className="flex items-center gap-3">
                                     <BookOpen className="w-5 h-5 text-accent-purple" />
                                     <div>
@@ -137,7 +137,7 @@ export default function ReviewSession() {
                             </button>
                         )}
                         {dueErrorCards.length > 0 && (
-                            <button onClick={() => setReviewType('errors')} className="w-full bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
+                            <button onClick={() => setReviewType('errors')} className="w-full bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
                                 <div className="flex items-center gap-3">
                                     <AlertTriangle className="w-5 h-5 text-accent-orange" />
                                     <div>
@@ -177,11 +177,11 @@ export default function ReviewSession() {
                     <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
                     <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                        <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] text-center">
                             <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-black text-accent-blue" />
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.reviewed')}</p>
                         </div>
-                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                        <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] text-center">
                             <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-black ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                         </div>
@@ -249,11 +249,11 @@ export default function ReviewSession() {
                     <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
                     <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                     <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                        <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] text-center">
                             <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-black text-accent-blue" />
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.reviewed')}</p>
                         </div>
-                        <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                        <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] text-center">
                             <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-black ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                         </div>
@@ -314,11 +314,11 @@ export default function ReviewSession() {
                 <Trophy className="w-12 h-12 text-accent-gold mx-auto" />
                 <h2 className="text-2xl font-black tracking-tight">{t('review.sessionDone')}</h2>
                 <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-                    <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] text-center">
                         <CountUp from={0} to={totalReviewed} duration={1.2} className="text-2xl font-black text-accent-blue" />
                         <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.reviewed')}</p>
                     </div>
-                    <div className="bg-[var(--color-card)] rounded-[2rem] p-4 shadow-[var(--shadow-card)] text-center">
+                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] text-center">
                         <span><CountUp from={0} to={accuracy} duration={1.5} className={`text-2xl font-black ${accuracy >= 90 ? 'gold-shimmer' : accuracy >= 70 ? 'text-success' : 'text-accent-orange'}`} />%</span>
                         <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                     </div>

@@ -127,7 +127,7 @@ function UserCard({
                     </div>
                     {/* Online dot */}
                     {isActive && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[var(--color-card)] shadow-sm" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[var(--color-success)] border-2 border-[var(--color-card)] shadow-sm" />
                     )}
                 </div>
 
@@ -136,7 +136,7 @@ function UserCard({
                     <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm sm:text-base font-black text-[var(--color-on-surface)] truncate">{displayName}</h3>
                         {user.tier === 'pro' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-[9px] font-black uppercase tracking-wider shrink-0">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-tertiary)]/20 border border-[var(--color-tertiary)]/30 text-[var(--color-tertiary-ink)] text-[9px] font-black uppercase tracking-wider shrink-0">
                                 <Crown className="w-2.5 h-2.5" /> Pro
                             </span>
                         )}
@@ -152,7 +152,7 @@ function UserCard({
                         <LevelBadge level={user.current_level} size="compact" />
                     </div>
                     <div className="flex items-center gap-1 text-[var(--color-on-surface)]">
-                        <Flame className="w-3.5 h-3.5 text-orange-400" />
+                        <Flame className="w-3.5 h-3.5 text-[var(--color-tertiary-ink)]" />
                         <span className="text-xs font-bold">{user.streak}</span>
                     </div>
                     <div className="flex items-center gap-1 text-[var(--color-on-surface)]">
@@ -168,8 +168,8 @@ function UserCard({
                     disabled={isPending}
                     className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-black transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-sm active:scale-95 ${
                         user.tier === 'free'
-                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-lg hover:shadow-amber-500/20'
-                            : 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
+                            ? 'bg-[var(--color-tertiary)] text-[var(--color-on-error)] hover:shadow-lg hover:shadow-[var(--color-tertiary)]/20'
+                            : 'bg-[var(--color-error)]/10 text-[var(--color-error)] border border-[var(--color-error)]/20 hover:bg-[var(--color-error)]/20'
                     }`}
                 >
                     {isPending ? (
@@ -194,7 +194,7 @@ function UserCard({
             <div className="flex sm:hidden items-center gap-3 px-5 pb-3 -mt-1">
                 <LevelBadge level={user.current_level} size="compact" />
                 <div className="flex items-center gap-1">
-                    <Flame className="w-3 h-3 text-orange-400" />
+                    <Flame className="w-3 h-3 text-[var(--color-tertiary-ink)]" />
                     <span className="text-[11px] font-bold text-[var(--color-on-surface)]">{user.streak}</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -231,10 +231,10 @@ function UserCard({
                                         const maxWords = 100; // estimated max for visual proportion
                                         const pct = Math.min(100, Math.round((words / maxWords) * 100));
                                         const barColors: Record<string, string> = {
-                                            A1: 'from-purple-300 to-purple-400',
-                                            A2: 'from-purple-400 to-purple-500',
-                                            B1: 'from-purple-500 to-purple-600',
-                                            B2: 'from-purple-600 to-purple-700',
+                                            A1: 'from-[var(--color-primary)] to-[var(--color-primary)]',
+                                            A2: 'from-[var(--color-primary)] to-[var(--color-primary)]',
+                                            B1: 'from-[var(--color-primary)] to-[var(--color-primary)]',
+                                            B2: 'from-[var(--color-primary)] to-[var(--color-primary)]',
                                         };
                                         return (
                                             <div key={lvl} className="space-y-1">
@@ -281,10 +281,10 @@ function LevelDistribution({ profiles }: { profiles: AdminUser[] }) {
     const counts = levels.map(lvl => profiles.filter(p => p.current_level === lvl).length);
     const total = profiles.length;
     const colors = [
-        'bg-purple-300',
-        'bg-purple-400',
-        'bg-purple-500',
-        'bg-purple-700',
+        'bg-[var(--color-primary)]',
+        'bg-[var(--color-primary)]',
+        'bg-[var(--color-primary)]',
+        'bg-[var(--color-primary)]',
     ];
 
     return (
@@ -544,7 +544,7 @@ export default function AdminDashboard() {
 
             {/* ── Error ── */}
             {error && (
-                <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+                <div className="p-5 rounded-2xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-sm text-[var(--color-error)]">
                     <p className="font-bold">No se pudieron cargar los usuarios</p>
                     <p className="text-xs mt-1 opacity-80">Verifica las políticas RLS en Supabase.</p>
                 </div>

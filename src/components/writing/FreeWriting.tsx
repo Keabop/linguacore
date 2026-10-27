@@ -27,7 +27,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
     return (
         <div className="space-y-6">
             <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
+                <div className="flex items-center gap-2 text-[var(--color-success)] text-sm font-semibold">
                     <Feather className="w-4 h-4" />
                     Escritura libre
                 </div>
@@ -36,7 +36,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
 
             <div className="flex flex-wrap items-center gap-3">
                 {targetGrammar.map((g, i) => (
-                    <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full">
+                    <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">
                         {g}
                     </span>
                 ))}
@@ -71,7 +71,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
                             </span>
                         )}
                     </div>
-                    <p className={`text-xs font-medium ${isOverLimit ? 'text-accent-red' : isInRange ? 'text-green-400' : 'text-[var(--color-on-surface-muted)]'}`}>
+                    <p className={`text-xs font-medium ${isOverLimit ? 'text-accent-red' : isInRange ? 'text-[var(--color-success)]' : 'text-[var(--color-on-surface-muted)]'}`}>
                         {wordCount} / {maxWords}
                     </p>
                 </div>
@@ -80,7 +80,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !isInRange || isOverLimit}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />

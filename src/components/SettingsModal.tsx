@@ -158,7 +158,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         </button>
                                     </div>
                                     {usernameSuccess && (
-                                        <p className="text-[10px] font-bold text-[var(--color-success)] animate-pulse">
+                                        <p role="status" className="text-[10px] font-bold text-[var(--color-success)]">
                                             ¡Nombre de usuario actualizado con éxito!
                                         </p>
                                     )}
@@ -224,7 +224,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                             </div>
                                             <button
                                                 onClick={() => setShowCancelConfirm(true)}
-                                                className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                                                className="text-xs text-[var(--color-error)] hover:text-[var(--color-error)] transition-colors"
                                             >
                                                 {t('account.cancelSubscription')}
                                             </button>
@@ -258,7 +258,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                             </div>
                                             <button
                                                 onClick={() => { navigate('/pricing'); onClose(); }}
-                                                className="text-xs bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg font-medium hover:brightness-90 transition-colors"
+                                                className="text-xs bg-[var(--color-primary)] text-[var(--color-on-primary)] px-4 py-2 rounded-lg font-medium hover:brightness-90 transition-colors"
                                             >
                                                 {t('account.upgradeToPro')}
                                             </button>
@@ -266,7 +266,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                     )}
 
                                     {actionError && (
-                                        <p className="text-xs text-red-400">{actionError}</p>
+                                        <p className="text-xs text-[var(--color-error)]">{actionError}</p>
                                     )}
                                 </div>
 
@@ -276,7 +276,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                 {/* Logout */}
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center gap-3 text-sm text-red-400 hover:text-red-300 transition-colors w-full"
+                                    className="flex items-center gap-3 text-sm text-[var(--color-error)] hover:text-[var(--color-error)] transition-colors w-full"
                                 >
                                     <LogOut className="w-5 h-5" />
                                     {t('settings.logout')}
@@ -293,7 +293,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="fixed inset-0 z-[60] bg-black/40"
+                                    className="fixed inset-0 z-[60] bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)]"
                                     onClick={() => setShowCancelConfirm(false)}
                                 />
                                 <motion.div
@@ -308,8 +308,8 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         onClick={e => e.stopPropagation()}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
-                                                <AlertTriangle className="w-5 h-5 text-red-400" />
+                                            <div className="w-10 h-10 rounded-full bg-[var(--color-error)]/10 flex items-center justify-center">
+                                                <AlertTriangle className="w-5 h-5 text-[var(--color-error)]" />
                                             </div>
                                             <h3 className="text-base font-bold text-[var(--color-on-surface)]">{t('account.cancelConfirmTitle')}</h3>
                                         </div>
@@ -323,7 +323,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                                     t('account.cancelLoseWriting'),
                                                     t('account.cancelLoseStories'),
                                                 ].map(item => (
-                                                    <li key={item} className="flex items-center gap-2 text-sm text-red-400">
+                                                    <li key={item} className="flex items-center gap-2 text-sm text-[var(--color-error)]">
                                                         <X className="w-3.5 h-3.5 shrink-0" />
                                                         {item}
                                                     </li>
@@ -338,14 +338,14 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <div className="flex gap-3">
                                             <button
                                                 onClick={() => setShowCancelConfirm(false)}
-                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-[var(--color-primary)] text-white hover:brightness-90 transition-colors"
+                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90 transition-colors"
                                             >
                                                 {t('account.cancelKeep')}
                                             </button>
                                             <button
                                                 onClick={handleCancel}
                                                 disabled={actionLoading}
-                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center gap-1"
+                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl border border-[var(--color-error)]/30 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors flex items-center justify-center gap-1"
                                             >
                                                 {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                                                 {t('account.cancelConfirm')}

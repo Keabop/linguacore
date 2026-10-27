@@ -57,7 +57,7 @@ export default function Auth() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="relative z-10 bg-[var(--color-card)] rounded-[2rem] p-10 max-w-sm w-full text-center space-y-5 shadow-[var(--shadow-float)]"
+                    className="relative z-10 bg-[var(--color-card)] rounded-[var(--radius-lg)] p-10 max-w-sm w-full text-center space-y-5 shadow-[var(--shadow-float)]"
                 >
                     <div className="w-16 h-16 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto">
                         <Mail className="w-8 h-8 text-[var(--color-primary)]" />
@@ -103,7 +103,7 @@ export default function Auth() {
                 </div>
 
                 {/* Form */}
-                <div className="bg-[var(--color-card)] rounded-[2rem] p-8 shadow-[var(--shadow-float)]">
+                <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 shadow-[var(--shadow-float)]">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
                             <label className="block text-xs text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider mb-2.5 font-body">Correo electrónico</label>

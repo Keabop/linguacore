@@ -153,7 +153,7 @@ export default function Pricing() {
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Free Plan */}
-                <div className="rounded-[2rem] bg-[var(--color-card)] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                     <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Gratis</h2>
                     <p className="mt-2 text-2xl font-black tracking-tight">
                         $<CountUp from={0} to={0} duration={1} className="inline" /> <span className="text-base font-normal text-[var(--color-on-surface-muted)]">— Para siempre</span>
@@ -178,7 +178,7 @@ export default function Pricing() {
                 </div>
 
                 {/* Pro Plan */}
-                <div className="rounded-[2rem] bg-[var(--color-card)] p-7 shadow-[var(--shadow-float)] relative overflow-hidden hover:-translate-y-1 transition-all duration-300">
+                <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-7 shadow-[var(--shadow-float)] relative overflow-hidden hover:-translate-y-1 transition-all duration-300">
                     {/* Subtle gradient glow at top */}
                     <div className="absolute inset-x-0 top-0 h-1 bg-[var(--color-primary)] rounded-t-[2rem]" />
 
@@ -232,7 +232,7 @@ export default function Pricing() {
                                 </button>
 
                                 {error && (
-                                    <p className="mt-1 text-center text-sm text-red-400">{error}</p>
+                                    <p className="mt-1 text-center text-sm text-[var(--color-error)]">{error}</p>
                                 )}
                             </div>
                         )}

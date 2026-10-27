@@ -101,7 +101,7 @@ export default function Practice() {
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.05 }}
-                            className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-center space-y-2"
+                            className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-center space-y-2"
                         >
                             <span className="text-3xl font-black tracking-tight text-[var(--color-primary)]">{l}</span>
                             <p className="text-xs text-[var(--color-on-surface-muted)]">{levelLabel(l)}</p>
@@ -262,7 +262,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                 {topics.map((topic, i) => (
                     <motion.button key={i} onClick={() => handleSelectTopic(topic)}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                        className={`w-full text-left bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 ${topic === FREE_TOPIC ? 'bg-[var(--color-surface-container-low)]' : ''}`}>
+                        className={`w-full text-left bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 ${topic === FREE_TOPIC ? 'bg-[var(--color-surface-container-low)]' : ''}`}>
                         {topic === FREE_TOPIC ? (
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-5 h-5 text-[var(--color-primary)] flex-shrink-0" />
@@ -303,7 +303,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                                                 {new Date(entry.submitted_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                                                entry.score >= 80 ? 'bg-green-500/10 text-green-400' :
+                                                entry.score >= 80 ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' :
                                                 entry.score >= 60 ? 'bg-accent-orange/10 text-accent-orange' :
                                                 'bg-accent-red/10 text-accent-red'
                                             }`}>{entry.score}%</span>
@@ -341,7 +341,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                         <Save className="w-4 h-4" /> {t('practice.saveToHistory')}
                     </button>
                 ) : (
-                    <p className="text-center text-green-400 text-sm flex items-center justify-center gap-2">
+                    <p className="text-center text-[var(--color-success)] text-sm flex items-center justify-center gap-2">
                         <CheckCircle2 className="w-4 h-4" /> {t('practice.savedToHistory')}
                     </p>
                 )}
@@ -351,7 +351,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
 
     return (
         <div className="space-y-6">
-            <div className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Tema</p>
                 <p className="text-sm text-white">{selectedTopic}</p>
             </div>
@@ -415,7 +415,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
 
     if (!recognitionSupported) {
         return (
-            <div className="bg-[var(--color-card)] rounded-[2rem] p-6 text-center space-y-3 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 text-center space-y-3 shadow-[var(--shadow-card)]">
                 <Mic className="w-8 h-8 text-[var(--color-on-surface-muted)] mx-auto" />
                 <p className="text-sm text-[var(--color-on-surface-muted)]">Tu navegador no soporta reconocimiento de voz. Usa Chrome para esta función.</p>
             </div>
@@ -424,14 +424,14 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
 
     return (
         <div className="space-y-6">
-            <div className="bg-[var(--color-surface-container-low)] rounded-[2rem] p-6 space-y-3 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--color-surface-container-low)] rounded-[var(--radius-lg)] p-6 space-y-3 shadow-[var(--shadow-card)]">
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">Lee en voz alta</p>
                 {!result ? (
                     <p className="text-white text-lg leading-relaxed font-medium">{targetText}</p>
                 ) : (
                     <p className="text-lg leading-relaxed font-medium">
                         {result.targetWords.map((w, i) => (
-                            <span key={i} className={`${result.matches[i] ? 'text-green-400' : 'text-accent-red underline decoration-wavy'} mr-1`}>{w}</span>
+                            <span key={i} className={`${result.matches[i] ? 'text-[var(--color-success)]' : 'text-accent-red underline decoration-wavy'} mr-1`}>{w}</span>
                         ))}
                     </p>
                 )}
@@ -455,7 +455,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
 
             {result && (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-2">
-                    <p className={`text-4xl font-black tracking-tight ${result.score >= 80 ? 'text-green-400' : result.score >= 60 ? 'text-accent-orange' : 'text-accent-red'}`}>
+                    <p className={`text-4xl font-black tracking-tight ${result.score >= 80 ? 'text-[var(--color-success)]' : result.score >= 60 ? 'text-accent-orange' : 'text-accent-red'}`}>
                         {result.score}%
                     </p>
                     <p className="text-sm text-[var(--color-on-surface-muted)]">
@@ -473,7 +473,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                         </button>
                         {transcript && !isListening && (
                             <button onClick={() => { stopListening(); setSubmitted(true); }}
-                                className="flex-1 bg-green-500 hover:bg-green-600 hover:-translate-y-1 text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]">
+                                className="flex-1 bg-[var(--color-success)] hover:bg-[var(--color-success)] hover:-translate-y-1 text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]">
                                 Evaluar
                             </button>
                         )}
