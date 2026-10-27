@@ -47,11 +47,12 @@ async function call(body: unknown, { token = 'valid', ip }: { token?: string | n
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await onRequestPost({ request, env: BINDINGS } as any);
-    return { status: res.status, body: await res.json() };
+    return { status: res.status, body: await res.json() as Record<string, any> };
 }
 
 beforeEach(() => {
     vi.clearAllMocks();
+    cache.isCacheable.mockReturnValue(false);
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
     usage.getUserTier.mockResolvedValue('free');
     usage.checkUsageLimit.mockResolvedValue({ allowed: true, remaining: 4, limit: 5 });
@@ -109,7 +110,6 @@ describe('orchestrator', () => {
         const res = await call({ agent: 'vocab-enricher', params: { word: 'cat' } });
         expect(res).toEqual({ status: 200, body: { word: 'cat' } });
         expect(agents.enrichVocabulary).not.toHaveBeenCalled();
-        cache.isCacheable.mockReturnValue(false);
     });
 
     it('explains invalid JSON from the model', async () => {

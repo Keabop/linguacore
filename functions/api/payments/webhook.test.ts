@@ -19,7 +19,7 @@ const { onRequestPost } = await import('./webhook');
 const SECRET = 'whsec';
 const BASE = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'service', MERCADOPAGO_ACCESS_TOKEN: 'mp' };
 
-function notify({ id = 'sub-1', secret, signWith }: { id?: string; secret?: string; signWith?: string } = {}) {
+function notify({ id = 'sub-1', bodyId = id, secret, signWith }: { id?: string; bodyId?: string; secret?: string; signWith?: string } = {}) {
     const headers: Record<string, string> = { 'Content-Type': 'application/json', 'x-request-id': 'req-1' };
     if (signWith) {
         const ts = '1704908010';
@@ -29,7 +29,7 @@ function notify({ id = 'sub-1', secret, signWith }: { id?: string; secret?: stri
     const request = new Request(`https://voxie.pages.dev/api/payments/webhook?data.id=${id}&type=subscription_preapproval`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ type: 'subscription_preapproval', data: { id } }),
+        body: JSON.stringify({ type: 'subscription_preapproval', data: { id: bodyId } }),
     });
     const env = secret ? { ...BASE, MERCADOPAGO_WEBHOOK_SECRET: secret } : BASE;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +57,12 @@ describe('Mercado Pago webhook', () => {
         expect(res.status).toBe(401);
         expect(getPreapproval).not.toHaveBeenCalled();
         expect(update).not.toHaveBeenCalled();
+    });
+
+    it('processes the signed id, not a different one slipped into the body', async () => {
+        const res = await notify({ secret: SECRET, signWith: SECRET, bodyId: 'someone-else' });
+        expect(res.status).toBe(200);
+        expect(getPreapproval).toHaveBeenCalledWith('mp', 'sub-1');
     });
 
     it('rejects an unsigned notification once the secret is set', async () => {
