@@ -4,6 +4,9 @@ import { allExercises, allGrammarSkills, allStories, allUnits, allVocabulary } f
 import { placementQuestions } from './assessments/cefr-questions';
 import { cambridgeB1Questions } from './assessments/cambridge-b1-questions';
 import { cambridgeB2Questions } from './assessments/cambridge-b2-questions';
+import { ieltsQuestions } from './assessments/ielts-questions';
+import { toeflQuestions } from './assessments/toefl-questions';
+import { validateExamStructure, validateQuestion } from '../lib/exam/validate';
 import reference from '../../content/reference/cefrj-vocabulary.json';
 import {
     ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, storyCoverage,
@@ -73,11 +76,15 @@ describe('stories', () => {
 });
 
 describe('assessments', () => {
-    it('every question has a valid answer and distinct options', () => {
-        for (const q of [...placementQuestions, ...cambridgeB1Questions, ...cambridgeB2Questions]) {
-            expect(q.correctIndex, q.id).toBeGreaterThanOrEqual(0);
-            expect(q.correctIndex, q.id).toBeLessThan(q.options.length);
-            expect(new Set(q.options).size, q.id).toBe(q.options.length);
+    it('every question is answerable as written', () => {
+        for (const q of [...placementQuestions, ...cambridgeB1Questions, ...cambridgeB2Questions, ...ieltsQuestions, ...toeflQuestions]) {
+            expect(validateQuestion(q), q.id).toEqual([]);
+        }
+    });
+
+    it('lays out adaptive sections as router, then lower and upper stages', () => {
+        for (const bank of [placementQuestions, cambridgeB1Questions, cambridgeB2Questions, ieltsQuestions, toeflQuestions]) {
+            expect(validateExamStructure(bank)).toEqual([]);
         }
     });
 });

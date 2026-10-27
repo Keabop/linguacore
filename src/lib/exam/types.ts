@@ -1,0 +1,96 @@
+// Question model of the exam simulators (placement, Cambridge, IELTS, TOEFL).
+
+export interface DialogueLine {
+    speaker: 'A' | 'B';
+    accent: 'US' | 'UK';
+    gender: 'male' | 'female';
+    text: string;
+}
+
+export type ExamSection = 'use-of-english' | 'reading' | 'listening';
+export type ExamLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
+
+/**
+ * Two-stage adaptive exams (TOEFL 2026, placement): everyone answers the `router` items of a
+ * section, then gets the `lower` or `upper` set depending on how the router went.
+ */
+export type ExamStage = 'router' | 'lower' | 'upper';
+
+export type TfngAnswer = 'true' | 'false' | 'not-given';
+
+interface QuestionBase {
+    id: string;
+    section: ExamSection;
+    level: ExamLevel;
+    /** Reading text the question is about (questions of one text repeat it). */
+    passage?: string | null;
+    /** Listening script; also played with the browser's voices when there is no audio file. */
+    dialogue?: DialogueLine[];
+    /** Pre-generated audio of the dialogue (public/audio/...). */
+    audioSrc?: string;
+    stage?: ExamStage;
+    /** Fragment of the passage or script that answers the question (for review and tests). */
+    evidence?: string;
+}
+
+/** One right option. `fixedOrder` keeps options as listed (headings i–x, A–F). */
+export interface MultipleChoiceQuestion extends QuestionBase {
+    kind?: 'mc';
+    text: string;
+    options: string[];
+    correctIndex: number;
+    fixedOrder?: boolean;
+}
+
+/** True / False / Not Given (or Yes / No / Not Given for opinions). */
+export interface TfngQuestion extends QuestionBase {
+    kind: 'tfng';
+    /** The statement to judge. */
+    text: string;
+    answer: TfngAnswer;
+    variant?: 'yes-no';
+}
+
+/** Gap to complete with words from the text: `text` holds one "___". */
+export interface GapQuestion extends QuestionBase {
+    kind: 'gap';
+    text: string;
+    /** Accepted answers (case, spacing and edge punctuation are ignored). */
+    answers: string[];
+    /** "NO MORE THAN TWO WORDS" → 2. */
+    maxWords?: number;
+}
+
+/**
+ * TOEFL "Complete the Words": a paragraph where some words lose their second half, written
+ * as `stu[dent]`. Each missing part is one mark.
+ */
+export interface CompleteWordsQuestion extends QuestionBase {
+    kind: 'complete-words';
+    text: string;
+}
+
+/** TOEFL "Build a Sentence": put the pieces in order. */
+export interface BuildSentenceQuestion extends QuestionBase {
+    kind: 'build-sentence';
+    /** What the sentence answers (e.g. the other speaker's line). */
+    text: string;
+    pieces: string[];
+    answer: string;
+}
+
+export type AssessmentQuestion =
+    | MultipleChoiceQuestion
+    | TfngQuestion
+    | GapQuestion
+    | CompleteWordsQuestion
+    | BuildSentenceQuestion;
+
+/**
+ * What the learner answered: option index (mc), TFNG value or gap text (strings), the missing
+ * parts of each word (complete-words) or the piece order (build-sentence).
+ */
+export type ExamResponse = number | string | string[] | number[];
+
+export const isMultipleChoice = (q: AssessmentQuestion): q is MultipleChoiceQuestion =>
+    q.kind === undefined || q.kind === 'mc';

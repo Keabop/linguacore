@@ -16,6 +16,9 @@ import { generateCareerDeck } from '../lib/ai';
 import { getVocab } from '../data';
 import { toast } from '../lib/toast';
 
+/** A skill the simulator didn't assess is shown as a dash, not as 0%. */
+const pctOrDash = (v: number | null | undefined) => (v === null || v === undefined ? '—' : `${v}%`);
+
 export default function Account() {
     const { t } = useTranslation();
     const { user: authUser } = useAuth();
@@ -847,15 +850,15 @@ export default function Account() {
                                             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-surface-container-high)] text-[11px] text-[var(--color-on-surface-muted)]">
                                                 <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
                                                     <span>Lectura:</span>
-                                                    <span className="font-bold text-[var(--color-on-surface)]">{sim.reading_score ?? 0}%</span>
+                                                    <span className="font-bold text-[var(--color-on-surface)]">{pctOrDash(sim.reading_score)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
                                                     <span>Escucha:</span>
-                                                    <span className="font-bold text-[var(--color-on-surface)]">{sim.listening_score ?? 0}%</span>
+                                                    <span className="font-bold text-[var(--color-on-surface)]">{pctOrDash(sim.listening_score)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
                                                     <span>Uso de Inglés:</span>
-                                                    <span className="font-bold text-[var(--color-on-surface)]">{sim.use_of_english_score ?? 0}%</span>
+                                                    <span className="font-bold text-[var(--color-on-surface)]">{pctOrDash(sim.use_of_english_score)}</span>
                                                 </div>
                                                 {sim.writing_score !== null && sim.writing_score !== undefined && (
                                                     <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
@@ -868,7 +871,9 @@ export default function Account() {
 
                                         <div className="flex items-center justify-between pt-2 border-t border-dashed border-[var(--color-surface-container-high)]">
                                             <div className="text-[11px] text-[var(--color-on-surface-muted)]">
-                                                Puntaje Promedio: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.score}%</span>
+                                                {sim.report?.headline
+                                                    ? <>{sim.report.headline.label}: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.report.headline.value}</span></>
+                                                    : <>Puntaje Promedio: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.score}%</span></>}
                                             </div>
                                             {sim.writing_feedback && (
                                                 <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-md flex items-center gap-1 border border-[var(--color-success)]/20">
