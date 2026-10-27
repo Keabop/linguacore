@@ -42,7 +42,15 @@ Ninguno de los dos archivos se sube a git.
 | `npm run build` | Revisión de tipos (cliente y funciones) y build de producción |
 | `npm run pages` | Build y servidor local de Cloudflare con el backend en el puerto 8788 |
 | `npm run test:run` | Pruebas con Vitest |
+| `npm run content:audit` | Estado del contenido de enseñanza frente a sus metas (historias, vocabulario, exámenes) |
 
 ## Base de datos
 
 Las migraciones viven en `supabase/migrations/` en orden cronológico.
+
+## Datos de terceros
+
+- **CEFR-J Wordlist 1.5**, compilada por Yukio Tono, Tokyo University of Foreign Studies:
+  niveles de referencia del vocabulario (`content/reference/`).
+- **CMU Pronouncing Dictionary**, © Carnegie Mellon University (licencia BSD en
+  `content/reference/CMUDICT-LICENSE`): pronunciaciones.
