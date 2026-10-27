@@ -4,6 +4,11 @@ import { allExercises, allGrammarSkills, allStories, allUnits, allVocabulary } f
 import { placementQuestions } from './assessments/cefr-questions';
 import { cambridgeB1Questions } from './assessments/cambridge-b1-questions';
 import { cambridgeB2Questions } from './assessments/cambridge-b2-questions';
+import reference from '../../content/reference/cefrj-vocabulary.json';
+import {
+    ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, isTemplated, levelMismatches, levelRank, storyCoverage,
+    storyEncounters, type ReferenceEntry,
+} from './contentMetrics';
 
 const norm = (s: string) => s.trim().toLowerCase();
 const words = (s: string) => s.split(/\s+/).map(norm).sort();
@@ -73,6 +78,56 @@ describe('assessments', () => {
             expect(q.correctIndex, q.id).toBeGreaterThanOrEqual(0);
             expect(q.correctIndex, q.id).toBeLessThan(q.options.length);
             expect(new Set(q.options).size, q.id).toBe(q.options.length);
+        }
+    });
+});
+
+// ---------- Plan targets (cerebro/contenido/plan-ensenanza.md), enforced per rebuilt level/exam
+
+describe('plan targets for rebuilt levels', () => {
+    const index = buildLevelIndex(reference as ReferenceEntry[]);
+
+    for (const level of ENFORCED_LEVELS) {
+        describe(level, () => {
+            const units = allUnits.filter(u => u.level === level && !u.isAssessment);
+            const stories = allStories.filter(s => s.level === level);
+            const deck = allVocabulary.filter(v => v.cefrLevel === level);
+            const known = new Set(allVocabulary.filter(v => levelRank(v.cefrLevel) <= levelRank(level)).map(v => v.id));
+
+            it(`has ${TARGETS.storiesPerUnit} stories per unit of about ${TARGETS.storyWords[level]} words`, () => {
+                for (const u of units) {
+                    expect(stories.filter(s => s.unitId === u.id).length, u.id).toBeGreaterThanOrEqual(TARGETS.storiesPerUnit);
+                }
+                for (const s of stories) expect(s.wordCount, s.id).toBeGreaterThanOrEqual(TARGETS.storyWords[level] * 0.8);
+            });
+
+            it(`keeps every story at ${TARGETS.minCoverage * 100}% known words or more`, () => {
+                for (const s of stories) {
+                    const report = storyCoverage(s.content, level, index, known);
+                    expect(report.coverage, `${s.id} above level: ${report.aboveLevel.join(', ')}`).toBeGreaterThanOrEqual(TARGETS.minCoverage);
+                }
+            });
+
+            it(`teaches ${TARGETS.deckSize[level]} words, each seen in ${TARGETS.minEncounters}+ stories`, () => {
+                expect(deck.length).toBeGreaterThanOrEqual(TARGETS.deckSize[level]);
+                const pool = allStories.filter(s => levelRank(s.level) <= levelRank(level) + 1);
+                for (const [id, n] of storyEncounters(pool, deck.map(v => v.id))) {
+                    expect(n, id).toBeGreaterThanOrEqual(TARGETS.minEncounters);
+                }
+            });
+
+            it('labels words with the CEFR-J level', () => {
+                expect(levelMismatches(deck, index)).toEqual([]);
+            });
+        });
+    }
+
+    it('has no templated or repeated questions in the rebuilt exam banks', () => {
+        const banks = { placement: placementQuestions, cambridgeB1: cambridgeB1Questions, cambridgeB2: cambridgeB2Questions };
+        for (const name of ENFORCED_EXAMS) {
+            const qs = banks[name];
+            expect(qs.filter(q => isTemplated(q.text)).map(q => q.id), name).toEqual([]);
+            expect(new Set(qs.map(q => q.text)).size, name).toBe(qs.length);
         }
     });
 });
