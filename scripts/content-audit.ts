@@ -7,13 +7,14 @@ import { ieltsQuestions } from '../src/data/assessments/ielts-questions';
 import { toeflQuestions } from '../src/data/assessments/toefl-questions';
 import reference from '../content/reference/cefrj-vocabulary.json';
 import {
-    ENFORCED_LEVELS, LEVELS, TARGETS, buildLevelIndex, isTemplated, levelMismatches, levelRank, storyCoverage, storyEncounters,
-    type ReferenceEntry,
+    ENFORCED_LEVELS, LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, storyCoverage,
+    storyEncounters, type ReferenceEntry,
 } from '../src/data/contentMetrics';
 
 const index = buildLevelIndex(reference as ReferenceEntry[]);
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 const mark = (ok: boolean) => (ok ? 'ok ' : 'NO ');
+const list = (items: string[], max = 12) => items.slice(0, max).join(', ') + (items.length > max ? ` … y ${items.length - max} más` : '');
 
 console.log('\nContenido frente a las metas del plan (cerebro/contenido/plan-ensenanza.md)');
 console.log(`Niveles ya exigidos por los tests: ${ENFORCED_LEVELS.join(', ') || 'ninguno'}\n`);
@@ -27,21 +28,25 @@ for (const level of LEVELS) {
     const coverage = stories.map(s => storyCoverage(s.content, level, index, known));
     const avgWords = stories.reduce((n, s) => n + s.wordCount, 0) / Math.max(1, stories.length);
     const lowCoverage = coverage.filter(c => c.coverage < TARGETS.minCoverage).length;
-    const encounters = storyEncounters(allStories.filter(s => levelRank(s.level) <= levelRank(level) + 1), deck.map(v => v.id));
+    const unknown = [...new Set(coverage.flatMap(c => c.unknown))];
+    const pool = allStories.filter(s => levelRank(s.level) <= levelRank(level) + 1);
+    const encounters = storyEncounters(pool, deck.map(v => v.id), index);
     const rare = [...encounters.values()].filter(n => n < TARGETS.minEncounters).length;
 
     console.log(`== ${level}`);
     console.log(`  ${mark(stories.length >= units.length * TARGETS.storiesPerUnit)}historias: ${stories.length} (meta ${units.length * TARGETS.storiesPerUnit}, ${TARGETS.storiesPerUnit} por unidad)`);
     console.log(`  ${mark(avgWords >= TARGETS.storyWords[level])}largo medio: ${Math.round(avgWords)} palabras (meta ${TARGETS.storyWords[level]})`);
     console.log(`  ${mark(lowCoverage === 0)}cobertura: ${lowCoverage} de ${stories.length} historias bajo ${pct(TARGETS.minCoverage)}`);
+    if (unknown.length) console.log(`      fuera de la lista y sin enseñar: ${list(unknown)}`);
     console.log(`  ${mark(deck.length >= TARGETS.deckSize[level])}vocabulario del nivel: ${deck.length} (meta ${TARGETS.deckSize[level]})`);
     console.log(`  ${mark(rare === 0)}repetición: ${rare} de ${deck.length} palabras en menos de ${TARGETS.minEncounters} historias`);
 }
 
-const mismatches = levelMismatches(allVocabulary, index);
-console.log(`\n== Niveles del vocabulario frente a CEFR-J: ${mismatches.length} distintos`);
-for (const m of mismatches.slice(0, 15)) console.log(`  ${m.id}: nuestro ${m.ours}, CEFR-J ${m.reference}`);
-if (mismatches.length > 15) console.log(`  … y ${mismatches.length - 15} más`);
+const check = checkVocabularyLevels(allVocabulary, index);
+console.log('\n== Vocabulario frente a CEFR-J');
+console.log(`  ${mark(check.mismatched.length === 0)}${check.mismatched.length} con otro nivel: ${list(check.mismatched.map(m => `${m.id} (${m.ours}→${m.reference})`))}`);
+console.log(`  ${mark(check.notLemma.length === 0)}${check.notLemma.length} fichas con forma flexionada: ${list(check.notLemma.map(n => `${n.id}→${n.lemma}`))}`);
+console.log(`  ${mark(check.missing.length === 0)}${check.missing.length} fuera de la lista: ${list(check.missing)}`);
 
 console.log('\n== Exámenes');
 const exams = { Nivelación: placementQuestions, 'Cambridge B1': cambridgeB1Questions, 'Cambridge B2': cambridgeB2Questions, IELTS: ieltsQuestions, TOEFL: toeflQuestions };

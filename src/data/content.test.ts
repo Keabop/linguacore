@@ -6,7 +6,7 @@ import { cambridgeB1Questions } from './assessments/cambridge-b1-questions';
 import { cambridgeB2Questions } from './assessments/cambridge-b2-questions';
 import reference from '../../content/reference/cefrj-vocabulary.json';
 import {
-    ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, isTemplated, levelMismatches, levelRank, storyCoverage,
+    ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, storyCoverage,
     storyEncounters, type ReferenceEntry,
 } from './contentMetrics';
 
@@ -104,20 +104,20 @@ describe('plan targets for rebuilt levels', () => {
             it(`keeps every story at ${TARGETS.minCoverage * 100}% known words or more`, () => {
                 for (const s of stories) {
                     const report = storyCoverage(s.content, level, index, known);
-                    expect(report.coverage, `${s.id} above level: ${report.aboveLevel.join(', ')}`).toBeGreaterThanOrEqual(TARGETS.minCoverage);
+                    expect(report.coverage, `${s.id} above level: ${report.aboveLevel.join(', ')}; unknown: ${report.unknown.join(', ')}`).toBeGreaterThanOrEqual(TARGETS.minCoverage);
                 }
             });
 
             it(`teaches ${TARGETS.deckSize[level]} words, each seen in ${TARGETS.minEncounters}+ stories`, () => {
                 expect(deck.length).toBeGreaterThanOrEqual(TARGETS.deckSize[level]);
                 const pool = allStories.filter(s => levelRank(s.level) <= levelRank(level) + 1);
-                for (const [id, n] of storyEncounters(pool, deck.map(v => v.id))) {
+                for (const [id, n] of storyEncounters(pool, deck.map(v => v.id), index)) {
                     expect(n, id).toBeGreaterThanOrEqual(TARGETS.minEncounters);
                 }
             });
 
-            it('labels words with the CEFR-J level', () => {
-                expect(levelMismatches(deck, index)).toEqual([]);
+            it('labels words with the CEFR-J level, by their dictionary form', () => {
+                expect(checkVocabularyLevels(deck, index)).toEqual({ mismatched: [], notLemma: [], missing: [] });
             });
         });
     }
