@@ -1,24 +1,7 @@
 import { env, setEnv } from '../../../server/lib/config.js';
 import { createClient } from '@supabase/supabase-js';
-import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 import { getCorsHeaders } from '../../../server/lib/cors.js';
-
-// ---------------------------------------------------------------------------
-// Status mapping: MP subscription status → profile fields
-// ---------------------------------------------------------------------------
-function mapSubscriptionStatus(mpStatus: string): { tier: string | null; subscription_status: string } {
-    switch (mpStatus) {
-        case 'authorized':
-            return { tier: 'pro', subscription_status: 'active' };
-        case 'paused':
-            return { tier: 'pro', subscription_status: 'past_due' };
-        case 'cancelled':
-            return { tier: 'free', subscription_status: 'cancelled' };
-        default:
-            // pending, etc. — not paid yet: keep the current tier
-            return { tier: null, subscription_status: 'pending' };
-    }
-}
+import { getPreapproval, mapSubscriptionStatus } from '../../../server/lib/mercadopago.js';
 
 // ---------------------------------------------------------------------------
 // Cloudflare Pages Function Entry Point
@@ -69,9 +52,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         }
 
         // 4. Consultar los detalles reales de la suscripción a Mercado Pago
-        const client = new MercadoPagoConfig({ accessToken });
-        const preApproval = new PreApproval(client);
-        const subscription = await preApproval.get({ id: subscriptionId.toString() });
+        const subscription = await getPreapproval(accessToken, subscriptionId.toString());
 
         const userId = subscription.external_reference;
         if (!userId) {

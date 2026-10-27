@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "pages": "npm run build && wrangler pages dev dist --compatibility-date=2026-05-26 --compatibility-flags=nodejs_compat"
+    "pages": "npm run build && wrangler pages dev dist --compatibility-date=2026-05-26"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261027.1",
@@ -39,7 +39,6 @@
     "i18next": "^25.8.4",
     "idb-keyval": "^6.2.2",
     "lucide-react": "^0.563.0",
-    "mercadopago": "^2.12.0",
     "ogl": "^1.0.11",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
