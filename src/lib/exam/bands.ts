@@ -97,16 +97,20 @@ export function cefrFromCambridge(scale: number): CefrResult {
 // ---------- Placement
 
 /**
- * Highest level whose questions — and those of every level below it — were answered at
- * `threshold` or better. One weak level stops the climb, so a lucky guess on C1 items
- * doesn't outweigh failing B1.
+ * Placement: climbs level by level while the learner keeps up. A level counts when the
+ * results from A1 up to it average `threshold` or better; a level answered below
+ * `failBelow` (less than half right) is a clear failure and stops the climb, so a lucky
+ * guess on C1 items doesn't outweigh failing B2, while one shaky level doesn't sink a
+ * strong learner either.
  */
-export function placementLevel(ratioByLevel: Record<string, number>, threshold = 0.6): CefrResult {
+export function placementLevel(ratioByLevel: Record<string, number>, threshold = 0.6, failBelow = 0.5): CefrResult {
     let level: CefrResult = 'A1';
+    const seen: number[] = [];
     for (const l of ['A1', 'A2', 'B1', 'B2', 'C1'] as CefrResult[]) {
         if (!(l in ratioByLevel)) continue;
-        if (ratioByLevel[l] >= threshold) level = l;
-        else break;
+        if (ratioByLevel[l] < failBelow) break;
+        seen.push(ratioByLevel[l]);
+        if (seen.reduce((a, b) => a + b, 0) / seen.length >= threshold) level = l;
     }
     return level;
 }

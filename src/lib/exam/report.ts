@@ -24,12 +24,18 @@ const pct = (r: number | null) => (r === null ? null : Math.round(r * 100));
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const fmt = (n: number) => (Number.isInteger(n) ? `${n}.0` : `${n}`);
 
+function combinedRatio(...sections: { earned: number; total: number }[]): number | null {
+    const total = sections.reduce((n, x) => n + x.total, 0);
+    return total ? sections.reduce((n, x) => n + x.earned, 0) / total : null;
+}
+
 /** IELTS-style band (1–9, halves) for an AI-graded skill scored 0–100. */
 const ieltsFromPercent = (p: number) => Math.max(1, Math.min(9, Math.round((1 + (8 * p) / 100) * 2) / 2));
 
 /**
- * Scores of a finished simulator. Writing and speaking come from the AI evaluation as 0–100,
- * or null when they weren't evaluated: they are then left out, never estimated from the rest.
+ * Scores of a finished simulator. Writing and speaking come from the AI evaluation as 0–100;
+ * a task left empty is 0. Only when the AI could not evaluate them are they null, and then
+ * they are left out instead of being estimated from the other skills.
  */
 export function buildReport(
     exam: ExamId,
@@ -101,20 +107,16 @@ export function buildReport(
         };
     }
 
-    // Cambridge: every skill weighs the same; reading and use of English go together
+    // Cambridge: every paper weighs the same. B2 First reports Reading and Use of English
+    // as two scores (5 in all); B1 Preliminary has no Use of English paper.
     const variant = exam === 'cambridge_b1' ? 'b1' : 'b2';
-    const readingAndUse = scoreSections(questions.filter(q => q.section !== 'listening'), responses);
-    const readingRatio = (() => {
-        const earned = readingAndUse.reading.earned + readingAndUse['use-of-english'].earned;
-        const total = readingAndUse.reading.total + readingAndUse['use-of-english'].total;
-        return total ? earned / total : null;
-    })();
-    const skills = {
-        'Reading y Use of English': readingRatio,
-        Listening: s.listening.ratio,
+    const productive = {
         Writing: writing === null ? null : writing / 100,
         Speaking: speaking === null ? null : speaking / 100,
     };
+    const skills: Record<string, number | null> = variant === 'b2'
+        ? { Reading: s.reading.ratio, 'Use of English': s['use-of-english'].ratio, Listening: s.listening.ratio, ...productive }
+        : { Reading: combinedRatio(s.reading, s['use-of-english']), Listening: s.listening.ratio, ...productive };
     const scales = Object.fromEntries(Object.entries(skills).map(([k, r]) => [k, r === null ? null : cambridgeScale(r, variant)]));
     const scored = Object.values(scales).filter((v): v is number => v !== null);
     const overall = Math.round(mean(scored));

@@ -73,9 +73,13 @@ describe('bands', () => {
         expect(cefrFromCambridge(cambridgeScale(0.5, 'b1'))).toBe('A2');
     });
 
-    it('places at the highest level reached without a weak level below', () => {
+    it('places at the highest level reached before a clearly failed one', () => {
         expect(placementLevel({ A1: 1, A2: 0.8, B1: 0.6, B2: 0.25, C1: 0.75 })).toBe('B1');
-        expect(placementLevel({ A1: 0.5, A2: 1 })).toBe('A1');
+        expect(placementLevel({ A1: 0.25, A2: 1 })).toBe('A1');
+    });
+
+    it('does not sink a strong learner for one shaky level', () => {
+        expect(placementLevel({ A1: 0.75, A2: 0.5, B1: 1, B2: 1, C1: 1 })).toBe('C1');
     });
 });
 
@@ -128,11 +132,21 @@ describe('exam report', () => {
         expect(report.breakdown[0]).toEqual({ skill: 'Reading', value: '4.0' });
     });
 
-    it('averages Cambridge skills on the scale', async () => {
+    it('averages the five B2 First papers on the scale', async () => {
         const { buildReport } = await import('./report');
-        const report = buildReport('cambridge_b2', [r('u', 'use-of-english'), r('l', 'listening')], { u: 0, l: 0 }, {}, 60, 60);
-        expect(report.headline.value).toBe('175'); // (190 + 190 + 160 + 160) / 4
+        const qs = [r('rd', 'reading'), r('u', 'use-of-english'), r('l', 'listening')];
+        const report = buildReport('cambridge_b2', qs, { rd: 0, u: 1, l: 0 }, {}, 60, 60);
+        expect(report.breakdown.map(b => b.skill)).toEqual(['Reading', 'Use of English', 'Listening', 'Writing', 'Speaking']);
+        expect(report.headline.value).toBe('160'); // (190 + 102 + 190 + 160 + 160) / 5 = 160.4
         expect(report.level).toBe('B2');
+    });
+
+    it('counts an empty writing task as zero, not as missing', async () => {
+        const { buildReport } = await import('./report');
+        const qs = [r('r1', 'reading'), r('l1', 'listening')];
+        const skipped = buildReport('ielts', qs, { r1: 0, l1: 0 }, {}, 0, 0);
+        const failedAi = buildReport('ielts', qs, { r1: 0, l1: 0 }, {}, null, null);
+        expect(Number(skipped.headline.value)).toBeLessThan(Number(failedAi.headline.value));
     });
 });
 
@@ -149,5 +163,21 @@ describe('validateQuestion', () => {
         expect(validateQuestion({ ...mc, correctIndex: 5 })).toContain('correctIndex fuera de rango');
         expect(validateQuestion({ ...build, answer: 'It closes at nine' })).toContain('las piezas no forman la respuesta');
         expect(validateQuestion({ ...gap, answers: ['the big main square'] })).toEqual(expect.arrayContaining(['una respuesta aceptada pasa el límite de palabras', 'escucha sin audio ni guion']));
+    });
+});
+
+describe('validateExamStructure', () => {
+    const q = (id: string, stage?: 'router' | 'lower' | 'upper'): AssessmentQuestion =>
+        ({ id, section: 'reading', level: 'B1', stage, text: id, options: ['a', 'b'], correctIndex: 0 });
+
+    it('accepts router then both stages', async () => {
+        const { validateExamStructure } = await import('./validate');
+        expect(validateExamStructure([q('a'), q('r', 'router'), q('l', 'lower'), q('u', 'upper')])).toEqual([]);
+    });
+
+    it('rejects a missing stage or a stage before its router', async () => {
+        const { validateExamStructure } = await import('./validate');
+        expect(validateExamStructure([q('r', 'router'), q('u', 'upper')])).toHaveLength(1);
+        expect(validateExamStructure([q('l', 'lower'), q('r', 'router'), q('u', 'upper')])).toHaveLength(1);
     });
 });
