@@ -392,64 +392,32 @@
   flex-direction: column;
 }
 
-/* Sidebar rail position adaptations */
-.sidebar-rail.pos-left {
-  left: 1.5rem;
-  right: auto;
-  top: 50%;
-  bottom: auto;
-  transform: translateY(-50%);
-  flex-direction: column;
-  padding: 12px 0;
-  height: 480px;
-  width: 68px;
-}
-
+/* Sidebar rail: Layout places it with left/top/width/height (animated), CSS only sets the inner flow */
+.sidebar-rail.pos-left,
 .sidebar-rail.pos-right {
-  right: 1.5rem;
-  left: auto;
-  top: 50%;
-  bottom: auto;
-  transform: translateY(-50%);
   flex-direction: column;
   padding: 12px 0;
-  height: 480px;
-  width: 68px;
 }
 
-.sidebar-rail.pos-top {
-  top: 1.5rem;
-  bottom: auto;
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  flex-direction: row;
-  padding: 0 24px;
-  width: 480px;
-  height: 68px;
-}
-
+.sidebar-rail.pos-top,
 .sidebar-rail.pos-bottom {
-  bottom: 1.5rem;
-  top: auto;
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
   flex-direction: row;
   padding: 0 24px;
-  width: 480px;
-  height: 68px;
 }
 
-/* Default fallback positioning for rail if pos class is not yet applied */
-.sidebar-rail:not(.pos-left):not(.pos-right):not(.pos-top):not(.pos-bottom) {
-  left: 1.5rem;
-  top: 50%;
-  transform: translateY(calc(-50% - 32px));
-  flex-direction: column;
-  padding: 12px 0;
-  height: 480px;
-  width: 68px;
+.sidebar-rail.is-dragging {
+  box-shadow: var(--shadow-float);
+  cursor: grabbing;
+}
+
+/* Where the rail will land while it is being dragged */
+.rail-drop-slot {
+  position: fixed;
+  z-index: 45;
+  border-radius: 34px;
+  border: 2px dashed color-mix(in oklch, var(--color-primary) 45%, transparent);
+  background: color-mix(in oklch, var(--color-primary) 6%, transparent);
+  pointer-events: none;
 }
 
 .main-content {
@@ -457,6 +425,7 @@
   min-height: 100dvh;
   display: flex;
   justify-content: center;
+  transition: padding var(--dur-long) var(--ease-out);
 }
 
 /* Main Content padding adaptations based on position */
@@ -868,60 +837,7 @@ span[data-word].in-deck {
   padding: 0 0.2em;
 }
 
-/* === DRAGGABLE SIDEBAR EFFECTS & DROP ZONES === */
-
-/* Drop zone overlay */
-.drop-zone-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: color-mix(in oklch, var(--color-primary) 6%, transparent);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.drop-zone-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.dark .drop-zone-overlay {
-  background: var(--color-card);
-}
-
-.drop-target-area {
-  position: fixed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in oklch, var(--color-primary) 2%, transparent);
-  border: 2px dashed color-mix(in oklch, var(--color-primary) 20%, transparent);
-  border-radius: var(--radius-lg);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 45;
-  pointer-events: auto;
-  box-sizing: border-box;
-}
-
-/* Hover/active state for dragging visual feedback */
-.drop-target-area.active {
-  background: color-mix(in oklch, var(--color-primary) 8%, transparent);
-  border-color: var(--color-primary);
-  box-shadow: 0 0 24px color-mix(in oklch, var(--color-primary) 15%, transparent);
-  transform: scale(1.02);
-}
-
-.dark .drop-target-area {
-  background: color-mix(in oklch, var(--color-primary) 1%, transparent);
-  border-color: color-mix(in oklch, var(--color-primary) 15%, transparent);
-}
-
-.dark .drop-target-area.active {
-  background: color-mix(in oklch, var(--color-primary) 8%, transparent);
-  border-color: var(--color-primary);
-  box-shadow: 0 0 24px color-mix(in oklch, var(--color-primary) 20%, transparent);
-}
+/* === DRAGGABLE SIDEBAR === */
 
 /* Drag handle pulse keyframes and class */
 @keyframes drag-handle-pulse {
@@ -958,22 +874,6 @@ span[data-word].in-deck {
   align-items: center;
   justify-content: center;
   z-index: 10;
-}
-
-.card-active-indicator {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-}
-
-.card-active-indicator.primary {
-  background-color: var(--color-primary);
-}
-
-.card-active-indicator.assessment {
-  background-color: var(--color-level-b1);
 }
 
 @media (min-width: 768px) {
@@ -1148,6 +1048,46 @@ span[data-word].in-deck {
 .plant-picker input:disabled + label .plant { opacity: 0.55; }
 .plant-picker .plant { width: 2.6rem; height: 3.2rem; }
 
+/* Page loader: soil, then the stem draws up, then two leaves open; it fades and starts again */
+.sprout-loader { overflow: visible; }
+.sprout-loader-soil { fill: var(--color-soil); }
+.sprout-loader-stem {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: sprout-stem 1.8s var(--ease-out) infinite;
+}
+.sprout-loader-leaf {
+  fill: var(--color-primary);
+  transform-box: fill-box;
+  transform: scale(0);
+  animation: sprout-leaf 1.8s var(--ease-out) infinite;
+}
+.sprout-loader-leaf-r { transform-origin: 0% 100%; animation-delay: 0.1s; }
+.sprout-loader-leaf-l { transform-origin: 100% 100%; fill: var(--color-primary-light); animation-delay: 0.22s; }
+@keyframes sprout-stem {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  40%, 80% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes sprout-leaf {
+  0%, 30% { transform: scale(0); opacity: 1; }
+  55%, 80% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* Story cards: the corner leaves sway a little when the card is hovered */
+.story-card-leaves { transform-origin: 100% 90%; transition: transform var(--dur-long) var(--ease-out); }
+*:hover > .story-card-leaves { transform: rotate(-6deg) scale(1.04); }
+
 @media (prefers-reduced-motion: reduce) {
   .celebrate-pop, .answer-nudge { animation: none !important; }
+  .sprout-loader-stem { animation: none; stroke-dashoffset: 0; }
+  .sprout-loader-leaf { animation: none; transform: scale(1); }
+  .sprout-loader { animation: loader-breathe 2s var(--ease-in-out) infinite; }
+  .story-card-leaves { transition: none; }
 }
+@keyframes loader-breathe { 50% { opacity: 0.55; } }
