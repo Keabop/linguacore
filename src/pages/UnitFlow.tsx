@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw } from 'lucide-react';
 import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
-import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap } from '../data';
+import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap, getSkillsByUnit } from '../data';
+import { shuffle } from '../lib/shuffle';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
 import Plant from '../components/garden/Plant';
@@ -115,12 +116,13 @@ export default function UnitFlow() {
     const [checkpointKey, setCheckpointKey] = useState(0);
 
     // Checkpoint exercise subset — must be above early returns to satisfy Rules of Hooks
+    // The checkpoint checks the unit with items the learner has not just answered: the unit's
+    // review-skill exercises. Units without skills fall back to their own exercises.
     const checkpointExercises = useMemo(() => {
-        if (!unitExercises || unitExercises.length === 0) return [];
-        const shuffled = [...unitExercises].sort(() => Math.random() - 0.5);
-        const count = Math.min(Math.max(3, Math.min(5, shuffled.length)), shuffled.length);
-        return shuffled.slice(0, count);
-    }, [unitExercises, checkpointKey]);
+        const fresh = unitId ? skillCheckpointExercises(unitId) : [];
+        const pool = fresh.length >= 5 ? fresh : unitExercises ?? [];
+        return shuffle(pool).slice(0, Math.min(5, pool.length));
+    }, [unitId, unitExercises, checkpointKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Loading state
     if (isLoading) {
@@ -416,6 +418,20 @@ export default function UnitFlow() {
             </div>
         </div>
     );
+}
+
+/* ===== Checkpoint items ===== */
+
+/** The unit's review-skill exercises in the shape the exercise runner expects. */
+function skillCheckpointExercises(unitId: string): GrammarExercise[] {
+    return getSkillsByUnit(unitId).flatMap(skill => skill.exercises.map((e, i): GrammarExercise => {
+        const id = `${skill.id}-cp-${i}`;
+        if (e.type === 'word-order') {
+            return { id, unitId, type: 'word-order', question: 'Ordena para formar una oración:', correctAnswer: e.answer, scrambledWords: shuffle(e.answer.split(' ')), explanation: e.explanation };
+        }
+        // Skill fill-blanks come with options, so they are answered by choosing
+        return { id, unitId, type: e.options ? 'multiple-choice' : 'fill-blank', question: e.prompt, correctAnswer: e.answer, options: e.options, explanation: e.explanation };
+    }));
 }
 
 /* ===== Sub-components ===== */
