@@ -6,6 +6,7 @@ import { useLevelProgression } from '../hooks/useLevelProgression';
 import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User, GripVertical, GripHorizontal, GraduationCap, Shield } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import LevelBadge from './ui/LevelBadge';
+import { LeafMark } from './ui/Wordmark';
 import Bilingual from './ui/Bilingual';
 import OfflineBanner from './OfflineBanner';
 import { useSyncManager } from '../hooks/useSyncManager';
@@ -41,7 +42,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                         : `h-10 w-10 justify-center mx-0.5 rounded-full`
                 } ${
                     isActive
-                        ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                        ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] font-bold'
                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
                 }`
             }
@@ -285,8 +286,8 @@ export default function Layout() {
                             ? (isNavHovered ? 'px-4 mx-4 justify-start w-full' : 'px-0 mx-2.5 justify-center')
                             : 'justify-start'
                     }`}>
-                        <div className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center shrink-0">
-                            <img src="/logo.png" alt="Voxie" className="w-10 h-10 md:w-11 md:h-11 object-contain rounded-full shadow-md" />
+                        <div className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center shrink-0 rounded-full bg-[var(--color-primary-container)]">
+                            <LeafMark className="w-6 h-6" />
                         </div>
                         <AnimatePresence>
                             {isNavHovered && isVertical && (
@@ -294,9 +295,9 @@ export default function Layout() {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0, transition: { duration: 0 } }}
-                                    className="ml-3 text-xl font-extrabold text-[var(--color-on-surface)] tracking-tight"
+                                    className="ml-2 text-xl font-display font-extrabold text-[var(--color-on-surface)] tracking-[-0.04em]"
                                 >
-                                    Voxie
+                                    voxie
                                 </motion.span>
                             )}
                         </AnimatePresence>
@@ -334,7 +335,7 @@ export default function Layout() {
                                         : `h-10 w-10 justify-center rounded-full`
                                 } ${
                                     isActive
-                                        ? 'bg-[var(--color-surface-container)] text-[var(--color-primary)] font-bold shadow-[var(--shadow-card)]'
+                                        ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] font-bold'
                                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
                                 }`
                             }
@@ -357,7 +358,7 @@ export default function Layout() {
                                         </p>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             <Bilingual textKey="progress.currentLevel" className="text-[10px] font-bold text-[var(--color-on-surface-muted)]" />
-                                            <LevelBadge level={progressInfo.currentLevel} size="compact" />
+                                            <LevelBadge level={progressInfo.currentLevel} size="compact" withStage />
                                         </div>
                                     </motion.div>
                                 )}
@@ -399,7 +400,7 @@ export default function Layout() {
                 </div>
             </div>
 
-            {/* ===== FLOATING BOTTOM BAR (Mobile Only) — Glassmorphism ===== */}
+            {/* ===== FLOATING BOTTOM BAR (Mobile Only) ===== */}
             {!hideFloatingBar && (
                 <nav ref={scrollRef} className="floating-bar">
                     {navItems.map(item => (
@@ -435,8 +436,8 @@ export default function Layout() {
                     className={({ isActive }) =>
                         `fixed top-4 left-4 z-[55] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 ${
                             isActive
-                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-purple-500/30'
-                                : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] border border-white/10 hover:shadow-xl'
+                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                                : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] border border-[var(--color-outline-variant)]'
                         }`
                     }
                 >
