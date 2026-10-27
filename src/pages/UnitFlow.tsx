@@ -615,7 +615,7 @@ function VocabStep({
                                 >
                                     {!flipped.has(v.id) ? (
                                         <div className="flex flex-col gap-1">
-                                            <span className="font-bold text-sm text-white">{v.id}</span>
+                                            <span className="font-bold text-sm text-[var(--color-on-surface)]">{v.id}</span>
                                             {v.phonetic && (
                                                 <span className="text-[10px] text-[var(--color-on-surface-muted)]">{v.phonetic}</span>
                                             )}

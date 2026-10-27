@@ -44,7 +44,7 @@ export function StoryIcon({ storyId, className }: { storyId: string; className?:
             strokeWidth="1.2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={className ?? 'w-10 h-10 text-white/20'}
+            className={className ?? 'w-10 h-10 text-[var(--color-on-surface-muted)]'}
         >
             {icon}
         </svg>

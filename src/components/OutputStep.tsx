@@ -148,7 +148,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
         <div className="space-y-7">
             {/* Section header */}
             <div className="space-y-1">
-                <h3 className="text-lg font-bold text-white">Producción</h3>
+                <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Producción</h3>
                 <p className="text-sm text-[var(--color-on-surface-muted)]">Practica tu escritura y habla en inglés.</p>
             </div>
 
@@ -194,7 +194,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     <div className="flex items-center gap-3">
                         <WifiOff className="w-5 h-5 text-[var(--color-tertiary-ink)] flex-shrink-0" />
                         <div className="space-y-1">
-                            <p className="text-sm font-bold text-white">Sin conexión a internet</p>
+                            <p className="text-sm font-bold text-[var(--color-on-surface)]">Sin conexión a internet</p>
                             <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                 Los ejercicios de producción necesitan IA. Mientras tanto, puedes aprender vocabulario con los cuentos.
                             </p>
@@ -217,7 +217,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                 {activeTab === 'writing' && writingDone && (
                     <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
                         <CheckCircle2 className="w-8 h-8 text-[var(--color-success)] mx-auto" />
-                        <p className="text-sm text-white font-semibold">Escritura completada — {writingScore}%</p>
+                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Escritura completada — {writingScore}%</p>
                     </div>
                 )}
                 {activeTab === 'speaking' && hasSpeaking && !speakingDone && !speakingDeferred && (
@@ -242,7 +242,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     >
                         <Clock className="w-10 h-10 text-[var(--color-tertiary-ink)] mx-auto" />
                         <div className="space-y-2">
-                            <p className="text-sm font-bold text-white">Ejercicios de habla pospuestos</p>
+                            <p className="text-sm font-bold text-[var(--color-on-surface)]">Ejercicios de habla pospuestos</p>
                             <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                 Estarán disponibles en <span className="text-[var(--color-tertiary-ink)] font-bold">{minutesLeft} minutos</span>.
                                 Hablar es parte esencial del aprendizaje — ¡vuelve cuando puedas!
@@ -270,7 +270,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                 {activeTab === 'speaking' && speakingDone && (
                     <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
                         <CheckCircle2 className="w-8 h-8 text-[var(--color-success)] mx-auto" />
-                        <p className="text-sm text-white font-semibold">Habla completada — {speakingScore}%</p>
+                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Habla completada — {speakingScore}%</p>
                     </div>
                 )}
             </motion.div>

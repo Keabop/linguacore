@@ -79,7 +79,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
             <div className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">Lee este texto</p>
                 {!result ? (
-                    <p className="text-white text-lg leading-relaxed font-medium">{targetText}</p>
+                    <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium">{targetText}</p>
                 ) : (
                     <p className="text-lg leading-relaxed font-medium">
                         {result.targetWords.map((w, i) => (
@@ -100,7 +100,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     className="bg-[var(--color-card)] border border-primary/20 rounded-xl p-4">
                     <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">Tu voz:</p>
-                    <p className="text-sm text-white">
+                    <p className="text-sm text-[var(--color-on-surface)]">
                         {transcript}
                         {interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic"> {interimTranscript}</span>}
                         {isListening && !transcript && !interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic">Escuchando...</span>}
@@ -137,7 +137,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                 ) : (
                     <>
                         <button onClick={handleRetry}
-                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(result?.score ?? 0)}

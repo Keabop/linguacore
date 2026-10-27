@@ -190,7 +190,7 @@ export default function StoryList() {
                             <div className="flex items-center justify-between">
                                 <h3 className="font-black tracking-tight flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-sm">
-                                        <Sparkles className="w-4 h-4 text-white" />
+                                        <Sparkles className="w-4 h-4 text-[var(--color-on-primary)]" />
                                     </div>
                                     {t('storyList.aiTitle')}
                                 </h3>

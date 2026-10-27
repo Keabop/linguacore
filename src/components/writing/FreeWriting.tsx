@@ -55,7 +55,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
                     disabled={disabled}
                     placeholder="Escribe libremente en inglés..."
-                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 text-white text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[180px] disabled:opacity-50"
+                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 text-[var(--color-on-surface)] text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[180px] disabled:opacity-50"
                     rows={6}
                 />
                 <div className="flex justify-between items-center">

@@ -337,7 +337,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                 <WritingFeedback data={feedback} onNext={handleReset} nextLabel="Otro tema" />
                 {!saved ? (
                     <button onClick={handleSave}
-                        className="w-full bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-white py-3.5 rounded-full font-semibold transition-all duration-300 flex items-center justify-center gap-2">
+                        className="w-full bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-[var(--color-on-surface)] py-3.5 rounded-full font-semibold transition-all duration-300 flex items-center justify-center gap-2">
                         <Save className="w-4 h-4" /> {t('practice.saveToHistory')}
                     </button>
                 ) : (
@@ -353,7 +353,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
         <div className="space-y-6">
             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Tema</p>
-                <p className="text-sm text-white">{selectedTopic}</p>
+                <p className="text-sm text-[var(--color-on-surface)]">{selectedTopic}</p>
             </div>
 
             {error && (
@@ -363,13 +363,13 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
             <div className="space-y-2">
                 <textarea value={text} onChange={e => setText(e.target.value)}
                     placeholder="Escribe en inglés..." rows={8}
-                    className="review-input w-full bg-[var(--color-card)] rounded-2xl p-6 text-white text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 shadow-[var(--shadow-card)] transition-all duration-300 min-h-[220px]" />
+                    className="review-input w-full bg-[var(--color-card)] rounded-2xl p-6 text-[var(--color-on-surface)] text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 shadow-[var(--shadow-card)] transition-all duration-300 min-h-[220px]" />
                 <p className="text-xs text-[var(--color-on-surface-muted)] text-right">{wordCount} palabras</p>
             </div>
 
             <div className="flex gap-4">
                 <button onClick={handleReset}
-                    className="bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-white px-6 py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98]">
+                    className="bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-[var(--color-on-surface)] px-6 py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98]">
                     Cambiar tema
                 </button>
                 <button onClick={handleSubmit} disabled={wordCount < 5}
@@ -427,7 +427,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
             <div className="bg-[var(--color-surface-container-low)] rounded-[var(--radius-lg)] p-6 space-y-3 shadow-[var(--shadow-card)]">
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">Lee en voz alta</p>
                 {!result ? (
-                    <p className="text-white text-lg leading-relaxed font-medium">{targetText}</p>
+                    <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium">{targetText}</p>
                 ) : (
                     <p className="text-lg leading-relaxed font-medium">
                         {result.targetWords.map((w, i) => (
@@ -445,7 +445,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     className="bg-[var(--color-card)] rounded-2xl p-4 shadow-[var(--shadow-card)]">
                     <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">Tu voz:</p>
-                    <p className="text-sm text-white">
+                    <p className="text-sm text-[var(--color-on-surface)]">
                         {transcript}
                         {interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic"> {interimTranscript}</span>}
                         {isListening && !transcript && !interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic">Escuchando...</span>}
@@ -481,7 +481,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                 ) : (
                     <>
                         <button onClick={() => { resetTranscript(); setSubmitted(false); }}
-                            className="flex-1 bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98]">
+                            className="flex-1 bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-[var(--color-on-surface)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98]">
                             Reintentar
                         </button>
                         <button onClick={handleNext}

@@ -73,7 +73,7 @@ function CategoryBar({ label, score, note }: { label: string; score: number; not
         <div className="space-y-1.5">
             <div className="flex justify-between text-sm">
                 <span className="text-[var(--color-on-surface-muted)]">{label}</span>
-                <span className="text-white font-semibold">{score}</span>
+                <span className="text-[var(--color-on-surface)] font-semibold">{score}</span>
             </div>
             <div className="h-2 bg-[var(--color-card-hover)] rounded-full overflow-hidden">
                 <motion.div
@@ -113,7 +113,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {/* Corrections */}
             {data.corrections.length > 0 && (
                 <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                    <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Correcciones</h3>
+                    <h3 className="text-sm font-semibold text-[var(--color-on-surface)] uppercase tracking-wider">Correcciones</h3>
                     {data.corrections.map((c, i) => (
                         <div key={i} className="bg-[var(--color-card-hover)] rounded-lg p-3.5 space-y-1.5">
                             <div className="flex items-center gap-2 text-xs">
@@ -127,7 +127,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-success)] shrink-0" />
-                                <span className="text-white">{c.corrected}</span>
+                                <span className="text-[var(--color-on-surface)]">{c.corrected}</span>
                             </div>
                             <p className="text-xs text-[var(--color-on-surface-muted)] italic pl-5">{c.explanation}</p>
                         </div>
@@ -138,7 +138,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {/* Improved version (expandable) */}
             <button
                 onClick={() => setShowImproved(!showImproved)}
-                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between text-sm text-[var(--color-on-surface-muted)] hover:text-white transition-colors"
+                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between text-sm text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
             >
                 <span className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-accent-blue" />
@@ -155,7 +155,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                         className="overflow-hidden"
                     >
                         <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-5">
-                            <p className="text-sm text-white leading-relaxed">{data.improvedVersion}</p>
+                            <p className="text-sm text-[var(--color-on-surface)] leading-relaxed">{data.improvedVersion}</p>
                         </div>
                     </motion.div>
                 )}

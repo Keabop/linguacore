@@ -63,7 +63,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                                 <WifiOff className="w-7 h-7 text-accent-orange" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold text-white mb-2">
+                                <h2 className="text-lg font-bold text-[var(--color-on-surface)] mb-2">
                                     Página no disponible offline
                                 </h2>
                                 <p className="text-sm text-[var(--color-on-surface-muted)]">
@@ -97,7 +97,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                             <AlertTriangle className="w-7 h-7 text-[var(--color-error)]" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-white mb-2">Algo salió mal</h2>
+                            <h2 className="text-lg font-bold text-[var(--color-on-surface)] mb-2">Algo salió mal</h2>
                             <p className="text-sm text-[var(--color-on-surface-muted)]">
                                 Esta página tuvo un error inesperado. Puedes intentar recargarla.
                             </p>
@@ -110,7 +110,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                         <div className="flex gap-3 justify-center">
                             <button
                                 onClick={this.handleReload}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium hover:bg-white/15 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-surface-container)] text-[var(--color-on-surface)] text-sm font-medium hover:bg-[var(--color-surface-container-high)] transition-colors"
                             >
                                 <RefreshCw className="w-4 h-4" />
                                 Recargar
