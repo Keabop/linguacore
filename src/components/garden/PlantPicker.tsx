@@ -51,8 +51,9 @@ export default function PlantPicker({ onNavigate }: { onNavigate?: () => void })
                                 <Plant species={id} stage="grown" height={44} />
                                 {t(`garden.species.${id}`)}
                                 {SPECIES[id].pro && (
-                                    <span className="absolute top-1 right-1 text-[var(--color-tertiary)]" aria-label={t('garden.proOnly')}>
+                                    <span className="absolute top-1 right-1 text-[var(--color-tertiary)]">
                                         <Crown className="w-3 h-3" fill="currentColor" aria-hidden="true" />
+                                        <span className="sr-only">{t('garden.proOnly')}</span>
                                     </span>
                                 )}
                             </label>

@@ -291,7 +291,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                         <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
                             <Lock className="w-5 h-5 text-[var(--color-on-primary)]" />
                         </div>
-                        <span className="text-xs font-black text-white tracking-wide">Plan Pro</span>
+                        <span className="rounded-full bg-[var(--color-card)] px-3 py-1 text-xs font-black text-[var(--color-on-surface)] tracking-wide">Plan Pro</span>
                     </Link>
                 )}
                 <div className="flex items-start justify-between gap-4">

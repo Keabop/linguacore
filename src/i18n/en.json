@@ -8,8 +8,7 @@
     "path": "Learning Path",
     "practice": "Practice",
     "profile": "Profile",
-    "simulator": "CEFR Simulator",
-    "skipToContent": "Skip to content"
+    "simulator": "CEFR Simulator"
   },
   "dashboard": {
     "greeting": "Hello!",
@@ -17,7 +16,6 @@
     "welcome": "Welcome to Voxie!",
     "dueToday": "For review today",
     "cards": "cards",
-    "pendingReview": "pending review",
     "noCards": "You have no pending cards!",
     "recommended": "Recommended stories",
     "viewAll": "View all",
@@ -26,15 +24,12 @@
     "yourProgress": "Your progress",
     "wordsLearned": "Words learned",
     "storiesRead": "Stories read",
-    "totalCards": "Cards in deck",
     "streak": "Streak",
     "days": "days",
-    "continueLearning": "Continue learning",
     "unitProgress": "Unit {{current}} of {{total}} — {{level}}",
     "allCompleted": "You have completed all units of this level!",
     "goToPath": "Go to path",
     "continue": "Continue",
-    "grammarSkills": "Grammar skills",
     "grammarDue": "grammar due",
     "myErrors": "My errors",
     "errorsDue": "errors due",
@@ -149,7 +144,6 @@
     "errorsDue": "errors due"
   },
   "progress": {
-    "title": "Your progress",
     "wordsLearned": "Words learned",
     "currentLevel": "Current level",
     "nextLevel": "Next level",
@@ -158,8 +152,7 @@
     "retention": "Retention",
     "storiesCompleted": "Stories completed",
     "criteria": "Criteria for {{level}}",
-    "unitsCompleted": "Units completed",
-    "nextUnit": "Next unit"
+    "unitsCompleted": "Units completed"
   },
   "levelUp": {
     "congratulations": "Congratulations!",
@@ -212,7 +205,8 @@
     "offlineDisabled": "Not available offline",
     "dataNotFound": "Data not found",
     "dataCorrupt": "Browser data may have been cleared.",
-    "resetData": "Reset data"
+    "resetData": "Reset data",
+    "send": "Send"
   },
   "chat": {
     "title": "Conversation Tutor",

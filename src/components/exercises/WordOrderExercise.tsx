@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
 import { answersMatch } from '../../lib/normalizeAnswer';
 import PlayOnMount from '../icons/PlayOnMount';

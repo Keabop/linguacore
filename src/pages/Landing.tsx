@@ -1,7 +1,4 @@
-/* Hallmark · genre: playful · macrostructure: Narrative Workflow · design-system: cerebro/diseno/design.md · designed-as-app
- * hero: try-it exercise (no account) · nav: N9 edge-aligned · footer: Ft5 statement · enrichment: Tier B hand-built SVG plants
- */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, MotionConfig } from 'framer-motion';
 import { ArrowRight, BookOpen, Brain, Check, GraduationCap, MessageCircle, RotateCcw, Upload, Briefcase, Activity } from 'lucide-react';
@@ -100,13 +97,16 @@ function TryIt() {
     const choose = (option: string) => {
         if (picked) return;
         setPicked(option);
-        if (option === q.answer) {
-            setCorrect(c => c + 1);
-            celebrateCorrect(optionRefs.current[option]);
-        } else {
-            nudgeWrong(optionRefs.current[option]);
-        }
+        if (option === q.answer) setCorrect(c => c + 1);
     };
+
+    // Runs after React has applied the right/wrong classes, so the animation class survives
+    useEffect(() => {
+        if (!picked) return;
+        const el = optionRefs.current[picked];
+        if (picked === q.answer) celebrateCorrect(el);
+        else nudgeWrong(el);
+    }, [picked, q.answer]);
 
     const next = () => {
         setPicked(null);

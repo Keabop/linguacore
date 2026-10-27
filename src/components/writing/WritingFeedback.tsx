@@ -49,7 +49,7 @@ function ScoreRing({ score }: { score: number }) {
     return (
         <div className="relative w-24 h-24 mx-auto">
             <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
-                <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6" className="text-bg-card-hover" />
+                <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6" className="text-[var(--color-surface-container-high)]" />
                 <motion.circle
                     cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6"
                     className={color}

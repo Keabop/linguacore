@@ -491,6 +491,7 @@ export default function ConversationTutor() {
                     <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
+                        aria-label={t('common.send')}
                         className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full px-5 py-3 shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:opacity-40 active:scale-95"
                     >
                         <SendIcon size={16} aria-hidden="true" />
