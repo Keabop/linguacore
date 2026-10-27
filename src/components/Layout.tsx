@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,7 @@ import LevelBadge from './ui/LevelBadge';
 import { LeafMark } from './ui/Wordmark';
 import Bilingual from './ui/Bilingual';
 import OfflineBanner from './OfflineBanner';
+import PageLoader from './PageLoader';
 import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
@@ -445,7 +446,13 @@ export default function Layout() {
             <div className="main-content">
                 <div className={`main-content-inner ${hideFloatingBar ? 'no-floating-bar-padding' : ''}`}>
                     <OfflineBanner syncState={syncState} />
-                    <Outlet />
+                    {/* Pages without their own boundary show the sprout while their code loads,
+                        then fade in instead of appearing at once */}
+                    <Suspense fallback={<PageLoader />}>
+                        <div key={location.pathname} className="page-enter">
+                            <Outlet />
+                        </div>
+                    </Suspense>
                 </div>
             </div>
 
