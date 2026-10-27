@@ -13,10 +13,12 @@ export const AGENT_TYPES = [
 
 export type AgentType = typeof AGENT_TYPES[number];
 
-// Models to try in order — if one is overloaded, fall back to the next
-const MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-pro'];
+// Models to try in order — if one is overloaded, fall back to the next. Pro is left out on
+// purpose: a 429 also means our own quota ran out, and escalating then multiplies the bill.
+const MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash'];
 
-const JSON_CONFIG = { responseMimeType: 'application/json' };
+// Thinking tokens are billed as output; these tasks don't need them (Flash thinks by default)
+const JSON_CONFIG = { responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } };
 
 let _genAI: GoogleGenAI | null = null;
 

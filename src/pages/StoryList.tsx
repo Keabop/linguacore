@@ -312,8 +312,17 @@ export default function StoryList() {
                                     <div
                                         className={`rounded-[var(--radius-lg)] overflow-hidden flex flex-col h-full cursor-pointer relative bg-[var(--color-card)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] transition-all duration-300 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}
                                     >
-                                        {/* 4px CEFR level color band at the top */}
-                                        <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
+                                        {/* Two leaves in the level colour, growing out of the corner */}
+                                        <svg
+                                            viewBox="0 0 120 120"
+                                            aria-hidden="true"
+                                            className="story-card-leaves pointer-events-none absolute -right-3 top-14 h-28 w-28"
+                                            style={{ color: levelColor }}
+                                        >
+                                            <path d="M120 106C96 94 78 72 66 40" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity=".45" />
+                                            <path d="M94 88C72 90 58 74 58 54c20 0 34 14 36 34Z" fill="currentColor" opacity=".3" />
+                                            <path d="M77 62c2-20 18-34 40-34-2 20-18 33-40 34ZM66 40c-9-12-8-27 2-38 9 11 9 26-2 38Z" fill="currentColor" opacity=".4" />
+                                        </svg>
 
                                         {/* Floating AI / Read Badges */}
                                         <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
@@ -349,7 +358,10 @@ export default function StoryList() {
 
                                             {/* Story Title & Spanish Translation */}
                                             <div className="flex items-start gap-3.5">
-                                                <div className="h-11 w-11 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
+                                                <div
+                                                    className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+                                                    style={{ backgroundColor: `color-mix(in oklch, ${levelColor} 22%, var(--color-card))` }}
+                                                >
                                                     {hasCustomIcon ? (
                                                         <StoryIcon storyId={story.id} className="h-6 w-6 text-[var(--color-primary)]" />
                                                     ) : (

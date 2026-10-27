@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { Toaster } from './lib/toast';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
-import PageLoader from './components/PageLoader';
+import PageLoader, { afterSproutGrows } from './components/PageLoader';
 import { useAuth } from './lib/AuthContext';
 import type { ReactNode, ComponentType } from 'react';
 
@@ -24,7 +24,8 @@ function lazyRetry<T extends ComponentType<any>>(
                     setTimeout(() => resolve(attempt(remaining - 1)), 1000),
                 );
             });
-        return attempt(retries);
+        // The page waits for the loader's sprout to finish growing, so it never shows half a plant
+        return Promise.all([attempt(retries), afterSproutGrows()]).then(([module]) => module);
     });
 }
 
@@ -49,7 +50,7 @@ function SafeRoute({ children }: { children: ReactNode }) {
     return (
         <ErrorBoundary key={location.pathname}>
             <Suspense fallback={<PageLoader />}>
-                {children}
+                <div className="page-enter">{children}</div>
             </Suspense>
         </ErrorBoundary>
     );
@@ -76,7 +77,7 @@ function SmartHome() {
     const { user, loading } = useAuth();
     if (loading) return <PageLoader />;
     if (user) return <Navigate to="/dashboard" replace />;
-    return <Suspense fallback={<PageLoader />}><Landing /></Suspense>;
+    return <Suspense fallback={<PageLoader />}><div className="page-enter"><Landing /></div></Suspense>;
 }
 
 export default function App() {
@@ -85,7 +86,7 @@ export default function App() {
             <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<SmartHome />} />
-                <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
+                <Route path="/auth" element={<Suspense fallback={<PageLoader />}><div className="page-enter"><Auth /></div></Suspense>} />
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>
