@@ -95,8 +95,7 @@ export default defineConfig({
                     // Animation
                     if (n.includes('/framer-motion/')) return 'vendor-motion';
                     // Persistence & server-state
-                    if (n.includes('/dexie/') || n.includes('/dexie-react-hooks/') ||
-                        n.includes('/@tanstack/react-query/') ||
+                    if (n.includes('/@tanstack/react-query/') ||
                         n.includes('/@tanstack/react-query-persist-client/') ||
                         n.includes('/idb-keyval/')) {
                         return 'vendor-data';

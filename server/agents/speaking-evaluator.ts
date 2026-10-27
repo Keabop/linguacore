@@ -1,0 +1,52 @@
+import { generateWithFallback } from '../lib/gemini.js';
+
+interface SpeakingEvaluationRequest {
+    transcripts: string[];
+    prompts: string[];
+    level: string;
+}
+
+interface SpeakingEvaluation {
+    score: number;
+    corrections: Array<{ phrase: string; suggestion: string; explanation: string }>;
+    pronunciationScore: number;
+    fluencyScore: number;
+    vocabularyScore: number;
+    detailedFeedback: string;
+}
+
+export async function evaluateSpeaking(params: SpeakingEvaluationRequest): Promise<SpeakingEvaluation> {
+    const prompt = `Eres un examinador de inglés oficial (Cambridge/TOEFL). Evalúa las siguientes respuestas habladas (transcritas) para el nivel CEFR: "${params.level}".
+
+Prompts del examinador:
+${params.prompts.map((p, i) => `[Pregunta ${i + 1}]: ${p}`).join('\n')}
+
+Respuestas transcritas del candidato:
+${params.transcripts.map((t, i) => `[Respuesta ${i + 1}]: ${t}`).join('\n')}
+
+Genera un informe analítico riguroso. Responde SOLO con JSON válido (sin markdown ni bloques de código) con este formato exacto:
+{
+  "score": 85,
+  "pronunciationScore": 80,
+  "fluencyScore": 85,
+  "vocabularyScore": 90,
+  "detailedFeedback": "retroalimentación general en español",
+  "corrections": [
+    {
+      "phrase": "frase con error",
+      "suggestion": "sugerencia corregida",
+      "explanation": "explicación del error"
+    }
+  ]
+}`;
+
+    const text = await generateWithFallback(prompt);
+
+    const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+    try {
+        return JSON.parse(cleaned);
+    } catch {
+        console.error('[speaking-evaluator] Failed to parse JSON. Raw response:', text.substring(0, 500));
+        throw new SyntaxError('Invalid JSON');
+    }
+}

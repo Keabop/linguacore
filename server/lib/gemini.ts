@@ -1,7 +1,17 @@
 import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
 import { env } from './config.js';
 
-export type AgentType = 'story-generator' | 'vocab-enricher' | 'exercise-creator' | 'conversation-tutor' | 'writing-evaluator';
+export const AGENT_TYPES = [
+    'story-generator',
+    'vocab-enricher',
+    'exercise-creator',
+    'conversation-tutor',
+    'writing-evaluator',
+    'career-deck',
+    'speaking-evaluator',
+] as const;
+
+export type AgentType = typeof AGENT_TYPES[number];
 
 // Models to try in order — if one is overloaded, fall back to the next
 const MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-pro'];
@@ -15,7 +25,7 @@ function getGenAI(): GoogleGenerativeAI {
     if (!apiKey) {
         throw new Error(
             'GEMINI_API_KEY environment variable is not set. ' +
-            'Please add it in Vercel Dashboard → Settings → Environment Variables.'
+            'Add it in Cloudflare Pages → Settings → Variables and Secrets (or .dev.vars locally).'
         );
     }
 

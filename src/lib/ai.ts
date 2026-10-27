@@ -202,39 +202,7 @@ export interface CareerWord {
 }
 
 export async function generateCareerDeck(profession: string, level: string): Promise<CareerWord[]> {
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-    if (!apiKey) throw new Error('API key missing');
-
-    const ai = new GoogleGenerativeAI(apiKey);
-    const model = ai.getGenerativeModel({
-        model: 'gemini-1.5-flash',
-        generationConfig: { responseMimeType: 'application/json' }
-    });
-
-    const prompt = `
-    Eres un lingüista experto en inglés profesional.
-    
-    Evalúa críticamente si la ocupación, profesión, hobby, industria o dominio técnico especializado dado: "${profession}" es coherente, real y reconocible (ya sea en inglés o español).
-    
-    Si el término es incoherente, es una cadena aleatoria de caracteres/números (por ejemplo, 'asdf', '12345'), está vacío o carece de cualquier contexto claro del cual se pueda extraer vocabulario técnico o profesional relevante, debes retornar obligatoriamente un arreglo JSON vacío: [].
-    
-    Si el término es válido y coherente, genera una lista de 15 palabras o frases esenciales en inglés especializadas para dicho campo: "${profession}", adaptadas para el nivel CEFR: "${level}".
-    
-    Debes retornar un JSON array con el siguiente formato exacto de objetos (o un arreglo vacío [] si no es válido):
-    [
-      {
-        "word": "palabra en inglés (ej. reluctancy)",
-        "translation": "traducción directa en español (ej. renuencia)",
-        "example": "una oración de ejemplo en inglés simple y clara que use la palabra",
-        "exampleTranslation": "la traducción de la oración de ejemplo al español"
-      }
-    ]
-    `;
-
-    const response = await model.generateContent(prompt);
-    const text = response.response.text();
-    return JSON.parse(text) as CareerWord[];
+    return callAgent<CareerWord[]>('career-deck', { profession, level });
 }
 
 export interface SpeakingCorrection {
@@ -257,44 +225,6 @@ export async function evaluateSpeaking(
     prompts: string[],
     level: string
 ): Promise<SpeakingEvaluationResponse> {
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-    if (!apiKey) throw new Error('API key missing');
-
-    const ai = new GoogleGenerativeAI(apiKey);
-    const model = ai.getGenerativeModel({
-        model: 'gemini-1.5-flash',
-        generationConfig: { responseMimeType: 'application/json' }
-    });
-
-    const promptText = `
-    Eres un examinador de inglés oficial (Cambridge/TOEFL). Evalúa las siguientes respuestas habladas (transcritas) para el nivel CEFR: "${level}".
-
-    Prompts del examinador:
-    ${prompts.map((p, i) => `[Pregunta ${i+1}]: ${p}`).join('\n')}
-
-    Respuestas transcritas del candidato:
-    ${transcripts.map((t, i) => `[Respuesta ${i+1}]: ${t}`).join('\n')}
-
-    Genera un informe analítico riguroso. Debes retornar un JSON con este formato exacto:
-    {
-      "score": 85,
-      "pronunciationScore": 80,
-      "fluencyScore": 85,
-      "vocabularyScore": 90,
-      "detailedFeedback": "retroalimentación general en español",
-      "corrections": [
-        {
-          "phrase": "frase con error",
-          "suggestion": "sugerencia corregida",
-          "explanation": "explicación del error"
-        }
-      ]
-    }
-    `;
-
-    const response = await model.generateContent(promptText);
-    const text = response.response.text();
-    return JSON.parse(text) as SpeakingEvaluationResponse;
+    return callAgent<SpeakingEvaluationResponse>('speaking-evaluator', { transcripts, prompts, level });
 }
 
