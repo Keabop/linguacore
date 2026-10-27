@@ -75,7 +75,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     className="bg-[var(--color-card)] border border-primary/20 rounded-xl p-4 min-h-[80px]">
                     <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">Tu respuesta:</p>
-                    <p className="text-sm text-white leading-relaxed">
+                    <p className="text-sm text-[var(--color-on-surface)] leading-relaxed">
                         {transcript}
                         {interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic"> {interimTranscript}</span>}
                         {isListening && !transcript && !interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic">Escuchando...</span>}
@@ -96,7 +96,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                     <p className="text-sm text-[var(--color-on-surface-muted)]">{feedbackText}</p>
                     <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-left">
                         <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">Tu respuesta transcrita:</p>
-                        <p className="text-sm text-white italic">{'"'}{transcript}{'"'}</p>
+                        <p className="text-sm text-[var(--color-on-surface)] italic">{'"'}{transcript}{'"'}</p>
                     </div>
                 </motion.div>
             )}
@@ -124,7 +124,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                 {phase === 'result' && (
                     <>
                         <button onClick={handleRetry}
-                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(score)}

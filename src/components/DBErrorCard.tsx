@@ -15,7 +15,7 @@ export default function DBErrorCard({ onReset }: Props) {
                     <DatabaseZap className="w-7 h-7 text-[var(--color-tertiary-ink)]" />
                 </div>
                 <div>
-                    <h3 className="text-base font-bold text-white mb-1">{t('common.dataNotFound')}</h3>
+                    <h3 className="text-base font-bold text-[var(--color-on-surface)] mb-1">{t('common.dataNotFound')}</h3>
                     <p className="text-sm text-[var(--color-on-surface-muted)]">{t('common.dataCorrupt')}</p>
                 </div>
                 {onReset && (

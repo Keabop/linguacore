@@ -820,7 +820,7 @@ export default function StoryReader() {
                         onClick={handlePlayPause}
                         className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
                     >
-                        {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white translate-x-0.5" />}
+                        {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current translate-x-0.5" />}
                     </button>
                     
                     <button

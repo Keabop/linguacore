@@ -35,7 +35,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
                 className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5"
             >
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Contexto</p>
-                <p className="text-white text-sm leading-relaxed">{sourceText}</p>
+                <p className="text-[var(--color-on-surface)] text-sm leading-relaxed">{sourceText}</p>
                 <div className="mt-3 border-l-2 border-[var(--color-primary)]/40 pl-3">
                     <p className="text-xs text-[var(--color-on-surface-muted)] italic">Continúa desde aquí...</p>
                 </div>
@@ -57,7 +57,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
                     onChange={e => setText(e.target.value)}
                     disabled={disabled}
                     placeholder="Escribe la continuación en inglés..."
-                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-white text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[120px] disabled:opacity-50"
+                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-[var(--color-on-surface)] text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[120px] disabled:opacity-50"
                     rows={4}
                 />
                 <p className="text-xs text-[var(--color-on-surface-muted)] text-right">

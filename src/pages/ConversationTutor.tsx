@@ -340,8 +340,8 @@ export default function ConversationTutor() {
             <div className="flex-1 overflow-y-auto space-y-6 pr-1 pb-4 flex flex-col">
                 {messages.length === 0 && !isLoading && (
                     <div className="flex flex-col items-center justify-center text-center py-10 px-4 space-y-6 my-auto max-w-md w-full mx-auto">
-                        <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-lg animate-pulse">
-                            <Sparkles className="w-8 h-8 text-white" />
+                        <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-8 h-8 text-[var(--color-on-primary)]" />
                         </div>
                         <div className="space-y-2">
                             <h3 className="font-extrabold text-lg text-[var(--color-on-surface)]">¡Conéctate con tu Tutor de IA!</h3>

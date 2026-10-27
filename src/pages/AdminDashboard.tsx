@@ -75,10 +75,10 @@ function StatTile({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.4, ease: 'easeOut' }}
-            className="rounded-[1.5rem] p-5 bg-[var(--color-card)] border border-white/[0.06] shadow-[var(--shadow-card)] flex items-center gap-4"
+            className="rounded-[1.5rem] p-5 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] shadow-[var(--shadow-card)] flex items-center gap-4"
         >
             <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-md shrink-0">
-                <Icon className="w-5 h-5 text-white" />
+                <Icon className="w-5 h-5 text-[var(--color-on-primary)]" />
             </div>
             <div>
                 <p className="text-[10px] font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider">{label}</p>
@@ -114,7 +114,7 @@ function UserCard({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="group rounded-[1.5rem] bg-[var(--color-card)] border border-white/[0.06] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300 overflow-hidden"
+            className="group rounded-[1.5rem] bg-[var(--color-card)] border border-[var(--color-outline-subtle)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300 overflow-hidden"
         >
             {/* Main Row */}
             <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5">
@@ -182,7 +182,7 @@ function UserCard({
                 {/* Expand toggle */}
                 <button
                     onClick={() => setExpanded(!expanded)}
-                    className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:bg-white/5 transition-all cursor-pointer"
+                    className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container)] transition-all cursor-pointer"
                 >
                     {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
@@ -212,7 +212,7 @@ function UserCard({
                         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                         className="overflow-hidden"
                     >
-                        <div className="px-5 pb-5 pt-2 border-t border-white/[0.05]">
+                        <div className="px-5 pb-5 pt-2 border-t border-[var(--color-outline-subtle)]">
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <DetailCell label="Estado suscripción" value={user.subscription_status} />
                                 <DetailCell label="Registrado" value={fmtDate(user.created_at)} />
@@ -234,7 +234,7 @@ function UserCard({
                                                     <span className="font-bold text-[var(--color-on-surface)]">{lvl}</span>
                                                     <span className="text-[var(--color-on-surface-muted)]">{words}w</span>
                                                 </div>
-                                                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-1.5 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
                                                     <motion.div
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${pct}%` }}
@@ -285,13 +285,13 @@ function LevelDistribution({ profiles }: { profiles: AdminUser[] }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
         >
-            <div className="rounded-[1.5rem] bg-[var(--color-card)] p-5 sm:p-6 shadow-[var(--shadow-card)] border border-white/[0.06]">
+            <div className="rounded-[1.5rem] bg-[var(--color-card)] p-5 sm:p-6 shadow-[var(--shadow-card)] border border-[var(--color-outline-subtle)]">
                 <div className="flex items-center gap-2 mb-4">
                     <BarChart3 className="w-4 h-4 text-[var(--color-primary)]" />
                     <h3 className="text-sm font-black text-[var(--color-on-surface)]">Distribución por Nivel</h3>
                 </div>
                 {/* Segmented bar */}
-                <div className="flex rounded-full overflow-hidden h-3 bg-white/5 mb-4">
+                <div className="flex rounded-full overflow-hidden h-3 bg-[var(--color-surface-container)] mb-4">
                     {levels.map((lvl, i) => {
                         const pct = (counts[i] / total) * 100;
                         if (pct === 0) return null;
@@ -443,7 +443,7 @@ export default function AdminDashboard() {
             >
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
-                        <Shield className="w-6 h-6 text-white" />
+                        <Shield className="w-6 h-6 text-[var(--color-on-primary)]" />
                     </div>
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-black text-[var(--color-on-surface)] tracking-tight">
@@ -489,7 +489,7 @@ export default function AdminDashboard() {
                         placeholder="Buscar por nombre, correo o ID..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-card)] border border-white/[0.06] text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 transition-all shadow-[var(--shadow-card)]"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 transition-all shadow-[var(--shadow-card)]"
                     />
                 </div>
 
@@ -497,7 +497,7 @@ export default function AdminDashboard() {
                 <select
                     value={filterTier}
                     onChange={e => setFilterTier(e.target.value as typeof filterTier)}
-                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-white/[0.06] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
+                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
                 >
                     <option value="all">Todos los tiers</option>
                     <option value="pro">Solo Pro ✨</option>
@@ -508,7 +508,7 @@ export default function AdminDashboard() {
                 <select
                     value={filterLevel}
                     onChange={e => setFilterLevel(e.target.value as typeof filterLevel)}
-                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-white/[0.06] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
+                    className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
                 >
                     <option value="all">Todos los niveles</option>
                     <option value="A1">A1 · Principiante</option>

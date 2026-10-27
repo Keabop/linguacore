@@ -137,7 +137,7 @@ export default function ErrorLab() {
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-6 max-w-md mx-auto">
                 <style>{`.floating-bar { display: none !important; }`}</style>
                 <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-8 h-8 text-white" />
+                    <Sparkles className="w-8 h-8 text-[var(--color-on-primary)]" />
                 </div>
                 <div className="space-y-2">
                     <h2 className="text-2xl font-black tracking-tight">Laboratorio despejado</h2>
