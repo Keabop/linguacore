@@ -1,37 +1,16 @@
-import type { AgentType } from '../../api/lib/gemini.js';
-import { chat } from '../../api/agents/conversation-tutor.js';
-import { generateStory } from '../../api/agents/story-generator.js';
-import { enrichVocabulary } from '../../api/agents/vocab-enricher.js';
-import { createExercise } from '../../api/agents/exercise-creator.js';
-import { evaluateWriting } from '../../api/agents/writing-evaluator.js';
-import { env, setEnv } from '../../api/lib/config.js';
-import { checkUsageLimit, checkWeeklyLimit, incrementUsage, getUserTier } from '../../api/lib/usageLimits.js';
-import { isCacheable, generateCacheKey, getCachedResponse, setCachedResponse } from '../../api/lib/aiCache.js';
+import { AGENT_TYPES, type AgentType } from '../../server/lib/gemini.js';
+import { chat } from '../../server/agents/conversation-tutor.js';
+import { generateStory } from '../../server/agents/story-generator.js';
+import { enrichVocabulary } from '../../server/agents/vocab-enricher.js';
+import { createExercise } from '../../server/agents/exercise-creator.js';
+import { evaluateWriting } from '../../server/agents/writing-evaluator.js';
+import { generateCareerDeck } from '../../server/agents/career-deck.js';
+import { evaluateSpeaking } from '../../server/agents/speaking-evaluator.js';
+import { env, setEnv } from '../../server/lib/config.js';
+import { checkUsageLimit, checkWeeklyLimit, incrementUsage, getUserTier } from '../../server/lib/usageLimits.js';
+import { isCacheable, generateCacheKey, getCachedResponse, setCachedResponse } from '../../server/lib/aiCache.js';
 import { createClient } from '@supabase/supabase-js';
-
-// ---------------------------------------------------------------------------
-// CORS Setup
-// ---------------------------------------------------------------------------
-const ALLOWED_ORIGINS = [
-    'https://linguacore-zeta.vercel.app',
-    'https://voxie.pages.dev',
-    'https://voxie.lat',
-    'https://www.voxie.lat',
-    'http://localhost:8788', // Cloudflare local Wrangler dev server
-    'http://localhost:5173',
-    'http://localhost:4173',
-];
-
-function getCorsHeaders(request: Request): Record<string, string> {
-    const origin = request.headers.get('Origin') ?? '';
-    const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-    return {
-        'Access-Control-Allow-Origin': corsOrigin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Content-Type': 'application/json',
-    };
-}
+import { getCorsHeaders } from '../../server/lib/cors.js';
 
 // ---------------------------------------------------------------------------
 // Rate Limiter
@@ -123,6 +102,23 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
             }
             break;
         }
+        case 'career-deck': {
+            if (typeof params.profession !== 'string' || params.profession.length > 100) {
+                return { valid: false, error: 'La profesión es demasiado larga (máximo 100 caracteres).' };
+            }
+            break;
+        }
+        case 'speaking-evaluator': {
+            const { transcripts, prompts } = params;
+            if (!Array.isArray(transcripts) || !Array.isArray(prompts) || transcripts.length > 10 || prompts.length > 10) {
+                return { valid: false, error: 'Formato de respuestas orales inválido.' };
+            }
+            const all = [...transcripts, ...prompts];
+            if (all.some(t => typeof t !== 'string' || t.length > 3000)) {
+                return { valid: false, error: 'Cada respuesta oral debe ser texto de máximo 3000 caracteres.' };
+            }
+            break;
+        }
     }
 
     return { valid: true };
@@ -135,7 +131,7 @@ export const onRequestPost: PagesFunction = async (context) => {
     const { request, env: bindings } = context;
     setEnv(bindings); // Inyectar las variables de entorno de Cloudflare
 
-    const corsHeaders = getCorsHeaders(request);
+    const corsHeaders = getCorsHeaders(request, 'POST, OPTIONS');
 
     // Rate limit by IP
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
@@ -169,8 +165,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         }
 
         // Validate agent name
-        const VALID_AGENTS: AgentType[] = ['story-generator', 'vocab-enricher', 'exercise-creator', 'conversation-tutor', 'writing-evaluator'];
-        if (!VALID_AGENTS.includes(agent)) {
+        if (!AGENT_TYPES.includes(agent)) {
             return new Response(JSON.stringify({ error: `Unknown agent: ${agent}` }), {
                 status: 400,
                 headers: corsHeaders,
@@ -250,6 +245,12 @@ export const onRequestPost: PagesFunction = async (context) => {
             case 'writing-evaluator':
                 result = await evaluateWriting(params);
                 break;
+            case 'career-deck':
+                result = await generateCareerDeck(params);
+                break;
+            case 'speaking-evaluator':
+                result = await evaluateSpeaking(params);
+                break;
         }
 
         // --- Cache store ---
@@ -272,7 +273,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         console.error(`[Orchestrator Edge Error]${isSyntaxError ? ' (JSON parse failure)' : ''}`, error);
         return new Response(JSON.stringify({
             error: 'Agent execution failed',
-            message: isSyntaxError ? 'AI returned invalid JSON. Please try again.' : (error.message || 'Unknown error'),
+            message: isSyntaxError ? 'AI returned invalid JSON. Please try again.' : 'Unexpected error. Please try again.',
         }), {
             status: 500,
             headers: corsHeaders,
@@ -284,6 +285,6 @@ export const onRequestPost: PagesFunction = async (context) => {
 export const onRequestOptions: PagesFunction = async (context) => {
     return new Response(null, {
         status: 204,
-        headers: getCorsHeaders(context.request),
+        headers: getCorsHeaders(context.request, 'POST, OPTIONS'),
     });
 };

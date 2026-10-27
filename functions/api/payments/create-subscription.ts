@@ -1,30 +1,7 @@
-import { env, setEnv } from '../../../api/lib/config.js';
+import { env, setEnv } from '../../../server/lib/config.js';
 import { createClient } from '@supabase/supabase-js';
 import { MercadoPagoConfig, PreApproval } from 'mercadopago';
-
-// ---------------------------------------------------------------------------
-// CORS Setup
-// ---------------------------------------------------------------------------
-const ALLOWED_ORIGINS = [
-    'https://linguacore-zeta.vercel.app',
-    'https://voxie.pages.dev',
-    'https://voxie.lat',
-    'https://www.voxie.lat',
-    'http://localhost:8788',
-    'http://localhost:5173',
-    'http://localhost:4173',
-];
-
-function getCorsHeaders(request: Request): Record<string, string> {
-    const origin = request.headers.get('Origin') ?? '';
-    const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-    return {
-        'Access-Control-Allow-Origin': corsOrigin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Content-Type': 'application/json',
-    };
-}
+import { getCorsHeaders } from '../../../server/lib/cors.js';
 
 // ---------------------------------------------------------------------------
 // Authenticate
@@ -70,7 +47,7 @@ export const onRequestPost: PagesFunction = async (context) => {
     const { request, env: bindings } = context;
     setEnv(bindings); // Inyectar variables de entorno de Cloudflare
 
-    const corsHeaders = getCorsHeaders(request);
+    const corsHeaders = getCorsHeaders(request, 'POST, OPTIONS');
 
     // Authenticate
     const user = await authenticate(request);
@@ -81,7 +58,6 @@ export const onRequestPost: PagesFunction = async (context) => {
         });
     }
 
-    const diagnostics: any = {};
     try {
         const { plan, action } = await request.json() as {
             plan?: 'monthly' | 'annual';
@@ -89,7 +65,6 @@ export const onRequestPost: PagesFunction = async (context) => {
         };
 
         const accessToken = env.MERCADOPAGO_ACCESS_TOKEN;
-        diagnostics.accessTokenPrefix = accessToken ? accessToken.slice(0, 10) + '...' : null;
         if (!accessToken) {
             console.error('[Payments Edge] Missing MERCADOPAGO_ACCESS_TOKEN');
             return new Response(JSON.stringify({ error: 'Payment provider not configured' }), {
@@ -230,7 +205,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         }
 
         const config = PLANS[plan];
-        const appUrl = env.APP_URL || 'https://linguacore-zeta.vercel.app';
+        const appUrl = env.APP_URL || 'https://voxie.pages.dev';
         const backUrl = appUrl + '/pricing?status=success';
         const notificationUrl = appUrl + '/api/payments/webhook';
 
@@ -248,14 +223,11 @@ export const onRequestPost: PagesFunction = async (context) => {
             // In Sandbox, use the test payer email (created via MP API for this app)
             // In Production, use the real Supabase user email
             payer_email: isSandbox
-                ? (env.MERCADOPAGO_TEST_PAYER_EMAIL?.trim() || 'test_user_8814871934088369636@testuser.com')
+                ? (env.MERCADOPAGO_TEST_PAYER_EMAIL?.trim() || user.email!.trim())
                 : user.email!.trim(),
             external_reference: user.id,
         };
 
-        diagnostics.isSandbox = isSandbox;
-        diagnostics.payerEmail = subscriptionBody.payer_email;
-        diagnostics.testPayerEmailEnv = env.MERCADOPAGO_TEST_PAYER_EMAIL || null;
 
         const result = await preApproval.create({ body: subscriptionBody });
 
@@ -265,33 +237,8 @@ export const onRequestPost: PagesFunction = async (context) => {
         });
 
     } catch (error: any) {
-        let errorMessage = 'Unknown error';
-        if (error instanceof Error) {
-            errorMessage = error.message;
-        } else if (typeof error === 'object' && error !== null) {
-            try {
-                errorMessage = error.message || JSON.stringify(error);
-            } catch {
-                errorMessage = String(error);
-            }
-        } else {
-            errorMessage = String(error);
-        }
-
-        const errorStack = error instanceof Error ? error.stack : '';
-        console.error('[Payments Edge] Error:', error);
-        console.error('[Payments Edge] Error cause:', error?.cause);
-        console.error('[Payments Edge] Error response:', error?.response);
-
-        return new Response(JSON.stringify({ 
-            error: 'Failed to process subscription request',
-            message: errorMessage,
-            stack: errorStack,
-            status: error?.status || 500,
-            cause: error?.cause || null,
-            response: error?.response || null,
-            diagnostics
-        }), {
+        console.error('[Payments Edge] Error:', error, error?.cause ?? '');
+        return new Response(JSON.stringify({ error: 'Failed to process subscription request' }), {
             status: 500,
             headers: corsHeaders,
         });
@@ -302,6 +249,6 @@ export const onRequestPost: PagesFunction = async (context) => {
 export const onRequestOptions: PagesFunction = async (context) => {
     return new Response(null, {
         status: 204,
-        headers: getCorsHeaders(context.request),
+        headers: getCorsHeaders(context.request, 'POST, OPTIONS'),
     });
 };
