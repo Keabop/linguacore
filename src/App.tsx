@@ -50,7 +50,7 @@ function SafeRoute({ children }: { children: ReactNode }) {
     return (
         <ErrorBoundary key={location.pathname}>
             <Suspense fallback={<PageLoader />}>
-                {children}
+                <div className="page-enter">{children}</div>
             </Suspense>
         </ErrorBoundary>
     );
@@ -77,7 +77,7 @@ function SmartHome() {
     const { user, loading } = useAuth();
     if (loading) return <PageLoader />;
     if (user) return <Navigate to="/dashboard" replace />;
-    return <Suspense fallback={<PageLoader />}><Landing /></Suspense>;
+    return <Suspense fallback={<PageLoader />}><div className="page-enter"><Landing /></div></Suspense>;
 }
 
 export default function App() {
@@ -86,7 +86,7 @@ export default function App() {
             <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<SmartHome />} />
-                <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
+                <Route path="/auth" element={<Suspense fallback={<PageLoader />}><div className="page-enter"><Auth /></div></Suspense>} />
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>

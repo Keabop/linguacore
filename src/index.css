@@ -1050,7 +1050,13 @@ span[data-word].in-deck {
 
 /* Page loader: the stem draws up, two leaves open (800ms, SPROUT_GROW_MS in PageLoader.tsx),
    then the plant sways while it waits. --sprout-offset continues the growth across loaders. */
-.sprout-loader { overflow: visible; --sprout-offset: 0ms; }
+.sprout-loader {
+  overflow: visible;
+  --sprout-offset: 0ms;
+  /* Fades in once; a loader that takes over from another is already visible */
+  animation: loader-in 200ms var(--ease-out) calc(0ms - var(--sprout-offset)) both;
+}
+@keyframes loader-in { from { opacity: 0; } to { opacity: 1; } }
 .sprout-loader-soil { fill: var(--color-soil); }
 .sprout-loader-stem {
   fill: none;
@@ -1075,6 +1081,11 @@ span[data-word].in-deck {
 @keyframes sprout-stem { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes sprout-leaf { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes sprout-sway { from { transform: rotate(0deg); } 50% { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+
+/* Pages fade in after the loader instead of appearing at once. Opacity only: a transform would
+   move fixed elements inside the page (modals, lesson bars) while it runs. */
+.page-enter { animation: page-enter 360ms var(--ease-out) both; }
+@keyframes page-enter { from { opacity: 0; } to { opacity: 1; } }
 
 /* Story cards: the corner leaves sway a little when the card is hovered */
 .story-card-leaves { transform-origin: 100% 90%; transition: transform var(--dur-long) var(--ease-out); }
