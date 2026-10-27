@@ -1,30 +1,7 @@
-import { env, setEnv } from '../../../api/lib/config.js';
+import { env, setEnv } from '../../../server/lib/config.js';
 import { createClient } from '@supabase/supabase-js';
-import { MercadoPagoConfig, PreApproval } from 'mercadopago';
-
-// ---------------------------------------------------------------------------
-// CORS Setup
-// ---------------------------------------------------------------------------
-const ALLOWED_ORIGINS = [
-    'https://linguacore-zeta.vercel.app',
-    'https://voxie.pages.dev',
-    'https://voxie.lat',
-    'https://www.voxie.lat',
-    'http://localhost:8788',
-    'http://localhost:5173',
-    'http://localhost:4173',
-];
-
-function getCorsHeaders(request: Request): Record<string, string> {
-    const origin = request.headers.get('Origin') ?? '';
-    const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-    return {
-        'Access-Control-Allow-Origin': corsOrigin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Content-Type': 'application/json',
-    };
-}
+import { getCorsHeaders } from '../../../server/lib/cors.js';
+import { createPreapproval, findLatestPreapproval, mapSubscriptionStatus, updatePreapproval } from '../../../server/lib/mercadopago.js';
 
 // ---------------------------------------------------------------------------
 // Authenticate
@@ -70,7 +47,7 @@ export const onRequestPost: PagesFunction = async (context) => {
     const { request, env: bindings } = context;
     setEnv(bindings); // Inyectar variables de entorno de Cloudflare
 
-    const corsHeaders = getCorsHeaders(request);
+    const corsHeaders = getCorsHeaders(request, 'POST, OPTIONS');
 
     // Authenticate
     const user = await authenticate(request);
@@ -81,7 +58,6 @@ export const onRequestPost: PagesFunction = async (context) => {
         });
     }
 
-    const diagnostics: any = {};
     try {
         const { plan, action } = await request.json() as {
             plan?: 'monthly' | 'annual';
@@ -89,7 +65,6 @@ export const onRequestPost: PagesFunction = async (context) => {
         };
 
         const accessToken = env.MERCADOPAGO_ACCESS_TOKEN;
-        diagnostics.accessTokenPrefix = accessToken ? accessToken.slice(0, 10) + '...' : null;
         if (!accessToken) {
             console.error('[Payments Edge] Missing MERCADOPAGO_ACCESS_TOKEN');
             return new Response(JSON.stringify({ error: 'Payment provider not configured' }), {
@@ -98,28 +73,20 @@ export const onRequestPost: PagesFunction = async (context) => {
             });
         }
 
-        const client = new MercadoPagoConfig({ accessToken });
-        const preApproval = new PreApproval(client);
-
         // ---------------------------------------------------------------
         // Verify subscription (called when user returns from MP checkout)
         // ---------------------------------------------------------------
         if (action === 'verify') {
-            const mpRes = await fetch(
-                `https://api.mercadopago.com/preapproval/search?external_reference=${user.id}&sort=date_created&criteria=desc&limit=1`,
-                { headers: { Authorization: `Bearer ${accessToken}` } },
-            );
-
-            if (!mpRes.ok) {
-                console.error('[Verify Edge] MP search failed:', mpRes.status);
+            let subscription;
+            try {
+                subscription = await findLatestPreapproval(accessToken, user.id);
+            } catch (error) {
+                console.error('[Verify Edge] MP search failed:', error);
                 return new Response(JSON.stringify({ error: 'Failed to verify with payment provider' }), {
                     status: 502,
                     headers: corsHeaders,
                 });
             }
-
-            const mpData: any = await mpRes.json();
-            const subscription = mpData.results?.[0];
 
             if (!subscription) {
                 return new Response(JSON.stringify({ tier: 'free', subscription_status: 'none' }), {
@@ -128,11 +95,7 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
-            const mpStatus = subscription.status ?? '';
-            const tier = mpStatus === 'cancelled' ? 'free' : 'pro';
-            const subStatus = mpStatus === 'authorized' ? 'active'
-                : mpStatus === 'paused' ? 'past_due'
-                : mpStatus === 'cancelled' ? 'cancelled' : 'pending';
+            const { tier: mappedTier, subscription_status: subStatus } = mapSubscriptionStatus(subscription.status ?? '');
 
             const supabaseUrl = env.SUPABASE_URL;
             const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -144,14 +107,16 @@ export const onRequestPost: PagesFunction = async (context) => {
             }
 
             const supabase = createClient(supabaseUrl, serviceRoleKey);
-            const { error: dbError } = await supabase
+            const { data: updated, error: dbError } = await supabase
                 .from('profiles')
                 .update({
-                    tier,
+                    ...(mappedTier ? { tier: mappedTier } : {}),
                     subscription_id: subscription.id?.toString() ?? null,
                     subscription_status: subStatus,
                 })
-                .eq('id', user.id);
+                .eq('id', user.id)
+                .select('tier')
+                .single();
 
             if (dbError) {
                 console.error('[Verify Edge] DB update failed:', dbError);
@@ -161,6 +126,7 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
+            const tier = updated?.tier ?? 'free';
             console.log(`[Verify Edge] Updated user ${user.id}: tier=${tier}, status=${subStatus}`);
             return new Response(JSON.stringify({ tier, subscription_status: subStatus }), {
                 status: 200,
@@ -202,9 +168,8 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
-            await preApproval.update({
-                id: profile.subscription_id,
-                body: { status: action === 'cancel' ? 'cancelled' : 'authorized' },
+            await updatePreapproval(accessToken, profile.subscription_id, {
+                status: action === 'cancel' ? 'cancelled' : 'authorized',
             });
 
             await supabase
@@ -230,7 +195,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         }
 
         const config = PLANS[plan];
-        const appUrl = env.APP_URL || 'https://linguacore-zeta.vercel.app';
+        const appUrl = env.APP_URL || 'https://voxie.pages.dev';
         const backUrl = appUrl + '/pricing?status=success';
         const notificationUrl = appUrl + '/api/payments/webhook';
 
@@ -248,16 +213,13 @@ export const onRequestPost: PagesFunction = async (context) => {
             // In Sandbox, use the test payer email (created via MP API for this app)
             // In Production, use the real Supabase user email
             payer_email: isSandbox
-                ? (env.MERCADOPAGO_TEST_PAYER_EMAIL?.trim() || 'test_user_8814871934088369636@testuser.com')
+                ? (env.MERCADOPAGO_TEST_PAYER_EMAIL?.trim() || user.email!.trim())
                 : user.email!.trim(),
             external_reference: user.id,
         };
 
-        diagnostics.isSandbox = isSandbox;
-        diagnostics.payerEmail = subscriptionBody.payer_email;
-        diagnostics.testPayerEmailEnv = env.MERCADOPAGO_TEST_PAYER_EMAIL || null;
 
-        const result = await preApproval.create({ body: subscriptionBody });
+        const result = await createPreapproval(accessToken, subscriptionBody);
 
         return new Response(JSON.stringify({ init_point: result.init_point }), {
             status: 200,
@@ -265,33 +227,8 @@ export const onRequestPost: PagesFunction = async (context) => {
         });
 
     } catch (error: any) {
-        let errorMessage = 'Unknown error';
-        if (error instanceof Error) {
-            errorMessage = error.message;
-        } else if (typeof error === 'object' && error !== null) {
-            try {
-                errorMessage = error.message || JSON.stringify(error);
-            } catch {
-                errorMessage = String(error);
-            }
-        } else {
-            errorMessage = String(error);
-        }
-
-        const errorStack = error instanceof Error ? error.stack : '';
-        console.error('[Payments Edge] Error:', error);
-        console.error('[Payments Edge] Error cause:', error?.cause);
-        console.error('[Payments Edge] Error response:', error?.response);
-
-        return new Response(JSON.stringify({ 
-            error: 'Failed to process subscription request',
-            message: errorMessage,
-            stack: errorStack,
-            status: error?.status || 500,
-            cause: error?.cause || null,
-            response: error?.response || null,
-            diagnostics
-        }), {
+        console.error('[Payments Edge] Error:', error, error?.cause ?? '');
+        return new Response(JSON.stringify({ error: 'Failed to process subscription request' }), {
             status: 500,
             headers: corsHeaders,
         });
@@ -302,6 +239,6 @@ export const onRequestPost: PagesFunction = async (context) => {
 export const onRequestOptions: PagesFunction = async (context) => {
     return new Response(null, {
         status: 204,
-        headers: getCorsHeaders(context.request),
+        headers: getCorsHeaders(context.request, 'POST, OPTIONS'),
     });
 };
