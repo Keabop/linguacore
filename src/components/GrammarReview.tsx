@@ -25,7 +25,8 @@ function shuffleArray<T>(arr: T[]): T[] {
 export default function GrammarReview({ skillCard, skill, depth, onComplete }: Props) {
     const { t } = useTranslation();
     const exerciseCount = depth === 'mini_quiz' ? Math.min(4, skill.exercises.length) : Math.min(7, skill.exercises.length);
-    const [exercises] = useState(() => shuffleArray(skill.exercises).slice(0, exerciseCount));
+    const [exercises] = useState(() => shuffleArray(skill.exercises).slice(0, exerciseCount)
+        .map(e => (e.options ? { ...e, options: shuffleArray(e.options) } : e)));
     const [currentIndex, setCurrentIndex] = useState(0);
     const [correctCount, setCorrectCount] = useState(0);
     const [showTip, setShowTip] = useState(depth === 'deep_review');

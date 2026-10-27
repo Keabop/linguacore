@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
 import PlayOnMount from '../icons/PlayOnMount';
 import { CheckIcon } from '../icons';
+import { shuffle } from '../../lib/shuffle';
 
 interface MultipleChoiceExerciseProps {
     exercise: GrammarExercise;
@@ -15,6 +16,8 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
     const { t } = useTranslation();
     const [selected, setSelected] = useState<string | null>(null);
     const [status, setStatus] = useState<'pending' | 'correct' | 'incorrect'>('pending');
+    // The data lists the right answer early most of the time, so the order is shuffled per exercise
+    const options = useMemo(() => shuffle(exercise.options ?? []), [exercise.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleSelect = (option: string) => {
         if (status !== 'pending') return;
@@ -77,7 +80,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
 
             {/* Options */}
             <div className="space-y-5">
-                {exercise.options?.map((option, i) => (
+                {options.map((option, i) => (
                     <motion.button
                         key={option}
                         initial={{ opacity: 0, y: 12 }}

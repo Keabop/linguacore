@@ -313,7 +313,7 @@ export default function Layout() {
                                 }`}
                             >
                                 <p className="font-semibold leading-relaxed select-none">
-                                    💡 <strong>¡Nueva función!</strong> Arrastra la barra desde este tirador para colocarla arriba, abajo, a la izquierda o derecha.
+                                    <strong>¡Nueva función!</strong> Arrastra la barra desde este tirador para colocarla arriba, abajo, a la izquierda o derecha.
                                 </p>
                                 <button
                                     onClick={(e) => {

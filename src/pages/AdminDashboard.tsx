@@ -386,7 +386,7 @@ export default function AdminDashboard() {
         onSuccess: (_, { newTier }) => {
             queryClient.invalidateQueries({ queryKey: ['admin-users'] });
             toast.success({
-                title: newTier === 'pro' ? '🎉 ¡Usuario actualizado a Pro!' : 'Usuario cambiado a Free',
+                title: newTier === 'pro' ? '¡Usuario actualizado a Pro!' : 'Usuario cambiado a Free',
             });
         },
         onError: (err: Error) => {
@@ -500,7 +500,7 @@ export default function AdminDashboard() {
                     className="px-4 py-3 rounded-xl bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-xs font-bold text-[var(--color-on-surface)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40 cursor-pointer shadow-[var(--shadow-card)]"
                 >
                     <option value="all">Todos los tiers</option>
-                    <option value="pro">Solo Pro ✨</option>
+                    <option value="pro">Solo Pro</option>
                     <option value="free">Solo Free</option>
                 </select>
 

@@ -658,7 +658,7 @@ export const b1Skills: GrammarSkill[] = [
         exercises: [
             { type: 'fill-blank', prompt: 'I ___ (see) that film yesterday.', answer: 'saw', options: ['saw', 'have seen', 'see'], explanation: 'Yesterday = specific past time → Past Simple' },
             { type: 'fill-blank', prompt: 'She ___ (visit) Japan three times.', answer: 'has visited', options: ['has visited', 'visited', 'visits'], explanation: 'No specific time, life experience → Present Perfect' },
-            { type: 'multiple-choice', prompt: 'Which is correct?', answer: 'I have lost my keys. (I still can\'t find them)', options: ['I lost my keys.', 'I have lost my keys.', 'I lose my keys.'], explanation: 'Result in the present (still lost) → Present Perfect' },
+            { type: 'multiple-choice', prompt: 'I still can\'t find my keys. Which is correct?', answer: 'I have lost my keys.', options: ['I lost my keys.', 'I have lost my keys.', 'I lose my keys.'], explanation: 'Result in the present (still lost) → Present Perfect' },
             { type: 'fill-blank', prompt: 'When ___ you ___ (move) to this city?', answer: 'did ... move', options: ['did ... move', 'have ... moved', 'do ... move'], explanation: 'When = specific time question → Past Simple' },
             { type: 'fill-blank', prompt: '___ you ever ___ (try) Indian food?', answer: 'Have ... tried', options: ['Have ... tried', 'Did ... try', 'Do ... try'], explanation: 'Ever = life experience → Present Perfect' },
             { type: 'multiple-choice', prompt: 'She ___ to Madrid in 2019.', answer: 'went', options: ['has gone', 'went', 'has been'], explanation: 'In 2019 = specific time → Past Simple' },

@@ -204,4 +204,16 @@ export const vocabularyData: Vocabulary[] = [
     { id: "interview", translations: ["entrevista"], cefrLevel: "B2", examples: ["The interview went very well."], phonetic: "/ˈɪntərvjuː/" },
     { id: "complete", translations: ["completar"], cefrLevel: "B2", examples: ["The project will be completed soon."], phonetic: "/kəmˈpliːt/" },
     { id: "significance", translations: ["importancia", "trascendencia"], cefrLevel: "B2", examples: ["The significance of the discovery is immense."], phonetic: "/sɪɡˈnɪfɪkəns/" },
+    // Words used in stories that had no entry
+    { id: "easy", translations: ["fácil"], cefrLevel: "A1", examples: ["This exercise is easy."], phonetic: "/ˈiːzi/" },
+    { id: "always", translations: ["siempre"], cefrLevel: "A1", examples: ["I always drink water in the morning."], phonetic: "/ˈɔːlweɪz/" },
+    { id: "ready", translations: ["listo", "preparado"], cefrLevel: "A1", examples: ["Are you ready to go?"], phonetic: "/ˈredi/" },
+    { id: "friendly", translations: ["amable", "amigable"], cefrLevel: "A2", examples: ["Our neighbours are very friendly."], phonetic: "/ˈfrendli/" },
+    { id: "excited", translations: ["emocionado"], cefrLevel: "A2", examples: ["I'm excited about the trip."], phonetic: "/ɪkˈsaɪtɪd/" },
+    { id: "scared", translations: ["asustado"], cefrLevel: "A2", examples: ["The little boy was scared of the dark."], phonetic: "/skerd/" },
+    { id: "change", translations: ["cambiar", "cambio"], cefrLevel: "A2", examples: ["I want to change my phone."], phonetic: "/tʃeɪndʒ/" },
+    { id: "successful", translations: ["exitoso"], cefrLevel: "B1", examples: ["She runs a successful business."], phonetic: "/səkˈsesfəl/" },
+    { id: "rapidly", translations: ["rápidamente"], cefrLevel: "B1", examples: ["The city is growing rapidly."], phonetic: "/ˈræpɪdli/" },
+    { id: "supportive", translations: ["comprensivo", "que apoya"], cefrLevel: "B1", examples: ["My parents were very supportive."], phonetic: "/səˈpɔːrtɪv/" },
+    { id: "effectively", translations: ["eficazmente"], cefrLevel: "B1", examples: ["We need to use our time effectively."], phonetic: "/ɪˈfektɪvli/" },
 ];

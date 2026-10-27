@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    ArrowLeft, Compass, Shield, Award, Sparkles, Play, 
-    Volume2, Edit3, Activity, ChevronRight, CheckCircle, Crown, Calendar, AlertCircle
-} from 'lucide-react';
+import { ArrowLeft, Compass, Shield, Award, Sparkles, Play, Volume2, Edit3, Activity, ChevronRight, CheckCircle, Crown, Calendar, AlertCircle, Timer, Check } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
+import { shuffleQuestion } from '../lib/shuffle';
 import { placementQuestions, writingPrompts, AssessmentQuestion, WritingPrompt } from '../data/assessments/cefr-questions';
 import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
 import { cambridgeB2Questions, cambridgeB2Writing, cambridgeB2Speaking } from '../data/assessments/cambridge-b2-questions';
@@ -35,7 +33,7 @@ const presets: TestPreset[] = [
         id: 'placement',
         title: 'Test de Nivelación Rápida',
         description: 'Mide tus habilidades de comprensión lectora, auditiva y gramatical en minutos. Ideal para conocer tu nivel general de partida (A1-C1) de forma inmediata.',
-        pedagogicalAdvice: '⭐ Recomendado cada 2 semanas para medir tu progreso regular y adaptar tu plan de estudio de forma dinámica.',
+        pedagogicalAdvice: 'Recomendado cada 2 semanas para medir tu progreso regular y adaptar tu plan de estudio de forma dinámica.',
         isPro: false,
         durationMinutes: 25,
         questionCount: 20
@@ -44,7 +42,7 @@ const presets: TestPreset[] = [
         id: 'toefl',
         title: 'Simulacro TOEFL iBT Style',
         description: 'Evaluación académica rigurosa que imita la estructura real del TOEFL. Incluye lectura avanzada, audios con acentos, redacción de ensayos y sección oral.',
-        pedagogicalAdvice: '🎓 Recomendado una vez al mes para evaluar a fondo tu avance académico bajo estándares oficiales.',
+        pedagogicalAdvice: 'Recomendado una vez al mes para evaluar a fondo tu avance académico bajo estándares oficiales.',
         isPro: true,
         durationMinutes: 65,
         questionCount: 70
@@ -53,7 +51,7 @@ const presets: TestPreset[] = [
         id: 'ielts',
         title: 'Simulacro IELTS Academic Style',
         description: 'Estructura enfocada en contextos académicos y profesionales internacionales. Incluye Listening, Reading, múltiples ensayos de Writing y examen oral de Speaking calificados por IA.',
-        pedagogicalAdvice: '🎓 Recomendado una vez al mes para medir el desarrollo de tu producción escrita y oral profesional.',
+        pedagogicalAdvice: 'Recomendado una vez al mes para medir el desarrollo de tu producción escrita y oral profesional.',
         isPro: true,
         durationMinutes: 65,
         questionCount: 80
@@ -62,7 +60,7 @@ const presets: TestPreset[] = [
         id: 'cambridge_b1',
         title: 'Simulacro Cambridge B1 Preliminary',
         description: 'Prueba oficial de nivel intermedio para consolidar tus bases. Evalúa Use of English, Listening, Writing de dos tareas y Speaking interactivo con feedback instantáneo.',
-        pedagogicalAdvice: '🎓 Recomendado cada mes para certificar y consolidar tus bases de nivel B1.',
+        pedagogicalAdvice: 'Recomendado cada mes para certificar y consolidar tus bases de nivel B1.',
         isPro: true,
         durationMinutes: 60,
         questionCount: 69
@@ -71,7 +69,7 @@ const presets: TestPreset[] = [
         id: 'cambridge_b2',
         title: 'Simulacro Cambridge B2 First',
         description: 'Prueba de alta exigencia académica que evalúa gramática avanzada (Use of English), comprensión de lectura y audios complejos, redacción técnica y examen oral estructurado.',
-        pedagogicalAdvice: '🎓 Recomendado una vez al mes para validar tu solidez gramatical, producción escrita y fluidez oral ejecutiva.',
+        pedagogicalAdvice: 'Recomendado una vez al mes para validar tu solidez gramatical, producción escrita y fluidez oral ejecutiva.',
         isPro: true,
         durationMinutes: 65,
         questionCount: 97
@@ -237,7 +235,7 @@ export default function CEFRSimulator() {
             sPrompts = [...cambridgeB2Speaking];
         }
 
-        setQuestions(selectedQuestions);
+        setQuestions(selectedQuestions.map(shuffleQuestion));
         setWritingPromptsList(wPrompts);
         setSpeakingPrompts(sPrompts);
 
@@ -558,7 +556,7 @@ export default function CEFRSimulator() {
                                         <div className="pt-4 border-t border-[var(--color-surface-container)] space-y-3">
                                             <p className="text-xs font-semibold text-[var(--color-success)] dark:text-[var(--color-success)] leading-relaxed">{p.pedagogicalAdvice}</p>
                                             <div className="flex items-center justify-between text-xs text-[var(--color-on-surface-muted)] pt-1 font-bold">
-                                                <span>⏱️ {p.durationMinutes} minutos</span>
+                                                <span className="inline-flex items-center gap-1.5"><Timer className="w-3.5 h-3.5" aria-hidden="true" />{p.durationMinutes} minutos</span>
                                                 <span className="flex items-center gap-1 group-hover:text-[var(--color-on-surface)] transition-colors">
                                                     Comenzar <ChevronRight className="w-4.5 h-4.5" />
                                                 </span>
@@ -636,7 +634,7 @@ export default function CEFRSimulator() {
                                 {selectedPreset?.title} • Pregunta {currentIdx + 1} de {questions.length}
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
-                                ⏱️ {formatTime(timeLeft)}
+                                <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
                             </span>
                         </div>
 
@@ -766,7 +764,7 @@ export default function CEFRSimulator() {
                                             <Edit3 className="w-4.5 h-4.5" /> Redacción - Tarea {activeWritingIdx + 1} de {writingPromptsList.length}
                                         </span>
                                         <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
-                                            ⏱️ {formatTime(timeLeft)}
+                                            <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
                                         </span>
                                     </div>
 
@@ -822,7 +820,7 @@ export default function CEFRSimulator() {
                                 <Volume2 className="w-4.5 h-4.5" /> Sección Oral (Speaking)
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
-                                ⏱️ {formatTime(timeLeft)}
+                                <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
                             </span>
                         </div>
 
@@ -838,7 +836,7 @@ export default function CEFRSimulator() {
                                             Speaking - Tarea {activeSpeakingIdx + 1} de {speakingPrompts.length}
                                         </h3>
                                         <span className="text-xs font-bold text-[var(--color-tertiary-ink)] bg-[var(--color-tertiary)]/10 px-2.5 py-1 rounded-full">
-                                            ⏱️ Duración sugerida: {activePrompt.timeSeconds}s
+                                            <Timer className="inline w-3.5 h-3.5 -mt-0.5 mr-1" aria-hidden="true" />Duración sugerida: {activePrompt.timeSeconds}s
                                         </span>
                                     </div>
 
@@ -1124,24 +1122,24 @@ export default function CEFRSimulator() {
                                     {/* Legend breakdown lists */}
                                     <div className="space-y-2 text-xs w-full sm:w-auto font-bold font-mono">
                                         <div className="flex items-center justify-between gap-6">
-                                            <span className="text-[var(--color-on-surface-muted)]">🧠 Use of English:</span>
+                                            <span className="text-[var(--color-on-surface-muted)]">Use of English:</span>
                                             <span className="text-[var(--color-primary)]">{results.useOfEnglish}%</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-6">
-                                            <span className="text-[var(--color-on-surface-muted)]">📖 Reading:</span>
+                                            <span className="text-[var(--color-on-surface-muted)]">Reading:</span>
                                             <span className="text-[var(--color-success)]">{results.reading}%</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-6">
-                                            <span className="text-[var(--color-on-surface-muted)]">🎧 Listening:</span>
+                                            <span className="text-[var(--color-on-surface-muted)]">Listening:</span>
                                             <span className="text-[var(--color-tertiary-ink)]">{results.listening}%</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-6">
-                                            <span className="text-[var(--color-on-surface-muted)]">✍️ Writing:</span>
+                                            <span className="text-[var(--color-on-surface-muted)]">Writing:</span>
                                             <span className="text-[var(--color-error)]">{results.writing}%</span>
                                         </div>
                                         {results.speaking !== undefined && (
                                             <div className="flex items-center justify-between gap-6">
-                                                <span className="text-[var(--color-on-surface-muted)]">🗣️ Speaking:</span>
+                                                <span className="text-[var(--color-on-surface-muted)]">Speaking:</span>
                                                 <span className="text-[var(--color-accent-blue)]">{results.speaking}%</span>
                                             </div>
                                         )}
@@ -1288,9 +1286,9 @@ export default function CEFRSimulator() {
                                 </p>
                             </div>
                             <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-left text-[11px] text-[var(--color-on-surface-muted)] space-y-2 font-bold font-mono">
-                                <p className="flex items-center gap-2">✓ A1, A2, B1 y B2 desbloqueados</p>
-                                <p className="flex items-center gap-2">✓ Evaluaciones avanzadas de redacción</p>
-                                <p className="flex items-center gap-2">✓ Intentos ilimitados en simuladores</p>
+                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />A1, A2, B1 y B2 desbloqueados</p>
+                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />Evaluaciones avanzadas de redacción</p>
+                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />Intentos ilimitados en simuladores</p>
                             </div>
                             <div className="flex flex-col gap-3 pt-2">
                                 <button

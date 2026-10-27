@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { PenLine, Mic, Sparkles, Loader2, History, Save, Eye, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { PenLine, Mic, Sparkles, Loader2, History, Save, Eye, CheckCircle2 } from 'lucide-react';
 import AIErrorCard from '../components/AIErrorCard';
 import { useErrorCards } from '../hooks/useErrorCards';
 import type { CEFRLevel } from '../lib/db';
@@ -13,6 +13,7 @@ import { useSpeech } from '../hooks/useSpeech';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import BackButton from '../components/ui/BackButton';
 
 type Tab = 'writing' | 'speaking';
 
@@ -115,12 +116,7 @@ export default function Practice() {
     return (
         <div className="space-y-8">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
-                <button
-                    onClick={() => setSelectedLevel(null)}
-                    className="p-2 rounded-full bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
-                >
-                    <ArrowLeft className="w-4 h-4 text-[var(--color-on-surface-muted)]" />
-                </button>
+                <BackButton onClick={() => setSelectedLevel(null)} />
                 <div>
                     <h1 className="text-2xl font-black tracking-tight">Práctica libre</h1>
                     <span className="text-xs font-bold text-[var(--color-primary)]">{selectedLevel} — {levelLabel(selectedLevel)}</span>
