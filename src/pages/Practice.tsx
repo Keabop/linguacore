@@ -128,11 +128,11 @@ export default function Practice() {
             </motion.div>
             <div className="flex gap-3">
                 <button onClick={() => setTab('writing')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${tab === 'writing' ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-[var(--shadow-card)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)]'}`}>
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${tab === 'writing' ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)]'}`}>
                     <PenLine className="w-4 h-4" /> Escritura
                 </button>
                 <button onClick={() => setTab('speaking')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${tab === 'speaking' ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-[var(--shadow-card)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)]'}`}>
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${tab === 'speaking' ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)]'}`}>
                     <Mic className="w-4 h-4" /> Habla
                 </button>
             </div>
@@ -373,7 +373,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                     Cambiar tema
                 </button>
                 <button onClick={handleSubmit} disabled={wordCount < 5}
-                    className="flex-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:shadow-[var(--shadow-elevated)] hover:-translate-y-1 text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 shadow-[var(--shadow-card)]">
+                    className="flex-1 bg-[var(--color-primary)] hover:shadow-[var(--shadow-elevated)] hover:-translate-y-1 text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 shadow-[var(--shadow-card)]">
                     <Sparkles className="w-4 h-4" /> Evaluar con IA
                 </button>
             </div>
@@ -468,7 +468,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                 {!submitted ? (
                     <>
                         <button onClick={handleToggleRecord}
-                            className={`flex-1 py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)] ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]'}`}>
+                            className={`flex-1 py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)] ${isListening ? 'bg-accent-red text-[var(--color-on-primary)] animate-pulse' : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]'}`}>
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
                         {transcript && !isListening && (
@@ -485,7 +485,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                             Reintentar
                         </button>
                         <button onClick={handleNext}
-                            className="flex-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]">
+                            className="flex-1 bg-[var(--color-primary)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]">
                             Siguiente
                         </button>
                     </>

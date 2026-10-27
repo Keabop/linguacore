@@ -136,7 +136,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 <button
                     onClick={handleCheck}
                     disabled={!allPlaced}
-                    className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] disabled:opacity-40 text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
+                    className="w-full bg-[var(--color-primary)] hover:scale-[1.02] disabled:opacity-40 text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
                 >
                     {t('exercises.checkAnswer')}
                 </button>
@@ -159,7 +159,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
+                        className="w-full bg-[var(--color-primary)] hover:scale-[1.02] text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -185,7 +185,7 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
+                        className="w-full bg-[var(--color-primary)] hover:scale-[1.02] text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

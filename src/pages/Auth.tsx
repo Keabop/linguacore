@@ -44,8 +44,8 @@ export default function Auth() {
     if (loading) {
         return (
             <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 z-0"><Aurora colorStops={["#702AE1", "#B28CFF", "#FEF3FF"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
-                <div className="relative z-10 w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] animate-spin shadow-[var(--shadow-elevated)]" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 90% 50%, 90% 10%, 50% 10%)' }} />
+                <div className="absolute inset-0 z-0"><Aurora colorStops={["#3F9D5A", "#C6E06A", "#F9F6EC"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
+                <div className="relative z-10 w-10 h-10 rounded-full bg-[var(--color-primary)] animate-spin shadow-[var(--shadow-elevated)]" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 90% 50%, 90% 10%, 50% 10%)' }} />
             </div>
         );
     }
@@ -53,7 +53,7 @@ export default function Auth() {
     if (registered) {
         return (
             <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center px-4 relative overflow-hidden">
-                <div className="absolute inset-0 z-0"><Aurora colorStops={["#702AE1", "#B28CFF", "#FEF3FF"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
+                <div className="absolute inset-0 z-0"><Aurora colorStops={["#3F9D5A", "#C6E06A", "#F9F6EC"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -79,7 +79,7 @@ export default function Auth() {
 
     return (
         <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center px-6 relative overflow-hidden">
-            <div className="absolute inset-0 z-0"><Aurora colorStops={["#702AE1", "#B28CFF", "#FEF3FF"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
+            <div className="absolute inset-0 z-0"><Aurora colorStops={["#3F9D5A", "#C6E06A", "#F9F6EC"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -137,7 +137,7 @@ export default function Auth() {
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full py-4 text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                            className="w-full py-4 text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                         >
                             {submitting ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />

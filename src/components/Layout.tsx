@@ -54,8 +54,8 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                         <motion.div
                             layoutId="activeIndicator"
                             className={isVertical 
-                                ? "absolute left-0 w-1 h-6 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-r-full"
-                                : "absolute bottom-0 h-1 w-6 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-t-full"
+                                ? "absolute left-0 w-1 h-6 bg-[var(--color-primary)] rounded-r-full"
+                                : "absolute bottom-0 h-1 w-6 bg-[var(--color-primary)] rounded-t-full"
                             }
                         />
                     )}
@@ -79,17 +79,17 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                                 exit={isVertical ? { opacity: 0, x: -10, scale: 0.95 } : { opacity: 0, y: position === 'top' ? -10 : 10, scale: 0.95 }}
                                 transition={{ duration: 0.15 }}
                                 className={isVertical
-                                    ? "absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
-                                    : `absolute px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
+                                    ? "absolute left-full px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                    : `absolute px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
                                         position === 'top' ? 'top-full mt-2.5 left-1/2 -translate-x-1/2' : 'bottom-full mb-2.5 left-1/2 -translate-x-1/2'
                                     }`
                                 }
                             >
                                 {t(labelKey)}
                                 <div className={isVertical
-                                    ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]"
+                                    ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[var(--color-on-surface)]"
                                     : `absolute left-1/2 -translate-x-1/2 border-x-4 border-x-transparent ${
-                                        position === 'top' ? 'bottom-full border-b-4 border-b-[#3A264B]' : 'top-full border-t-4 border-t-[#3A264B]'
+                                        position === 'top' ? 'bottom-full border-b-4 border-b-[var(--color-on-surface)]' : 'top-full border-t-4 border-t-[var(--color-on-surface)]'
                                     }`
                                 } />
                             </motion.div>
@@ -193,7 +193,7 @@ export default function Layout() {
             <motion.aside
                 key={position}
                 ref={sidebarRef}
-                className={`sidebar-rail pos-${position} fixed bg-white/85 dark:bg-[#1E0A35]/85 backdrop-blur-xl border border-purple-500/10`}
+                className={`sidebar-rail pos-${position} fixed bg-[var(--color-card)] border border-[var(--color-outline-variant)]`}
                 onMouseEnter={() => setIsNavHovered(true)}
                 onMouseLeave={() => setIsNavHovered(false)}
                 animate={isVertical ? { 
@@ -237,7 +237,7 @@ export default function Layout() {
                     <div
                         onPointerDown={(e) => dragControls.start(e)}
                         className={`drag-handle flex items-center justify-center cursor-grab active:cursor-grabbing p-1.5 rounded-lg hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] transition-colors shrink-0 relative ${
-                            !onboardingShown ? 'drag-handle-glow bg-purple-500/10' : ''
+                            !onboardingShown ? 'drag-handle-glow bg-[var(--color-primary)]/10' : ''
                         } ${
                             isVertical ? 'mb-1 w-8 h-8' : 'mr-3 w-8 h-8'
                         }`}
@@ -271,7 +271,7 @@ export default function Layout() {
                                         e.preventDefault();
                                         completeOnboarding();
                                     }}
-                                    className="mt-3 w-full py-1.5 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-[10px] font-black rounded-full shadow-md text-center hover:scale-102 active:scale-98 transition-all duration-200 cursor-pointer"
+                                    className="mt-3 w-full py-1.5 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-[10px] font-black rounded-full shadow-md text-center hover:scale-102 active:scale-98 transition-all duration-200 cursor-pointer"
                                 >
                                     Entendido
                                 </button>
@@ -341,7 +341,7 @@ export default function Layout() {
                             onMouseEnter={() => setIsProfileHovered(true)}
                             onMouseLeave={() => setIsProfileHovered(false)}
                         >
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center text-base md:text-lg font-black text-white shrink-0 shadow-md">
+                            <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-base md:text-lg font-black text-[var(--color-on-primary)] shrink-0 shadow-md">
                                 {authUser.email?.charAt(0).toUpperCase() ?? '?'}
                             </div>
                             <AnimatePresence>
@@ -370,17 +370,17 @@ export default function Layout() {
                                         exit={isVertical ? { opacity: 0, x: -10, scale: 0.95 } : { opacity: 0, y: position === 'top' ? -10 : 10, scale: 0.95 }}
                                         transition={{ duration: 0.15 }}
                                         className={isVertical
-                                            ? "absolute left-full px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
-                                            : `absolute px-2.5 py-1.5 bg-[#3A264B] text-white text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
+                                            ? "absolute left-full px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                                            : `absolute px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
                                                 position === 'top' ? 'top-full mt-2.5 left-1/2 -translate-x-1/2' : 'bottom-full mb-2.5 left-1/2 -translate-x-1/2'
                                             }`
                                         }
                                     >
                                         {t('nav.profile')}
                                         <div className={isVertical
-                                            ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[#3A264B]"
+                                            ? "absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-[var(--color-on-surface)]"
                                             : `absolute left-1/2 -translate-x-1/2 border-x-4 border-x-transparent ${
-                                                position === 'top' ? 'bottom-full border-b-4 border-b-[#3A264B]' : 'top-full border-t-4 border-t-[#3A264B]'
+                                                position === 'top' ? 'bottom-full border-b-4 border-b-[var(--color-on-surface)]' : 'top-full border-t-4 border-t-[var(--color-on-surface)]'
                                             }`
                                         } />
                                     </motion.div>
@@ -435,7 +435,7 @@ export default function Layout() {
                     className={({ isActive }) =>
                         `fixed top-4 left-4 z-[55] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 ${
                             isActive
-                                ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-purple-500/30'
+                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-purple-500/30'
                                 : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] border border-white/10 hover:shadow-xl'
                         }`
                     }

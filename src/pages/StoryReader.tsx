@@ -527,7 +527,7 @@ export default function StoryReader() {
                 <p className="text-[var(--color-on-surface-muted)] text-lg">{t('reader.storyNotFound', 'Historia no encontrada')}</p>
                 <button
                     onClick={() => navigate('/learn')}
-                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                    className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                 >
                     {t('reader.backToStories', 'Volver a historias')}
                 </button>
@@ -557,7 +557,7 @@ export default function StoryReader() {
                         </button>
                         <button
                             onClick={() => navigate('/review')}
-                            className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                            className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                         >
                             {t('dashboard.startReview')}
                         </button>
@@ -753,7 +753,7 @@ export default function StoryReader() {
             {/* Complete button */}
             <button
                 onClick={handleComplete}
-                className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white font-black py-4 rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-base tracking-wide"
+                className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-black py-4 rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-base tracking-wide"
             >
                 ✓ {t('reader.storyCompleted')}
             </button>
@@ -818,7 +818,7 @@ export default function StoryReader() {
                     
                     <button
                         onClick={handlePlayPause}
-                        className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
+                        className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
                     >
                         {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white translate-x-0.5" />}
                     </button>
@@ -893,7 +893,7 @@ export default function StoryReader() {
                                         <>
                                             <button
                                                 onClick={handleAddWord}
-                                                className="flex-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-sm"
+                                                className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-sm"
                                             >
                                                 + {t('reader.addToDeck')}
                                             </button>

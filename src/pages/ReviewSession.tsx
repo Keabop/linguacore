@@ -86,7 +86,7 @@ export default function ReviewSession() {
                 <p className="text-[var(--color-on-surface-muted)]">{t('review.comeBack')}</p>
                 <button
                     onClick={() => navigate('/')}
-                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-6 py-3 rounded-full font-bold mt-4 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                    className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-full font-bold mt-4 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
                     {t('reader.backToStories')}
                 </button>
@@ -188,7 +188,7 @@ export default function ReviewSession() {
                     </div>
                     <button
                         onClick={() => navigate('/')}
-                        className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                        className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                     >
                         {t('review.backHome')}
                     </button>
@@ -258,7 +258,7 @@ export default function ReviewSession() {
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                         </div>
                     </div>
-                    <button onClick={() => navigate('/')} className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                    <button onClick={() => navigate('/')} className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                         {t('review.backHome')}
                     </button>
                 </motion.div>
@@ -336,7 +336,7 @@ export default function ReviewSession() {
                 )}
                 <button
                     onClick={() => navigate('/')}
-                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                    className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
                     {t('review.backHome')}
                 </button>

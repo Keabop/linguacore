@@ -167,14 +167,14 @@ export default function LearningPath() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-5"
             >
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-md">
                     <Map className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
                     <h1 className="text-3xl font-black tracking-tight">{t('path.title')}</h1>
                     <LevelBadge level={currentLevel} />
                     {levelGated && (
-                        <Link to="/pricing" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] px-3.5 py-1.5 rounded-full shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                        <Link to="/pricing" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-on-primary)] bg-[var(--color-primary)] px-3.5 py-1.5 rounded-full shadow-md hover:-translate-y-0.5 transition-all duration-300">
                             <Crown className="w-3.5 h-3.5" /> Plan Pro
                         </Link>
                     )}
@@ -275,8 +275,8 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
         ? 'bg-gradient-to-br from-[var(--color-success)] to-[var(--color-success-light)] shadow-md shadow-[var(--color-success)]/30'
         : isCurrent
             ? isAssessment
-                ? 'bg-gradient-to-br from-[var(--color-level-b1)] to-[var(--color-warning-light)] shadow-md shadow-[var(--color-level-b1)]/30'
-                : 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] shadow-md shadow-[var(--color-primary)]/30'
+                ? 'bg-[var(--color-level-b1)] shadow-md shadow-[var(--color-level-b1)]/30'
+                : 'bg-[var(--color-primary)] shadow-md shadow-[var(--color-primary)]/30'
             : 'bg-[var(--color-surface-container-high)]';
 
     // Card shadow styles — no borders
@@ -329,7 +329,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                 {/* Tier gate overlay */}
                 {tierGated && (
                     <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 rounded-2xl">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
                             <Lock className="w-5 h-5 text-white" />
                         </div>
                         <span className="text-xs font-black text-white tracking-wide">Plan Pro</span>

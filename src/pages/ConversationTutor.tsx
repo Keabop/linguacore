@@ -164,7 +164,7 @@ export default function ConversationTutor() {
 
                 {/* New conversation button */}
                 <button onClick={startNewConversation}
-                    className="w-full py-4 font-bold flex items-center justify-center gap-3 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300 text-base">
+                    className="w-full py-4 font-bold flex items-center justify-center gap-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300 text-base">
                     <Plus className="w-5 h-5" /> {t('chat.startConversation')}
                 </button>
 
@@ -243,7 +243,7 @@ export default function ConversationTutor() {
                             <div className="max-w-[85%] space-y-2.5">
                                 <div className={`text-sm leading-relaxed ${
                                     msg.role === 'user'
-                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] text-white rounded-2xl rounded-br-sm p-4 shadow-[var(--shadow-elevated)]'
+                                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-2xl rounded-br-sm p-4 shadow-[var(--shadow-elevated)]'
                                         : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] rounded-2xl rounded-bl-sm p-4 shadow-[var(--shadow-card)]'
                                 }`}>
                                     {msg.content}
@@ -291,7 +291,7 @@ export default function ConversationTutor() {
                                 {t('common.cancel')}
                             </button>
                             <button onClick={handleEndSession}
-                                className="flex-1 py-3 rounded-full font-bold bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                                className="flex-1 py-3 rounded-full font-bold bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                                 {t('chat.endSession')}
                             </button>
                         </div>
@@ -339,7 +339,7 @@ export default function ConversationTutor() {
             <div className="flex-1 overflow-y-auto space-y-6 pr-1 pb-4 flex flex-col">
                 {messages.length === 0 && !isLoading && (
                     <div className="flex flex-col items-center justify-center text-center py-10 px-4 space-y-6 my-auto max-w-md w-full mx-auto">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg animate-pulse">
+                        <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-lg animate-pulse">
                             <Sparkles className="w-8 h-8 text-white" />
                         </div>
                         <div className="space-y-2">
@@ -389,7 +389,7 @@ export default function ConversationTutor() {
                                 {/* Message bubble */}
                                 <div
                                     className={`leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-light)] text-white rounded-2xl rounded-br-[0.25rem] p-3.5 md:p-4 text-xs md:text-sm shadow-[var(--shadow-elevated)]'
+                                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-2xl rounded-br-[0.25rem] p-3.5 md:p-4 text-xs md:text-sm shadow-[var(--shadow-elevated)]'
                                         : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface)] rounded-2xl rounded-bl-[0.25rem] p-3.5 md:p-4 text-xs md:text-sm shadow-[var(--shadow-card)]'
                                         }`}
                                 >
@@ -490,7 +490,7 @@ export default function ConversationTutor() {
                     <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full px-5 py-3 shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:opacity-40 active:scale-95"
+                        className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full px-5 py-3 shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:opacity-40 active:scale-95"
                     >
                         <Send className="w-4 h-4" />
                     </button>

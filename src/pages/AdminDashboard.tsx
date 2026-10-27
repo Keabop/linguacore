@@ -43,8 +43,8 @@ function fmtDate(iso: string | null): string {
     return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// All avatars use the Voxie primary purple to keep things consistent
-const AVATAR_GRADIENT = 'from-[var(--color-primary)] to-[var(--color-primary-container)]';
+// All avatars use the leaf colour to keep things consistent
+const AVATAR_GRADIENT = 'from-[var(--color-primary)] to-[var(--color-primary-press)]';
 
 function getInitials(name: string | null, email: string | null): string {
     if (name) {
@@ -79,7 +79,7 @@ function StatTile({
             transition={{ delay, duration: 0.4, ease: 'easeOut' }}
             className="rounded-[1.5rem] p-5 bg-[var(--color-card)] border border-white/[0.06] shadow-[var(--shadow-card)] flex items-center gap-4"
         >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-md shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-md shrink-0">
                 <Icon className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -450,7 +450,7 @@ export default function AdminDashboard() {
                 className="flex items-center justify-between"
             >
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg">
+                    <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
                         <Shield className="w-6 h-6 text-white" />
                     </div>
                     <div>
