@@ -1,7 +1,7 @@
 import { env, setEnv } from '../../../server/lib/config.js';
 import { createClient } from '@supabase/supabase-js';
-import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 import { getCorsHeaders } from '../../../server/lib/cors.js';
+import { createPreapproval, findLatestPreapproval, mapSubscriptionStatus, updatePreapproval } from '../../../server/lib/mercadopago.js';
 
 // ---------------------------------------------------------------------------
 // Authenticate
@@ -73,28 +73,20 @@ export const onRequestPost: PagesFunction = async (context) => {
             });
         }
 
-        const client = new MercadoPagoConfig({ accessToken });
-        const preApproval = new PreApproval(client);
-
         // ---------------------------------------------------------------
         // Verify subscription (called when user returns from MP checkout)
         // ---------------------------------------------------------------
         if (action === 'verify') {
-            const mpRes = await fetch(
-                `https://api.mercadopago.com/preapproval/search?external_reference=${user.id}&sort=date_created&criteria=desc&limit=1`,
-                { headers: { Authorization: `Bearer ${accessToken}` } },
-            );
-
-            if (!mpRes.ok) {
-                console.error('[Verify Edge] MP search failed:', mpRes.status);
+            let subscription;
+            try {
+                subscription = await findLatestPreapproval(accessToken, user.id);
+            } catch (error) {
+                console.error('[Verify Edge] MP search failed:', error);
                 return new Response(JSON.stringify({ error: 'Failed to verify with payment provider' }), {
                     status: 502,
                     headers: corsHeaders,
                 });
             }
-
-            const mpData: any = await mpRes.json();
-            const subscription = mpData.results?.[0];
 
             if (!subscription) {
                 return new Response(JSON.stringify({ tier: 'free', subscription_status: 'none' }), {
@@ -103,11 +95,7 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
-            const mpStatus = subscription.status ?? '';
-            const tier = mpStatus === 'cancelled' ? 'free' : 'pro';
-            const subStatus = mpStatus === 'authorized' ? 'active'
-                : mpStatus === 'paused' ? 'past_due'
-                : mpStatus === 'cancelled' ? 'cancelled' : 'pending';
+            const { tier: mappedTier, subscription_status: subStatus } = mapSubscriptionStatus(subscription.status ?? '');
 
             const supabaseUrl = env.SUPABASE_URL;
             const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -119,14 +107,16 @@ export const onRequestPost: PagesFunction = async (context) => {
             }
 
             const supabase = createClient(supabaseUrl, serviceRoleKey);
-            const { error: dbError } = await supabase
+            const { data: updated, error: dbError } = await supabase
                 .from('profiles')
                 .update({
-                    tier,
+                    ...(mappedTier ? { tier: mappedTier } : {}),
                     subscription_id: subscription.id?.toString() ?? null,
                     subscription_status: subStatus,
                 })
-                .eq('id', user.id);
+                .eq('id', user.id)
+                .select('tier')
+                .single();
 
             if (dbError) {
                 console.error('[Verify Edge] DB update failed:', dbError);
@@ -136,6 +126,7 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
+            const tier = updated?.tier ?? 'free';
             console.log(`[Verify Edge] Updated user ${user.id}: tier=${tier}, status=${subStatus}`);
             return new Response(JSON.stringify({ tier, subscription_status: subStatus }), {
                 status: 200,
@@ -177,9 +168,8 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
-            await preApproval.update({
-                id: profile.subscription_id,
-                body: { status: action === 'cancel' ? 'cancelled' : 'authorized' },
+            await updatePreapproval(accessToken, profile.subscription_id, {
+                status: action === 'cancel' ? 'cancelled' : 'authorized',
             });
 
             await supabase
@@ -229,7 +219,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         };
 
 
-        const result = await preApproval.create({ body: subscriptionBody });
+        const result = await createPreapproval(accessToken, subscriptionBody);
 
         return new Response(JSON.stringify({ init_point: result.init_point }), {
             status: 200,
