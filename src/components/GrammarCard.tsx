@@ -185,7 +185,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     font-style: italic;
                 }
                 .grammar-explanation code {
-                    background: color-mix(in_oklch,var(--color-on-surface)_6%,transparent);
+                    background: color-mix(in oklch, var(--color-on-surface) 6%, transparent);
                     padding: 2px 6px;
                     border-radius: 4px;
                     font-size: 0.875rem;
@@ -197,7 +197,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     font-size: 0.875rem;
                 }
                 .grammar-explanation thead th {
-                    background: color-mix(in_oklch,var(--color-on-surface)_6%,transparent);
+                    background: color-mix(in oklch, var(--color-on-surface) 6%, transparent);
                     color: var(--color-text);
                     font-weight: 700;
                     padding: 10px 14px;
@@ -213,7 +213,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     border-bottom: none;
                 }
                 .grammar-explanation tbody tr:hover td {
-                    background: color-mix(in_oklch,var(--color-on-surface)_3%,transparent);
+                    background: color-mix(in oklch, var(--color-on-surface) 3%, transparent);
                 }
                 .grammar-explanation a {
                     color: var(--color-accent-blue);

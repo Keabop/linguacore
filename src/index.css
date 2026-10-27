@@ -102,6 +102,12 @@
   --color-error-light: oklch(94% 0.03 27);
   --color-on-error: oklch(98.5% 0.01 95);
   --color-accent-blue: oklch(58% 0.12 240);
+  /* Older accent names used across components; they now point at Jardín roles */
+  --color-accent-red: var(--color-error);
+  --color-accent-orange: var(--color-tertiary-ink);
+  --color-accent-amber: var(--color-tertiary-ink);
+  --color-accent-gold: var(--color-tertiary-ink);
+  --color-accent-purple: var(--color-primary);
 
   /* Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

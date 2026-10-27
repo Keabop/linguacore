@@ -1086,7 +1086,7 @@ export default function CEFRSimulator() {
                                             return (
                                                 <polygon
                                                     points={points}
-                                                    fill="color-mix(in_oklch,var(--color-success)_20%,transparent)"
+                                                    fill="color-mix(in oklch, var(--color-success) 20%, transparent)"
                                                     stroke="rgb(16, 185, 129)"
                                                     strokeWidth="2"
                                                 />
