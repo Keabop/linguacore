@@ -108,7 +108,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
 
                     <button
                         onClick={() => onComplete(score)}
-                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
+                        className="w-full bg-[var(--color-primary)] hover:scale-[1.02] text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.finish')}
                     </button>
@@ -164,7 +164,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                 </div>
                 <div className="h-2 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full"
+                        className="h-full bg-[var(--color-primary)] rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.4, ease: 'easeOut' }}

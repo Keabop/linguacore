@@ -122,7 +122,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}>
                     <button
                         onClick={onBack}
-                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                        className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                     >
                         Volver a la ruta
                     </button>
@@ -560,7 +560,7 @@ function StoryStep({
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                         onClick={onComplete}
-                        className="flex-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                        className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                     >
                         {unitStory ? 'Marcar como completado' : 'Saltar por ahora'}
                     </button>
@@ -680,7 +680,7 @@ function VocabStep({
 
                 <button
                     onClick={onComplete}
-                    className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                    className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                 >
                     Continuar
                 </button>
@@ -746,7 +746,7 @@ function CheckpointStep({
 
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Intentalo de nuevo
@@ -783,7 +783,7 @@ function EmptyStepCard({
                 <p className="text-[var(--color-on-surface-muted)] text-sm">{description}</p>
                 <button
                     onClick={onAction}
-                    className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white py-3.5 px-8 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                    className="bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3.5 px-8 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                 >
                     {actionLabel}
                 </button>

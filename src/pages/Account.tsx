@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Palette, Check, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2, Award, Calendar } from 'lucide-react';
+import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2, Award, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { useTheme, type ProTheme } from '../lib/ThemeContext';
 import { useCards } from '../hooks/useCards';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useTier } from '../hooks/useTier';
@@ -17,14 +16,6 @@ import { generateCareerDeck } from '../lib/ai';
 import { getVocab } from '../data';
 import { toast } from '../lib/toast';
 
-const themes: { id: ProTheme; name: string; color: string; isPro: boolean }[] = [
-    { id: 'purple',     name: 'Fluid Scholar', color: '#702AE1', isPro: false },
-    { id: 'ocean',      name: 'Ocean',         color: '#0891B2', isPro: true },
-    { id: 'forest',     name: 'Forest',        color: '#16A34A', isPro: true },
-    { id: 'midnight',   name: 'Midnight',      color: '#818CF8', isPro: true },
-    { id: 'royal-gold', name: 'Royal Gold',    color: '#D97706', isPro: true },
-];
-
 export default function Account() {
     const { t } = useTranslation();
     const { user: authUser } = useAuth();
@@ -32,7 +23,6 @@ export default function Account() {
     const { user, progressInfo } = useLevelProgression();
     const { isPro, isFree } = useTier();
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const { proTheme, setProTheme } = useTheme();
     const qc = useQueryClient();
 
     const [importText, setImportText] = useState('');
@@ -536,7 +526,7 @@ export default function Account() {
                     className="flex items-start justify-between"
                 >
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center text-2xl font-black text-white shadow-[var(--shadow-elevated)]">
+                        <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-2xl font-black text-[var(--color-on-primary)] shadow-[var(--shadow-elevated)]">
                             {initial}
                         </div>
                         <div>
@@ -545,7 +535,7 @@ export default function Account() {
                             <div className="flex items-center gap-2 mt-1">
                                 <LevelBadge level={progressInfo?.currentLevel ?? 'A1'} size="compact" />
                                 {isPro && (
-                                    <span className="text-xs bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-3 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-[var(--shadow-card)]">
+                                    <span className="text-xs bg-[var(--color-primary)] text-[var(--color-on-primary)] px-3 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-[var(--shadow-card)]">
                                         <Crown className="w-3 h-3" /> Pro
                                     </span>
                                 )}
@@ -644,7 +634,7 @@ export default function Account() {
                                 />
                                 <label
                                     htmlFor="csv-file-input"
-                                    className={`w-full flex items-center justify-center gap-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-sm font-bold py-3.5 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center ${
+                                    className={`w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-bold py-3.5 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-center ${
                                         importing ? 'opacity-50 pointer-events-none' : ''
                                     }`}
                                 >
@@ -694,7 +684,7 @@ export default function Account() {
                                 <button
                                     onClick={() => handleCreateCareerDeck(profession)}
                                     disabled={generatingDeck || !profession.trim()}
-                                    className="flex items-center justify-center bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-sm font-bold p-3.5 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
+                                    className="flex items-center justify-center bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-bold p-3.5 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
                                     title="Generar mazo profesional"
                                 >
                                     {generatingDeck ? (
@@ -734,7 +724,7 @@ export default function Account() {
                                 <button
                                     onClick={() => handleImportWords(importText)}
                                     disabled={importing || !importText.trim()}
-                                    className="flex items-center gap-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold px-5 py-2 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
+                                    className="flex items-center gap-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold px-5 py-2 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
                                 >
                                     {importing ? (
                                         <>
@@ -771,7 +761,7 @@ export default function Account() {
                                 </div>
                                 <div className="h-2.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full transition-all duration-500"
+                                        className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-500"
                                         style={{ width: `${progressInfo.overallPercent}%` }}
                                     />
                                 </div>
@@ -808,7 +798,7 @@ export default function Account() {
                             </p>
                             <Link
                                 to="/review/simulator"
-                                className="inline-flex items-center justify-center bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold px-6 py-3 rounded-full shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                                className="inline-flex items-center justify-center bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold px-6 py-3 rounded-full shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                             >
                                 Iniciar Simulacro CEFR
                             </Link>
@@ -893,77 +883,6 @@ export default function Account() {
                     )}
                 </motion.div>
 
-                {/* ===== Apariencia y Colores ===== */}
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.18 }}
-                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] space-y-4 text-left"
-                >
-                    <div className="flex items-center gap-2">
-                        <Palette className="w-5 h-5 text-[var(--color-primary)]" />
-                        <h2 className="text-sm font-bold text-[var(--color-on-surface-muted)]">Apariencia y Colores</h2>
-                    </div>
-                    
-                    <div className="space-y-1">
-                        <span className="text-xs font-bold block">Gama de Colores de Marca</span>
-                        <span className="text-[10px] block text-[var(--color-on-surface-muted)]">
-                            Personaliza los colores de interfaz de tu Fluid Scholar. Desbloquea estéticas exclusivas con tu suscripción Pro.
-                        </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2">
-                        {themes.map((theme) => {
-                            const isSelected = proTheme === theme.id;
-                            const progressLocked = theme.isPro && !isPro;
-
-                            return (
-                                <button
-                                    key={theme.id}
-                                    onClick={() => {
-                                        if (!progressLocked) setProTheme(theme.id);
-                                    }}
-                                    disabled={progressLocked}
-                                    className={`p-4 rounded-2xl border-2 text-left flex items-center gap-3 transition-all relative ${
-                                        isSelected
-                                            ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                                            : 'border-[var(--color-surface-container)] bg-[var(--color-surface-container-low)] hover:bg-[var(--color-surface-container-high)]/40'
-                                    } ${progressLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                >
-                                    {/* Circle Color Accent Indicator */}
-                                    <span 
-                                        style={{ backgroundColor: theme.color }}
-                                        className="h-4 w-4 rounded-full border border-white shrink-0 block" 
-                                    />
-
-                                    <div className="flex-1 min-w-0">
-                                        <span className="text-xs font-bold block truncate">{theme.name}</span>
-                                        <span className="text-[9px] block text-[var(--color-on-surface-muted)] truncate">
-                                            {theme.isPro ? (
-                                                <span className="inline-flex items-center gap-0.5">
-                                                    <Crown className="h-2.5 w-2.5 text-amber-500 fill-amber-500 shrink-0" /> Exclusivo Pro
-                                                </span>
-                                            ) : 'Gratuito'}
-                                        </span>
-                                    </div>
-
-                                    {isSelected && (
-                                        <span className="absolute top-2 right-2 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white">
-                                            <Check className="h-2.5 w-2.5 text-white stroke-[3px]" />
-                                        </span>
-                                    )}
-
-                                    {progressLocked && (
-                                        <span className="absolute top-2 right-2 text-[var(--color-on-surface-muted)]">
-                                            <Lock className="h-3.5 w-3.5" />
-                                        </span>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </motion.div>
-
                 {/* ===== Pro Stats: Activity Heatmap ===== */}
                 {isPro ? (
                     <motion.div
@@ -1018,7 +937,7 @@ export default function Account() {
                             <p className="text-sm text-[var(--color-on-surface-muted)]">{t('account.proStats')}</p>
                             <Link
                                 to="/pricing"
-                                className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold px-6 py-2.5 rounded-full shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                                className="bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold px-6 py-2.5 rounded-full shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                             >
                                 {t('account.upgradeToPro')}
                             </Link>

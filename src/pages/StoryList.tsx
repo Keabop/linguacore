@@ -190,7 +190,7 @@ export default function StoryList() {
                         <div className="widget space-y-5">
                             <div className="flex items-center justify-between">
                                 <h3 className="font-black tracking-tight flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-sm">
+                                    <div className="w-8 h-8 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-sm">
                                         <Sparkles className="w-4 h-4 text-white" />
                                     </div>
                                     {t('storyList.aiTitle')}
@@ -320,7 +320,7 @@ export default function StoryList() {
                                         {/* Floating AI / Read Badges */}
                                         <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                                             {story.id.startsWith('ai-') && (
-                                                <span className="text-[9px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
+                                                <span className="text-[9px] bg-[var(--color-primary)] text-[var(--color-on-primary)] px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
                                                     <Sparkles className="w-2.5 h-2.5" /> AI
                                                 </span>
                                             )}

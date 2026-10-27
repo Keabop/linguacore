@@ -145,7 +145,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <button
                                             onClick={handleUpdateUsername}
                                             disabled={updatingUsername || !username.trim()}
-                                            className="px-4 py-2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-xs font-bold rounded-xl shadow-md hover:brightness-95 transition-all disabled:opacity-55 shrink-0 flex items-center justify-center min-w-[70px]"
+                                            className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold rounded-xl shadow-md hover:brightness-95 transition-all disabled:opacity-55 shrink-0 flex items-center justify-center min-w-[70px]"
                                         >
                                             {updatingUsername ? (
                                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

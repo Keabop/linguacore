@@ -179,7 +179,7 @@ function MockupSignup() {
                     <div className="h-2 w-20 bg-[var(--color-on-surface)]/10 rounded-full" />
                 </div>
             </div>
-            <div className="h-9 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full flex items-center justify-center gap-2 shadow-[var(--shadow-card)]">
+            <div className="h-9 bg-[var(--color-primary)] rounded-full flex items-center justify-center gap-2 shadow-[var(--shadow-card)]">
                 <div className="h-2 w-24 bg-white/40 rounded-full" />
             </div>
             <div className="flex items-center gap-2 justify-center">
@@ -249,7 +249,7 @@ function MockupPath() {
                 <div className="h-2 w-24 bg-[var(--color-on-surface)]/10 rounded-full mb-1" />
                 <div className="flex items-center gap-2 mt-1">
                     <div className="h-1.5 bg-[var(--color-surface-container)] rounded-full flex-1 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full" style={{ width: '40%' }} />
+                        <div className="h-full bg-[var(--color-primary)] rounded-full" style={{ width: '40%' }} />
                     </div>
                     <span className="text-[9px] text-[var(--color-on-surface-muted)]">2/5 A1</span>
                 </div>
@@ -274,7 +274,7 @@ function MockupPath() {
                             </div>
                         </div>
                         {u.active && (
-                            <div className="h-5 w-14 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-full flex items-center justify-center">
+                            <div className="h-5 w-14 bg-[var(--color-primary)] rounded-full flex items-center justify-center">
                                 <div className="h-1.5 w-8 bg-white/40 rounded-full" />
                             </div>
                         )}
@@ -334,7 +334,7 @@ export default function Landing() {
             {/* Aurora background */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                 <Aurora
-                    colorStops={["#702AE1", "#B28CFF", "#FEF3FF"]}
+                    colorStops={["#3F9D5A", "#C6E06A", "#F9F6EC"]}
                     speed={0.3}
                     blend={0.6}
                     amplitude={0.8}
@@ -357,7 +357,7 @@ export default function Landing() {
                     </Link>
                     <Link
                         to="/auth"
-                        className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full px-5 py-2.5 text-sm font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                        className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full px-5 py-2.5 text-sm font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                     >
                         Empezar gratis
                     </Link>
@@ -380,8 +380,8 @@ export default function Landing() {
                     <h1 className="text-4xl sm:text-5xl md:text-7xl font-black leading-[1.1] tracking-tight font-display text-[var(--color-on-surface)] flex flex-wrap justify-center gap-x-3 gap-y-1">
                         <span>Historias,</span>
                         <span>práctica y</span>
-                        <span className="bg-gradient-to-r from-[var(--color-primary-light)] to-[#FF8CEF] bg-clip-text text-transparent">IA.</span>
-                        <span className="w-full text-3xl sm:text-4xl md:text-5xl mt-2 bg-gradient-to-r from-[var(--color-on-surface)] via-[var(--color-on-surface)]/90 to-[var(--color-on-surface-muted)] bg-clip-text text-transparent">Todo para tu inglés.</span>
+                        <span className="text-[var(--color-primary)]">IA.</span>
+                        <span className="w-full text-3xl sm:text-4xl md:text-5xl mt-2 text-[var(--color-on-surface)]">Todo para tu inglés.</span>
                     </h1>
                 </div>
 
@@ -402,7 +402,7 @@ export default function Landing() {
                     <Magnet padding={50}>
                         <Link
                             to="/auth"
-                            className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full px-8 py-4 text-base font-bold inline-flex items-center gap-2 shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300"
+                            className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full px-8 py-4 text-base font-bold inline-flex items-center gap-2 shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300"
                         >
                             Comenzar gratis
                             <ArrowRight className="w-4 h-4" />
@@ -524,18 +524,18 @@ export default function Landing() {
                                         </div>
                                         <h5 className="text-[11px] font-black text-[var(--color-on-surface)] leading-tight">Unit 4: Job Interviews & Professional Networking</h5>
                                         <div className="w-full h-1.5 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
-                                            <div className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)]" style={{ width: '75%' }} />
+                                            <div className="h-full bg-[var(--color-primary)]" style={{ width: '75%' }} />
                                         </div>
                                         <div className="pt-1 flex items-center justify-between">
                                             <span className="text-[8px] text-[var(--color-on-surface-muted)] font-medium">Siguiente: Simulacro Técnico</span>
-                                            <div className="px-2.5 py-1 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-[8px] font-bold rounded-lg shadow-sm hover:translate-y-[-0.5px] transition-all">
+                                            <div className="px-2.5 py-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-[8px] font-bold rounded-lg shadow-sm hover:translate-y-[-0.5px] transition-all">
                                                 Continuar
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Laboratorio de Errores Widget */}
-                                    <div className="bg-gradient-to-br from-[var(--color-primary)]/5 to-[var(--color-primary-container)]/10 border border-[var(--color-primary)]/10 rounded-2xl p-3.5 flex flex-col justify-between">
+                                    <div className="bg-[var(--color-primary-container)]/40 border border-[var(--color-primary)]/10 rounded-2xl p-3.5 flex flex-col justify-between">
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-1">
                                                 <Activity className="w-3.5 h-3.5 text-[var(--color-primary-light)] animate-pulse" />
@@ -671,7 +671,7 @@ export default function Landing() {
 
                     {/* Pro */}
                     <motion.div custom={1} variants={fadeUp} className="relative bg-[var(--color-card)] backdrop-blur-sm rounded-[2rem] p-8 shadow-[var(--shadow-elevated)] pro-glow-border hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300">
-                        <div className="absolute -top-3 right-6 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white text-[11px] font-bold px-4 py-1.5 rounded-full shadow-[var(--shadow-card)]">
+                        <div className="absolute -top-3 right-6 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-[11px] font-bold px-4 py-1.5 rounded-full shadow-[var(--shadow-card)]">
                             Recomendado
                         </div>
                         <div className="text-sm font-bold text-[var(--color-primary-light)] mb-1 font-body">Plan Pro</div>
@@ -701,7 +701,7 @@ export default function Landing() {
                         </ul>
                         <Link
                             to="/auth"
-                            className="mt-6 block w-full text-center text-sm py-3.5 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                            className="mt-6 block w-full text-center text-sm py-3.5 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                         >
                             Empezar con Pro
                         </Link>
@@ -726,7 +726,7 @@ export default function Landing() {
                     <motion.div custom={2} variants={fadeUp}>
                         <Link
                             to="/auth"
-                            className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white rounded-full px-10 py-4 text-base font-bold inline-flex items-center gap-2 shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300"
+                            className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full px-10 py-4 text-base font-bold inline-flex items-center gap-2 shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300"
                         >
                             Crear cuenta gratis
                             <ArrowRight className="w-4 h-4" />

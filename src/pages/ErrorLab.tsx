@@ -136,7 +136,7 @@ export default function ErrorLab() {
         return (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-6 max-w-md mx-auto">
                 <style>{`.floating-bar { display: none !important; }`}</style>
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
                     <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <div className="space-y-2">
@@ -202,7 +202,7 @@ export default function ErrorLab() {
                         key={s}
                         className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                             s === step 
-                                ? 'bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)]' 
+                                ? 'bg-[var(--color-primary)]' 
                                 : s < step 
                                     ? 'bg-[var(--color-success)]' 
                                     : 'bg-[var(--color-surface-container)]'

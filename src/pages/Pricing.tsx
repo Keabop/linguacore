@@ -180,7 +180,7 @@ export default function Pricing() {
                 {/* Pro Plan */}
                 <div className="rounded-[2rem] bg-[var(--color-card)] p-7 shadow-[var(--shadow-float)] relative overflow-hidden hover:-translate-y-1 transition-all duration-300">
                     {/* Subtle gradient glow at top */}
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)] rounded-t-[2rem]" />
+                    <div className="absolute inset-x-0 top-0 h-1 bg-[var(--color-primary)] rounded-t-[2rem]" />
 
                     <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Plan Pro</h2>
                     <p className="mt-2 text-2xl font-black tracking-tight">
@@ -217,7 +217,7 @@ export default function Pricing() {
                                 <button
                                     onClick={() => handleSubscribe('monthly')}
                                     disabled={loading !== null}
-                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {loading === 'monthly' && <Loader2 className="size-4 animate-spin" />}
                                     Mensual — $129/mes

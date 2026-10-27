@@ -659,7 +659,7 @@ export default function CEFRSimulator() {
                                         <button
                                             onClick={() => handlePlayAudio(questions[currentIdx].id, questions[currentIdx].dialogue!)}
                                             disabled={isPlayingAudio || (audioPlayCount[questions[currentIdx].id] || 0) >= 2}
-                                            className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95 transition-all shadow-md"
+                                            className="w-14 h-14 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95 transition-all shadow-md"
                                         >
                                             <Play className="w-6 h-6 fill-white" />
                                         </button>
