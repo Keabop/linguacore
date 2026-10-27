@@ -10,5 +10,6 @@
     "noEmit": true,
     "isolatedModules": true
   },
-  "include": ["./**/*.ts", "../server/**/*.ts"]
+  "include": ["./**/*.ts", "../server/**/*.ts"],
+  "exclude": ["./**/*.test.ts", "../server/**/*.test.ts"]
 }
