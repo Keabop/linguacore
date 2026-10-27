@@ -4,7 +4,7 @@ import { Check, Loader2, PartyPopper } from 'lucide-react';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
-import { CountUp } from '../components/reactbits';
+import CountUp from '../components/reactbits/CountUp';
 
 const FREE_FEATURES = [
     'Nivel A1 completo (gramática, vocabulario, ejercicios)',

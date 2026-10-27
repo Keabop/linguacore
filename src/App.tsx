@@ -6,12 +6,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
 import { useAuth } from './lib/AuthContext';
 import type { ReactNode, ComponentType } from 'react';
-import Dashboard from './pages/Dashboard';
-import StoryList from './pages/StoryList';
-import ReviewSession from './pages/ReviewSession';
-import Account from './pages/Account';
-import ConversationTutor from './pages/ConversationTutor';
-import Practice from './pages/Practice';
 
 /**
  * Lazy import with retry — handles transient network failures and
@@ -35,6 +29,12 @@ function lazyRetry<T extends ComponentType<any>>(
 }
 
 const Landing = lazyRetry(() => import('./pages/Landing'));
+const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
+const StoryList = lazyRetry(() => import('./pages/StoryList'));
+const ReviewSession = lazyRetry(() => import('./pages/ReviewSession'));
+const Account = lazyRetry(() => import('./pages/Account'));
+const ConversationTutor = lazyRetry(() => import('./pages/ConversationTutor'));
+const Practice = lazyRetry(() => import('./pages/Practice'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const StoryReader = lazyRetry(() => import('./pages/StoryReader'));
 const LearningPath = lazyRetry(() => import('./pages/LearningPath'));

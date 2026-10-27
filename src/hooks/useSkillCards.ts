@@ -7,7 +7,6 @@ import { CardState } from '../lib/db';
 import type { SkillCard } from '../lib/db';
 import type { SkillCardRow } from '../lib/database.types';
 import { offlineInsert, offlineUpdate } from '../lib/offlineMutation';
-import { getSkillsByUnit } from '../data';
 
 const STABLE_THRESHOLD = 10;
 
@@ -77,6 +76,8 @@ export function useSkillCards() {
     const addSkillCards = useCallback(async (unitId: string) => {
         if (!userId) return 0;
 
+        // Skills data is large; load it only when a unit is completed
+        const { getSkillsByUnit } = await import('../data');
         const skills = getSkillsByUnit(unitId);
         if (skills.length === 0) return 0;
 
