@@ -295,7 +295,7 @@ export default function ErrorLab() {
                         </div>
 
                         {builderStatus === 'correct' && (
-                            <div className="text-center text-[var(--color-success)] font-bold text-sm flex items-center justify-center gap-1.5 animate-pulse">
+                            <div className="text-center text-[var(--color-success)] font-bold text-sm flex items-center justify-center gap-1.5" role="status">
                                 <Check className="w-5 h-5" /> ¡Excelente orden! Avanzando al Quiz de validación...
                             </div>
                         )}

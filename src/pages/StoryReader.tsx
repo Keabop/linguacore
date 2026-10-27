@@ -731,7 +731,7 @@ export default function StoryReader() {
                                 className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 cursor-pointer ${
                                     isListening 
                                         ? 'bg-[var(--color-error)] hover:bg-[var(--color-error)] text-[var(--color-on-error)] animate-pulse' 
-                                        : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-[var(--color-on-primary)] shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.4)]'
+                                        : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-[var(--color-on-primary)]'
                                 }`}
                             >
                                 <Mic className="w-6 h-6" />

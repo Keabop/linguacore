@@ -43,8 +43,6 @@ function fmtDate(iso: string | null): string {
     return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// All avatars use the leaf colour to keep things consistent
-const AVATAR_GRADIENT = 'from-[var(--color-primary)] to-[var(--color-primary-press)]';
 
 function getInitials(name: string | null, email: string | null): string {
     if (name) {
@@ -122,7 +120,7 @@ function UserCard({
             <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5">
                 {/* Avatar */}
                 <div className="relative shrink-0">
-                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br ${AVATAR_GRADIENT} flex items-center justify-center text-white font-black text-sm sm:text-base shadow-md`}>
+                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-[var(--color-on-primary)] font-black text-sm sm:text-base shadow-md`}>
                         {initials}
                     </div>
                     {/* Online dot */}
@@ -230,12 +228,6 @@ function UserCard({
                                         const words = p?.words ?? 0;
                                         const maxWords = 100; // estimated max for visual proportion
                                         const pct = Math.min(100, Math.round((words / maxWords) * 100));
-                                        const barColors: Record<string, string> = {
-                                            A1: 'from-[var(--color-primary)] to-[var(--color-primary)]',
-                                            A2: 'from-[var(--color-primary)] to-[var(--color-primary)]',
-                                            B1: 'from-[var(--color-primary)] to-[var(--color-primary)]',
-                                            B2: 'from-[var(--color-primary)] to-[var(--color-primary)]',
-                                        };
                                         return (
                                             <div key={lvl} className="space-y-1">
                                                 <div className="flex justify-between text-[10px]">
@@ -247,7 +239,7 @@ function UserCard({
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${pct}%` }}
                                                         transition={{ delay: 0.1, duration: 0.4 }}
-                                                        className={`h-full bg-gradient-to-r ${barColors[lvl]} rounded-full`}
+                                                        className="h-full bg-[var(--color-primary)] rounded-full"
                                                     />
                                                 </div>
                                             </div>

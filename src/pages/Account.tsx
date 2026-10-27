@@ -901,8 +901,8 @@ export default function Account() {
                                         className="aspect-square rounded-lg transition-colors"
                                         style={{
                                             backgroundColor: day.count > 0
-                                                ? `rgba(34, 197, 94, ${0.15 + intensity * 0.65})`
-                                                : 'color-mix(in_oklch,var(--color-on-surface)_3%,transparent)',
+                                                ? `color-mix(in oklch, var(--color-primary) ${Math.round((0.15 + intensity * 0.65) * 100)}%, transparent)`
+                                                : 'color-mix(in oklch, var(--color-on-surface) 3%, transparent)',
                                         }}
                                         title={`${day.date}: ${day.count} ${t('stats.activities')}`}
                                     />
@@ -916,7 +916,7 @@ export default function Account() {
                                     <div
                                         key={i}
                                         className="w-2.5 h-2.5 rounded-md"
-                                        style={{ backgroundColor: op > 0 ? `rgba(34, 197, 94, ${0.15 + op * 0.65})` : 'color-mix(in_oklch,var(--color-on-surface)_3%,transparent)' }}
+                                        style={{ backgroundColor: op > 0 ? `color-mix(in oklch, var(--color-primary) ${Math.round((0.15 + op * 0.65) * 100)}%, transparent)` : 'color-mix(in oklch, var(--color-on-surface) 3%, transparent)' }}
                                     />
                                 ))}
                             </div>
