@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
+import { ApiError, GoogleGenAI, type Content } from '@google/genai';
 import { env } from './config.js';
 
 export const AGENT_TYPES = [
@@ -16,9 +16,11 @@ export type AgentType = typeof AGENT_TYPES[number];
 // Models to try in order — if one is overloaded, fall back to the next
 const MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-pro'];
 
-let _genAI: GoogleGenerativeAI | null = null;
+const JSON_CONFIG = { responseMimeType: 'application/json' };
 
-function getGenAI(): GoogleGenerativeAI {
+let _genAI: GoogleGenAI | null = null;
+
+function getGenAI(): GoogleGenAI {
     if (_genAI) return _genAI;
 
     const apiKey = env.GEMINI_API_KEY;
@@ -29,68 +31,49 @@ function getGenAI(): GoogleGenerativeAI {
         );
     }
 
-    _genAI = new GoogleGenerativeAI(apiKey);
+    _genAI = new GoogleGenAI({ apiKey });
     return _genAI;
 }
 
-export function getModel(modelName?: string): GenerativeModel {
-    return getGenAI().getGenerativeModel({
-        model: modelName || MODELS[0],
-        generationConfig: {
-            responseMimeType: 'application/json',
-        },
-    });
+/** 429 and 503 mean the model is busy, so the next one in MODELS is worth a try. */
+export function isOverloaded(error: unknown): boolean {
+    if (error instanceof ApiError) return error.status === 429 || error.status === 503;
+    const message = error instanceof Error ? error.message : String(error);
+    return /\b(429|503)\b|overloaded|high demand/i.test(message);
+}
+
+async function withFallback(run: (model: string) => Promise<string | undefined>): Promise<string> {
+    for (let i = 0; i < MODELS.length; i++) {
+        try {
+            return ((await run(MODELS[i])) ?? '').trim();
+        } catch (error) {
+            if (isOverloaded(error) && i < MODELS.length - 1) {
+                console.log(`[Gemini] ${MODELS[i]} overloaded, falling back to ${MODELS[i + 1]}`);
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new Error('All Gemini models are currently unavailable. Please try again later.');
 }
 
 /**
  * Tries to generate content using fallback models if the primary is overloaded (503/429).
  */
-export async function generateWithFallback(prompt: string): Promise<string> {
-    for (let i = 0; i < MODELS.length; i++) {
-        try {
-            const model = getModel(MODELS[i]);
-            const result = await model.generateContent(prompt);
-            return result.response.text().trim();
-        } catch (error: any) {
-            const status = error?.status || error?.httpStatusCode;
-            const isOverloaded = status === 503 || status === 429 ||
-                error.message?.includes('503') || error.message?.includes('429') ||
-                error.message?.includes('overloaded') || error.message?.includes('high demand');
-
-            if (isOverloaded && i < MODELS.length - 1) {
-                console.log(`[Gemini] ${MODELS[i]} overloaded, falling back to ${MODELS[i + 1]}`);
-                continue;
-            }
-            throw error;
-        }
-    }
-    throw new Error('All Gemini models are currently unavailable. Please try again later.');
+export function generateWithFallback(prompt: string): Promise<string> {
+    return withFallback(async (model) => {
+        const response = await getGenAI().models.generateContent({ model, contents: prompt, config: JSON_CONFIG });
+        return response.text;
+    });
 }
 
 /**
- * Tries to run a chat session with fallback models.
+ * Tries to run a chat session with fallback models. The history must start with a user turn.
  */
-export async function chatWithFallback(
-    systemPrompt: string,
-    history: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }>,
-    lastMessage: string
-): Promise<string> {
-    for (let i = 0; i < MODELS.length; i++) {
-        try {
-            const model = getModel(MODELS[i]);
-            const chatSession = model.startChat({ history });
-            const result = await chatSession.sendMessage(lastMessage);
-            return result.response.text().trim();
-        } catch (error: any) {
-            const isOverloaded = error.message?.includes('503') || error.message?.includes('429') ||
-                error.message?.includes('overloaded') || error.message?.includes('high demand');
-
-            if (isOverloaded && i < MODELS.length - 1) {
-                console.log(`[Gemini] ${MODELS[i]} overloaded, falling back to ${MODELS[i + 1]}`);
-                continue;
-            }
-            throw error;
-        }
-    }
-    throw new Error('All Gemini models are currently unavailable. Please try again later.');
+export function chatWithFallback(history: Content[], lastMessage: string): Promise<string> {
+    return withFallback(async (model) => {
+        const chat = getGenAI().chats.create({ model, history, config: JSON_CONFIG });
+        const response = await chat.sendMessage({ message: lastMessage });
+        return response.text;
+    });
 }
