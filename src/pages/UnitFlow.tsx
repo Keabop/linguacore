@@ -18,8 +18,8 @@ import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
 import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap } from '../data';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
-import Particles from '../components/reactbits/Particles';
-import SplitText from '../components/reactbits/SplitText';
+import Plant from '../components/garden/Plant';
+import { useGardenPlant } from '../hooks/useGardenPlant';
 import { toast } from '../lib/toast';
 import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
@@ -73,60 +73,33 @@ const slideVariants = {
 /* ===== Celebration ===== */
 
 function CelebrationCard({ onBack }: { onBack: () => void }) {
+    const { species } = useGardenPlant();
+
+    // Unit complete is one of the three achievement moments: the unit's plant grows
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="relative flex flex-col items-center justify-center py-16 overflow-hidden"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center justify-center py-16"
         >
-            {/* Particles */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                <Particles
-                    particleColors={['#6366F1', '#22C55E', '#F59E0B', '#FCD34D']}
-                    particleCount={50}
-                    speed={0.3}
-                    particleBaseSize={60}
-                    alphaParticles={true}
-                    className="w-full h-full"
-                />
-            </div>
+            <div role="status" className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-10 w-full max-w-sm text-center space-y-6 shadow-[var(--shadow-float)]">
+                <div className="garden mx-auto" style={{ width: '9rem', height: '9rem' }}>
+                    <Plant species={species} stage="grown" height={46} grow delay={200} />
+                </div>
 
-            <div className="relative z-10 bg-[var(--color-card)] rounded-[2rem] p-10 w-full max-w-sm text-center space-y-8 shadow-[var(--shadow-float)]">
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: [0, 1.3, 1] }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.2 }}
-                >
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-accent-gold/20 blur-2xl rounded-full animate-pulse" />
-                        <Trophy className="w-16 h-16 text-amber-400 mx-auto relative z-10" />
-                    </div>
-                </motion.div>
-
-                <div className="space-y-3">
-                    <SplitText
-                        text="¡Unidad completada!"
-                        className="text-3xl font-black tracking-tight text-white"
-                        delay={20}
-                        splitType="chars"
-                        animationFrom={{ opacity: 0, transform: 'translate3d(0,15px,0)' }}
-                        animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-                        tag="h2"
-                    />
+                <div className="space-y-2">
+                    <h2 className="text-3xl font-extrabold tracking-tight text-[var(--color-on-surface)]">
+                        ¡Unidad completada!
+                    </h2>
                     <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
-                        Has completado todos los pasos de esta unidad. Sigue avanzando en tu ruta de aprendizaje.
+                        Tu planta creció. Sigue avanzando en tu ruta para llenar el jardín de este nivel.
                     </p>
                 </div>
 
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}>
-                    <button
-                        onClick={onBack}
-                        className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
-                    >
-                        Volver a la ruta
-                    </button>
-                </motion.div>
+                <button onClick={onBack} className="btn-primary w-full py-4 text-base">
+                    Volver a la ruta
+                </button>
             </div>
         </motion.div>
     );
@@ -386,7 +359,7 @@ export default function UnitFlow() {
                                     className={`
                                         flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300
                                         ${isCompleted
-                                            ? 'bg-green-500/20 text-green-400 shadow-[0_2px_8px_rgba(34,197,94,0.15)]'
+                                            ? 'bg-[var(--color-success)]/20 text-[var(--color-success)] shadow-[0_2px_8px_color-mix(in_oklch,var(--color-success)_15%,transparent)]'
                                             : isCurrent
                                                 ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] shadow-[var(--shadow-card)]'
                                                 : 'bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)]'
@@ -406,7 +379,7 @@ export default function UnitFlow() {
                                     <div
                                         className={`
                                             h-[2px] w-5 sm:w-7 md:w-9 rounded-full transition-colors duration-300
-                                            ${isCompleted ? 'bg-green-500/40' : 'bg-[var(--color-surface-container-highest)]'}
+                                            ${isCompleted ? 'bg-[var(--color-success)]/40' : 'bg-[var(--color-surface-container-highest)]'}
                                         `}
                                     />
                                 )}
@@ -429,7 +402,7 @@ export default function UnitFlow() {
                                     className={`
                                         text-[10px] font-semibold w-9 text-center leading-tight
                                         ${isCompleted
-                                            ? 'text-green-400'
+                                            ? 'text-[var(--color-success)]'
                                             : isCurrent
                                                 ? 'text-[var(--color-primary)]'
                                                 : 'text-[var(--color-on-surface-muted)]'
@@ -518,7 +491,7 @@ function StoryStep({
                 description="Lee una historia para practicar la gramatica de esta unidad."
             />
 
-            <div className="bg-[var(--color-card)] rounded-[2rem] p-8 space-y-7 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 space-y-7 shadow-[var(--shadow-card)]">
                 {unitStory ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -621,7 +594,7 @@ function VocabStep({
                 }
             />
 
-            <div className="bg-[var(--color-card)] rounded-[2rem] p-7 space-y-6 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 space-y-6 shadow-[var(--shadow-card)]">
                 {vocabItems.length > 0 ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -734,9 +707,9 @@ function CheckpointStep({
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center py-10"
                 >
-                    <div className="bg-[var(--color-card)] rounded-[2rem] p-10 w-full max-w-sm text-center space-y-6 shadow-[var(--shadow-float)]">
+                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-10 w-full max-w-sm text-center space-y-6 shadow-[var(--shadow-float)]">
                         <div className="space-y-3">
-                            <p className="text-5xl font-black tracking-tight text-red-400">
+                            <p className="text-5xl font-black tracking-tight text-[var(--color-error)]">
                                 {lastScore}%
                             </p>
                             <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -776,7 +749,7 @@ function EmptyStepCard({
     return (
         <div className="space-y-6">
             <StepHeader icon={Icon} label={title} description={description} />
-            <div className="bg-[var(--color-card)] rounded-[2rem] p-8 text-center space-y-6 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 text-center space-y-6 shadow-[var(--shadow-card)]">
                 <div className="w-16 h-16 rounded-2xl bg-[var(--color-surface-container)] flex items-center justify-center mx-auto">
                     <Icon className="w-8 h-8 text-[var(--color-on-surface-muted)]" />
                 </div>

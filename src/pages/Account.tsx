@@ -574,7 +574,7 @@ export default function Account() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.12 }}
-                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
+                    className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
@@ -604,7 +604,7 @@ export default function Account() {
                             </div>
                             <button
                                 onClick={handleExportFSRS}
-                                className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-primary)] hover:text-white text-[var(--color-on-surface)] text-sm font-bold py-3.5 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                                className="w-full flex items-center justify-center gap-2 bg-[var(--color-surface-container-highest)] hover:bg-[var(--color-primary)] hover:text-[var(--color-on-primary)] text-[var(--color-on-surface)] text-sm font-bold py-3.5 px-4 rounded-xl shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
                             >
                                 <Download className="w-4 h-4" />
                                 Exportar en CSV
@@ -749,7 +749,7 @@ export default function Account() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.15 }}
-                        className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)]"
+                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]"
                     >
                         <div className="text-sm font-bold text-[var(--color-on-surface-muted)] mb-4">{t('progress.currentLevel')}</div>
                         <div className="flex items-center gap-4">
@@ -775,7 +775,7 @@ export default function Account() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.16 }}
-                    className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
+                    className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
@@ -868,10 +868,10 @@ export default function Account() {
 
                                         <div className="flex items-center justify-between pt-2 border-t border-dashed border-[var(--color-surface-container-high)]">
                                             <div className="text-[11px] text-[var(--color-on-surface-muted)]">
-                                                Puntaje Promedio: <span className="font-black text-amber-500 text-sm ml-0.5">{sim.score}%</span>
+                                                Puntaje Promedio: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.score}%</span>
                                             </div>
                                             {sim.writing_feedback && (
-                                                <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-500/20">
+                                                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-md flex items-center gap-1 border border-[var(--color-success)]/20">
                                                     ✔ Feedback IA
                                                 </span>
                                             )}
@@ -889,7 +889,7 @@ export default function Account() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)]"
+                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]"
                     >
                         <div className="text-sm font-bold text-[var(--color-on-surface-muted)] mb-4">{t('stats.activity')}</div>
                         <div className="grid grid-cols-7 gap-2">
@@ -902,7 +902,7 @@ export default function Account() {
                                         style={{
                                             backgroundColor: day.count > 0
                                                 ? `rgba(34, 197, 94, ${0.15 + intensity * 0.65})`
-                                                : 'rgba(255, 255, 255, 0.03)',
+                                                : 'color-mix(in_oklch,var(--color-on-surface)_3%,transparent)',
                                         }}
                                         title={`${day.date}: ${day.count} ${t('stats.activities')}`}
                                     />
@@ -916,7 +916,7 @@ export default function Account() {
                                     <div
                                         key={i}
                                         className="w-2.5 h-2.5 rounded-md"
-                                        style={{ backgroundColor: op > 0 ? `rgba(34, 197, 94, ${0.15 + op * 0.65})` : 'rgba(255,255,255,0.03)' }}
+                                        style={{ backgroundColor: op > 0 ? `rgba(34, 197, 94, ${0.15 + op * 0.65})` : 'color-mix(in_oklch,var(--color-on-surface)_3%,transparent)' }}
                                     />
                                 ))}
                             </div>
@@ -928,7 +928,7 @@ export default function Account() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-[var(--color-surface-container)] rounded-[2rem] p-6 shadow-[var(--shadow-card)]"
+                        className="bg-[var(--color-surface-container)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]"
                     >
                         <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
                             <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center shadow-[var(--shadow-card)]">
@@ -951,7 +951,7 @@ export default function Account() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.25 }}
-                        className="bg-[var(--color-card)] rounded-[2rem] p-6 shadow-[var(--shadow-card)]"
+                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]"
                     >
                         <div className="text-sm font-bold text-[var(--color-on-surface-muted)] mb-4">{t('stats.vocabulary')}</div>
                         <div className="space-y-4">
@@ -985,7 +985,7 @@ function StatCard({ icon, value, label, color }: {
     icon: React.ReactNode; value: number | string; label: string; color: string;
 }) {
     return (
-        <div className="bg-[var(--color-card)] rounded-[2rem] p-5 text-center shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+        <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 text-center shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
             <div className={`flex justify-center ${color}`}>{icon}</div>
             <p className={`text-2xl font-black tracking-tight mt-1 ${color}`}>{value}</p>
             <p className="text-[10px] text-[var(--color-on-surface-muted)] mt-0.5">{label}</p>

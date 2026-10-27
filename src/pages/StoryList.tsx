@@ -64,10 +64,10 @@ export const storyDetails: Record<string, { spanishTitle: string; description: s
 };
 
 export const CEFR_COLORS: Record<string, string> = {
-    A1: '#60A5FA',
-    A2: '#4ADE80',
-    B1: '#FBBF24',
-    B2: '#F87171',
+    A1: 'var(--color-accent-blue)',
+    A2: 'var(--color-success)',
+    B1: 'var(--color-tertiary)',
+    B2: 'var(--color-error)',
 };
 
 const normalizeText = (text: string) => 
@@ -291,7 +291,7 @@ export default function StoryList() {
                             const isUnlocked = user.unlockedLevels.includes(story.level);
                             const isRead = readStoryIds.has(story.id);
                             const storyProgress = isRead ? 100 : 0;
-                            const levelColor = CEFR_COLORS[story.level] || '#702AE1';
+                            const levelColor = CEFR_COLORS[story.level] || 'var(--color-primary)';
 
                             const details = storyDetails[story.id] || { 
                                 spanishTitle: 'Historia Personalizada', 
@@ -311,8 +311,8 @@ export default function StoryList() {
                                     onClick={() => isUnlocked && navigate(`/learn/${story.id}`)}
                                 >
                                     <SpotlightCard
-                                        className={`rounded-[2rem] overflow-hidden flex flex-col h-full cursor-pointer relative bg-[var(--color-card)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] transition-all duration-300 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}
-                                        spotlightColor="rgba(112, 42, 225, 0.12)"
+                                        className={`rounded-[var(--radius-lg)] overflow-hidden flex flex-col h-full cursor-pointer relative bg-[var(--color-card)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] transition-all duration-300 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}
+                                        spotlightColor="color-mix(in_oklch,var(--color-primary)_12%,transparent)"
                                     >
                                         {/* 4px CEFR level color band at the top */}
                                         <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
@@ -325,7 +325,7 @@ export default function StoryList() {
                                                 </span>
                                             )}
                                             {isRead && (
-                                                <span className="text-[9px] bg-[var(--color-success)] text-white px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
+                                                <span className="text-[9px] bg-[var(--color-success)] text-[var(--color-on-primary)] px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
                                                     <Check className="w-2.5 h-2.5" /> {t('storyList.read')}
                                                 </span>
                                             )}
@@ -405,7 +405,7 @@ export default function StoryList() {
                         })}
                     </motion.div>
                 ) : (
-                    <div className="text-center py-20 space-y-3 bg-[var(--color-surface-container-low)] rounded-[2rem] p-8 shadow-sm">
+                    <div className="text-center py-20 space-y-3 bg-[var(--color-surface-container-low)] rounded-[var(--radius-lg)] p-8 shadow-sm">
                         <Compass className="h-12 w-12 text-[var(--color-outline)] mx-auto animate-pulse" />
                         <p className="text-sm font-bold text-[var(--color-on-surface)]">No se encontraron historias</p>
                         <p className="text-xs text-[var(--color-on-surface-muted)]">Inténtalo buscando con otras palabras clave o niveles de filtro.</p>

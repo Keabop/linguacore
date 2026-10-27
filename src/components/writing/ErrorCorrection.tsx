@@ -41,7 +41,7 @@ export default function ErrorCorrection({ instruction, errorText, targetGrammar,
             {targetGrammar.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
-                        <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full">
+                        <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">
                             {g}
                         </span>
                     ))}
@@ -71,7 +71,7 @@ export default function ErrorCorrection({ instruction, errorText, targetGrammar,
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim()}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar corrección
                 <ArrowRight className="w-4 h-4" />

@@ -99,20 +99,20 @@ function getToastStyles(type: 'success' | 'error' | 'warning' | 'info') {
     switch (type) {
         case 'success':
             return {
-                iconBg: 'bg-emerald-500/10',
-                iconColor: 'text-emerald-500',
+                iconBg: 'bg-[var(--color-success)]/10',
+                iconColor: 'text-[var(--color-success)]',
                 icon: CheckCircle2
             };
         case 'error':
             return {
-                iconBg: 'bg-rose-500/10',
-                iconColor: 'text-rose-500',
+                iconBg: 'bg-[var(--color-error)]/10',
+                iconColor: 'text-[var(--color-error)]',
                 icon: XCircle
             };
         case 'warning':
             return {
-                iconBg: 'bg-amber-500/10',
-                iconColor: 'text-amber-500',
+                iconBg: 'bg-[var(--color-tertiary)]/10',
+                iconColor: 'text-[var(--color-tertiary-ink)]',
                 icon: AlertTriangle
             };
         case 'info':

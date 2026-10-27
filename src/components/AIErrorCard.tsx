@@ -13,8 +13,8 @@ export default function AIErrorCard({ error, onRetry, disabled }: Props) {
     const { t } = useTranslation();
 
     return (
-        <div className="bg-red-500/8 rounded-[2rem] p-6 space-y-4 shadow-[var(--shadow-card)]">
-            <p className="text-sm text-red-400">{error}</p>
+        <div className="bg-[var(--color-error)]/8 rounded-[var(--radius-lg)] p-6 space-y-4 shadow-[var(--shadow-card)]">
+            <p className="text-sm text-[var(--color-error)]">{error}</p>
             <button
                 onClick={onRetry}
                 disabled={disabled || !isOnline}

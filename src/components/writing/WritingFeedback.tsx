@@ -36,13 +36,13 @@ const TYPE_LABELS: Record<string, string> = {
 
 const TYPE_COLORS: Record<string, string> = {
     grammar: 'text-accent-blue',
-    vocabulary: 'text-purple-400',
+    vocabulary: 'text-[var(--color-primary)]',
     spelling: 'text-accent-orange',
-    style: 'text-teal-400',
+    style: 'text-[var(--color-accent-blue)]',
 };
 
 function ScoreRing({ score }: { score: number }) {
-    const color = score >= 80 ? 'text-green-400' : score >= 60 ? 'text-accent-orange' : 'text-accent-red';
+    const color = score >= 80 ? 'text-[var(--color-success)]' : score >= 60 ? 'text-accent-orange' : 'text-accent-red';
     const circumference = 2 * Math.PI * 40;
     const offset = circumference - (score / 100) * circumference;
 
@@ -68,7 +68,7 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 function CategoryBar({ label, score, note }: { label: string; score: number; note: string }) {
-    const color = score >= 80 ? 'bg-green-500' : score >= 60 ? 'bg-accent-orange' : 'bg-accent-red';
+    const color = score >= 80 ? 'bg-[var(--color-success)]' : score >= 60 ? 'bg-accent-orange' : 'bg-accent-red';
     return (
         <div className="space-y-1.5">
             <div className="flex justify-between text-sm">
@@ -126,7 +126,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                                 <span className="text-[var(--color-on-surface-muted)] line-through">{c.original}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-success)] shrink-0" />
                                 <span className="text-white">{c.corrected}</span>
                             </div>
                             <p className="text-xs text-[var(--color-on-surface-muted)] italic pl-5">{c.explanation}</p>
@@ -154,7 +154,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="bg-green-500/8 border border-green-500/20 rounded-xl p-5">
+                        <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-5">
                             <p className="text-sm text-white leading-relaxed">{data.improvedVersion}</p>
                         </div>
                     </motion.div>
@@ -165,7 +165,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {onNext && (
                 <button
                     onClick={onNext}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     {nextLabel}
                 </button>

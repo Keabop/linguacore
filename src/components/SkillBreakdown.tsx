@@ -30,7 +30,7 @@ export default function SkillBreakdown({ unitId }: Props) {
                 <span className="text-[var(--color-on-surface-muted)]">Skills:</span>
                 <div className="flex-1 h-1.5 bg-[var(--color-surface-container)] rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-green-500 rounded-full transition-all"
+                        className="h-full bg-[var(--color-success)] rounded-full transition-all"
                         style={{ width: `${skills.length > 0 ? (masteredCount / skills.length) * 100 : 0}%` }}
                     />
                 </div>
@@ -47,15 +47,15 @@ export default function SkillBreakdown({ unitId }: Props) {
                     return (
                         <div key={skill.id} className="flex items-center gap-2 text-xs">
                             {isMastered ? (
-                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-success)] flex-shrink-0" />
                             ) : isDue ? (
-                                <AlertCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                                <AlertCircle className="w-3.5 h-3.5 text-[var(--color-tertiary-ink)] flex-shrink-0" />
                             ) : card ? (
                                 <Clock className="w-3.5 h-3.5 text-[var(--color-on-surface-muted)] flex-shrink-0" />
                             ) : (
                                 <span className="w-3.5 h-3.5 rounded-full bg-[var(--color-surface-container-highest)] flex-shrink-0" />
                             )}
-                            <span className={`${isDue ? 'text-amber-400' : isMastered ? 'text-green-400' : 'text-[var(--color-on-surface-muted)]'}`}>
+                            <span className={`${isDue ? 'text-[var(--color-tertiary-ink)]' : isMastered ? 'text-[var(--color-success)]' : 'text-[var(--color-on-surface-muted)]'}`}>
                                 {skill.name}
                             </span>
                         </div>

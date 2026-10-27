@@ -76,15 +76,15 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
 
                 <div className="grid grid-cols-2 gap-4">
                     {[
-                        { rating: Rating.Again, label: t('review.again', 'Again'), desc: t('review.againDesc', 'I forgot'), color: 'bg-red-500/10 border-red-500/30 text-red-400' },
-                        { rating: Rating.Hard, label: t('review.hard', 'Hard'), desc: t('review.hardDesc', 'Difficult'), color: 'bg-orange-500/10 border-orange-500/30 text-orange-400' },
-                        { rating: Rating.Good, label: t('review.good', 'Good'), desc: t('review.goodDesc', 'I knew it'), color: 'bg-green-500/10 border-green-500/30 text-green-400' },
-                        { rating: Rating.Easy, label: t('review.easy', 'Easy'), desc: t('review.easyDesc', 'Very easy'), color: 'bg-blue-500/10 border-blue-500/30 text-blue-400' },
+                        { rating: Rating.Again, label: t('review.again', 'Again'), desc: t('review.againDesc', 'I forgot'), color: 'bg-[var(--color-error)]/10 border-[var(--color-error)]/30 text-[var(--color-error)]' },
+                        { rating: Rating.Hard, label: t('review.hard', 'Hard'), desc: t('review.hardDesc', 'Difficult'), color: 'bg-[var(--color-tertiary)]/10 border-[var(--color-tertiary)]/30 text-[var(--color-tertiary-ink)]' },
+                        { rating: Rating.Good, label: t('review.good', 'Good'), desc: t('review.goodDesc', 'I knew it'), color: 'bg-[var(--color-success)]/10 border-[var(--color-success)]/30 text-[var(--color-success)]' },
+                        { rating: Rating.Easy, label: t('review.easy', 'Easy'), desc: t('review.easyDesc', 'Very easy'), color: 'bg-[var(--color-accent-blue)]/10 border-[var(--color-accent-blue)]/30 text-[var(--color-accent-blue)]' },
                     ].map(({ rating, label, desc, color }) => (
                         <button
                             key={rating}
                             onClick={() => onComplete(rating)}
-                            className={`border rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${color}`}
+                            className={`border rounded-xl p-4 text-center transition-all hover:-translate-y-px ${color}`}
                         >
                             <p className="font-bold text-sm">{label}</p>
                             <p className="text-xs opacity-70 mt-1">{desc}</p>
@@ -118,7 +118,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
 
                 <button
                     onClick={() => setShowTip(false)}
-                    className="w-full bg-[var(--color-primary)] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 >
                     {t('review.startExercises', 'Start Exercises')}
                     <ArrowRight className="w-4 h-4" />
@@ -166,8 +166,8 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
                                 const isOptionCorrect = option.trim().toLowerCase() === currentExercise.answer.trim().toLowerCase();
                                 let optionClass = 'border-[var(--color-outline-subtle)] hover:border-[var(--color-primary)]/50';
                                 if (answered) {
-                                    if (isOptionCorrect) optionClass = 'border-green-500 bg-green-500/10';
-                                    else if (isSelected && !isOptionCorrect) optionClass = 'border-red-500 bg-red-500/10';
+                                    if (isOptionCorrect) optionClass = 'border-[var(--color-success)] bg-[var(--color-success)]/10';
+                                    else if (isSelected && !isOptionCorrect) optionClass = 'border-[var(--color-error)] bg-[var(--color-error)]/10';
                                     else optionClass = 'border-[var(--color-outline-subtle)] opacity-50';
                                 }
                                 return (
@@ -178,8 +178,8 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
                                         className={`w-full text-left border rounded-xl p-4 transition-all ${optionClass}`}
                                     >
                                         <span className="text-sm">{option}</span>
-                                        {answered && isOptionCorrect && <CheckCircle2 className="w-4 h-4 text-green-400 inline ml-2" />}
-                                        {answered && isSelected && !isOptionCorrect && <XCircle className="w-4 h-4 text-red-400 inline ml-2" />}
+                                        {answered && isOptionCorrect && <CheckCircle2 className="w-4 h-4 text-[var(--color-success)] inline ml-2" />}
+                                        {answered && isSelected && !isOptionCorrect && <XCircle className="w-4 h-4 text-[var(--color-error)] inline ml-2" />}
                                     </button>
                                 );
                             })}
@@ -211,7 +211,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
                             animate={{ opacity: 1, y: 0 }}
                             className="space-y-4"
                         >
-                            <div className={`rounded-xl p-4 text-sm ${isCorrect ? 'bg-green-500/10 text-green-300' : 'bg-red-500/10 text-red-300'}`}>
+                            <div className={`rounded-xl p-4 text-sm ${isCorrect ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' : 'bg-[var(--color-error)]/10 text-[var(--color-error)]'}`}>
                                 {isCorrect ? (
                                     <p className="font-semibold">{t('review.correct', 'Correct!')}</p>
                                 ) : (
@@ -222,7 +222,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
 
                             <button
                                 onClick={handleNext}
-                                className="w-full bg-[var(--color-primary)] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
+                                className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
                             >
                                 {isLastExercise ? t('review.finish', 'Finish') : t('review.next', 'Next')}
                             </button>

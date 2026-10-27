@@ -48,6 +48,7 @@
   --color-tertiary-light:       oklch(88% 0.1 85);
   --color-tertiary-container:   oklch(94% 0.06 85);
   --color-on-tertiary:          oklch(30% 0.06 70);
+  --color-tertiary-ink:         oklch(48% 0.11 65);   /* sun-coloured text on light surfaces */
 
   /* Outline */
   --color-outline:              oklch(80% 0.022 110);
@@ -99,6 +100,7 @@
   --color-warning-light: oklch(94% 0.06 85);
   --color-error: oklch(55% 0.19 27);
   --color-error-light: oklch(94% 0.03 27);
+  --color-on-error: oklch(98.5% 0.01 95);
   --color-accent-blue: oklch(58% 0.12 240);
 
   /* Motion */
@@ -145,6 +147,8 @@
   --color-warning-light:        oklch(30% 0.05 80);
   --color-error:                oklch(68% 0.17 27);
   --color-error-light:          oklch(30% 0.06 27);
+  --color-on-error:             oklch(18% 0.03 27);
+  --color-tertiary-ink:         oklch(84% 0.13 82);
   --color-accent-blue:          oklch(72% 0.11 240);
   --color-soil:                 oklch(28% 0.035 90);
   --color-seed:                 oklch(55% 0.07 65);
@@ -850,20 +854,9 @@ span[data-word].in-deck {
 }
 
 /* === FLASH ANIMATIONS === */
-@keyframes border-flash-green {
-  0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-success) 40%, transparent); }
-  50% { box-shadow: 0 0 0 4px color-mix(in oklch, var(--color-success) 20%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-success) 0%, transparent); }
-}
-
-@keyframes border-flash-red {
-  0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-error) 40%, transparent); }
-  50% { box-shadow: 0 0 0 4px color-mix(in oklch, var(--color-error) 20%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-error) 0%, transparent); }
-}
-
-.border-flash-correct { animation: border-flash-green 0.5s var(--ease-out); }
-.border-flash-incorrect { animation: border-flash-red 0.5s var(--ease-out); }
+/* Answer feedback: a correct answer pops (achievement moment), a wrong one nudges */
+.border-flash-correct { animation: celebrate-pop 380ms var(--ease-spring); }
+.border-flash-incorrect { animation: answer-nudge 300ms var(--ease-out); }
 
 /* Top score: highlighted with the sun, like a marker (no gradient text, no looping shimmer) */
 .gold-shimmer {

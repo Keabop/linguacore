@@ -21,7 +21,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
     return (
         <div className="space-y-6">
             <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-teal-400 text-sm font-semibold">
+                <div className="flex items-center gap-2 text-[var(--color-accent-blue)] text-sm font-semibold">
                     <FileText className="w-4 h-4" />
                     Completar párrafo
                 </div>
@@ -44,7 +44,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
             {targetGrammar.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
-                        <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full">
+                        <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">
                             {g}
                         </span>
                     ))}
@@ -68,7 +68,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim()}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />

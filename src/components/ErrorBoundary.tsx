@@ -74,7 +74,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                             <div className="flex gap-3 justify-center">
                                 <button
                                     onClick={this.handleGoHome}
-                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-medium hover:bg-[var(--color-primary)] transition-colors"
                                 >
                                     <Home className="w-4 h-4" />
                                     Ir al inicio
@@ -92,9 +92,9 @@ export default class ErrorBoundary extends Component<Props, State> {
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex items-center justify-center min-h-[60vh] px-4"
                 >
-                    <div className="bg-[var(--color-card)] border border-red-500/20 rounded-2xl p-8 max-w-md w-full text-center space-y-5">
-                        <div className="mx-auto w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
-                            <AlertTriangle className="w-7 h-7 text-red-400" />
+                    <div className="bg-[var(--color-card)] border border-[var(--color-error)]/20 rounded-2xl p-8 max-w-md w-full text-center space-y-5">
+                        <div className="mx-auto w-14 h-14 rounded-full bg-[var(--color-error)]/10 flex items-center justify-center">
+                            <AlertTriangle className="w-7 h-7 text-[var(--color-error)]" />
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-white mb-2">Algo salió mal</h2>
@@ -103,7 +103,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                             </p>
                         </div>
                         {import.meta.env.DEV && this.state.error && (
-                            <pre className="text-xs text-red-400/70 bg-red-500/5 rounded-lg p-3 overflow-auto max-h-32 text-left">
+                            <pre className="text-xs text-[var(--color-error)]/70 bg-[var(--color-error)]/5 rounded-lg p-3 overflow-auto max-h-32 text-left">
                                 {this.state.error.message}
                             </pre>
                         )}
@@ -117,7 +117,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                             </button>
                             <button
                                 onClick={this.handleGoHome}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-medium hover:bg-[var(--color-primary)] transition-colors"
                             >
                                 <Home className="w-4 h-4" />
                                 Ir al inicio
