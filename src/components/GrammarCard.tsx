@@ -144,7 +144,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                 transition={{ delay: 0.4 }}
                 onClick={handleUnderstood}
                 disabled={saving}
-                className="w-full bg-[var(--color-primary)] text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:brightness-90 disabled:opacity-50"
+                className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:brightness-90 disabled:opacity-50"
             >
                 {saving ? t('common.loading') : t('grammar.understood')}
             </motion.button>
@@ -185,7 +185,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     font-style: italic;
                 }
                 .grammar-explanation code {
-                    background: rgba(255, 255, 255, 0.06);
+                    background: color-mix(in oklch, var(--color-on-surface) 6%, transparent);
                     padding: 2px 6px;
                     border-radius: 4px;
                     font-size: 0.875rem;
@@ -197,23 +197,23 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     font-size: 0.875rem;
                 }
                 .grammar-explanation thead th {
-                    background: rgba(255, 255, 255, 0.06);
+                    background: color-mix(in oklch, var(--color-on-surface) 6%, transparent);
                     color: var(--color-text);
                     font-weight: 700;
                     padding: 10px 14px;
                     text-align: left;
-                    border-bottom: 1px solid var(--color-border-light);
+                    border-bottom: 1px solid var(--color-outline-variant);
                 }
                 .grammar-explanation tbody td {
                     padding: 8px 14px;
-                    border-bottom: 1px solid var(--color-border);
+                    border-bottom: 1px solid var(--color-outline-subtle);
                     color: var(--color-text-secondary);
                 }
                 .grammar-explanation tbody tr:last-child td {
                     border-bottom: none;
                 }
                 .grammar-explanation tbody tr:hover td {
-                    background: rgba(255, 255, 255, 0.03);
+                    background: color-mix(in oklch, var(--color-on-surface) 3%, transparent);
                 }
                 .grammar-explanation a {
                     color: var(--color-accent-blue);

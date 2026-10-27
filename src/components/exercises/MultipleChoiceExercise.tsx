@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Check, X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
+import PlayOnMount from '../icons/PlayOnMount';
+import { CheckIcon } from '../icons';
 
 interface MultipleChoiceExerciseProps {
     exercise: GrammarExercise;
@@ -54,10 +56,10 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
         const isCorrectOption = option.trim().toLowerCase() === exercise.correctAnswer.trim().toLowerCase();
 
         if (isCorrectOption) {
-            return <Check className="w-5 h-5 text-emerald-400 shrink-0" />;
+            return <Check className="w-5 h-5 text-[var(--color-success)] shrink-0" />;
         }
         if (isSelected && !isCorrectOption) {
-            return <X className="w-5 h-5 text-red-400 shrink-0" />;
+            return <X className="w-5 h-5 text-[var(--color-error)] shrink-0" />;
         }
         return null;
     };
@@ -68,7 +70,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-[var(--color-card)] rounded-[2rem] p-6 text-center shadow-[var(--shadow-card)]"
+                className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 text-center shadow-[var(--shadow-card)]"
             >
                 <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
             </motion.div>
@@ -102,21 +104,21 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                 >
                     <div className="text-center">
                         {status === 'correct' ? (
-                            <p className="text-lg font-bold text-emerald-400 flex items-center justify-center gap-1.5">
-                                <Check className="w-5 h-5" /> {t('exercises.correct')}
+                            <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
+                                <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
                             </p>
                         ) : (
-                            <p className="text-lg font-bold text-red-400 flex items-center justify-center gap-1.5">
+                            <p className="text-lg font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5">
                                 <X className="w-5 h-5" /> {t('exercises.incorrect')}
                             </p>
                         )}
                     </div>
-                    <div className="bg-[var(--color-card)] rounded-[2rem] p-5 shadow-[var(--shadow-card)]">
+                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)]">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(status === 'correct')}
-                        className="w-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] hover:scale-[1.02] text-white py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
+                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

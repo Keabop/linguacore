@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, MicOff, Loader2, RotateCcw, MessageCircle } from 'lucide-react';
+import { MicOff, Loader2, RotateCcw, MessageCircle } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
 import { evaluateWriting } from '../../lib/ai';
 import type { CEFRLevel } from '../../lib/db';
+import { MicIcon } from '../icons';
 
 interface Props {
     instruction: string;
@@ -55,7 +56,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
     return (
         <div className="space-y-6">
             <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-purple-400 text-sm font-semibold">
+                <div className="flex items-center gap-2 text-[var(--color-primary)] text-sm font-semibold">
                     <MessageCircle className="w-4 h-4" />
                     Respuesta oral
                 </div>
@@ -65,7 +66,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
             {targetGrammar.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
-                        <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full">{g}</span>
+                        <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">{g}</span>
                     ))}
                 </div>
             )}
@@ -74,7 +75,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     className="bg-[var(--color-card)] border border-primary/20 rounded-xl p-4 min-h-[80px]">
                     <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">Tu respuesta:</p>
-                    <p className="text-sm text-white leading-relaxed">
+                    <p className="text-sm text-[var(--color-on-surface)] leading-relaxed">
                         {transcript}
                         {interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic"> {interimTranscript}</span>}
                         {isListening && !transcript && !interimTranscript && <span className="text-[var(--color-on-surface-muted)] italic">Escuchando...</span>}
@@ -91,11 +92,11 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
 
             {phase === 'result' && (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-3">
-                    <p className={`text-4xl font-extrabold ${score >= 80 ? 'text-green-400' : score >= 60 ? 'text-accent-orange' : 'text-accent-red'}`}>{score}%</p>
+                    <p className={`text-4xl font-extrabold ${score >= 80 ? 'text-[var(--color-success)]' : score >= 60 ? 'text-accent-orange' : 'text-accent-red'}`}>{score}%</p>
                     <p className="text-sm text-[var(--color-on-surface-muted)]">{feedbackText}</p>
                     <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-left">
                         <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">Tu respuesta transcrita:</p>
-                        <p className="text-sm text-white italic">{'"'}{transcript}{'"'}</p>
+                        <p className="text-sm text-[var(--color-on-surface)] italic">{'"'}{transcript}{'"'}</p>
                     </div>
                 </motion.div>
             )}
@@ -108,13 +109,13 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                 {phase === 'recording' && (
                     <>
                         <button onClick={handleToggleRecord}
-                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-white animate-pulse' : 'bg-[var(--color-primary)] text-white hover:brightness-90'}`}>
-                            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-[var(--color-on-primary)] animate-pulse' : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90'}`}>
+                            {isListening ? <MicOff className="w-4 h-4" /> : <MicIcon size={16} aria-hidden="true" />}
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
                         {transcript && !isListening && (
                             <button onClick={handleEvaluate}
-                                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                                className="flex-1 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                                 Evaluar
                             </button>
                         )}
@@ -123,11 +124,11 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                 {phase === 'result' && (
                     <>
                         <button onClick={handleRetry}
-                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                            className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(score)}
-                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
                             Continuar
                         </button>
                     </>

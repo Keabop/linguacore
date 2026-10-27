@@ -16,7 +16,6 @@
     "welcome": "Welcome to Voxie!",
     "dueToday": "For review today",
     "cards": "cards",
-    "pendingReview": "pending review",
     "noCards": "You have no pending cards!",
     "recommended": "Recommended stories",
     "viewAll": "View all",
@@ -25,22 +24,38 @@
     "yourProgress": "Your progress",
     "wordsLearned": "Words learned",
     "storiesRead": "Stories read",
-    "totalCards": "Cards in deck",
     "streak": "Streak",
     "days": "days",
-    "continueLearning": "Continue learning",
     "unitProgress": "Unit {{current}} of {{total}} — {{level}}",
     "allCompleted": "You have completed all units of this level!",
     "goToPath": "Go to path",
     "continue": "Continue",
-    "grammarSkills": "Grammar skills",
     "grammarDue": "grammar due",
     "myErrors": "My errors",
     "errorsDue": "errors due",
     "greetingDueCards": "You have {{count}} cards to review",
     "greetingStreak": "You are on a {{count}} day streak",
     "greetingInactive": "It has been {{count}} days since your last session",
-    "greetingAllDone": "Everything caught up — nothing pending"
+    "greetingAllDone": "Everything caught up — nothing pending",
+    "hello": "Hi, {{name}}!",
+    "today": "Today",
+    "waterGarden": "Water your garden",
+    "nextUnit": "Next unit",
+    "reviewDue": "{{count}} cards to review",
+    "reviewDue_one": "{{count}} card to review",
+    "skillsDue": "{{count}} grammar skills",
+    "allCaughtUp": "All caught up",
+    "allCaughtUpDesc": "Nothing to review right now. Come back tomorrow or keep going with your unit.",
+    "deckSize": "{{count}} cards in your deck",
+    "review": "Review",
+    "errorLab": "Error lab",
+    "errorsPending": "{{count}} mistakes to fix",
+    "errorsPending_one": "{{count}} mistake to fix",
+    "errorsClear": "No mistakes pending",
+    "errorsClearDesc": "When the tutor spots a mistake in your writing, it shows up here so you can practise it.",
+    "enterLab": "Open the lab",
+    "streakDays": "days in a row",
+    "streakStart": "Practise today to start your streak."
   },
   "reader": {
     "tapToTranslate": "Tap a word to see its translation",
@@ -129,7 +144,6 @@
     "errorsDue": "errors due"
   },
   "progress": {
-    "title": "Your progress",
     "wordsLearned": "Words learned",
     "currentLevel": "Current level",
     "nextLevel": "Next level",
@@ -138,15 +152,15 @@
     "retention": "Retention",
     "storiesCompleted": "Stories completed",
     "criteria": "Criteria for {{level}}",
-    "unitsCompleted": "Units completed",
-    "nextUnit": "Next unit"
+    "unitsCompleted": "Units completed"
   },
   "levelUp": {
     "congratulations": "Congratulations!",
     "unlocked": "You unlocked level {{level}}!",
     "message": "You have demonstrated sufficient mastery to advance. New stories and vocabulary await you.",
     "continue": "Continue!",
-    "newStoriesAvailable": "new stories available"
+    "newStoriesAvailable": "new stories available",
+    "stageReached": "Your garden reached {{stage}}"
   },
   "stats": {
     "title": "Statistics",
@@ -191,7 +205,8 @@
     "offlineDisabled": "Not available offline",
     "dataNotFound": "Data not found",
     "dataCorrupt": "Browser data may have been cleared.",
-    "resetData": "Reset data"
+    "resetData": "Reset data",
+    "send": "Send"
   },
   "chat": {
     "title": "Conversation Tutor",
@@ -291,5 +306,31 @@
     "language": "Language",
     "planAndSubscription": "Plan and subscription",
     "logout": "Log out"
+  },
+  "garden": {
+    "stage": {
+      "A1": "Seed",
+      "A2": "Sprout",
+      "B1": "Leaf",
+      "B2": "Bloom"
+    },
+    "species": {
+      "girasol": "Sunflower",
+      "tulipan": "Tulip",
+      "margarita": "Daisy",
+      "cactus": "Cactus",
+      "rosa": "Rose",
+      "lavanda": "Lavender",
+      "bonsai": "Bonsai",
+      "orquidea": "Orchid"
+    },
+    "pickerTitle": "Your plant",
+    "pickerHint": "This is how every unit you finish grows in your garden.",
+    "proOnly": "Pro",
+    "proLocked": "Available with Pro",
+    "seeplans": "See plans",
+    "saveError": "Your plant couldn't be saved. Try again.",
+    "unitsLabel": "{{done}} of {{total}} units complete",
+    "streakLabel": "{{count}}-day streak"
   }
 }

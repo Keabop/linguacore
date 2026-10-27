@@ -15,7 +15,6 @@ import { UsageBadge } from '../components/UsageBadge';
 import { Lock, Check, Clock, Sparkles, Loader2, X, Search, Compass, Eye } from 'lucide-react';
 import { StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
-import SpotlightCard from '../components/reactbits/SpotlightCard';
 
 export const storyDetails: Record<string, { spanishTitle: string; description: string }> = {
     'a1-001': { spanishTitle: 'Mi Rutina Diaria', description: 'Una mirada sencilla a las actividades de la mañana.' },
@@ -64,10 +63,10 @@ export const storyDetails: Record<string, { spanishTitle: string; description: s
 };
 
 export const CEFR_COLORS: Record<string, string> = {
-    A1: '#60A5FA',
-    A2: '#4ADE80',
-    B1: '#FBBF24',
-    B2: '#F87171',
+    A1: 'var(--color-level-a1)',
+    A2: 'var(--color-level-a2)',
+    B1: 'var(--color-level-b1)',
+    B2: 'var(--color-level-b2)',
 };
 
 const normalizeText = (text: string) => 
@@ -190,8 +189,8 @@ export default function StoryList() {
                         <div className="widget space-y-5">
                             <div className="flex items-center justify-between">
                                 <h3 className="font-black tracking-tight flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-sm">
-                                        <Sparkles className="w-4 h-4 text-white" />
+                                    <div className="w-8 h-8 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-sm">
+                                        <Sparkles className="w-4 h-4 text-[var(--color-on-primary)]" />
                                     </div>
                                     {t('storyList.aiTitle')}
                                 </h3>
@@ -263,7 +262,7 @@ export default function StoryList() {
                                     onClick={() => setSelectedLevel(lvl)}
                                     style={isActive ? { 
                                         backgroundColor: pillColor, 
-                                        color: '#fff', 
+                                        color: 'var(--color-level-ink)', 
                                         boxShadow: `0 0 0 2px var(--color-background), 0 0 0 4px ${lvl === 'Todos' ? 'var(--color-primary)' : pillColor}` 
                                     } : {}}
                                     className={`px-4 py-2 rounded-full text-xs font-bold tracking-tight transition-all duration-200 cursor-pointer ${
@@ -291,7 +290,7 @@ export default function StoryList() {
                             const isUnlocked = user.unlockedLevels.includes(story.level);
                             const isRead = readStoryIds.has(story.id);
                             const storyProgress = isRead ? 100 : 0;
-                            const levelColor = CEFR_COLORS[story.level] || '#702AE1';
+                            const levelColor = CEFR_COLORS[story.level] || 'var(--color-primary)';
 
                             const details = storyDetails[story.id] || { 
                                 spanishTitle: 'Historia Personalizada', 
@@ -307,12 +306,11 @@ export default function StoryList() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
                                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                    whileHover={{ y: -6 }}
+                                    whileHover={{ y: -2 }}
                                     onClick={() => isUnlocked && navigate(`/learn/${story.id}`)}
                                 >
-                                    <SpotlightCard
-                                        className={`rounded-[2rem] overflow-hidden flex flex-col h-full cursor-pointer relative bg-[var(--color-card)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] transition-all duration-300 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}
-                                        spotlightColor="rgba(112, 42, 225, 0.12)"
+                                    <div
+                                        className={`rounded-[var(--radius-lg)] overflow-hidden flex flex-col h-full cursor-pointer relative bg-[var(--color-card)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] transition-all duration-300 ${!isUnlocked ? 'opacity-40 pointer-events-none' : ''}`}
                                     >
                                         {/* 4px CEFR level color band at the top */}
                                         <div style={{ backgroundColor: levelColor }} className="h-1 w-full shrink-0" />
@@ -320,12 +318,12 @@ export default function StoryList() {
                                         {/* Floating AI / Read Badges */}
                                         <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                                             {story.id.startsWith('ai-') && (
-                                                <span className="text-[9px] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-white px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
+                                                <span className="text-[9px] bg-[var(--color-primary)] text-[var(--color-on-primary)] px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
                                                     <Sparkles className="w-2.5 h-2.5" /> AI
                                                 </span>
                                             )}
                                             {isRead && (
-                                                <span className="text-[9px] bg-[var(--color-success)] text-white px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
+                                                <span className="text-[9px] bg-[var(--color-success)] text-[var(--color-on-primary)] px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-0.5">
                                                     <Check className="w-2.5 h-2.5" /> {t('storyList.read')}
                                                 </span>
                                             )}
@@ -335,7 +333,7 @@ export default function StoryList() {
                                             {/* Level Badge and Word Count */}
                                             <div className="flex justify-between items-center text-xs font-mono text-[var(--color-on-surface-muted)]">
                                                 <span 
-                                                    style={{ color: levelColor, backgroundColor: `${levelColor}15` }} 
+                                                    style={{ color: 'var(--color-level-ink)', backgroundColor: levelColor }} 
                                                     className="px-3.5 py-1.5 text-xs font-extrabold rounded-full font-display"
                                                 >
                                                     Nivel {story.level}
@@ -399,14 +397,14 @@ export default function StoryList() {
                                                 {storyProgress === 100 ? 'Releer historia' : storyProgress > 0 ? 'Continuar leyendo' : 'Empezar lectura'}
                                             </div>
                                         </div>
-                                    </SpotlightCard>
+                                    </div>
                                 </motion.div>
                             );
                         })}
                     </motion.div>
                 ) : (
-                    <div className="text-center py-20 space-y-3 bg-[var(--color-surface-container-low)] rounded-[2rem] p-8 shadow-sm">
-                        <Compass className="h-12 w-12 text-[var(--color-outline)] mx-auto animate-pulse" />
+                    <div className="text-center py-20 space-y-3 bg-[var(--color-surface-container-low)] rounded-[var(--radius-lg)] p-8 shadow-sm">
+                        <Compass className="h-12 w-12 text-[var(--color-outline)] mx-auto" />
                         <p className="text-sm font-bold text-[var(--color-on-surface)]">No se encontraron historias</p>
                         <p className="text-xs text-[var(--color-on-surface-muted)]">Inténtalo buscando con otras palabras clave o niveles de filtro.</p>
                     </div>

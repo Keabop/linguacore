@@ -1,193 +1,163 @@
 @import "tailwindcss";
 
-/* Google Fonts fallback (imported in index.html) */
+/* Fonts are loaded in index.html */
 
 @theme {
   /* === TYPOGRAPHY === */
-  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
-  /* === THE FLUID SCHOLAR PALETTE (light mode default) === */
-  --color-primary:              #702AE1;
-  --color-primary-light:        #B28CFF;
-  --color-primary-container:    #C9A9FF;
-  --color-primary-gradient:     linear-gradient(135deg, #702AE1, #C9A9FF);
+  /* === JARDÍN PALETTE (light mode default) ===
+     Token names are kept from the previous system so components keep working;
+     only the values changed. */
+  --color-primary:              oklch(52% 0.14 152);   /* hoja: acción principal */
+  --color-primary-light:        oklch(66% 0.15 150);
+  --color-primary-container:    oklch(92% 0.05 150);
+  --color-primary-press:        oklch(38% 0.11 152);   /* «tecla» del botón principal */
 
-  /* Surface hierarchy — depth through background shifts, not borders */
-  --color-background:           #FEF3FF;
-  --color-surface:              #FEF3FF;
-  --color-surface-container-lowest: #FFFFFF;
-  --color-surface-container-low:    #FAECFF;
-  --color-surface-container:        #F5E2FF;
-  --color-surface-container-high:   #F1DAFF;
-  --color-surface-container-highest:#EDD3FF;
-  --color-card:                 #FFFFFF;
+  /* Surface hierarchy */
+  --color-background:           oklch(97.5% 0.014 95); /* papel crema */
+  --color-surface:              oklch(97.5% 0.014 95);
+  --color-surface-container-lowest: oklch(99.2% 0.006 95);
+  --color-surface-container-low:    oklch(96% 0.018 98);
+  --color-surface-container:        oklch(94.5% 0.022 100);
+  --color-surface-container-high:   oklch(92% 0.026 102);
+  --color-surface-container-highest:oklch(89.5% 0.03 105);
+  --color-card:                 oklch(99.2% 0.006 95);
+  --color-card-hover:           oklch(97% 0.012 98);
 
   /* Legacy aliases (keep existing refs working) */
-  --color-surface-high:         #F1DAFF;
-  --color-surface-highest:      #EDD3FF;
+  --color-surface-high:         oklch(92% 0.026 102);
+  --color-surface-highest:      oklch(89.5% 0.03 105);
+  --color-text:                 oklch(23% 0.03 155);
+  --color-text-secondary:       oklch(42% 0.03 150);
 
   /* Text */
-  --color-on-surface:           #3A264B;
-  --color-on-surface-muted:     #69537B;
-  --color-on-surface-variant:   #8B6FA0;
-  --color-on-primary:           #FFFFFF;
+  --color-on-surface:           oklch(23% 0.03 155);   /* bosque */
+  --color-on-surface-muted:     oklch(42% 0.03 150);
+  --color-on-surface-variant:   oklch(52% 0.025 145);
+  --color-on-primary:           oklch(98% 0.012 95);
 
-  /* Accent */
-  --color-tertiary:             #9E3657;
-  --color-tertiary-light:       #FF8EAC;
-  --color-tertiary-container:   #FFD9E3;
+  /* Sol: racha y logros */
+  --color-tertiary:             oklch(80% 0.15 75);
+  --color-tertiary-light:       oklch(88% 0.1 85);
+  --color-tertiary-container:   oklch(94% 0.06 85);
+  --color-on-tertiary:          oklch(30% 0.06 70);
+  --color-tertiary-ink:         oklch(48% 0.11 65);   /* sun-coloured text on light surfaces */
 
-  /* Outline — only for focus rings, never as visible borders */
-  --color-outline:              #BDA3D1;
-  --color-outline-subtle:       rgba(189, 163, 209, 0.2);
-  --color-outline-variant:      #D4BDE6;
+  /* Outline */
+  --color-outline:              oklch(80% 0.022 110);
+  --color-outline-subtle:       oklch(87% 0.02 110 / 0.5);
+  --color-outline-variant:      oklch(87% 0.02 110);
+  --color-focus:                oklch(55% 0.2 150);
 
-  /* Tinted shadows — purple-tinted, never neutral */
-  --shadow-card:    0 4px 24px rgba(112, 42, 225, 0.06);
-  --shadow-elevated: 0 8px 32px rgba(112, 42, 225, 0.08);
-  --shadow-float:   0 20px 40px rgba(112, 42, 225, 0.12);
+  /* Shadows: hairline + soft green-tinted drop */
+  --shadow-card:    0 1px 0 oklch(87% 0.02 110), 0 10px 28px -14px oklch(40% 0.08 150 / 0.35);
+  --shadow-elevated: 0 1px 0 oklch(87% 0.02 110), 0 16px 36px -16px oklch(40% 0.08 150 / 0.4);
+  --shadow-float:   0 24px 48px -18px oklch(30% 0.08 150 / 0.45);
 
-  /* Border radius — Fluid Scholar system */
+  /* Border radius */
   --radius-sm: 0.75rem;
   --radius-DEFAULT: 1rem;
   --radius-md: 1rem;
-  --radius-lg: 2rem;
-  --radius-xl: 3rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 2rem;
   --radius-full: 9999px;
+  --radius-leaf: 0 1.1rem 0 1.1rem;
 
-  /* CEFR level colors */
-  --color-level-a1: #60A5FA;
-  --color-level-a2: #4ADE80;
-  --color-level-b1: #FBBF24;
-  --color-level-b2: #F87171;
+  /* CEFR levels as growth stages */
+  --color-level-a1: oklch(74% 0.14 75);   /* Semilla */
+  --color-level-a2: oklch(80% 0.17 125);  /* Brote */
+  --color-level-b1: oklch(58% 0.15 150);  /* Hoja */
+  --color-level-b2: oklch(70% 0.15 350);  /* Flor */
+  --color-level-ink: oklch(22% 0.03 155);
 
-  /* Status colors */
-  --color-success: #22C55E;
-  --color-success-light: #4ADE80;
-  --color-warning: #FBBF24;
-  --color-warning-light: #FDE68A;
-  --color-error: #F87171;
-  --color-error-light: #FCA5A5;
+  /* Garden */
+  --color-a2-deep: oklch(66% 0.17 128);
+  --color-soil: oklch(86% 0.04 80);
+  --color-seed: oklch(62% 0.07 65);
+  --color-sun-core: oklch(42% 0.07 55);
+  --color-tulip: oklch(63% 0.19 18);
+  --color-daisy: oklch(99% 0.004 95);
+  --color-daisy-line: oklch(82% 0.02 100);
+  --color-cactus: oklch(56% 0.1 165);
+  --color-rose: oklch(58% 0.18 15);
+  --color-rose-light: oklch(74% 0.13 12);
+  --color-lavender: oklch(64% 0.13 300);
+  --color-bark: oklch(45% 0.06 60);
+  --color-orchid: oklch(93% 0.04 340);
+  --color-orchid-lip: oklch(55% 0.17 340);
+
+  /* Status colors: success is the leaf green, warning is the sun */
+  --color-success: oklch(52% 0.14 152);
+  --color-success-light: oklch(92% 0.05 150);
+  --color-warning: oklch(80% 0.15 75);
+  --color-warning-light: oklch(94% 0.06 85);
+  --color-error: oklch(55% 0.19 27);
+  --color-error-light: oklch(94% 0.03 27);
+  --color-on-error: oklch(98.5% 0.01 95);
+  --color-accent-blue: oklch(58% 0.12 240);
+  /* Older accent names used across components; they now point at Jardín roles */
+  --color-accent-red: var(--color-error);
+  --color-accent-orange: var(--color-tertiary-ink);
+  --color-accent-amber: var(--color-tertiary-ink);
+  --color-accent-gold: var(--color-tertiary-ink);
+  --color-accent-purple: var(--color-primary);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* only for the three achievement moments */
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
 }
 
-/* === DARK MODE === */
+/* === DARK MODE: jardín de noche === */
 .dark {
-  --color-primary:              #A67AFF;
-  --color-primary-light:        #C4A8FF;
-  --color-primary-container:    #4A1A8A;
-  --color-background:           #140220;
-  --color-surface:              #140220;
-  --color-surface-container-lowest: #1E0A35;
-  --color-surface-container-low:    #1E0A35;
-  --color-surface-container:        #251240;
-  --color-surface-container-high:   #2D1850;
-  --color-surface-container-highest:#351E5A;
-  --color-card:                 #1E0A35;
-  --color-surface-high:         #2D1850;
-  --color-surface-highest:      #351E5A;
-  --color-on-surface:           #F0E6FF;
-  --color-on-surface-muted:     #BDA3D1;
-  --color-on-surface-variant:   #9E84B8;
-  --color-on-primary:           #FFFFFF;
-  --color-tertiary-container:   #4A1A35;
-  --color-outline:              #69537B;
-  --color-outline-variant:      #4A3560;
-  --shadow-card:    0 4px 24px rgba(0, 0, 0, 0.3);
-  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-float:   0 20px 40px rgba(0, 0, 0, 0.5);
-}
-
-/* === PRO THEMES === */
-[data-theme="ocean"] {
-  --color-primary:              #0891B2;
-  --color-primary-light:        #67E8F9;
-  --color-primary-container:    #A5F3FC;
-  --color-background:           #F0FDFF;
-  --color-surface:              #F0FDFF;
-  --color-surface-container-lowest: #FFFFFF;
-  --color-surface-container-low:    #E0F7FA;
-  --color-surface-container:        #B2EBF2;
-  --color-surface-container-high:   #A0E4EC;
-  --color-surface-container-highest:#8DD8E4;
-  --color-card:                 #FFFFFF;
-  --color-surface-high:         #A0E4EC;
-  --color-surface-highest:      #8DD8E4;
-  --color-on-surface:           #0A3040;
-  --color-on-surface-muted:     #2D7A90;
-  --color-tertiary:             #0F766E;
-  --shadow-card:    0 4px 24px rgba(8, 145, 178, 0.06);
-  --shadow-elevated: 0 8px 32px rgba(8, 145, 178, 0.08);
-  --shadow-float:   0 20px 40px rgba(8, 145, 178, 0.12);
-}
-
-[data-theme="forest"] {
-  --color-primary:              #16A34A;
-  --color-primary-light:        #86EFAC;
-  --color-primary-container:    #BBF7D0;
-  --color-background:           #F0FDF4;
-  --color-surface:              #F0FDF4;
-  --color-surface-container-lowest: #FFFFFF;
-  --color-surface-container-low:    #DCFCE7;
-  --color-surface-container:        #BBF7D0;
-  --color-surface-container-high:   #A7F3D0;
-  --color-surface-container-highest:#D1FAE5;
-  --color-card:                 #FFFFFF;
-  --color-surface-high:         #A7F3D0;
-  --color-surface-highest:      #D1FAE5;
-  --color-on-surface:           #14532D;
-  --color-on-surface-muted:     #166534;
-  --color-tertiary:             #92400E;
-  --shadow-card:    0 4px 24px rgba(22, 163, 74, 0.06);
-  --shadow-elevated: 0 8px 32px rgba(22, 163, 74, 0.08);
-  --shadow-float:   0 20px 40px rgba(22, 163, 74, 0.12);
-}
-
-[data-theme="midnight"] {
-  --color-primary:              #818CF8;
-  --color-primary-light:        #C7D2FE;
-  --color-primary-container:    #4338CA;
-  --color-background:           #0F172A;
-  --color-surface:              #0F172A;
-  --color-surface-container-lowest: #1E293B;
-  --color-surface-container-low:    #1E293B;
-  --color-surface-container:        #263345;
-  --color-surface-container-high:   #2D3D52;
-  --color-surface-container-highest:#334155;
-  --color-card:                 #1E293B;
-  --color-surface-high:         #2D3D52;
-  --color-surface-highest:      #334155;
-  --color-on-surface:           #E2E8F0;
-  --color-on-surface-muted:     #94A3B8;
-  --color-tertiary:             #F472B6;
-  --shadow-card:    0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-float:   0 20px 40px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme="royal-gold"] {
-  --color-primary:              #D97706;
-  --color-primary-light:        #FBBF24;
-  --color-primary-container:    #FEF3C7;
-  --color-background:           #FEFBF3;
-  --color-surface:              #FEFBF3;
-  --color-surface-container-lowest: #FFFFFF;
-  --color-surface-container-low:    #FEF3C7;
-  --color-surface-container:        #FDE68A;
-  --color-surface-container-high:   #FCD34D;
-  --color-surface-container-highest:#FDE68A;
-  --color-card:                 #FFFFFF;
-  --color-surface-high:         #FCD34D;
-  --color-surface-highest:      #FDE68A;
-  --color-on-surface:           #78350F;
-  --color-on-surface-muted:     #92400E;
-  --color-tertiary:             #B45309;
-  --color-outline:              #F59E0B;
-  --color-outline-subtle:       rgba(217, 119, 6, 0.2);
-  --shadow-card:    0 4px 24px rgba(217, 119, 6, 0.06);
-  --shadow-elevated: 0 8px 32px rgba(217, 119, 6, 0.08);
-  --shadow-float:   0 20px 40px rgba(217, 119, 6, 0.12);
+  --color-primary:              oklch(74% 0.15 150);
+  --color-primary-light:        oklch(82% 0.12 150);
+  --color-primary-container:    oklch(30% 0.05 150);
+  --color-primary-press:        oklch(52% 0.12 152);
+  --color-background:           oklch(17% 0.02 155);
+  --color-surface:              oklch(17% 0.02 155);
+  --color-surface-container-lowest: oklch(23.5% 0.026 155);
+  --color-surface-container-low:    oklch(19% 0.022 155);
+  --color-surface-container:        oklch(21% 0.025 155);
+  --color-surface-container-high:   oklch(25% 0.027 155);
+  --color-surface-container-highest:oklch(28% 0.03 155);
+  --color-card:                 oklch(23.5% 0.026 155);
+  --color-card-hover:           oklch(26% 0.028 155);
+  --color-surface-high:         oklch(25% 0.027 155);
+  --color-surface-highest:      oklch(28% 0.03 155);
+  --color-text:                 oklch(94% 0.015 100);
+  --color-text-secondary:       oklch(80% 0.02 120);
+  --color-on-surface:           oklch(94% 0.015 100);
+  --color-on-surface-muted:     oklch(80% 0.02 120);
+  --color-on-surface-variant:   oklch(68% 0.02 130);
+  --color-on-primary:           oklch(18% 0.03 155);
+  --color-tertiary-container:   oklch(30% 0.05 80);
+  --color-tertiary-light:       oklch(40% 0.07 80);
+  --color-outline:              oklch(40% 0.025 155);
+  --color-outline-subtle:       oklch(32% 0.025 155 / 0.6);
+  --color-outline-variant:      oklch(32% 0.025 155);
+  --color-focus:                oklch(78% 0.17 150);
+  --color-success:              oklch(74% 0.15 150);
+  --color-success-light:        oklch(30% 0.05 150);
+  --color-warning-light:        oklch(30% 0.05 80);
+  --color-error:                oklch(68% 0.17 27);
+  --color-error-light:          oklch(30% 0.06 27);
+  --color-on-error:             oklch(18% 0.03 27);
+  --color-tertiary-ink:         oklch(84% 0.13 82);
+  --color-accent-blue:          oklch(72% 0.11 240);
+  --color-soil:                 oklch(28% 0.035 90);
+  --color-seed:                 oklch(55% 0.07 65);
+  --color-daisy-line:           oklch(70% 0.02 100);
+  --shadow-card:    0 1px 0 oklch(32% 0.025 155), 0 12px 30px -16px oklch(5% 0.02 155 / 0.8);
+  --shadow-elevated: 0 1px 0 oklch(32% 0.025 155), 0 18px 40px -18px oklch(5% 0.02 155 / 0.85);
+  --shadow-float:   0 24px 48px -18px oklch(5% 0.02 155 / 0.9);
 }
 
 /* === GLOBAL STYLES === */
@@ -201,6 +171,7 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
   }
 
   body {
@@ -208,16 +179,24 @@
     color: var(--color-on-surface);
     font-family: var(--font-body);
     min-height: 100dvh;
-    overflow-x: hidden;
+    overflow-x: clip;
     line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    font-style: normal;
+    letter-spacing: -0.02em;
   }
 
   #root {
     min-height: 100dvh;
+  }
+
+  /* Focus ring: shows instantly, never animated */
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
   }
 }
 
@@ -229,61 +208,69 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(112, 42, 225, 0.15);
+  background: var(--color-outline);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(112, 42, 225, 0.25);
+  background: var(--color-on-surface-variant);
 }
 
 /* ============================================
-   UTILITY CLASSES — The Fluid Scholar Design
-   NO borders on cards/widgets/inputs
-   Depth through surface elevation + shadows
+   UTILITY CLASSES — Jardín
+   Solid surfaces, hairline + soft shadow depth
    ============================================ */
 
 /* === BUTTONS === */
+/* Primary: a «key» that sinks when pressed */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
+  background-color: var(--color-primary);
   color: var(--color-on-primary);
   border-radius: 9999px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  box-shadow: 0 4px 16px rgba(112, 42, 225, 0.25);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-family: var(--font-body);
+  font-weight: 600;
+  box-shadow: 0 3px 0 var(--color-primary-press);
+  transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out), background-color var(--dur-short) var(--ease-out);
 }
 .btn-primary:hover {
-  transform: scale(1.03);
-  box-shadow: 0 8px 24px rgba(112, 42, 225, 0.35);
+  transform: translateY(-1px);
 }
 .btn-primary:active {
-  transform: scale(0.97);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--color-primary-press);
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  transform: none;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
-  background-color: var(--color-surface-container-highest);
-  color: var(--color-primary);
+  background-color: transparent;
+  color: var(--color-on-surface);
+  box-shadow: inset 0 0 0 1.5px var(--color-outline-variant);
   border-radius: 9999px;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 600;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
 }
 .btn-secondary:hover {
-  transform: scale(1.02);
-  background-color: var(--color-surface-container-high);
+  background-color: var(--color-surface-container);
+}
+.btn-secondary:active {
+  transform: translateY(1px);
 }
 
-/* === CARDS — No borders, tinted shadows === */
+/* === CARDS === */
 .card {
   background-color: var(--color-card);
-  border-radius: 2rem;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
 
-/* === WIDGETS — Elevated cards === */
+/* === WIDGETS — Dashboard blocks === */
 .widget {
   background: var(--color-card);
-  border-radius: 2rem;
+  border-radius: var(--radius-lg);
   padding: 24px;
   margin-bottom: 12px;
   margin-top: 12px;
@@ -299,68 +286,76 @@
 
 .widget-title {
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-on-surface-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   margin-bottom: 24px;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
 }
 
-/* === INPUTS — No borders, surface elevation === */
+/* === INPUTS === */
 .input-soft {
-  background-color: var(--color-surface-container-highest);
-  border-radius: 9999px;
-  border: none;
+  background-color: var(--color-card);
+  border-radius: 0.75rem;
+  border: 1.5px solid var(--color-outline-variant);
   color: var(--color-on-surface);
   padding: 0.875rem 1.25rem;
   font-family: var(--font-body);
   width: 100%;
   outline: none;
-  transition: box-shadow 0.2s ease;
+  transition: border-color var(--dur-short) var(--ease-out);
 }
-.input-soft:focus {
-  box-shadow: 0 0 0 3px rgba(112, 42, 225, 0.15);
+.input-soft:hover {
+  border-color: var(--color-outline);
+}
+.input-soft:focus-visible {
+  border-color: var(--color-primary);
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
 }
 .input-soft::placeholder {
-  color: var(--color-on-surface-muted);
+  color: var(--color-on-surface-variant);
 }
 
-/* === PROGRESS BLOOM — Gradient fill + glowing dot === */
+/* === PROGRESS STEM — the bar is a growing stem with a leaf at its tip === */
 .progress-bloom {
-  height: 12px;
-  background-color: var(--color-surface-container-highest);
+  height: 8px;
+  background-color: var(--color-surface-container-high);
   border-radius: 9999px;
   overflow: visible;
   position: relative;
 }
 .progress-bloom-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-container));
+  background: var(--color-primary);
   border-radius: 9999px;
   position: relative;
+  transition: width var(--dur-long) var(--ease-out);
 }
 .progress-bloom-fill::after {
   content: '';
   position: absolute;
-  right: -3px;
+  right: -2px;
   top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: 0 0 10px var(--color-primary), 0 0 20px rgba(112, 42, 225, 0.3);
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-leaf);
+  background: var(--color-primary);
+  transform: translateY(-85%) rotate(-10deg);
 }
 
-/* === GLASSMORPHISM === */
+/* === SOLID SURFACE (formerly glassmorphism; class kept so components keep working) === */
 .glass-effect {
-  background: rgba(254, 243, 255, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--color-surface);
 }
-.dark .glass-effect {
-  background: rgba(20, 2, 32, 0.7);
+
+/* === REDUCED MOTION: spatial motion becomes a short fade === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* === LAYOUT === */
@@ -372,10 +367,8 @@
 /* Base sidebar-rail class - position-specific classes override placement */
 .sidebar-rail {
   position: fixed;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(112, 42, 225, 0.08);
+  background: var(--color-card);
+  border: 1px solid color-mix(in oklch, var(--color-primary) 8%, transparent);
   border-radius: 34px;
   display: flex;
   z-index: 50;
@@ -384,7 +377,7 @@
 }
 
 .dark .sidebar-rail {
-  background: rgba(20, 2, 32, 0.85);
+  background: var(--color-card);
 }
 
 /* Layout positional adaptations */
@@ -519,10 +512,10 @@
 /* === STORY CARDS — Elevated, no borders === */
 .story-card {
   background: var(--color-card);
-  border-radius: 2rem;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--ease-out);
   box-shadow: var(--shadow-card);
   margin-top: 8px;
   margin-bottom: 8px;
@@ -545,8 +538,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
-  border-radius: 2rem 2rem 0 0;
+  background: linear-gradient(to top, color-mix(in oklch, var(--color-level-ink) 55%, transparent) 0%, transparent 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .story-card-banner > * {
@@ -570,13 +563,13 @@ span[data-word] {
   border-radius: 6px;
   padding: 2px 6px;
   margin: -2px -6px;
-  transition: all 0.15s ease;
+  transition: all 0.15s var(--ease-out);
   font-weight: 500;
   color: var(--color-primary-light);
 }
 
 span[data-word]:hover {
-  background: rgba(112, 42, 225, 0.1);
+  background: color-mix(in oklch, var(--color-primary) 10%, transparent);
 }
 
 span[data-word].learned {
@@ -584,7 +577,7 @@ span[data-word].learned {
 }
 
 span[data-word].in-deck {
-  background: rgba(112, 42, 225, 0.08);
+  background: color-mix(in oklch, var(--color-primary) 8%, transparent);
   border-bottom: 2px solid var(--color-primary);
   color: var(--color-primary-light);
 }
@@ -599,18 +592,18 @@ span[data-word].in-deck {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: rgba(112, 42, 225, 0.08);
+  transition: all 0.2s var(--ease-out);
+  background: color-mix(in oklch, var(--color-primary) 8%, transparent);
   color: var(--color-primary);
 }
 
 .vocab-chip:hover {
-  background: rgba(112, 42, 225, 0.14);
+  background: color-mix(in oklch, var(--color-primary) 14%, transparent);
   transform: translateY(-2px);
 }
 
 .vocab-chip.in-deck {
-  background: rgba(112, 42, 225, 0.12);
+  background: color-mix(in oklch, var(--color-primary) 12%, transparent);
   color: var(--color-primary-light);
 }
 
@@ -628,11 +621,11 @@ span[data-word].in-deck {
 /* === MODE CARDS (review) — No borders, elevated === */
 .mode-card {
   background: var(--color-card);
-  border-radius: 2rem;
+  border-radius: var(--radius-lg);
   padding: 28px;
   margin-bottom: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--ease-out);
   box-shadow: var(--shadow-card);
 }
 
@@ -653,7 +646,7 @@ span[data-word].in-deck {
   font-size: 1.125rem;
   color: var(--color-on-surface);
   outline: none;
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s var(--ease-out);
   text-align: center;
   font-family: var(--font-body);
 }
@@ -664,22 +657,22 @@ span[data-word].in-deck {
 }
 
 .review-input:focus {
-  box-shadow: 0 0 0 3px rgba(112, 42, 225, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 15%, transparent);
 }
 
 .review-input.correct {
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
-  animation: pulse-success 0.4s ease;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-success) 25%, transparent);
+  animation: pulse-success 0.4s var(--ease-out);
 }
 
 .review-input.incorrect {
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25);
-  animation: shake 0.4s ease;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-error) 25%, transparent);
+  animation: shake 0.4s var(--ease-out);
 }
 
 /* === PROGRESS RING === */
 .progress-ring circle {
-  transition: stroke-dashoffset 0.6s ease-in-out;
+  transition: stroke-dashoffset 0.6s var(--ease-in-out);
 }
 
 /* === ANIMATIONS === */
@@ -698,17 +691,17 @@ span[data-word].in-deck {
 }
 
 @keyframes float-glow {
-  0%, 100% { box-shadow: 0 -10px 40px rgba(112, 42, 225, 0.08); }
-  50% { box-shadow: 0 -10px 50px rgba(112, 42, 225, 0.14); }
+  0%, 100% { box-shadow: 0 -10px 40px color-mix(in oklch, var(--color-primary) 8%, transparent); }
+  50% { box-shadow: 0 -10px 50px color-mix(in oklch, var(--color-primary) 14%, transparent); }
 }
 
 @keyframes pulse-glow-primary {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(112, 42, 225, 0); }
-  50% { box-shadow: 0 0 0 8px rgba(112, 42, 225, 0.08); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-primary) 0%, transparent); }
+  50% { box-shadow: 0 0 0 8px color-mix(in oklch, var(--color-primary) 8%, transparent); }
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow-primary 2s ease-in-out infinite;
+  animation: pulse-glow-primary 2s var(--ease-in-out) infinite;
 }
 
 /* === RESPONSIVE: Mobile === */
@@ -733,19 +726,12 @@ span[data-word].in-deck {
     left: 0;
     right: 0;
     z-index: 50;
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-radius: 3rem 3rem 0 0;
-    padding: 12px 16px calc(env(safe-area-inset-bottom, 8px) + 12px);
+    background: var(--color-card);
+    border-top: 1px solid var(--color-outline-variant);
+    padding: 8px 12px calc(env(safe-area-inset-bottom, 8px) + 8px);
     gap: 4px;
     align-items: center;
     justify-content: space-around;
-    box-shadow: 0 -10px 40px rgba(112, 42, 225, 0.08);
-  }
-
-  .dark .floating-bar {
-    background: rgba(20, 2, 32, 0.8);
   }
 
   .floating-bar a {
@@ -760,13 +746,13 @@ span[data-word].in-deck {
     text-decoration: none;
     font-size: 10px;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
     min-width: 0;
   }
 
   .floating-bar a.active {
     color: var(--color-primary);
-    background: rgba(112, 42, 225, 0.08);
+    background: var(--color-primary-container);
   }
 
   .floating-bar a .bar-icon {
@@ -818,99 +804,78 @@ span[data-word].in-deck {
 }
 
 .voxie-toast {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(112, 42, 225, 0.12);
+  background: var(--color-card);
+  border: 1px solid color-mix(in oklch, var(--color-primary) 12%, transparent);
   color: var(--color-on-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark .voxie-toast {
-  background: rgba(30, 10, 53, 0.85);
-  border: 1px solid rgba(166, 122, 255, 0.16);
+  background: var(--color-card);
+  border: 1px solid color-mix(in oklch, var(--color-primary) 16%, transparent);
 }
 
 /* Success State */
 .voxie-toast.toast-success {
-  border-color: rgba(34, 197, 94, 0.3);
-  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.06), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-success) 30%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-success) 6%, transparent), var(--shadow-card);
 }
 .dark .voxie-toast.toast-success {
-  border-color: rgba(34, 197, 94, 0.4);
-  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.12), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-success) 40%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-success) 12%, transparent), var(--shadow-card);
 }
 
 /* Error State */
 .voxie-toast.toast-error {
-  border-color: rgba(248, 113, 113, 0.3);
-  box-shadow: 0 8px 30px rgba(248, 113, 113, 0.06), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-error) 30%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-error) 6%, transparent), var(--shadow-card);
 }
 .dark .voxie-toast.toast-error {
-  border-color: rgba(248, 113, 113, 0.4);
-  box-shadow: 0 8px 30px rgba(248, 113, 113, 0.12), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-error) 40%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-error) 12%, transparent), var(--shadow-card);
 }
 
 /* Warning State */
 .voxie-toast.toast-warning {
-  border-color: rgba(251, 191, 36, 0.3);
-  box-shadow: 0 8px 30px rgba(251, 191, 36, 0.06), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-tertiary) 30%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-tertiary) 6%, transparent), var(--shadow-card);
 }
 .dark .voxie-toast.toast-warning {
-  border-color: rgba(251, 191, 36, 0.4);
-  box-shadow: 0 8px 30px rgba(251, 191, 36, 0.12), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-tertiary) 40%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-tertiary) 12%, transparent), var(--shadow-card);
 }
 
 /* Info State */
 .voxie-toast.toast-info {
-  border-color: rgba(112, 42, 225, 0.25);
-  box-shadow: 0 8px 30px rgba(112, 42, 225, 0.06), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-primary) 25%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-primary) 6%, transparent), var(--shadow-card);
 }
 .dark .voxie-toast.toast-info {
-  border-color: rgba(166, 122, 255, 0.35);
-  box-shadow: 0 8px 30px rgba(166, 122, 255, 0.12), var(--shadow-card);
+  border-color: color-mix(in oklch, var(--color-primary) 35%, transparent);
+  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-primary) 12%, transparent), var(--shadow-card);
 }
 
 /* === FLASH ANIMATIONS === */
-@keyframes border-flash-green {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  50% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-}
+/* Answer feedback: a correct answer pops (achievement moment), a wrong one nudges */
+.border-flash-correct { animation: celebrate-pop 380ms var(--ease-spring); }
+.border-flash-incorrect { animation: answer-nudge 300ms var(--ease-out); }
 
-@keyframes border-flash-red {
-  0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); }
-  50% { box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.2); }
-  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
-}
-
-.border-flash-correct { animation: border-flash-green 0.5s ease; }
-.border-flash-incorrect { animation: border-flash-red 0.5s ease; }
-
-@keyframes gold-shimmer {
-  0% { background-position: -100% 0; }
-  100% { background-position: 200% 0; }
-}
-
+/* Top score: highlighted with the sun, like a marker (no gradient text, no looping shimmer) */
 .gold-shimmer {
-  background: linear-gradient(90deg, #FCD34D 0%, #FBBF24 40%, #FDE68A 50%, #FBBF24 60%, #FCD34D 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gold-shimmer 2s ease-in-out infinite;
+  color: var(--color-on-surface);
+  background: var(--color-tertiary-container);
+  border-radius: 0.4em;
+  padding: 0 0.2em;
 }
 
 /* === DRAGGABLE SIDEBAR EFFECTS & DROP ZONES === */
 
-/* Glassmorphic overlay drop zone classes */
+/* Drop zone overlay */
 .drop-zone-overlay {
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(254, 243, 255, 0.3);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: color-mix(in oklch, var(--color-primary) 6%, transparent);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -922,7 +887,7 @@ span[data-word].in-deck {
 }
 
 .dark .drop-zone-overlay {
-  background: rgba(20, 2, 32, 0.3);
+  background: var(--color-card);
 }
 
 .drop-target-area {
@@ -930,9 +895,9 @@ span[data-word].in-deck {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(112, 42, 225, 0.02);
-  border: 2px dashed rgba(112, 42, 225, 0.2);
-  border-radius: 2rem;
+  background: color-mix(in oklch, var(--color-primary) 2%, transparent);
+  border: 2px dashed color-mix(in oklch, var(--color-primary) 20%, transparent);
+  border-radius: var(--radius-lg);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 45;
   pointer-events: auto;
@@ -941,35 +906,35 @@ span[data-word].in-deck {
 
 /* Hover/active state for dragging visual feedback */
 .drop-target-area.active {
-  background: rgba(112, 42, 225, 0.08);
+  background: color-mix(in oklch, var(--color-primary) 8%, transparent);
   border-color: var(--color-primary);
-  box-shadow: 0 0 24px rgba(112, 42, 225, 0.15);
+  box-shadow: 0 0 24px color-mix(in oklch, var(--color-primary) 15%, transparent);
   transform: scale(1.02);
 }
 
 .dark .drop-target-area {
-  background: rgba(166, 122, 255, 0.01);
-  border-color: rgba(166, 122, 255, 0.15);
+  background: color-mix(in oklch, var(--color-primary) 1%, transparent);
+  border-color: color-mix(in oklch, var(--color-primary) 15%, transparent);
 }
 
 .dark .drop-target-area.active {
-  background: rgba(166, 122, 255, 0.08);
+  background: color-mix(in oklch, var(--color-primary) 8%, transparent);
   border-color: var(--color-primary);
-  box-shadow: 0 0 24px rgba(166, 122, 255, 0.2);
+  box-shadow: 0 0 24px color-mix(in oklch, var(--color-primary) 20%, transparent);
 }
 
 /* Drag handle pulse keyframes and class */
 @keyframes drag-handle-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(112, 42, 225, 0.4);
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-primary) 40%, transparent);
   }
   50% {
-    box-shadow: 0 0 12px 6px rgba(112, 42, 225, 0.2);
+    box-shadow: 0 0 12px 6px color-mix(in oklch, var(--color-primary) 20%, transparent);
   }
 }
 
 .drag-handle-glow {
-  animation: drag-handle-pulse 2s infinite ease-in-out;
+  animation: drag-handle-pulse 2s var(--ease-in-out) infinite;
 }
 
 /* === TIMELINE & ROAD MAP CLASS ENCAPSULATION === */
@@ -981,7 +946,7 @@ span[data-word].in-deck {
   bottom: 1rem;
   width: 3px;
   border-radius: 9999px;
-  background: linear-gradient(to bottom, rgba(112, 42, 225, 0.3), var(--color-surface-container-high), var(--color-surface-container));
+  background: var(--color-outline-variant);
 }
 
 .timeline-node-container {
@@ -1018,4 +983,171 @@ span[data-word].in-deck {
   .timeline-node-container {
     left: -35px;
   }
+}
+
+
+/* ============================================
+   JARDÍN — plants, garden row, level chips, streak and achievement moments
+   ============================================ */
+
+/* Garden row: one plant per unit, growing from a soil band */
+.garden {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0.5rem;
+  height: 7rem;
+  padding: 0.75rem 0.75rem 0;
+  overflow: hidden;
+  background: var(--color-surface-container);
+  border-radius: 0.75rem;
+  box-shadow: inset 0 -0.9rem 0 var(--color-soil);
+}
+
+/* Plant: seed → sprout → grown. Colour comes from --plant per species/stage. */
+.plant {
+  display: block;
+  min-height: 0;
+  height: 100%;
+  --plant: var(--color-level-b1);
+}
+.plant svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.plant .seed {
+  fill: var(--color-seed);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.plant .stem {
+  fill: none;
+  stroke: var(--plant);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset var(--dur-long) var(--ease-out), stroke var(--dur-long) var(--ease-out);
+}
+.plant .leaf {
+  fill: var(--plant);
+  transform: scale(0);
+  transform-box: fill-box;
+  transition: transform var(--dur-long) var(--ease-spring), fill var(--dur-long) var(--ease-out);
+}
+.plant .leaf-low { transform-origin: 100% 100%; transition-delay: 160ms; }
+.plant .leaf-top { transform-origin: 0% 100%; transition-delay: 300ms; }
+.plant .bloom {
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform var(--dur-long) var(--ease-spring) 420ms;
+}
+
+.plant.is-sprout { --plant: var(--color-a2-deep); }
+.plant.is-sprout .stem { stroke-dashoffset: 52; }
+.plant.is-sprout .leaf-low { transform: scale(1); }
+.plant.is-grown .stem { stroke-dashoffset: 0; }
+.plant.is-grown .leaf,
+.plant.is-grown .bloom { transform: scale(1); }
+.plant.is-grown .seed,
+.plant.is-sprout .seed { transform: scale(0.6); }
+
+/* Blooms */
+.plant .petal-sun { fill: var(--color-tertiary); }
+.plant .core-sun { fill: var(--color-sun-core); }
+.plant .petal-tulip { fill: var(--color-tulip); }
+.plant .petal-daisy { fill: var(--color-daisy); stroke: var(--color-daisy-line); stroke-width: 0.5; }
+.plant .core-daisy { fill: var(--color-tertiary); }
+.plant .petal-cactus { fill: var(--color-level-b2); }
+.plant .petal-rose { fill: var(--color-rose); }
+.plant .petal-rose-inner { fill: none; stroke: var(--color-rose-light); stroke-width: 1.2; stroke-linecap: round; }
+.plant .petal-rose-core { fill: var(--color-rose-light); }
+.plant .leaf-sepal { fill: var(--color-level-b1); }
+.plant .petal-lavender { fill: var(--color-lavender); }
+.plant .petal-orchid { fill: var(--color-orchid); stroke: var(--color-daisy-line); stroke-width: 0.4; }
+.plant .petal-orchid-lip { fill: var(--color-orchid-lip); }
+.plant .foliage { fill: var(--plant); }
+
+/* Species with a different body */
+.plant.sp-cactus { --plant: var(--color-cactus); }
+.plant.sp-cactus .stem { stroke-width: 7.5; }
+.plant.sp-cactus .leaf { fill: none; stroke: var(--plant); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.plant.sp-bonsai .stem { stroke: var(--color-bark); stroke-width: 4.5; }
+.plant.sp-lavanda .stem { stroke-width: 2.2; }
+.plant.is-sprout.sp-cactus,
+.plant.is-sprout.sp-bonsai { --plant: var(--color-a2-deep); }
+
+/* Level chip shaped like a leaf */
+.level-leaf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: var(--radius-leaf);
+  color: var(--color-level-ink);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Streak chip: sun pill with a flame */
+.streak-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--color-tertiary);
+  color: var(--color-on-tertiary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Achievement moments (see lib/celebrate.ts). Only these use the spring easing. */
+.celebrate-pop { animation: celebrate-pop 380ms var(--ease-spring); }
+@keyframes celebrate-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+.answer-nudge { animation: answer-nudge 300ms var(--ease-out); }
+@keyframes answer-nudge {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(-5px); }
+  60% { transform: translateX(4px); }
+}
+/* Plant picker (Settings) */
+.plant-picker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.plant-picker label {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  cursor: pointer;
+  padding: 0.35rem 0.25rem 0.5rem;
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.plant-picker label:hover { border-color: var(--color-outline); }
+.plant-picker input { position: absolute; opacity: 0; pointer-events: none; }
+.plant-picker input:checked + label { border-color: var(--color-primary); background: var(--color-primary-container); }
+.plant-picker input:focus-visible + label { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.plant-picker input:disabled + label { cursor: not-allowed; color: var(--color-on-surface-variant); }
+.plant-picker input:disabled + label .plant { opacity: 0.55; }
+.plant-picker .plant { width: 2.6rem; height: 3.2rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-pop, .answer-nudge { animation: none !important; }
 }

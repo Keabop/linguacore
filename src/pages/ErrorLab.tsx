@@ -136,8 +136,8 @@ export default function ErrorLab() {
         return (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-6 max-w-md mx-auto">
                 <style>{`.floating-bar { display: none !important; }`}</style>
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
+                    <Sparkles className="w-8 h-8 text-[var(--color-on-primary)]" />
                 </div>
                 <div className="space-y-2">
                     <h2 className="text-2xl font-black tracking-tight">Laboratorio despejado</h2>
@@ -202,7 +202,7 @@ export default function ErrorLab() {
                         key={s}
                         className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                             s === step 
-                                ? 'bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-container)]' 
+                                ? 'bg-[var(--color-primary)]' 
                                 : s < step 
                                     ? 'bg-[var(--color-success)]' 
                                     : 'bg-[var(--color-surface-container)]'
@@ -222,10 +222,10 @@ export default function ErrorLab() {
                     >
                         <div className="widget space-y-4 !py-8">
                             <p className="text-[10px] text-accent-red font-bold uppercase tracking-wider">Tu oración original</p>
-                            <p className="text-base line-through text-red-500/80">{currentCard.originalSentence}</p>
+                            <p className="text-base line-through text-[var(--color-error)]/80">{currentCard.originalSentence}</p>
                         </div>
 
-                        <div className="widget space-y-4 !py-8 bg-gradient-to-br from-green-500/5 to-[var(--color-success)]/10 border-l-4 border-[var(--color-success)]">
+                        <div className="widget space-y-4 !py-8 bg-[var(--color-success)]/5 border-l-4 border-[var(--color-success)]">
                             <p className="text-[10px] text-[var(--color-success)] font-bold uppercase tracking-wider">Oración correcta</p>
                             <p className="text-lg font-bold text-[var(--color-on-surface)]">{currentCard.correctedSentence}</p>
                         </div>
@@ -267,7 +267,7 @@ export default function ErrorLab() {
                                         <button
                                             key={`${word}-${idx}`}
                                             onClick={() => match && handleRemoveSelected(word, match.id)}
-                                            className="px-3 py-1.5 text-xs font-semibold bg-[var(--color-primary)] text-white rounded-xl shadow-md active:scale-95"
+                                            className="px-3 py-1.5 text-xs font-semibold bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl shadow-md active:scale-95"
                                         >
                                             {word}
                                         </button>
@@ -295,7 +295,7 @@ export default function ErrorLab() {
                         </div>
 
                         {builderStatus === 'correct' && (
-                            <div className="text-center text-[var(--color-success)] font-bold text-sm flex items-center justify-center gap-1.5 animate-pulse">
+                            <div className="text-center text-[var(--color-success)] font-bold text-sm flex items-center justify-center gap-1.5" role="status">
                                 <Check className="w-5 h-5" /> ¡Excelente orden! Avanzando al Quiz de validación...
                             </div>
                         )}
@@ -354,10 +354,10 @@ export default function ErrorLab() {
                                                 ? 'border-transparent bg-[var(--color-card)] hover:bg-[var(--color-surface-container)] hover:-translate-y-0.5 cursor-pointer'
                                                 : isSelected
                                                     ? isCorrect
-                                                        ? 'border-[var(--color-success)] bg-green-500/10 text-[var(--color-success)]'
-                                                        : 'border-red-500 bg-red-500/10 text-red-500'
+                                                        ? 'border-[var(--color-success)] bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                                                        : 'border-[var(--color-error)] bg-[var(--color-error)]/10 text-[var(--color-error)]'
                                                     : isCorrect
-                                                        ? 'border-[var(--color-success)] bg-green-500/5 text-[var(--color-success)]'
+                                                        ? 'border-[var(--color-success)] bg-[var(--color-success)]/5 text-[var(--color-success)]'
                                                         : 'border-transparent bg-[var(--color-card)] opacity-50'
                                         }`}
                                     >
@@ -366,7 +366,7 @@ export default function ErrorLab() {
                                             <Check className="w-4 h-4 text-[var(--color-success)] shrink-0" />
                                         )}
                                         {quizStatus !== 'pending' && isSelected && !isCorrect && (
-                                            <X className="w-4 h-4 text-red-500 shrink-0" />
+                                            <X className="w-4 h-4 text-[var(--color-error)] shrink-0" />
                                         )}
                                     </button>
                                 );
@@ -381,12 +381,12 @@ export default function ErrorLab() {
 
                         {quizStatus === 'incorrect' && (
                             <div className="text-center space-y-3">
-                                <p className="text-red-500 font-bold text-xs flex items-center justify-center gap-1.5">
+                                <p className="text-[var(--color-error)] font-bold text-xs flex items-center justify-center gap-1.5">
                                     <X className="w-4 h-4" /> Opción incorrecta. Estudia los detalles y reintenta el quiz.
                                 </p>
                                 <button
                                     onClick={() => { setQuizStatus('pending'); setSelectedOption(null); }}
-                                    className="px-5 py-2.5 rounded-full bg-[var(--color-primary)] text-white text-xs font-bold shadow-md"
+                                    className="px-5 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold shadow-md"
                                 >
                                     Reintentar Quiz
                                 </button>

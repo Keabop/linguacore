@@ -14,9 +14,9 @@ export function UsageBadge({ remaining, limit, label }: UsageBadgeProps) {
     <span
       className={`inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium shadow-sm ${
         isExhausted
-          ? 'bg-red-500/10 text-red-400 shadow-red-500/5'
+          ? 'bg-[var(--color-error)]/10 text-[var(--color-error)] shadow-[var(--color-error)]/5'
           : isLow
-            ? 'bg-amber-500/10 text-amber-400 shadow-amber-500/5'
+            ? 'bg-[var(--color-tertiary)]/10 text-[var(--color-tertiary-ink)] shadow-[var(--color-tertiary)]/5'
             : 'bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)]'
       }`}
     >

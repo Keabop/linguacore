@@ -11,11 +11,11 @@ export default function DBErrorCard({ onReset }: Props) {
     return (
         <div className="flex flex-col items-center justify-center min-h-[40vh] px-4">
             <div className="card p-8 max-w-sm w-full text-center space-y-4 shadow-[var(--shadow-elevated)]">
-                <div className="mx-auto w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center">
-                    <DatabaseZap className="w-7 h-7 text-amber-400" />
+                <div className="mx-auto w-14 h-14 rounded-full bg-[var(--color-tertiary)]/10 flex items-center justify-center">
+                    <DatabaseZap className="w-7 h-7 text-[var(--color-tertiary-ink)]" />
                 </div>
                 <div>
-                    <h3 className="text-base font-bold text-white mb-1">{t('common.dataNotFound')}</h3>
+                    <h3 className="text-base font-bold text-[var(--color-on-surface)] mb-1">{t('common.dataNotFound')}</h3>
                     <p className="text-sm text-[var(--color-on-surface-muted)]">{t('common.dataCorrupt')}</p>
                 </div>
                 {onReset && (

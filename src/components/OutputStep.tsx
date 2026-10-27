@@ -134,7 +134,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                 </p>
                 <button
                     onClick={onComplete}
-                    className="bg-[var(--color-primary)] hover:brightness-90 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Saltar
                 </button>
@@ -148,7 +148,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
         <div className="space-y-7">
             {/* Section header */}
             <div className="space-y-1">
-                <h3 className="text-lg font-bold text-white">Producción</h3>
+                <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Producción</h3>
                 <p className="text-sm text-[var(--color-on-surface-muted)]">Practica tu escritura y habla en inglés.</p>
             </div>
 
@@ -159,11 +159,11 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         onClick={() => setActiveTab('writing')}
                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
                             activeTab === 'writing'
-                                ? 'bg-[var(--color-primary)] text-white'
-                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-white'
+                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-primary)]'
                         }`}
                     >
-                        {writingDone ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <PenLine className="w-4 h-4" />}
+                        {writingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : <PenLine className="w-4 h-4" />}
                         Escritura
                         {writingDone && <span className="text-xs opacity-70">({writingScore}%)</span>}
                     </button>
@@ -173,11 +173,11 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                         onClick={() => setActiveTab('speaking')}
                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
                             activeTab === 'speaking'
-                                ? 'bg-[var(--color-primary)] text-white'
-                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-white'
+                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-primary)]'
                         }`}
                     >
-                        {speakingDone ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Mic className="w-4 h-4" />}
+                        {speakingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : <Mic className="w-4 h-4" />}
                         Habla
                         {speakingDone && <span className="text-xs opacity-70">({speakingScore}%)</span>}
                     </button>
@@ -189,12 +189,12 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                 <motion.div
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 space-y-4"
+                    className="bg-[var(--color-tertiary)]/10 border border-[var(--color-tertiary)]/20 rounded-xl p-5 space-y-4"
                 >
                     <div className="flex items-center gap-3">
-                        <WifiOff className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                        <WifiOff className="w-5 h-5 text-[var(--color-tertiary-ink)] flex-shrink-0" />
                         <div className="space-y-1">
-                            <p className="text-sm font-bold text-white">Sin conexión a internet</p>
+                            <p className="text-sm font-bold text-[var(--color-on-surface)]">Sin conexión a internet</p>
                             <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
                                 Los ejercicios de producción necesitan IA. Mientras tanto, puedes aprender vocabulario con los cuentos.
                             </p>
@@ -202,7 +202,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     </div>
                     <button
                         onClick={() => navigate('/learn')}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
                         <BookOpen className="w-4 h-4" /> Ir a leer cuentos
                     </button>
@@ -215,9 +215,9 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     <WritingRunner prompts={writingPrompts} level={level} onComplete={handleWritingComplete} />
                 )}
                 {activeTab === 'writing' && writingDone && (
-                    <div className="bg-green-500/8 border border-green-500/20 rounded-xl p-6 text-center space-y-2">
-                        <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto" />
-                        <p className="text-sm text-white font-semibold">Escritura completada — {writingScore}%</p>
+                    <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
+                        <CheckCircle2 className="w-8 h-8 text-[var(--color-success)] mx-auto" />
+                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Escritura completada — {writingScore}%</p>
                     </div>
                 )}
                 {activeTab === 'speaking' && hasSpeaking && !speakingDone && !speakingDeferred && (
@@ -238,13 +238,13 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     <motion.div
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-[var(--color-card)] border border-amber-500/20 rounded-xl p-6 text-center space-y-4"
+                        className="bg-[var(--color-card)] border border-[var(--color-tertiary)]/20 rounded-xl p-6 text-center space-y-4"
                     >
-                        <Clock className="w-10 h-10 text-amber-400 mx-auto" />
+                        <Clock className="w-10 h-10 text-[var(--color-tertiary-ink)] mx-auto" />
                         <div className="space-y-2">
-                            <p className="text-sm font-bold text-white">Ejercicios de habla pospuestos</p>
+                            <p className="text-sm font-bold text-[var(--color-on-surface)]">Ejercicios de habla pospuestos</p>
                             <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
-                                Estarán disponibles en <span className="text-amber-400 font-bold">{minutesLeft} minutos</span>.
+                                Estarán disponibles en <span className="text-[var(--color-tertiary-ink)] font-bold">{minutesLeft} minutos</span>.
                                 Hablar es parte esencial del aprendizaje — ¡vuelve cuando puedas!
                             </p>
                         </div>
@@ -254,7 +254,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                                     clearDeferred(unitId);
                                     setSpeakingDeferred(null);
                                 }}
-                                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                             >
                                 <Mic className="w-4 h-4" /> Ya puedo hablar
                             </button>
@@ -268,9 +268,9 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     </motion.div>
                 )}
                 {activeTab === 'speaking' && speakingDone && (
-                    <div className="bg-green-500/8 border border-green-500/20 rounded-xl p-6 text-center space-y-2">
-                        <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto" />
-                        <p className="text-sm text-white font-semibold">Habla completada — {speakingScore}%</p>
+                    <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
+                        <CheckCircle2 className="w-8 h-8 text-[var(--color-success)] mx-auto" />
+                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Habla completada — {speakingScore}%</p>
                     </div>
                 )}
             </motion.div>
@@ -281,7 +281,7 @@ export default function OutputStep({ unitId, level, onComplete }: Props) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     onClick={onComplete}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Continuar al checkpoint
                 </motion.button>

@@ -38,7 +38,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
                     className="bg-accent-blue/8 border border-accent-blue/20 rounded-xl p-5"
                 >
                     <p className="text-xs text-accent-blue font-semibold uppercase tracking-wider mb-2">Texto en español</p>
-                    <p className="text-white text-base leading-relaxed">{sourceText}</p>
+                    <p className="text-[var(--color-on-surface)] text-base leading-relaxed">{sourceText}</p>
                 </motion.div>
             )}
 
@@ -46,7 +46,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
             {targetGrammar.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
-                        <span key={i} className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full">
+                        <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">
                             {g}
                         </span>
                     ))}
@@ -60,7 +60,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
                     onChange={e => setText(e.target.value)}
                     disabled={disabled}
                     placeholder="Escribe tu oración en inglés..."
-                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-white text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[100px] disabled:opacity-50"
+                    className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 text-[var(--color-on-surface)] text-sm leading-relaxed placeholder:text-[var(--color-on-surface-muted)] resize-none focus:outline-none focus:border-[var(--color-primary)]/40 focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all min-h-[100px] disabled:opacity-50"
                     rows={3}
                     onKeyDown={e => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -78,7 +78,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim()}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-white py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />
