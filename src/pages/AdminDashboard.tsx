@@ -11,7 +11,7 @@ import { supabase } from '../lib/supabase';
 import { useAdmin } from '../hooks/useAdmin';
 import { toast } from '../lib/toast';
 import LevelBadge from '../components/ui/LevelBadge';
-import { CountUp } from '../components/reactbits';
+import CountUp from '../components/reactbits/CountUp';
 import type { Profile } from '../lib/database.types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
