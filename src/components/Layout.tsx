@@ -51,6 +51,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
                 }`
             }
+            aria-label={t(labelKey)}
             onMouseEnter={() => { setIsHovered(true); iconRef.current?.startAnimation(); }}
             onMouseLeave={() => { setIsHovered(false); iconRef.current?.stopAnimation(); }}
         >
@@ -438,6 +439,7 @@ export default function Layout() {
             {isAdmin && (
                 <NavLink
                     to="/admin"
+                    aria-label="Admin"
                     className={({ isActive }) =>
                         `fixed top-4 left-4 z-[55] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 ${
                             isActive
@@ -446,7 +448,7 @@ export default function Layout() {
                         }`
                     }
                 >
-                    <Shield className="w-5 h-5" />
+                    <Shield className="w-5 h-5" aria-hidden="true" />
                 </NavLink>
             )}
         </div>

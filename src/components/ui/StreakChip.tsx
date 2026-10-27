@@ -19,9 +19,10 @@ export default function StreakChip({ count, className = '' }: StreakChipProps) {
     }, [count]);
 
     return (
-        <span className={`streak-chip ${className}`} aria-label={t('garden.streakLabel', { count })}>
+        <span className={`streak-chip ${className}`}>
             <FlameIcon ref={flame} size={16} aria-hidden="true" />
-            {count}
+            <span aria-hidden="true">{count}</span>
+            <span className="sr-only">{t('garden.streakLabel', { count })}</span>
         </span>
     );
 }

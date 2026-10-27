@@ -202,11 +202,11 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     font-weight: 700;
                     padding: 10px 14px;
                     text-align: left;
-                    border-bottom: 1px solid var(--color-border-light);
+                    border-bottom: 1px solid var(--color-outline-variant);
                 }
                 .grammar-explanation tbody td {
                     padding: 8px 14px;
-                    border-bottom: 1px solid var(--color-border);
+                    border-bottom: 1px solid var(--color-outline-subtle);
                     color: var(--color-text-secondary);
                 }
                 .grammar-explanation tbody tr:last-child td {

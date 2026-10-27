@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, MicOff, Volume2, RotateCcw } from 'lucide-react';
+import { MicOff, Volume2, RotateCcw } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
 import { MicIcon } from '../icons';
 

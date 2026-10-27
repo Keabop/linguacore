@@ -1,7 +1,3 @@
-/* Hallmark · genre: playful · design-system: cerebro/diseno/design.md · designed-as-app
- * theme: custom · vibe: "jardín que crece, cálido y vivo" · paper: oklch(97.5% 0.014 95) · accent: oklch(52% 0.14 152)
- * display: Bricolage Grotesque · body: Geist · axes: light / geometric-sans / chromatic-green ~150°
- */
 @import "tailwindcss";
 
 /* Fonts are loaded in index.html */
@@ -14,7 +10,7 @@
 
   /* === JARDÍN PALETTE (light mode default) ===
      Token names are kept from the previous system so components keep working;
-     only the values changed. See cerebro/diseno/design.md. */
+     only the values changed. */
   --color-primary:              oklch(52% 0.14 152);   /* hoja: acción principal */
   --color-primary-light:        oklch(66% 0.15 150);
   --color-primary-container:    oklch(92% 0.05 150);
@@ -1124,13 +1120,6 @@ span[data-word].in-deck {
   30% { transform: translateX(-5px); }
   60% { transform: translateX(4px); }
 }
-.check-draw path {
-  stroke-dasharray: 24;
-  stroke-dashoffset: 24;
-  animation: check-draw 320ms var(--ease-out) 80ms forwards;
-}
-@keyframes check-draw { to { stroke-dashoffset: 0; } }
-
 /* Plant picker (Settings) */
 .plant-picker {
   display: grid;

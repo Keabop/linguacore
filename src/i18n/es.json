@@ -8,8 +8,7 @@
     "path": "Ruta de Aprendizaje",
     "practice": "Práctica",
     "profile": "Perfil",
-    "simulator": "Simulador CEFR",
-    "skipToContent": "Saltar al contenido"
+    "simulator": "Simulador CEFR"
   },
   "dashboard": {
     "greeting": "¡Hola!",
@@ -17,7 +16,6 @@
     "welcome": "¡Bienvenido a Voxie!",
     "dueToday": "Para repasar hoy",
     "cards": "tarjetas",
-    "pendingReview": "pendientes de repaso",
     "noCards": "¡No tienes tarjetas pendientes!",
     "recommended": "Historias recomendadas",
     "viewAll": "Ver todas",
@@ -26,15 +24,12 @@
     "yourProgress": "Tu progreso",
     "wordsLearned": "Palabras aprendidas",
     "storiesRead": "Historias leídas",
-    "totalCards": "Tarjetas en mazo",
     "streak": "Racha",
     "days": "días",
-    "continueLearning": "Continuar aprendiendo",
     "unitProgress": "Unidad {{current}} de {{total}} — {{level}}",
     "allCompleted": "¡Has completado todas las unidades de este nivel!",
     "goToPath": "Ir a la ruta",
     "continue": "Continuar",
-    "grammarSkills": "Habilidades de gramática",
     "grammarDue": "gramática pendiente",
     "myErrors": "Mis errores",
     "errorsDue": "errores pendientes",
@@ -149,7 +144,6 @@
     "errorsDue": "errores pendientes"
   },
   "progress": {
-    "title": "Tu progreso",
     "wordsLearned": "Palabras aprendidas",
     "currentLevel": "Nivel actual",
     "nextLevel": "Próximo nivel",
@@ -158,8 +152,7 @@
     "retention": "Retención",
     "storiesCompleted": "Historias completadas",
     "criteria": "Criterios para {{level}}",
-    "unitsCompleted": "Unidades completadas",
-    "nextUnit": "Siguiente unidad"
+    "unitsCompleted": "Unidades completadas"
   },
   "levelUp": {
     "congratulations": "¡Felicidades!",
@@ -212,7 +205,8 @@
     "offlineDisabled": "No disponible sin conexión",
     "dataNotFound": "No se encontraron datos",
     "dataCorrupt": "Es posible que los datos del navegador se hayan borrado.",
-    "resetData": "Reiniciar datos"
+    "resetData": "Reiniciar datos",
+    "send": "Enviar"
   },
   "chat": {
     "title": "Tutor de Conversación",

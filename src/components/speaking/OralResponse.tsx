@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, MicOff, Loader2, RotateCcw, MessageCircle } from 'lucide-react';
+import { MicOff, Loader2, RotateCcw, MessageCircle } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
 import { evaluateWriting } from '../../lib/ai';
 import type { CEFRLevel } from '../../lib/db';
