@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useErrorCards } from '../hooks/useErrorCards';
 import { useAuth } from '../lib/AuthContext';
-import { ArrowLeft, Sparkles, Check, X, AlertCircle, RefreshCw, Trophy } from 'lucide-react';
+import { Sparkles, Check, X, AlertCircle, RefreshCw, Trophy } from 'lucide-react';
 import { Rating } from '../lib/fsrs';
+import BackButton from '../components/ui/BackButton';
 
 export default function ErrorLab() {
     const { t } = useTranslation();
@@ -146,7 +147,7 @@ export default function ErrorLab() {
                     </p>
                 </div>
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                     className="btn-primary px-8 py-3.5 text-sm"
                 >
                     Volver al Dashboard
@@ -169,7 +170,7 @@ export default function ErrorLab() {
                     </p>
                 </div>
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                     className="btn-primary px-8 py-3.5 text-sm"
                 >
                     Volver al Inicio
@@ -184,12 +185,7 @@ export default function ErrorLab() {
             
             {/* Header */}
             <div className="flex justify-between items-center text-sm shrink-0">
-                <button
-                    onClick={() => navigate('/')}
-                    className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors flex items-center gap-1.5"
-                >
-                    <ArrowLeft className="w-4 h-4" /> Salir del Lab
-                </button>
+                <BackButton to="/dashboard" label="Salir del Lab" />
                 <span className="font-bold text-[var(--color-primary)]">
                     Foco Semanal · Tarjeta {currentIndex + 1} de {dueErrorCards.length}
                 </span>

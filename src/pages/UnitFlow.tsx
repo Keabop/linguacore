@@ -2,18 +2,7 @@ import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    ArrowLeft,
-    BookOpen,
-    RefreshCw,
-    PenLine,
-    Mic,
-    Trophy,
-    CheckCircle2,
-    ChevronRight,
-    Sparkles,
-    RotateCcw,
-} from 'lucide-react';
+import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw } from 'lucide-react';
 import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
 import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap } from '../data';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
@@ -25,6 +14,7 @@ import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
 import OutputStep from '../components/OutputStep';
 import LevelAssessment from './LevelAssessment';
+import BackButton from '../components/ui/BackButton';
 
 /* ===== Step metadata ===== */
 
@@ -429,22 +419,6 @@ export default function UnitFlow() {
 }
 
 /* ===== Sub-components ===== */
-
-function BackButton({ onClick, label }: { onClick: () => void; label: string }) {
-    return (
-        <motion.button
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            onClick={onClick}
-            className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-all duration-300 group"
-        >
-            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--color-surface-container)] group-hover:bg-[var(--color-surface-container-highest)] group-hover:shadow-[var(--shadow-card)] transition-all duration-300">
-                <ArrowLeft className="w-4 h-4" />
-            </div>
-            <span className="text-sm font-medium">{label}</span>
-        </motion.button>
-    );
-}
 
 function StepHeader({
     icon: Icon,

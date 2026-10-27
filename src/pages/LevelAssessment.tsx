@@ -16,6 +16,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
+import BackButton from '../components/ui/BackButton';
 
 interface LevelAssessmentProps {
     level: CEFRLevel;
@@ -243,13 +244,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 <p className="text-[var(--color-on-surface-muted)] text-center">
                     No se encontraron ejercicios para esta evaluaci&oacute;n.
                 </p>
-                <button
-                    onClick={onComplete}
-                    className="flex items-center gap-2 text-[var(--color-primary)] font-bold hover:brightness-110 transition-all duration-300"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Volver a la ruta
-                </button>
+                <BackButton onClick={onComplete} label="Volver a la ruta" />
             </motion.div>
         );
     }
@@ -328,15 +323,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     Comenzar
                 </button>
 
-                <button
-                    onClick={onComplete}
-                    className="flex items-center gap-2 text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-all duration-300 text-sm group"
-                >
-                    <div className="w-7 h-7 flex items-center justify-center rounded-full bg-[var(--color-surface-container)] group-hover:bg-[var(--color-surface-container-highest)] transition-all duration-300">
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                    </div>
-                    Volver a la ruta
-                </button>
+                <BackButton onClick={onComplete} label="Volver a la ruta" />
             </motion.div>
         );
     }

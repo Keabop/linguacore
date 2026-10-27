@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useConversationHistory, type ConversationSession } from '../hooks/useConversationHistory';
 import { chatWithTutor, type ConversationMessage, type ConversationResponse } from '../lib/ai';
-import { Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus, Lock, X } from 'lucide-react';
+import { Sparkles, MessageCircle, AlertCircle, History, Plus, Lock, X, Lightbulb, UtensilsCrossed, Briefcase } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import AIErrorCard from '../components/AIErrorCard';
@@ -13,6 +13,7 @@ import { useTier } from '../hooks/useTier';
 import { useUsageLimits } from '../hooks/useUsageLimits';
 import { UsageBadge } from '../components/UsageBadge';
 import { SendIcon } from '../components/icons';
+import BackButton from '../components/ui/BackButton';
 
 interface ChatBubble {
     role: 'user' | 'assistant';
@@ -148,9 +149,7 @@ export default function ConversationTutor() {
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                     className="flex items-center justify-between pb-6">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => navigate('/')} className="p-2 rounded-full bg-[var(--color-card)] shadow-[var(--shadow-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
+                        <BackButton to="/dashboard" />
                         <div className="flex items-center gap-4">
                             <div className="w-11 h-11 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
                                 <MessageCircle className="w-5 h-5 text-[var(--color-on-primary)]" aria-hidden="true" />
@@ -222,9 +221,7 @@ export default function ConversationTutor() {
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                     className="flex items-center justify-between pb-6 mb-6 shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => { setView('history'); setReadonlySession(null); }} className="p-2 rounded-full bg-[var(--color-card)] shadow-[var(--shadow-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
+                        <BackButton onClick={() => { setView('history'); setReadonlySession(null); }} />
                         <div className="space-y-0.5">
                             <h2 className="font-black text-lg tracking-tight leading-tight">{t('chat.title')}</h2>
                             <p className="text-xs text-[var(--color-on-surface-muted)]">
@@ -253,7 +250,7 @@ export default function ConversationTutor() {
                                     <div className="bg-[var(--color-card)] border-l-2 border-[var(--color-warning)] rounded-xl p-4 shadow-[var(--shadow-card)] mt-2 space-y-2 text-sm text-left">
                                         <p className="text-xs font-bold text-[var(--color-warning)] flex items-center gap-1.5">
                                             <AlertCircle className="w-3.5 h-3.5 text-[var(--color-warning)]" />
-                                            <span>💡 {t('chat.corrections', 'Sugerencia del Tutor')}</span>
+                                            <Lightbulb className="w-4 h-4" aria-hidden="true" /><span>{t('chat.corrections', 'Sugerencia del Tutor')}</span>
                                         </p>
                                         {msg.corrections.map((c, ci) => (
                                             <div key={ci} className="text-xs space-y-1">
@@ -307,12 +304,7 @@ export default function ConversationTutor() {
                 className="flex items-center justify-between pb-6 mb-6 shrink-0"
             >
                 <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="p-2 rounded-full bg-[var(--color-card)] shadow-[var(--shadow-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
+                    <BackButton to="/dashboard" />
                     <div className="flex items-center gap-4">
                         <div className="w-11 h-11 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
                             <MessageCircle className="w-5 h-5 text-[var(--color-on-primary)]" aria-hidden="true" />
@@ -352,7 +344,7 @@ export default function ConversationTutor() {
                         <div className="grid grid-cols-1 gap-2.5 w-full pt-2">
                             <button onClick={() => sendMessage('Hello! I want to practice casual conversation.')}
                                 className="text-xs font-semibold text-left bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-surface-container)] hover:-translate-y-0.5 transition-all duration-300 p-3.5 rounded-2xl shadow-[var(--shadow-card)] flex items-center gap-3 w-full group">
-                                <span className="text-2xl p-2 rounded-xl bg-[var(--color-primary)]/10 group-hover:scale-110 transition-transform duration-300">💬</span>
+                                <span className="p-2.5 rounded-xl bg-[var(--color-primary-container)] text-[var(--color-primary)] group-hover:scale-110 transition-transform duration-300"><MessageCircle className="w-5 h-5" aria-hidden="true" /></span>
                                 <div>
                                     <p className="text-[var(--color-on-surface)] font-bold text-sm">Charla casual</p>
                                     <p className="text-[10px] text-[var(--color-on-surface-muted)] font-normal mt-0.5">Plática espontánea sobre cualquier tema cotidiano.</p>
@@ -360,7 +352,7 @@ export default function ConversationTutor() {
                             </button>
                             <button onClick={() => sendMessage('Hi! Let\'s practice a restaurant roleplay.')}
                                 className="text-xs font-semibold text-left bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-surface-container)] hover:-translate-y-0.5 transition-all duration-300 p-3.5 rounded-2xl shadow-[var(--shadow-card)] flex items-center gap-3 w-full group">
-                                <span className="text-2xl p-2 rounded-xl bg-[var(--color-primary)]/10 group-hover:scale-110 transition-transform duration-300">🍔</span>
+                                <span className="p-2.5 rounded-xl bg-[var(--color-primary-container)] text-[var(--color-primary)] group-hover:scale-110 transition-transform duration-300"><UtensilsCrossed className="w-5 h-5" aria-hidden="true" /></span>
                                 <div>
                                     <p className="text-[var(--color-on-surface)] font-bold text-sm">Roleplay en un Restaurante</p>
                                     <p className="text-[10px] text-[var(--color-on-surface-muted)] font-normal mt-0.5">Simula ordenar comida y platicar en un café.</p>
@@ -368,7 +360,7 @@ export default function ConversationTutor() {
                             </button>
                             <button onClick={() => sendMessage('Hello! I want to prepare for a job interview.')}
                                 className="text-xs font-semibold text-left bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-surface-container)] hover:-translate-y-0.5 transition-all duration-300 p-3.5 rounded-2xl shadow-[var(--shadow-card)] flex items-center gap-3 w-full group">
-                                <span className="text-2xl p-2 rounded-xl bg-[var(--color-primary)]/10 group-hover:scale-110 transition-transform duration-300">💼</span>
+                                <span className="p-2.5 rounded-xl bg-[var(--color-primary-container)] text-[var(--color-primary)] group-hover:scale-110 transition-transform duration-300"><Briefcase className="w-5 h-5" aria-hidden="true" /></span>
                                 <div>
                                     <p className="text-[var(--color-on-surface)] font-bold text-sm">Práctica de Entrevista</p>
                                     <p className="text-[10px] text-[var(--color-on-surface-muted)] font-normal mt-0.5">Simulación de preguntas y respuestas profesionales.</p>
@@ -402,7 +394,7 @@ export default function ConversationTutor() {
                                     <div className="bg-[var(--color-card)] border-l-2 border-[var(--color-warning)] rounded-xl p-4 shadow-[var(--shadow-card)] mt-2 space-y-2 text-sm text-left">
                                         <p className="text-xs font-bold text-[var(--color-warning)] flex items-center gap-1.5">
                                             <AlertCircle className="w-3.5 h-3.5 text-[var(--color-warning)]" />
-                                            <span>💡 {t('chat.corrections', 'Sugerencia del Tutor')}</span>
+                                            <Lightbulb className="w-4 h-4" aria-hidden="true" /><span>{t('chat.corrections', 'Sugerencia del Tutor')}</span>
                                         </p>
                                         {msg.corrections.map((c, ci) => (
                                             <div key={ci} className="text-xs space-y-1">
