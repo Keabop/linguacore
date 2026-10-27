@@ -8,6 +8,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
+import PlantPicker from './garden/PlantPicker';
 
 interface SettingsModalProps {
     open: boolean;
@@ -101,7 +102,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 bg-[color-mix(in_oklch,var(--color-level-ink)_55%,transparent)]"
                         onClick={onClose}
                     />
 
@@ -127,7 +128,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                             </div>
 
                             {/* Content */}
-                            <div className="p-6 space-y-6">
+                            <div className="p-6 space-y-6 max-h-[75dvh] overflow-y-auto">
                                 {/* Username */}
                                 <div className="space-y-2 text-left font-body">
                                     <div className="flex items-center gap-3">
@@ -196,6 +197,11 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <option value="bilingual">Bilingüe (EN + ES)</option>
                                     </select>
                                 </div>
+
+                                {/* Divider */}
+                                <div className="border-t border-[var(--color-outline-subtle)]" />
+
+                                <PlantPicker onNavigate={onClose} />
 
                                 {/* Divider */}
                                 <div className="border-t border-[var(--color-outline-subtle)]" />

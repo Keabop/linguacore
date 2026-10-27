@@ -85,6 +85,12 @@
   --color-daisy: oklch(99% 0.004 95);
   --color-daisy-line: oklch(82% 0.02 100);
   --color-cactus: oklch(56% 0.1 165);
+  --color-rose: oklch(58% 0.18 15);
+  --color-rose-light: oklch(74% 0.13 12);
+  --color-lavender: oklch(64% 0.13 300);
+  --color-bark: oklch(45% 0.06 60);
+  --color-orchid: oklch(93% 0.04 340);
+  --color-orchid-lip: oklch(55% 0.17 340);
 
   /* Status colors: success is the leaf green, warning is the sun */
   --color-success: oklch(52% 0.14 152);
@@ -987,4 +993,184 @@ span[data-word].in-deck {
   .timeline-node-container {
     left: -35px;
   }
+}
+
+
+/* ============================================
+   JARDÍN — plants, garden row, level chips, streak and achievement moments
+   ============================================ */
+
+/* Garden row: one plant per unit, growing from a soil band */
+.garden {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0.5rem;
+  height: 7rem;
+  padding: 0.75rem 0.75rem 0;
+  overflow: hidden;
+  background: var(--color-surface-container);
+  border-radius: 0.75rem;
+  box-shadow: inset 0 -0.9rem 0 var(--color-soil);
+}
+
+/* Plant: seed → sprout → grown. Colour comes from --plant per species/stage. */
+.plant {
+  display: block;
+  min-height: 0;
+  height: 100%;
+  --plant: var(--color-level-b1);
+}
+.plant svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.plant .seed {
+  fill: var(--color-seed);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.plant .stem {
+  fill: none;
+  stroke: var(--plant);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset var(--dur-long) var(--ease-out), stroke var(--dur-long) var(--ease-out);
+}
+.plant .leaf {
+  fill: var(--plant);
+  transform: scale(0);
+  transform-box: fill-box;
+  transition: transform var(--dur-long) var(--ease-spring), fill var(--dur-long) var(--ease-out);
+}
+.plant .leaf-low { transform-origin: 100% 100%; transition-delay: 160ms; }
+.plant .leaf-top { transform-origin: 0% 100%; transition-delay: 300ms; }
+.plant .bloom {
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform var(--dur-long) var(--ease-spring) 420ms;
+}
+
+.plant.is-sprout { --plant: var(--color-a2-deep); }
+.plant.is-sprout .stem { stroke-dashoffset: 52; }
+.plant.is-sprout .leaf-low { transform: scale(1); }
+.plant.is-grown .stem { stroke-dashoffset: 0; }
+.plant.is-grown .leaf,
+.plant.is-grown .bloom { transform: scale(1); }
+.plant.is-grown .seed,
+.plant.is-sprout .seed { transform: scale(0.6); }
+
+/* Blooms */
+.plant .petal-sun { fill: var(--color-tertiary); }
+.plant .core-sun { fill: var(--color-sun-core); }
+.plant .petal-tulip { fill: var(--color-tulip); }
+.plant .petal-daisy { fill: var(--color-daisy); stroke: var(--color-daisy-line); stroke-width: 0.5; }
+.plant .core-daisy { fill: var(--color-tertiary); }
+.plant .petal-cactus { fill: var(--color-level-b2); }
+.plant .petal-rose { fill: var(--color-rose); }
+.plant .petal-rose-inner { fill: none; stroke: var(--color-rose-light); stroke-width: 1.2; stroke-linecap: round; }
+.plant .petal-rose-core { fill: var(--color-rose-light); }
+.plant .leaf-sepal { fill: var(--color-level-b1); }
+.plant .petal-lavender { fill: var(--color-lavender); }
+.plant .petal-orchid { fill: var(--color-orchid); stroke: var(--color-daisy-line); stroke-width: 0.4; }
+.plant .petal-orchid-lip { fill: var(--color-orchid-lip); }
+.plant .foliage { fill: var(--plant); }
+
+/* Species with a different body */
+.plant.sp-cactus { --plant: var(--color-cactus); }
+.plant.sp-cactus .stem { stroke-width: 7.5; }
+.plant.sp-cactus .leaf { fill: none; stroke: var(--plant); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.plant.sp-bonsai .stem { stroke: var(--color-bark); stroke-width: 4.5; }
+.plant.sp-lavanda .stem { stroke-width: 2.2; }
+.plant.is-sprout.sp-cactus,
+.plant.is-sprout.sp-bonsai { --plant: var(--color-a2-deep); }
+
+/* Level chip shaped like a leaf */
+.level-leaf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: var(--radius-leaf);
+  color: var(--color-level-ink);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Streak chip: sun pill with a flame */
+.streak-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--color-tertiary);
+  color: var(--color-on-tertiary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+}
+.streak-chip.is-bumped svg { animation: streak-bump 600ms var(--ease-spring); }
+@keyframes streak-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45) rotate(-8deg); }
+  100% { transform: scale(1); }
+}
+
+/* Achievement moments (see lib/celebrate.ts). Only these use the spring easing. */
+.celebrate-pop { animation: celebrate-pop 380ms var(--ease-spring); }
+@keyframes celebrate-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+.answer-nudge { animation: answer-nudge 300ms var(--ease-out); }
+@keyframes answer-nudge {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(-5px); }
+  60% { transform: translateX(4px); }
+}
+.check-draw path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: check-draw 320ms var(--ease-out) 80ms forwards;
+}
+@keyframes check-draw { to { stroke-dashoffset: 0; } }
+
+/* Plant picker (Settings) */
+.plant-picker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.plant-picker label {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  cursor: pointer;
+  padding: 0.35rem 0.25rem 0.5rem;
+  border: 1.5px solid var(--color-outline-variant);
+  border-radius: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.plant-picker label:hover { border-color: var(--color-outline); }
+.plant-picker input { position: absolute; opacity: 0; pointer-events: none; }
+.plant-picker input:checked + label { border-color: var(--color-primary); background: var(--color-primary-container); }
+.plant-picker input:focus-visible + label { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.plant-picker input:disabled + label { cursor: not-allowed; color: var(--color-on-surface-variant); }
+.plant-picker input:disabled + label .plant { opacity: 0.55; }
+.plant-picker .plant { width: 2.6rem; height: 3.2rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-pop, .answer-nudge, .streak-chip.is-bumped svg { animation: none !important; }
 }
