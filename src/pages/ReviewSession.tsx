@@ -13,14 +13,18 @@ import TranslationReview from '../components/TranslationReview';
 import GrammarReview from '../components/GrammarReview';
 import ErrorReview from '../components/ErrorReview';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Trophy, ArrowLeft, RefreshCw, BookOpen, AlertTriangle, Lock } from 'lucide-react';
+import { Sparkles, Trophy, RefreshCw, BookOpen, AlertTriangle, Lock } from 'lucide-react';
 import { toast } from '../lib/toast';
 import { useTier } from '../hooks/useTier';
 import { UsageBadge } from '../components/UsageBadge';
 import CountUp from '../components/reactbits/CountUp';
+import BackButton from '../components/ui/BackButton';
+import Plant from '../components/garden/Plant';
+import { useGardenPlant } from '../hooks/useGardenPlant';
 
 export default function ReviewSession() {
     const { t } = useTranslation();
+    const { species } = useGardenPlant();
     const navigate = useNavigate();
     const { isFree, limits } = useTier();
     const { dueCards: allDueCards, reviewCard } = useCards();
@@ -81,14 +85,16 @@ export default function ReviewSession() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center py-12 space-y-4"
             >
-                <Sparkles className="w-12 h-12 text-[var(--color-on-surface-muted)] mx-auto" />
+                <div className="mx-auto flex h-24 w-24 items-end justify-center rounded-full bg-[var(--color-primary-container)] pb-3">
+                    <Plant species={species} stage="grown" height={64} grow />
+                </div>
                 <h2 className="text-2xl font-black tracking-tight">{t('review.allDone')}</h2>
                 <p className="text-[var(--color-on-surface-muted)]">{t('review.comeBack')}</p>
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                     className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-full font-bold mt-4 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
-                    {t('reader.backToStories')}
+                    {t('review.backHome')}
                 </button>
             </motion.div>
         );
@@ -187,7 +193,7 @@ export default function ReviewSession() {
                         </div>
                     </div>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/dashboard')}
                         className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                     >
                         {t('review.backHome')}
@@ -211,12 +217,7 @@ export default function ReviewSession() {
                 {/* Progress header */}
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
-                        <button
-                            onClick={() => { setReviewType(null); setSessionDone(false); setCorrectCount(0); setTotalReviewed(0); }}
-                            className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4 inline" /> {t('review.changeMode', 'Cambiar modo')}
-                        </button>
+                        <BackButton onClick={() => { setReviewType(null); setSessionDone(false); setCorrectCount(0); setTotalReviewed(0); }} label={t('review.changeMode', 'Cambiar modo')} />
                         <span className="text-[var(--color-on-surface-muted)] font-mono text-xs">
                             {t('review.grammar', 'Gramática')} · {dueSkillCards.length} {t('review.remaining', 'restantes')}
                         </span>
@@ -258,7 +259,7 @@ export default function ReviewSession() {
                             <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                         </div>
                     </div>
-                    <button onClick={() => navigate('/')} className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                    <button onClick={() => navigate('/dashboard')} className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                         {t('review.backHome')}
                     </button>
                 </motion.div>
@@ -275,12 +276,7 @@ export default function ReviewSession() {
             <div className="space-y-10">
                 <div className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
-                        <button
-                            onClick={() => { setReviewType(null); setSessionDone(false); setCorrectCount(0); setTotalReviewed(0); }}
-                            className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4 inline" /> {t('review.changeMode', 'Cambiar modo')}
-                        </button>
+                        <BackButton onClick={() => { setReviewType(null); setSessionDone(false); setCorrectCount(0); setTotalReviewed(0); }} label={t('review.changeMode', 'Cambiar modo')} />
                         <span className="text-[var(--color-on-surface-muted)] font-mono text-xs">
                             {t('review.myErrors', 'Mis errores')} · {dueErrorCards.length} {t('review.remaining', 'restantes')}
                         </span>
@@ -335,7 +331,7 @@ export default function ReviewSession() {
                     </div>
                 )}
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                     className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                 >
                     {t('review.backHome')}
@@ -360,12 +356,7 @@ export default function ReviewSession() {
             {/* Progress header */}
             <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
-                    <button
-                        onClick={() => setMode(null)}
-                        className="text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4 inline" /> {t('review.changeMode')}
-                    </button>
+                    <BackButton onClick={() => setMode(null)} label={t('review.changeMode', 'Cambiar modo')} />
                     <span className="text-[var(--color-on-surface-muted)] font-mono">
                         {totalReviewed}/{initialCount.current ?? dueCards.length}
                     </span>

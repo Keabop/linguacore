@@ -41,6 +41,7 @@ Rules:
 - Be warm, patient, and encouraging
 - Mix in some Spanish when explaining corrections
 - Keep your replies concise (2-4 sentences max for the reply)
+- Do not use emojis
 - ${topicHint}
 
 You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exact format:
@@ -68,7 +69,7 @@ Always provide 2 suggested responses the student could use to continue the conve
 
     const history = [
         { role: 'user' as const, parts: [{ text: 'System instructions: ' + systemPrompt }] },
-        { role: 'model' as const, parts: [{ text: JSON.stringify({ reply: "Hi there! 👋 I'm your English conversation tutor. What would you like to talk about today?", corrections: [], suggestions: ["I want to talk about my day", "Can we practice ordering food?"] }) }] },
+        { role: 'model' as const, parts: [{ text: JSON.stringify({ reply: "Hi there! I'm your English conversation tutor. What would you like to talk about today?", corrections: [], suggestions: ["I want to talk about my day", "Can we practice ordering food?"] }) }] },
         ...chatHistory.slice(0, -1),
     ];
 
