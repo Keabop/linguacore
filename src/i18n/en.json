@@ -146,7 +146,8 @@
     "unlocked": "You unlocked level {{level}}!",
     "message": "You have demonstrated sufficient mastery to advance. New stories and vocabulary await you.",
     "continue": "Continue!",
-    "newStoriesAvailable": "new stories available"
+    "newStoriesAvailable": "new stories available",
+    "stageReached": "Your garden reached {{stage}}"
   },
   "stats": {
     "title": "Statistics",
@@ -291,5 +292,31 @@
     "language": "Language",
     "planAndSubscription": "Plan and subscription",
     "logout": "Log out"
+  },
+  "garden": {
+    "stage": {
+      "A1": "Seed",
+      "A2": "Sprout",
+      "B1": "Leaf",
+      "B2": "Bloom"
+    },
+    "species": {
+      "girasol": "Sunflower",
+      "tulipan": "Tulip",
+      "margarita": "Daisy",
+      "cactus": "Cactus",
+      "rosa": "Rose",
+      "lavanda": "Lavender",
+      "bonsai": "Bonsai",
+      "orquidea": "Orchid"
+    },
+    "pickerTitle": "Your plant",
+    "pickerHint": "This is how every unit you finish grows in your garden.",
+    "proOnly": "Pro",
+    "proLocked": "Available with Pro",
+    "seeplans": "See plans",
+    "saveError": "Your plant couldn't be saved. Try again.",
+    "unitsLabel": "{{done}} of {{total}} units complete",
+    "streakLabel": "{{count}}-day streak"
   }
 }

@@ -146,7 +146,8 @@
     "unlocked": "¡Desbloqueaste el nivel {{level}}!",
     "message": "Has demostrado dominio suficiente para avanzar. Nuevas historias y vocabulario te esperan.",
     "continue": "¡Continuar!",
-    "newStoriesAvailable": "nuevas historias disponibles"
+    "newStoriesAvailable": "nuevas historias disponibles",
+    "stageReached": "Tu jardín llegó a {{stage}}"
   },
   "stats": {
     "title": "Estadísticas",
@@ -291,5 +292,31 @@
     "language": "Idioma",
     "planAndSubscription": "Plan y suscripción",
     "logout": "Cerrar sesión"
+  },
+  "garden": {
+    "stage": {
+      "A1": "Semilla",
+      "A2": "Brote",
+      "B1": "Hoja",
+      "B2": "Flor"
+    },
+    "species": {
+      "girasol": "Girasol",
+      "tulipan": "Tulipán",
+      "margarita": "Margarita",
+      "cactus": "Cactus",
+      "rosa": "Rosa",
+      "lavanda": "Lavanda",
+      "bonsai": "Bonsái",
+      "orquidea": "Orquídea"
+    },
+    "pickerTitle": "Tu planta",
+    "pickerHint": "Así crece cada unidad que completas en tu jardín.",
+    "proOnly": "Pro",
+    "proLocked": "Disponible con Pro",
+    "seeplans": "Ver planes",
+    "saveError": "No se pudo guardar tu planta. Intenta de nuevo.",
+    "unitsLabel": "{{done}} de {{total}} unidades completas",
+    "streakLabel": "Racha de {{count}} días"
   }
 }
