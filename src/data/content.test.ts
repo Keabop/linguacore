@@ -6,7 +6,7 @@ import { cambridgeB1Questions } from './assessments/cambridge-b1-questions';
 import { cambridgeB2Questions } from './assessments/cambridge-b2-questions';
 import { ieltsQuestions } from './assessments/ielts-questions';
 import { toeflQuestions } from './assessments/toefl-questions';
-import { validateQuestion } from '../lib/exam/validate';
+import { validateExamStructure, validateQuestion } from '../lib/exam/validate';
 import reference from '../../content/reference/cefrj-vocabulary.json';
 import {
     ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, storyCoverage,
@@ -79,6 +79,12 @@ describe('assessments', () => {
     it('every question is answerable as written', () => {
         for (const q of [...placementQuestions, ...cambridgeB1Questions, ...cambridgeB2Questions, ...ieltsQuestions, ...toeflQuestions]) {
             expect(validateQuestion(q), q.id).toEqual([]);
+        }
+    });
+
+    it('lays out adaptive sections as router, then lower and upper stages', () => {
+        for (const bank of [placementQuestions, cambridgeB1Questions, cambridgeB2Questions, ieltsQuestions, toeflQuestions]) {
+            expect(validateExamStructure(bank)).toEqual([]);
         }
     });
 });

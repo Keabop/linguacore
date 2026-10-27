@@ -1,4 +1,5 @@
 import { normalizeAnswer, parseCompleteWords } from './grading';
+import { adaptiveSections } from './adaptive';
 import { isMultipleChoice, type AssessmentQuestion } from './types';
 
 /** Problems that would make a question unanswerable or ambiguous as written (empty when fine). */
@@ -34,6 +35,21 @@ export function validateQuestion(q: AssessmentQuestion): string[] {
             if (sorted(q.pieces.join(' ')) !== sorted(q.answer)) problems.push('las piezas no forman la respuesta');
             break;
         }
+    }
+    return problems;
+}
+
+/**
+ * Problems with an exam's adaptive layout: every adaptive section needs router, lower and
+ * upper items, with both stages after the router (the learner meets them in that order).
+ */
+export function validateExamStructure(questions: AssessmentQuestion[]): string[] {
+    const problems: string[] = [];
+    for (const section of adaptiveSections(questions)) {
+        const at = (stage: string) => questions.flatMap((q, i) => (q.section === section && q.stage === stage ? [i] : []));
+        const [router, lower, upper] = [at('router'), at('lower'), at('upper')];
+        if (!router.length || !lower.length || !upper.length) problems.push(`${section}: faltan preguntas router, lower o upper`);
+        if (router.length && [...lower, ...upper].some(i => i < Math.max(...router))) problems.push(`${section}: una etapa aparece antes de su router`);
     }
     return problems;
 }

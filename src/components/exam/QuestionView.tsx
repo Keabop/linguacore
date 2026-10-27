@@ -1,3 +1,4 @@
+import { useId, useRef, type KeyboardEvent } from 'react';
 import { parseCompleteWords } from '../../lib/exam/grading';
 import {
     isMultipleChoice, type AssessmentQuestion, type BuildSentenceQuestion, type CompleteWordsQuestion, type ExamResponse,
@@ -26,19 +27,49 @@ export default function QuestionView({ question, response, onChange }: Props) {
     }
 }
 
+/**
+ * Radio group keyboard behaviour: Tab reaches the group once (the chosen option, or the first),
+ * arrows move and choose, as in a native radio group.
+ */
+function useRadioKeys<T>(values: T[], selected: T | undefined, onSelect: (v: T) => void) {
+    const refs = useRef<(HTMLButtonElement | null)[]>([]);
+    const onKeyDown = (e: KeyboardEvent, i: number) => {
+        const step = ({ ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 } as Record<string, number>)[e.key];
+        if (!step) return;
+        e.preventDefault();
+        const next = (i + step + values.length) % values.length;
+        onSelect(values[next]);
+        refs.current[next]?.focus();
+    };
+    const tabIndex = (i: number) => ((selected === undefined ? i === 0 : values[i] === selected) ? 0 : -1);
+    return { refs, onKeyDown, tabIndex };
+}
+
 function MultipleChoice({ q, value, onChange }: { q: MultipleChoiceQuestion; value?: number; onChange: (v: number) => void }) {
+    const id = useId();
+    const keys = useRadioKeys(q.options.map((_, i) => i), value, onChange);
     return (
-        <fieldset className="space-y-4">
-            <legend className="text-lg font-bold leading-snug mb-4">{q.text}</legend>
-            <div className="space-y-3" role="radiogroup">
+        <div className="space-y-4">
+            <p id={id} className="text-lg font-bold leading-snug mb-4">{q.text}</p>
+            <div className="space-y-3" role="radiogroup" aria-labelledby={id}>
                 {q.options.map((opt, i) => (
-                    <button key={i} type="button" role="radio" aria-checked={value === i} onClick={() => onChange(i)} className={`${OPTION} ${value === i ? OPTION_ON : OPTION_IDLE}`}>
+                    <button
+                        key={i}
+                        ref={el => { keys.refs.current[i] = el; }}
+                        type="button"
+                        role="radio"
+                        aria-checked={value === i}
+                        tabIndex={keys.tabIndex(i)}
+                        onKeyDown={e => keys.onKeyDown(e, i)}
+                        onClick={() => onChange(i)}
+                        className={`${OPTION} ${value === i ? OPTION_ON : OPTION_IDLE}`}
+                    >
                         {q.fixedOrder && <span className="mr-2 font-mono text-[var(--color-on-surface-muted)]">{String.fromCharCode(65 + i)}</span>}
                         {opt}
                     </button>
                 ))}
             </div>
-        </fieldset>
+        </div>
     );
 }
 
@@ -46,21 +77,33 @@ function TrueFalseNotGiven({ q, value, onChange }: { q: TfngQuestion; value?: Tf
     const labels: Record<TfngAnswer, string> = q.variant === 'yes-no'
         ? { true: 'Yes', false: 'No', 'not-given': 'Not given' }
         : { true: 'True', false: 'False', 'not-given': 'Not given' };
+    const id = useId();
+    const values = Object.keys(labels) as TfngAnswer[];
+    const keys = useRadioKeys(values, value, onChange);
     return (
-        <fieldset className="space-y-4">
+        <div className="space-y-4">
             <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
                 {q.variant === 'yes-no' ? '¿Coincide con la opinión del autor?' : '¿Qué dice el texto sobre esta afirmación?'}
             </p>
-            <legend className="sr-only">{q.text}</legend>
-            <p className="text-lg font-bold leading-snug" aria-hidden="true">{q.text}</p>
-            <div className="grid grid-cols-3 gap-3" role="radiogroup">
-                {(Object.keys(labels) as TfngAnswer[]).map(key => (
-                    <button key={key} type="button" role="radio" aria-checked={value === key} onClick={() => onChange(key)} className={`${OPTION} text-center ${value === key ? OPTION_ON : OPTION_IDLE}`}>
+            <p id={id} className="text-lg font-bold leading-snug">{q.text}</p>
+            <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-labelledby={id}>
+                {values.map((key, i) => (
+                    <button
+                        key={key}
+                        ref={el => { keys.refs.current[i] = el; }}
+                        type="button"
+                        role="radio"
+                        aria-checked={value === key}
+                        tabIndex={keys.tabIndex(i)}
+                        onKeyDown={e => keys.onKeyDown(e, i)}
+                        onClick={() => onChange(key)}
+                        className={`${OPTION} text-center ${value === key ? OPTION_ON : OPTION_IDLE}`}
+                    >
                         {labels[key]}
                     </button>
                 ))}
             </div>
-        </fieldset>
+        </div>
     );
 }
 
@@ -83,7 +126,6 @@ function Gap({ q, value, onChange }: { q: GapQuestion; value: string; onChange: 
                     onChange={e => onChange(e.target.value)}
                     autoComplete="off"
                     spellCheck={false}
-                    aria-label="Respuesta"
                     className={`${INPUT} mx-1 w-48 font-semibold`}
                 />
                 {after}
@@ -129,21 +171,29 @@ function CompleteWords({ q, value, onChange }: { q: CompleteWordsQuestion; value
 
 function BuildSentence({ q, value, onChange }: { q: BuildSentenceQuestion; value: number[]; onChange: (v: number[]) => void }) {
     const remaining = q.pieces.map((_, i) => i).filter(i => !value.includes(i));
+    const sentenceRef = useRef<HTMLDivElement>(null);
+    const poolRef = useRef<HTMLDivElement>(null);
+    // The tapped piece disappears; focus moves to its neighbour instead of the page
+    const refocus = (group: HTMLDivElement | null, position: number) => requestAnimationFrame(() => {
+        const buttons = group?.querySelectorAll('button');
+        if (buttons?.length) buttons[Math.min(position, buttons.length - 1)].focus();
+        else (group === poolRef.current ? sentenceRef.current : poolRef.current)?.querySelector('button')?.focus();
+    });
     return (
         <div className="space-y-4">
             <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">Ordena las piezas para responder</p>
             <p className="text-lg font-bold leading-snug">{q.text}</p>
-            <div className="min-h-14 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-outline-variant)] p-3 flex flex-wrap gap-2" aria-label="Tu oración">
+            <div ref={sentenceRef} role="group" aria-label="Tu oración" className="min-h-14 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-outline-variant)] p-3 flex flex-wrap gap-2">
                 {value.length === 0 && <span className="text-sm text-[var(--color-on-surface-muted)] self-center">Toca las piezas en orden</span>}
                 {value.map((pieceIdx, pos) => (
-                    <button key={pos} type="button" onClick={() => onChange(value.filter((_, k) => k !== pos))} className="rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold" aria-label={`Quitar «${q.pieces[pieceIdx]}»`}>
+                    <button key={pos} type="button" onClick={() => { onChange(value.filter((_, k) => k !== pos)); refocus(sentenceRef.current, pos); }} className="rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold" aria-label={`Quitar «${q.pieces[pieceIdx]}»`}>
                         {q.pieces[pieceIdx]}
                     </button>
                 ))}
             </div>
-            <div className="flex flex-wrap gap-2">
-                {remaining.map(i => (
-                    <button key={i} type="button" onClick={() => onChange([...value, i])} className="rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] px-3 py-1.5 text-sm font-semibold">
+            <div ref={poolRef} role="group" aria-label="Piezas disponibles" className="flex flex-wrap gap-2">
+                {remaining.map((i, pos) => (
+                    <button key={i} type="button" onClick={() => { onChange([...value, i]); refocus(poolRef.current, pos); }} className="rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] px-3 py-1.5 text-sm font-semibold">
                         {q.pieces[i]}
                     </button>
                 ))}

@@ -148,33 +148,28 @@ export default function CEFRSimulator() {
         fetchLimits();
     }, [user, state]);
 
-    // Timer trigger
+    // Timer: the interval only counts down. Running out is handled below with the latest
+    // state (answers, stages, writing), not the values captured when the interval started.
     useEffect(() => {
         if (state === 'testing' || state === 'writing' || state === 'speaking') {
-            timerRef.current = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        clearInterval(timerRef.current!);
-                        setIsTimeUp(true);
-                        toast.error({
-                            title: 'Tiempo agotado',
-                            description: 'Se ha agotado el tiempo límite para el examen.'
-                        });
-                        if (state === 'testing') {
-                            proceedToWritingOrComplete();
-                        } else {
-                            handleCompleteGrading();
-                        }
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
+            timerRef.current = setInterval(() => setTimeLeft(prev => Math.max(0, prev - 1)), 1000);
         }
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [state]);
+
+    const finishRef = useRef<() => void>(() => {});
+    useEffect(() => {
+        const active = state === 'testing' || state === 'writing' || state === 'speaking';
+        if (!active || timeLeft > 0 || isTimeUp) return;
+        setIsTimeUp(true);
+        toast.error({
+            title: 'Tiempo agotado',
+            description: 'Se ha agotado el tiempo límite para el examen.'
+        });
+        finishRef.current();
+    }, [timeLeft, state, isTimeUp]);
 
     const formatTime = (seconds: number) => {
         const min = Math.floor(seconds / 60);
@@ -207,7 +202,7 @@ export default function CEFRSimulator() {
 
     const handleStartTest = () => {
         if (!selectedPreset) return;
-        stopDialogueSpeech();
+        stopAudio();
         cancelSpeech();
 
         // 1. Prepare questions & prompts depending on the selected preset
@@ -309,6 +304,13 @@ export default function CEFRSimulator() {
         else playDialogueSpeech(lines, (lineIdx) => setActiveDialogueLine(lineIdx), done);
     };
 
+    // Stopping playback never calls its completion, so the play state is released here
+    const stopAudio = () => {
+        stopDialogueSpeech();
+        setIsPlayingAudio(false);
+        setActiveDialogueLine(null);
+    };
+
     const setAnswer = (qId: string, response: ExamResponse) => {
         setAnswers(prev => ({ ...prev, [qId]: response }));
     };
@@ -319,18 +321,23 @@ export default function CEFRSimulator() {
     const closesRouter = endsRouter(questions, visible, currentIdx, stageChoice);
 
     const goNext = () => {
-        stopDialogueSpeech();
+        stopAudio();
         if (closesRouter && current) {
-            setStageChoice(prev => ({ ...prev, [current.section]: chooseStage(questions, current.section, answers) }));
+            const chosen = { ...stageChoice, [current.section]: chooseStage(questions, current.section, answers) };
+            setStageChoice(chosen);
+            // Never step past the questions that will actually be shown
+            const nextCount = visibleQuestions(questions, chosen).length;
+            setCurrentIdx(prev => Math.min(prev + 1, nextCount - 1));
+            return;
         }
-        setCurrentIdx(prev => prev + 1);
+        setCurrentIdx(prev => Math.min(prev + 1, visible.length - 1));
     };
 
     // A second stage can't go back into its router (as in adaptive exams)
     const canGoBack = currentIdx > 0 && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
 
     const proceedToWritingOrComplete = () => {
-        stopDialogueSpeech();
+        stopAudio();
         if (selectedPreset?.id !== 'placement' && writingPromptsList.length > 0) {
             setState('writing');
         } else {
@@ -359,6 +366,8 @@ export default function CEFRSimulator() {
             const totalWritingLength = writingPromptsList.reduce((acc, p) => acc + (writingAnswers[p.id] || '').trim().length, 0);
             const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
 
+            // A task left (almost) empty scores 0; it is not left out of the result
+            if (hasWriting && totalWritingLength <= 10) writingScore = 0;
             if (hasWriting && totalWritingLength > 10) {
                 try {
                     const aiResult = await evaluateWriting(
@@ -385,6 +394,7 @@ export default function CEFRSimulator() {
             const prompts = hasSpeaking ? speakingPrompts.map(p => p.prompt) : [];
             const totalSpeakingLength = transcripts.reduce((acc, t) => acc + t.trim().length, 0);
 
+            if (hasSpeaking && totalSpeakingLength <= 5) speakingScore = 0;
             if (hasSpeaking && totalSpeakingLength > 5) {
                 try {
                     const aiResult = await evaluateSpeaking(transcripts, prompts, targetLvl);
@@ -412,7 +422,8 @@ export default function CEFRSimulator() {
                     writing_score: report.percent.writing,
                     writing_feedback: aiFeedbackObj,
                     speaking_score: report.percent.speaking,
-                    speaking_feedback: aiSpeakingFeedbackObj
+                    speaking_feedback: aiSpeakingFeedbackObj,
+                    report: { headline: report.headline, breakdown: report.breakdown, stages: stageChoice }
                 });
                 if (dbErr) console.error('Saving the simulation failed:', dbErr);
             }
@@ -434,6 +445,8 @@ export default function CEFRSimulator() {
             setState('selection');
         }
     };
+
+    finishRef.current = handleCompleteGrading;
 
     return (
         <div className="py-6 px-4 max-w-4xl mx-auto space-y-8">
@@ -628,7 +641,7 @@ export default function CEFRSimulator() {
                         {/* Navigation controls */}
                         <div className="flex justify-between items-center shrink-0">
                             <button
-                                onClick={() => setCurrentIdx(prev => Math.max(0, prev - 1))}
+                                onClick={() => { stopAudio(); setCurrentIdx(prev => Math.max(0, prev - 1)); }}
                                 disabled={!canGoBack}
                                 className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
                             >
