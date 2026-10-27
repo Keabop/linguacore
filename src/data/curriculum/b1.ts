@@ -202,14 +202,14 @@ export const b1GrammarCards: GrammarCard[] = [
 </ul>
 <p>"Used to" funciona tanto para <strong>acciones repetidas</strong> como para <strong>estados</strong>:</p>
 <ul>
-<li>I used to play tennis. ✓ (hábito)</li>
-<li>I used to have a dog. ✓ (estado pasado)</li>
+<li>I used to play tennis. <em>(correcto: hábito)</em></li>
+<li>I used to have a dog. <em>(correcto: estado pasado)</em></li>
 </ul>
 <h3>WOULD — acciones repetidas del pasado</h3>
 <p>Se usa para hablar de <strong>acciones repetidas o rutinas del pasado</strong>, pero NO de estados.</p>
 <ul>
-<li>When I was a child, I <strong>would</strong> wake up early every day. ✓</li>
-<li>I <strong>would have</strong> a dog. ✗ (no se puede con estados)</li>
+<li>When I was a child, I <strong>would</strong> wake up early every day. <em>(correcto)</em></li>
+<li>I <strong>would have</strong> a dog. <em>(incorrecto: no se usa con estados)</em></li>
 </ul>
 <h3>Diferencias clave</h3>
 <ul>

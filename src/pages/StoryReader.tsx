@@ -12,7 +12,10 @@ import { toast } from '../lib/toast';
 import DOMPurify from 'dompurify';
 import LevelBadge from '../components/ui/LevelBadge';
 import { useSpeech } from '../hooks/useSpeech';
-import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy, Lightbulb, BookOpen, Check } from 'lucide-react';
+import BackButton from '../components/ui/BackButton';
+import Plant from '../components/garden/Plant';
+import { useGardenPlant } from '../hooks/useGardenPlant';
 
 /** Extract unique word IDs from story HTML content */
 function extractKeywords(html: string): string[] {
@@ -26,6 +29,7 @@ function extractKeywords(html: string): string[] {
 }
 
 export default function StoryReader() {
+    const { species } = useGardenPlant();
     const { storyId } = useParams<{ storyId: string }>();
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -106,7 +110,7 @@ export default function StoryReader() {
                 hasShownVoiceWarning.current = true;
                 // Show user-friendly instructions
                 toast.error({
-                    title: '⚠️ No se encontraron voces en inglés',
+                    title: 'No se encontraron voces en inglés',
                     description: 'Tu sistema no tiene voces en inglés instaladas. Ve a Configuración → Hora e idioma → Voz → Agregar voces → Inglés (Estados Unidos). Luego reinicia el navegador.',
                 });
             }
@@ -543,7 +547,7 @@ export default function StoryReader() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-16 space-y-6"
                 >
-                    <div className="text-7xl">🎉</div>
+                    <Plant species={species} stage="grown" height={88} grow className="mx-auto" />
                     <h2 className="text-3xl font-black tracking-tight">{t('reader.storyCompleted')}</h2>
                     <p className="text-[var(--color-on-surface-muted)] text-base">
                         {addedWords.size} {t('reader.wordsAdded')}
@@ -572,12 +576,7 @@ export default function StoryReader() {
         <div className="space-y-8">
             {/* Story header */}
             <div className="flex items-center gap-4">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)] transition-all duration-300 text-xl"
-                >
-                    ←
-                </button>
+                <BackButton to="/learn" />
                 <div className="flex-1">
                     <h2 className="text-2xl font-black tracking-tight">{story.title}</h2>
                     <div className="flex items-center gap-2 mt-1.5">
@@ -591,7 +590,7 @@ export default function StoryReader() {
 
             {/* Tap hint */}
             <div className="bg-[var(--color-primary)]/8 text-[var(--color-primary)] text-xs py-3 px-5 rounded-full text-center shadow-[var(--shadow-card)]">
-                💡 {t('reader.tapToTranslate')}
+                <Lightbulb className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.tapToTranslate')}
             </div>
 
             {/* Story content */}
@@ -620,7 +619,7 @@ export default function StoryReader() {
                     className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 space-y-4 shadow-[var(--shadow-card)]"
                 >
                     <h3 className="text-sm font-bold text-[var(--color-on-surface-muted)] flex items-center gap-2">
-                        📚 {t('reader.keyVocabulary')}
+                        <BookOpen className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.keyVocabulary')}
                         <span className="text-xs text-[var(--color-on-surface-muted)] font-normal">({keywords.length})</span>
                     </h3>
                     <div className="flex flex-wrap gap-3">
@@ -634,8 +633,8 @@ export default function StoryReader() {
                                     onClick={() => handleChipClick(wordId)}
                                     className={`vocab-chip ${status === 'deck' ? 'in-deck' : status === 'known' ? 'known' : ''}`}
                                 >
-                                    {status === 'deck' && <span>✓</span>}
-                                    {status === 'known' && <span>✓</span>}
+                                    {status === 'deck' && <Check className="w-3 h-3" aria-hidden="true" />}
+                                    {status === 'known' && <Check className="w-3 h-3" aria-hidden="true" />}
                                     <span>{wordId}</span>
                                     <span className="chip-translation">— {vocab.translations[0]}</span>
                                 </button>
@@ -755,7 +754,7 @@ export default function StoryReader() {
                 onClick={handleComplete}
                 className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-black py-4 rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-base tracking-wide"
             >
-                ✓ {t('reader.storyCompleted')}
+                <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.storyCompleted')}
             </button>
 
             {/* Floating Audiobook Player Bar */}
@@ -781,7 +780,7 @@ export default function StoryReader() {
                             className="w-14 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
                             title="Acento del sintetizador"
                         >
-                            {accent === 'US' ? '🇺🇸 US' : accent === 'UK' ? '🇬🇧 UK' : '🇦🇺 AU'}
+                            {accent}
                         </button>
 
                         <button
@@ -883,11 +882,11 @@ export default function StoryReader() {
                                 <div className="flex gap-3 pt-2">
                                     {wordStatus === 'deck' ? (
                                         <div className="flex-1 bg-[var(--color-primary)]/12 text-[var(--color-primary)] text-center py-3 rounded-full text-sm font-bold">
-                                            ✓ {t('reader.alreadyAdded')}
+                                            <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.alreadyAdded')}
                                         </div>
                                     ) : wordStatus === 'known' ? (
                                         <div className="flex-1 bg-accent-blue/12 text-accent-blue text-center py-3 rounded-full text-sm font-bold">
-                                            ✓ {t('reader.alreadyKnown')}
+                                            <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.alreadyKnown')}
                                         </div>
                                     ) : (
                                         <>
@@ -901,7 +900,7 @@ export default function StoryReader() {
                                                 onClick={handleMarkKnown}
                                                 className="flex-1 bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] text-sm"
                                             >
-                                                ✓ {t('reader.alreadyKnown')}
+                                                <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.alreadyKnown')}
                                             </button>
                                         </>
                                     )}

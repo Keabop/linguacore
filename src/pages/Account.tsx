@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2, Award, Calendar } from 'lucide-react';
+import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2, Award, Calendar, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -872,7 +872,7 @@ export default function Account() {
                                             </div>
                                             {sim.writing_feedback && (
                                                 <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-md flex items-center gap-1 border border-[var(--color-success)]/20">
-                                                    ✔ Feedback IA
+                                                    <Check className="inline w-3.5 h-3.5 -mt-0.5 mr-1" aria-hidden="true" />Feedback IA
                                                 </span>
                                             )}
                                         </div>
