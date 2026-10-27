@@ -1,11 +1,12 @@
 // Centralized static data lookups — replaces all Dexie queries for static content
 import { storiesData } from './stories';
+import { allUnits, getUnitsByLevel } from './curriculum/units';
 import { vocabularyData } from './vocabulary';
 import {
-    a1Units, a1GrammarCards, a1Exercises,
-    a2Units, a2GrammarCards, a2Exercises,
-    b1Units, b1GrammarCards, b1Exercises,
-    b2Units, b2GrammarCards, b2Exercises,
+    a1GrammarCards, a1Exercises,
+    a2GrammarCards, a2Exercises,
+    b1GrammarCards, b1Exercises,
+    b2GrammarCards, b2Exercises,
     a1Skills, a2Skills, b1Skills, b2Skills,
 } from './curriculum';
 import {
@@ -17,7 +18,7 @@ import {
 
 export const allStories = storiesData;
 export const allVocabulary = vocabularyData;
-export const allUnits = [...a1Units, ...a2Units, ...b1Units, ...b2Units];
+export { allUnits, getUnitsByLevel };
 export const allGrammarCards = [...a1GrammarCards, ...a2GrammarCards, ...b1GrammarCards, ...b2GrammarCards];
 export const allExercises = [...a1Exercises, ...a2Exercises, ...b1Exercises, ...b2Exercises];
 export const allWritingPrompts = [...a1WritingPrompts, ...a2WritingPrompts, ...b1WritingPrompts, ...b2WritingPrompts];
@@ -27,8 +28,6 @@ export const allSpeakingPrompts = [...a1SpeakingPrompts, ...a2SpeakingPrompts, .
 export const getStory = (id: string) => allStories.find(s => s.id === id);
 export const getVocab = (id: string) => allVocabulary.find(v => v.id === id);
 export const getUnit = (id: string) => allUnits.find(u => u.id === id);
-export const getUnitsByLevel = (level: string) =>
-    allUnits.filter(u => u.level === level).sort((a, b) => a.unitNumber - b.unitNumber);
 export const getGrammarCardByUnit = (unitId: string) =>
     allGrammarCards.find(gc => gc.unitId === unitId);
 export const getExercisesByUnit = (unitId: string) =>

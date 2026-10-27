@@ -2,25 +2,30 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useCards } from '../hooks/useCards';
 import { useSkillCards } from '../hooks/useSkillCards';
 import { useErrorCards } from '../hooks/useErrorCards';
-import LevelUpModal from '../components/ui/LevelUpModal';
 import { ArrowRight, Flame, Layers, BookOpen, Check, RefreshCw, Clock, Map, PartyPopper, AlertTriangle, Sparkles, Activity, GraduationCap } from 'lucide-react';
 import type { CEFRLevel } from '../lib/db';
 import type { ReadStoryRow, UnitProgressRow } from '../lib/database.types';
-import { allStories, getUnitsByLevel } from '../data';
+import { storiesData as allStories } from '../data/stories';
+import { getUnitsByLevel } from '../data/curriculum/units';
 import { getStoryMesh, StoryIcon } from '../lib/storyVisuals';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
 import { storyDetails, CEFR_COLORS } from './StoryList';
 import DBErrorCard from '../components/DBErrorCard';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
-import { BlurText, CountUp, SpotlightCard } from '../components/reactbits';
+import BlurText from '../components/reactbits/BlurText';
+import CountUp from '../components/reactbits/CountUp';
+import SpotlightCard from '../components/reactbits/SpotlightCard';
+
+// Uses WebGL (ogl); loaded only the first time a level-up happens
+const LevelUpModal = lazy(() => import('../components/ui/LevelUpModal'));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getContextualGreeting(t: any, dueCards: number, streak: number): string {
@@ -47,6 +52,9 @@ export default function Dashboard() {
     const { user: authUser } = useAuth();
     const [showLevelUp, setShowLevelUp] = useState(false);
     const [newLevel, setNewLevel] = useState<CEFRLevel>('A2');
+    // Stays mounted after the first open so the modal can play its exit animation
+    const [levelUpMounted, setLevelUpMounted] = useState(false);
+    if (showLevelUp && !levelUpMounted) setLevelUpMounted(true);
 
     const stories = allStories;
     const { data: readStories } = useQuery({
@@ -447,7 +455,11 @@ export default function Dashboard() {
                 </motion.div>
             )}
 
-            <LevelUpModal level={newLevel} isOpen={showLevelUp} onClose={() => setShowLevelUp(false)} />
+            {levelUpMounted && (
+                <Suspense fallback={null}>
+                    <LevelUpModal level={newLevel} isOpen={showLevelUp} onClose={() => setShowLevelUp(false)} />
+                </Suspense>
+            )}
         </div>
     );
 }

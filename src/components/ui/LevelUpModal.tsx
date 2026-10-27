@@ -2,7 +2,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import type { CEFRLevel } from '../../lib/db';
 import { Trophy, BookOpen } from 'lucide-react';
-import { Particles, Aurora, SplitText } from '../reactbits';
+import Particles from '../reactbits/Particles';
+import Aurora from '../reactbits/Aurora';
+import SplitText from '../reactbits/SplitText';
 
 interface LevelUpModalProps {
     level: CEFRLevel;

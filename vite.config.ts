@@ -94,6 +94,8 @@ export default defineConfig({
                     }
                     // Animation
                     if (n.includes('/framer-motion/')) return 'vendor-motion';
+                    // Supabase client (auth, postgrest, realtime, storage...)
+                    if (n.includes('/@supabase/') || n.includes('/iceberg-js/')) return 'vendor-supabase';
                     // Persistence & server-state
                     if (n.includes('/@tanstack/react-query/') ||
                         n.includes('/@tanstack/react-query-persist-client/') ||

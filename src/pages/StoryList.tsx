@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import type { CEFRLevel } from '../lib/db';
 import type { ReadStoryRow, KnownWordRow } from '../lib/database.types';
-import { allStories } from '../data';
+import { storiesData as allStories } from '../data/stories';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -15,7 +15,7 @@ import { UsageBadge } from '../components/UsageBadge';
 import { Lock, Check, Clock, Sparkles, Loader2, X, Search, Compass, Eye } from 'lucide-react';
 import { StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
-import { SpotlightCard } from '../components/reactbits';
+import SpotlightCard from '../components/reactbits/SpotlightCard';
 
 export const storyDetails: Record<string, { spanishTitle: string; description: string }> = {
     'a1-001': { spanishTitle: 'Mi Rutina Diaria', description: 'Una mirada sencilla a las actividades de la mañana.' },
