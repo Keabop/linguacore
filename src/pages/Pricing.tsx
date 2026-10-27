@@ -4,7 +4,6 @@ import { Check, Loader2, PartyPopper } from 'lucide-react';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
-import CountUp from '../components/reactbits/CountUp';
 
 const FREE_FEATURES = [
     'Nivel A1 completo (gramática, vocabulario, ejercicios)',
@@ -26,6 +25,7 @@ const PRO_FEATURES = [
     'Análisis de errores y patrones',
     'Estadísticas detalladas de progreso',
     'Evaluaciones de escritura completas',
+    'Plantas extra para tu jardín (rosa, lavanda, bonsái y orquídea)',
 ];
 
 export default function Pricing() {
@@ -156,7 +156,7 @@ export default function Pricing() {
                 <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                     <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Gratis</h2>
                     <p className="mt-2 text-2xl font-black tracking-tight">
-                        $<CountUp from={0} to={0} duration={1} className="inline" /> <span className="text-base font-normal text-[var(--color-on-surface-muted)]">— Para siempre</span>
+                        $0 <span className="text-base font-normal text-[var(--color-on-surface-muted)]">— Para siempre</span>
                     </p>
 
                     <ul className="mt-6 space-y-3">
@@ -184,9 +184,9 @@ export default function Pricing() {
 
                     <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Plan Pro</h2>
                     <p className="mt-2 text-2xl font-black tracking-tight">
-                        $<CountUp from={0} to={129} duration={1.5} className="inline" /> <span className="text-base font-normal text-[var(--color-on-surface-muted)]">MXN/mes</span>
+                        $129 <span className="text-base font-normal text-[var(--color-on-surface-muted)]">MXN/mes</span>
                     </p>
-                    <p className="text-sm text-[var(--color-on-surface-muted)]">o $<CountUp from={0} to={1299} duration={2} separator="," className="inline" /> MXN/año</p>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">o $1,299 MXN/año</p>
 
                     <ul className="mt-6 space-y-3">
                         {PRO_FEATURES.map((f, i) => (
