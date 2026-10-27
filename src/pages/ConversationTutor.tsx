@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useConversationHistory, type ConversationSession } from '../hooks/useConversationHistory';
 import { chatWithTutor, type ConversationMessage, type ConversationResponse } from '../lib/ai';
-import { Send, Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus, Lock, X } from 'lucide-react';
+import { Sparkles, ArrowLeft, MessageCircle, AlertCircle, History, Plus, Lock, X } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import AIErrorCard from '../components/AIErrorCard';
@@ -12,6 +12,7 @@ import { useErrorCards } from '../hooks/useErrorCards';
 import { useTier } from '../hooks/useTier';
 import { useUsageLimits } from '../hooks/useUsageLimits';
 import { UsageBadge } from '../components/UsageBadge';
+import { SendIcon } from '../components/icons';
 
 interface ChatBubble {
     role: 'user' | 'assistant';
@@ -492,7 +493,7 @@ export default function ConversationTutor() {
                         disabled={!input.trim() || isLoading}
                         className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full px-5 py-3 shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:opacity-40 active:scale-95"
                     >
-                        <Send className="w-4 h-4" />
+                        <SendIcon size={16} aria-hidden="true" />
                     </button>
                 </form>
             )}

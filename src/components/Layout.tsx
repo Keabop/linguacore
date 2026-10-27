@@ -3,8 +3,11 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
-import { Home, BookOpen, RefreshCw, MessageCircle, Map, PenLine, User, GripVertical, GripHorizontal, GraduationCap, Shield } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { User, GripVertical, GripHorizontal, Shield } from 'lucide-react';
+import {
+    BookOpenIcon, GraduationCapIcon, HouseIcon, MapIcon, MessageCircleIcon, PencilIcon, RefreshCwIcon,
+    type AnimatedIcon, type AnimatedIconHandle,
+} from './icons';
 import LevelBadge from './ui/LevelBadge';
 import { LeafMark } from './ui/Wordmark';
 import Bilingual from './ui/Bilingual';
@@ -14,21 +17,23 @@ import { useAuth } from '../lib/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
 import { useSidebarPreferences, type SidebarPosition } from '../hooks/useSidebarPreferences';
 
-const navItems: { path: string; icon: LucideIcon; labelKey: string; end?: boolean }[] = [
-    { path: '/dashboard', icon: Home, labelKey: 'nav.home' },
-    { path: '/path', icon: Map, labelKey: 'nav.path' },
-    { path: '/learn', icon: BookOpen, labelKey: 'nav.learn' },
-    { path: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
-    { path: '/practice', icon: PenLine, labelKey: 'nav.practice' },
-    { path: '/review', icon: RefreshCw, labelKey: 'nav.review', end: true },
-    { path: '/review/simulator', icon: GraduationCap, labelKey: 'nav.simulator' },
+const navItems: { path: string; icon: AnimatedIcon; labelKey: string; end?: boolean }[] = [
+    { path: '/dashboard', icon: HouseIcon, labelKey: 'nav.home' },
+    { path: '/path', icon: MapIcon, labelKey: 'nav.path' },
+    { path: '/learn', icon: BookOpenIcon, labelKey: 'nav.learn' },
+    { path: '/chat', icon: MessageCircleIcon, labelKey: 'nav.chat' },
+    { path: '/practice', icon: PencilIcon, labelKey: 'nav.practice' },
+    { path: '/review', icon: RefreshCwIcon, labelKey: 'nav.review', end: true },
+    { path: '/review/simulator', icon: GraduationCapIcon, labelKey: 'nav.simulator' },
 ];
 
 function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
-    path: string; icon: LucideIcon; labelKey: string; expanded: boolean; position: SidebarPosition; end?: boolean;
+    path: string; icon: AnimatedIcon; labelKey: string; expanded: boolean; position: SidebarPosition; end?: boolean;
 }) {
     const { t } = useTranslation();
     const [isHovered, setIsHovered] = useState(false);
+    // The whole item, not only the glyph, triggers the icon animation
+    const iconRef = useRef<AnimatedIconHandle>(null);
     const isVertical = position === 'left' || position === 'right';
 
     return (
@@ -46,8 +51,8 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                         : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
                 }`
             }
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={() => { setIsHovered(true); iconRef.current?.startAnimation(); }}
+            onMouseLeave={() => { setIsHovered(false); iconRef.current?.stopAnimation(); }}
         >
             {({ isActive }) => (
                 <>
@@ -61,7 +66,7 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
                         />
                     )}
                     <div className={`${isVertical ? 'w-12 h-12' : 'w-10 h-10'} flex items-center justify-center shrink-0`}>
-                        <Icon className="w-5 h-5 md:w-6 md:h-6" />
+                        <Icon ref={iconRef} size={22} aria-hidden="true" />
                     </div>
                     <AnimatePresence>
                         {expanded && isVertical && (
@@ -411,7 +416,7 @@ export default function Layout() {
                                 isActive ? 'active' : ''
                             }
                         >
-                            <item.icon className="w-5 h-5" />
+                            <item.icon size={20} isAnimated={false} aria-hidden="true" />
                             <span>{t(item.labelKey)}</span>
                         </NavLink>
                     ))}

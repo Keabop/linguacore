@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, RotateCcw } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
+import { MicIcon } from '../icons';
 
 interface Props {
     instruction: string;
@@ -123,7 +124,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                     <>
                         <button onClick={handleToggleRecord}
                             className={`flex-1 py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isListening ? 'bg-accent-red text-[var(--color-on-primary)] animate-pulse' : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90'}`}>
-                            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                            {isListening ? <MicOff className="w-4 h-4" /> : <MicIcon size={16} aria-hidden="true" />}
                             {isListening ? 'Detener' : 'Grabar'}
                         </button>
                         {transcript && !isListening && (
