@@ -11,12 +11,14 @@ interface PlantProps {
     /** Start as a seed and grow into `stage` after `delay` ms. */
     grow?: boolean;
     delay?: number;
+    /** Leaves only (the B1 «Hoja» stage). */
+    noBloom?: boolean;
     className?: string;
 }
 
 const SOIL_Y = 56;
 
-export default function Plant({ species, stage, height = 44, grow = false, delay = 0, className = '' }: PlantProps) {
+export default function Plant({ species, stage, height = 44, grow = false, delay = 0, noBloom = false, className = '' }: PlantProps) {
     const [shown, setShown] = useState<PlantStage>(grow ? 'seed' : stage);
 
     useEffect(() => {
@@ -44,7 +46,7 @@ export default function Plant({ species, stage, height = 44, grow = false, delay
                 />
                 <path className="leaf leaf-low" d={leafLow} />
                 <path className="leaf leaf-top" d={leafTop} />
-                <g className="bloom">{sp.bloom(20, top - 3)}</g>
+                {!noBloom && <g className="bloom">{sp.bloom(20, top - 3)}</g>}
             </svg>
         </span>
     );

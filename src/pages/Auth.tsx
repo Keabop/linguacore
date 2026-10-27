@@ -3,7 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
-import Aurora from '../components/reactbits/Aurora';
+import Plant from '../components/garden/Plant';
+import { LeafMark } from '../components/ui/Wordmark';
 
 type Mode = 'login' | 'register';
 
@@ -44,7 +45,7 @@ export default function Auth() {
     if (loading) {
         return (
             <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 z-0"><Aurora colorStops={["#3F9D5A", "#C6E06A", "#F9F6EC"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
+                <AuthGarden />
                 <div className="relative z-10 w-10 h-10 rounded-full bg-[var(--color-primary)] animate-spin shadow-[var(--shadow-elevated)]" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 90% 50%, 90% 10%, 50% 10%)' }} />
             </div>
         );
@@ -53,7 +54,7 @@ export default function Auth() {
     if (registered) {
         return (
             <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center px-4 relative overflow-hidden">
-                <div className="absolute inset-0 z-0"><Aurora colorStops={["#3F9D5A", "#C6E06A", "#F9F6EC"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
+                <AuthGarden />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -79,7 +80,7 @@ export default function Auth() {
 
     return (
         <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center px-6 relative overflow-hidden">
-            <div className="absolute inset-0 z-0"><Aurora colorStops={["#3F9D5A", "#C6E06A", "#F9F6EC"]} speed={0.3} blend={0.5} amplitude={0.6} /></div>
+            <AuthGarden />
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -88,15 +89,10 @@ export default function Auth() {
             >
                 {/* Logo + Branding */}
                 <div className="flex flex-col items-center mb-12">
-                    <div className="relative mb-6">
-                        <img
-                            src="/logo.png"
-                            alt="Voxie"
-                            className="w-20 h-20 rounded-2xl object-cover shadow-[var(--shadow-elevated)]"
-                        />
-                        <div className="absolute -inset-2 rounded-3xl bg-[var(--color-primary)]/10 blur-xl -z-10" />
+                    <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-primary-container)]">
+                        <LeafMark className="h-11 w-11" />
                     </div>
-                    <h1 className="text-3xl font-black text-[var(--color-on-surface)] tracking-tight mb-2 font-display">Voxie</h1>
+                    <h1 className="text-3xl font-extrabold text-[var(--color-on-surface)] tracking-[-0.04em] mb-2 font-display">voxie</h1>
                     <p className="text-sm text-[var(--color-on-surface-muted)] font-body">
                         {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
                     </p>
@@ -184,6 +180,20 @@ export default function Auth() {
                     </button>
                 </p>
             </motion.div>
+        </div>
+    );
+}
+
+/** Decorative garden along the bottom of the auth screens. */
+function AuthGarden() {
+    const heights = [34, 44, 30, 48, 38, 42, 32];
+    return (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-28 shadow-[inset_0_-1.25rem_0_var(--color-soil)]">
+            <div className="mx-auto grid h-full max-w-3xl grid-cols-7 gap-3 px-6">
+                {heights.map((h, i) => (
+                    <Plant key={i} species="girasol" stage="grown" height={h} grow delay={300 + i * 120} />
+                ))}
+            </div>
         </div>
     );
 }
