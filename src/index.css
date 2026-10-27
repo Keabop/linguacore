@@ -721,16 +721,11 @@ span[data-word].in-deck {
     right: 0;
     z-index: 50;
     background: var(--color-card);
-    border-radius: 3rem 3rem 0 0;
-    padding: 12px 16px calc(env(safe-area-inset-bottom, 8px) + 12px);
+    border-top: 1px solid var(--color-outline-variant);
+    padding: 8px 12px calc(env(safe-area-inset-bottom, 8px) + 8px);
     gap: 4px;
     align-items: center;
     justify-content: space-around;
-    box-shadow: 0 -10px 40px color-mix(in oklch, var(--color-primary) 8%, transparent);
-  }
-
-  .dark .floating-bar {
-    background: var(--color-card);
   }
 
   .floating-bar a {
@@ -745,13 +740,13 @@ span[data-word].in-deck {
     text-decoration: none;
     font-size: 10px;
     font-weight: 600;
-    transition: all 0.2s var(--ease-out);
+    transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
     min-width: 0;
   }
 
   .floating-bar a.active {
     color: var(--color-primary);
-    background: color-mix(in oklch, var(--color-primary) 8%, transparent);
+    background: var(--color-primary-container);
   }
 
   .floating-bar a .bar-icon {

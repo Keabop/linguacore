@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import type { Unit, UnitProgress } from '../lib/db';
 import type { UnitProgressRow } from '../lib/database.types';
-import { getUnitsByLevel } from '../data';
+import { getUnitsByLevel } from '../data/curriculum/units';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
@@ -12,16 +12,17 @@ import { useTier } from '../hooks/useTier';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
 import SkillBreakdown from '../components/SkillBreakdown';
+import Garden from '../components/garden/Garden';
+import Plant from '../components/garden/Plant';
+import StemProgress from '../components/ui/StemProgress';
+import { useGardenPlant } from '../hooks/useGardenPlant';
 import {
-    Map,
     Lock,
     CheckCircle2,
     BookOpen,
     Play,
     Trophy,
-    ChevronRight,
     Crown,
-    Sparkles,
 } from 'lucide-react';
 
 type UnitState = 'locked' | 'current' | 'completed';
@@ -124,62 +125,48 @@ export default function LearningPath() {
 
     return (
         <div className="space-y-14">
-            {/* 1. Motivational Banner */}
-            <motion.div
-                id="path-gradient-banner"
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className="w-full rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden"
-                style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))' }}
-            >
-                <div className="absolute inset-0 bg-black/5 mix-blend-overlay pointer-events-none" />
-                <div className="relative z-10 flex items-center gap-4">
-                    <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0">
-                        <motion.div
-                            animate={{
-                                scale: [1, 1.15, 1],
-                                rotate: [0, 10, -10, 0]
-                            }}
-                            transition={{
-                                duration: 3,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
-                        >
-                            <Sparkles className="h-6 w-6 text-yellow-300 fill-yellow-300" />
-                        </motion.div>
-                    </div>
-                    <div>
-                        <h3 className="font-extrabold text-base md:text-lg font-display leading-tight">
-                            {bannerTitle}
-                        </h3>
-                        <p className="text-white/90 text-xs md:text-sm mt-1">
-                            {bannerSubtitle}
-                        </p>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Level Header */}
-            <motion.div
-                initial={{ opacity: 0, y: 16 }}
+            {/* Level header */}
+            <motion.header
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-5"
+                transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                className="flex items-center gap-3 flex-wrap"
             >
-                <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-md">
-                    <Map className="w-6 h-6 text-white" />
+                <h1 className="text-3xl font-extrabold tracking-tight">{t('path.title')}</h1>
+                <LevelBadge level={currentLevel} withStage />
+                {levelGated && (
+                    <Link to="/pricing" className="btn-primary inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5">
+                        <Crown className="w-3.5 h-3.5" aria-hidden="true" /> Plan Pro
+                    </Link>
+                )}
+            </motion.header>
+
+            {/* The level as a garden: one plant per unit */}
+            <motion.section
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.42, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+                className="card p-6 space-y-4 text-left"
+                aria-labelledby="path-garden-title"
+            >
+                <div className="space-y-1">
+                    <h2 id="path-garden-title" className="text-lg font-extrabold leading-tight">{bannerTitle}</h2>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">{bannerSubtitle}</p>
                 </div>
-                <div className="flex items-center gap-4 flex-wrap">
-                    <h1 className="text-3xl font-black tracking-tight">{t('path.title')}</h1>
-                    <LevelBadge level={currentLevel} />
-                    {levelGated && (
-                        <Link to="/pricing" className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-on-primary)] bg-[var(--color-primary)] px-3.5 py-1.5 rounded-full shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                            <Crown className="w-3.5 h-3.5" /> Plan Pro
-                        </Link>
-                    )}
-                </div>
-            </motion.div>
+                {totalCount > 0 && (
+                    <>
+                        <Garden
+                            total={totalCount}
+                            completed={completedCount}
+                            label={t('garden.unitsLabel', { done: completedCount, total: totalCount })}
+                        />
+                        <StemProgress value={levelPercent} label={t('garden.unitsLabel', { done: completedCount, total: totalCount })} />
+                        <p className="text-xs font-mono text-[var(--color-on-surface-variant)]">
+                            {t('garden.unitsLabel', { done: completedCount, total: totalCount })} · {levelPercent}%
+                        </p>
+                    </>
+                )}
+            </motion.section>
 
             {/* Units Road Map */}
             {unitsWithState.length > 0 ? (
@@ -220,34 +207,6 @@ export default function LearningPath() {
                 </motion.div>
             )}
 
-            {/* Level Progress Bar */}
-            {totalCount > 0 && (
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="widget"
-                >
-                    <div className="flex justify-between text-xs mb-5">
-                        <span className="text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider">
-                            Progreso del nivel {currentLevel}
-                        </span>
-                        <span className="font-black text-sm text-[var(--color-on-surface)]">
-                            {completedCount}/{totalCount} &mdash; {levelPercent}%
-                        </span>
-                    </div>
-                    <div className="progress-bloom overflow-hidden">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${levelPercent}%` }}
-                            className={`progress-bloom-fill ${
-                                { A1: 'bg-[#60A5FA]', A2: 'bg-[#4ADE80]', B1: 'bg-[#FBBF24]', B2: 'bg-[#F87171]' }[currentLevel] || 'bg-[var(--color-primary)]'
-                            }`}
-                            transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-                        />
-                    </div>
-                </motion.div>
-            )}
         </div>
     );
 }
@@ -270,19 +229,20 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
     const isCompleted = state === 'completed';
     const isCurrent = state === 'current';
 
-    // Node dot — gradient fills, no borders
+    // Node dot — solid fills, no borders
+    const { species } = useGardenPlant();
     const dotClass = isCompleted
-        ? 'bg-gradient-to-br from-[var(--color-success)] to-[var(--color-success-light)] shadow-md shadow-[var(--color-success)]/30'
+        ? 'bg-[var(--color-primary)]'
         : isCurrent
             ? isAssessment
-                ? 'bg-[var(--color-level-b1)] shadow-md shadow-[var(--color-level-b1)]/30'
-                : 'bg-[var(--color-primary)] shadow-md shadow-[var(--color-primary)]/30'
+                ? 'bg-[var(--color-level-a1)]'
+                : 'bg-[var(--color-a2-deep)]'
             : 'bg-[var(--color-surface-container-high)]';
 
     // Card shadow styles — no borders
     const cardShadow = isCurrent
         ? isAssessment
-            ? 'shadow-[0_4px_24px_rgba(251,191,36,0.12)] hover:shadow-[0_8px_32px_rgba(251,191,36,0.18)]'
+            ? 'shadow-[var(--shadow-elevated)]'
             : 'shadow-[var(--shadow-elevated)] hover:shadow-[var(--shadow-float)]'
         : isCompleted
             ? 'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)]'
@@ -302,12 +262,11 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     className={`
                         w-5 h-5 md:w-6 md:h-6 rounded-full shrink-0 relative
                         ${dotClass}
-                        ${isCurrent && !isAssessment ? 'ring-4 ring-[var(--color-primary)]/20 animate-pulse' : ''}
-                        ${isCurrent && isAssessment ? 'ring-4 ring-[var(--color-level-b1)]/20 animate-pulse' : ''}
+                        ${isCurrent ? 'ring-4 ring-[var(--color-primary-container)]' : ''}
                     `}
                 >
                     {isCompleted && (
-                        <CheckCircle2 className="w-3 h-3 md:w-3.5 md:h-3.5 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                        <CheckCircle2 className="w-3 h-3 md:w-3.5 md:h-3.5 text-[var(--color-on-primary)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                     )}
                 </div>
             </div>
@@ -328,9 +287,9 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                 )}
                 {/* Tier gate overlay */}
                 {tierGated && (
-                    <Link to="/pricing" className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 rounded-2xl">
+                    <Link to="/pricing" className="absolute inset-0 z-10 bg-[color-mix(in_oklch,var(--color-level-ink)_45%,transparent)] flex flex-col items-center justify-center gap-3 rounded-2xl">
                         <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
-                            <Lock className="w-5 h-5 text-white" />
+                            <Lock className="w-5 h-5 text-[var(--color-on-primary)]" />
                         </div>
                         <span className="text-xs font-black text-white tracking-wide">Plan Pro</span>
                     </Link>
@@ -342,7 +301,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <span className={`
                                 text-xs font-black uppercase tracking-widest
-                                ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-on-surface-muted)]'}
+                                ${isAssessment ? 'text-[var(--color-on-surface)]' : 'text-[var(--color-on-surface-muted)]'}
                             `}>
                                 {isAssessment
                                     ? t('path.assessment')
@@ -361,7 +320,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                                 <span className={`
                                     inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full
                                     ${isAssessment
-                                        ? 'text-[var(--color-level-b1)] bg-[var(--color-level-b1)]/10'
+                                        ? 'text-[var(--color-on-surface)] bg-[var(--color-tertiary-container)]'
                                         : 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
                                     }
                                 `}>
@@ -380,7 +339,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                         {/* Title */}
                         <h3 className="text-lg font-black leading-snug tracking-tight">
                             {isAssessment && (
-                                <Trophy className="w-5 h-5 inline mr-2 text-[var(--color-level-b1)] -mt-0.5" />
+                                <Trophy className="w-5 h-5 inline mr-2 text-[var(--color-tertiary)] -mt-0.5" aria-hidden="true" />
                             )}
                             {unit.title}
                         </h3>
@@ -412,13 +371,9 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                             <div className="w-10 h-10 rounded-2xl bg-[var(--color-surface-container)] flex items-center justify-center">
                                 <Lock className="w-4 h-4 text-[var(--color-on-surface-muted)]" />
                             </div>
-                        ) : isCompleted ? (
-                            <div className="w-10 h-10 rounded-2xl bg-[var(--color-success)]/10 flex items-center justify-center">
-                                <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />
-                            </div>
                         ) : (
-                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${isAssessment ? 'bg-[var(--color-level-b1)]/10' : 'bg-[var(--color-primary)]/10'}`}>
-                                <ChevronRight className={`w-5 h-5 ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-primary)]'}`} />
+                            <div className="w-11 h-14 rounded-xl bg-[var(--color-surface-container)] overflow-hidden shadow-[inset_0_-6px_0_var(--color-soil)] px-1">
+                                <Plant species={species} stage={isCompleted ? 'grown' : 'sprout'} height={42} />
                             </div>
                         )}
                     </div>
@@ -433,7 +388,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     `}>
                         <span className={`
                             text-sm font-bold flex items-center gap-2.5
-                            ${isAssessment ? 'text-[var(--color-level-b1)]' : 'text-[var(--color-primary)]'}
+                            text-[var(--color-primary)]
                         `}>
                             <Play className="w-4 h-4" />
                             {progress

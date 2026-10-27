@@ -8,7 +8,8 @@
     "path": "Learning Path",
     "practice": "Practice",
     "profile": "Profile",
-    "simulator": "CEFR Simulator"
+    "simulator": "CEFR Simulator",
+    "skipToContent": "Skip to content"
   },
   "dashboard": {
     "greeting": "Hello!",
@@ -40,7 +41,26 @@
     "greetingDueCards": "You have {{count}} cards to review",
     "greetingStreak": "You are on a {{count}} day streak",
     "greetingInactive": "It has been {{count}} days since your last session",
-    "greetingAllDone": "Everything caught up — nothing pending"
+    "greetingAllDone": "Everything caught up — nothing pending",
+    "hello": "Hi, {{name}}!",
+    "today": "Today",
+    "waterGarden": "Water your garden",
+    "nextUnit": "Next unit",
+    "reviewDue": "{{count}} cards to review",
+    "reviewDue_one": "{{count}} card to review",
+    "skillsDue": "{{count}} grammar skills",
+    "allCaughtUp": "All caught up",
+    "allCaughtUpDesc": "Nothing to review right now. Come back tomorrow or keep going with your unit.",
+    "deckSize": "{{count}} cards in your deck",
+    "review": "Review",
+    "errorLab": "Error lab",
+    "errorsPending": "{{count}} mistakes to fix",
+    "errorsPending_one": "{{count}} mistake to fix",
+    "errorsClear": "No mistakes pending",
+    "errorsClearDesc": "When the tutor spots a mistake in your writing, it shows up here so you can practise it.",
+    "enterLab": "Open the lab",
+    "streakDays": "days in a row",
+    "streakStart": "Practise today to start your streak."
   },
   "reader": {
     "tapToTranslate": "Tap a word to see its translation",

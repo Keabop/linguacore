@@ -8,7 +8,8 @@
     "path": "Ruta de Aprendizaje",
     "practice": "Práctica",
     "profile": "Perfil",
-    "simulator": "Simulador CEFR"
+    "simulator": "Simulador CEFR",
+    "skipToContent": "Saltar al contenido"
   },
   "dashboard": {
     "greeting": "¡Hola!",
@@ -40,7 +41,26 @@
     "greetingDueCards": "Tienes {{count}} tarjetas por repasar",
     "greetingStreak": "Llevas {{count}} días seguidos",
     "greetingInactive": "Han pasado {{count}} días desde tu última sesión",
-    "greetingAllDone": "Todo al día — no hay nada pendiente"
+    "greetingAllDone": "Todo al día — no hay nada pendiente",
+    "hello": "¡Hola, {{name}}!",
+    "today": "Hoy",
+    "waterGarden": "Riega tu jardín",
+    "nextUnit": "Siguiente unidad",
+    "reviewDue": "{{count}} tarjetas por repasar",
+    "reviewDue_one": "{{count}} tarjeta por repasar",
+    "skillsDue": "{{count}} habilidades de gramática",
+    "allCaughtUp": "Todo al día",
+    "allCaughtUpDesc": "No tienes repasos pendientes. Vuelve mañana o avanza en tu unidad.",
+    "deckSize": "{{count}} tarjetas en tu mazo",
+    "review": "Repasar",
+    "errorLab": "Laboratorio de errores",
+    "errorsPending": "{{count}} errores por corregir",
+    "errorsPending_one": "{{count}} error por corregir",
+    "errorsClear": "Sin errores pendientes",
+    "errorsClearDesc": "Cuando el tutor detecte un error en lo que escribes, aparecerá aquí para practicarlo.",
+    "enterLab": "Entrar al laboratorio",
+    "streakDays": "días seguidos",
+    "streakStart": "Practica hoy para empezar tu racha."
   },
   "reader": {
     "tapToTranslate": "Toca una palabra para ver su traducción",
