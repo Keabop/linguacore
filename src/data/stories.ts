@@ -4,7 +4,18 @@ function w(word: string): string {
     return `<span data-word="${word}">${word}</span>`;
 }
 
-export const storiesData: Story[] = [
+/** Words in the story's text, without the markup. */
+function countWords(content: string): number {
+    return content.replace(/<[^>]+>/g, ' ').match(/[A-Za-z']+/g)?.length ?? 0;
+}
+
+// About 100 words a minute: a learner reading carefully, tapping unknown words
+const withReadingStats = (s: Story): Story => {
+    const wordCount = countWords(s.content);
+    return { ...s, wordCount, estimatedMinutes: Math.max(1, Math.round(wordCount / 100)) };
+};
+
+const stories: Story[] = [
     // ===== A1 STORIES (10) =====
     {
         id: "a1-001", level: "A1", unitId: "a1-u3", title: "My Morning Routine", wordCount: 45, estimatedMinutes: 2,
@@ -189,3 +200,5 @@ export const storiesData: Story[] = [
         content: `<p>Social media has ${w('widespread')} ${w('influence')} on modern life. On the one hand, it enables ${w('genuine')} connections across borders. On the other hand, it can ${w('undermine')} mental health. ${w('furthermore')}, its impact on privacy is a ${w('controversial')} topic that ${w('require')}s ${w('thorough')} ${w('discussion')}.</p><p>${w('moreover')}, while some argue that platforms ${w('demonstrate')} the power of free speech, others ${w('emphasize')} the ${w('tendency')} toward misinformation. ${w('despite')} these concerns, ${w('nevertheless')}, the ${w('benefit')}s remain ${w('substantial')}. In conclusion, it is ${w('fundamental')} to ${w('integrate')} digital literacy into education. ${w('ultimately')}, the ${w('challenge')} lies in finding a ${w('compromise')} between innovation and ${w('responsible')} usage.</p>`
     },
 ];
+
+export const storiesData: Story[] = stories.map(withReadingStats);

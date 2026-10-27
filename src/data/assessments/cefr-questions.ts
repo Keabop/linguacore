@@ -158,7 +158,7 @@ export const placementQuestions: AssessmentQuestion[] = [
             { speaker: 'A', accent: 'US', gender: 'male', text: 'Hi Susan. Are we meeting at the coffee shop or at the park?' },
             { speaker: 'B', accent: 'UK', gender: 'female', text: 'Let\'s meet at the coffee shop. The weather is too cold for the park today.' }
         ],
-        options: ['At the park', 'At the coffee shop', 'At the library', 'AtSusan\'s house'],
+        options: ['At the park', 'At the coffee shop', 'At the library', 'At Susan\'s house'],
         correctIndex: 1
     },
     {
