@@ -5,7 +5,11 @@ import { ArrowLeft, Compass, Shield, Award, Sparkles, Play, Volume2, Edit3, Acti
 import { useAuth } from '../lib/AuthContext';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
-import { playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
+import { playAudioFile, playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
+import { chooseStage, endsRouter, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
+import { buildReport, type ExamReport } from '../lib/exam/report';
+import { isMultipleChoice, type ExamResponse } from '../lib/exam/types';
+import QuestionView from '../components/exam/QuestionView';
 import { shuffleQuestion } from '../lib/shuffle';
 import { placementQuestions, writingPrompts, AssessmentQuestion, WritingPrompt } from '../data/assessments/cefr-questions';
 import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
@@ -89,7 +93,9 @@ export default function CEFRSimulator() {
     // Test execution states
     const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
     const [currentIdx, setCurrentIdx] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, number>>({});
+    const [answers, setAnswers] = useState<Record<string, ExamResponse>>({});
+    // Adaptive sections: which second stage each one got after its router questions
+    const [stageChoice, setStageChoice] = useState<StageChoice>({});
     const [writingPrompt, setWritingPrompt] = useState<WritingPrompt | null>(null);
     const [writingText, setWritingText] = useState('');
     const [timeLeft, setTimeLeft] = useState(0);
@@ -118,14 +124,8 @@ export default function CEFRSimulator() {
     // Final result dashboard states
     const [results, setResults] = useState<{
         testType: string;
-        level: string;
-        score: number;
-        reading: number;
-        listening: number;
-        useOfEnglish: number;
-        writing: number;
+        report: ExamReport;
         writingFeedback?: any;
-        speaking?: number;
         speakingFeedback?: any;
     } | null>(null);
 
@@ -148,33 +148,28 @@ export default function CEFRSimulator() {
         fetchLimits();
     }, [user, state]);
 
-    // Timer trigger
+    // Timer: the interval only counts down. Running out is handled below with the latest
+    // state (answers, stages, writing), not the values captured when the interval started.
     useEffect(() => {
         if (state === 'testing' || state === 'writing' || state === 'speaking') {
-            timerRef.current = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        clearInterval(timerRef.current!);
-                        setIsTimeUp(true);
-                        toast.error({
-                            title: 'Tiempo agotado',
-                            description: 'Se ha agotado el tiempo límite para el examen.'
-                        });
-                        if (state === 'testing') {
-                            proceedToWritingOrComplete();
-                        } else {
-                            handleCompleteGrading();
-                        }
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
+            timerRef.current = setInterval(() => setTimeLeft(prev => Math.max(0, prev - 1)), 1000);
         }
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [state]);
+
+    const finishRef = useRef<() => void>(() => {});
+    useEffect(() => {
+        const active = state === 'testing' || state === 'writing' || state === 'speaking';
+        if (!active || timeLeft > 0 || isTimeUp) return;
+        setIsTimeUp(true);
+        toast.error({
+            title: 'Tiempo agotado',
+            description: 'Se ha agotado el tiempo límite para el examen.'
+        });
+        finishRef.current();
+    }, [timeLeft, state, isTimeUp]);
 
     const formatTime = (seconds: number) => {
         const min = Math.floor(seconds / 60);
@@ -207,7 +202,7 @@ export default function CEFRSimulator() {
 
     const handleStartTest = () => {
         if (!selectedPreset) return;
-        stopDialogueSpeech();
+        stopAudio();
         cancelSpeech();
 
         // 1. Prepare questions & prompts depending on the selected preset
@@ -235,7 +230,8 @@ export default function CEFRSimulator() {
             sPrompts = [...cambridgeB2Speaking];
         }
 
-        setQuestions(selectedQuestions.map(shuffleQuestion));
+        setQuestions(selectedQuestions.map(q => (isMultipleChoice(q) && !q.fixedOrder ? shuffleQuestion(q) : q)));
+        setStageChoice({});
         setWritingPromptsList(wPrompts);
         setSpeakingPrompts(sPrompts);
 
@@ -293,29 +289,55 @@ export default function CEFRSimulator() {
     }, [transcript, isListening, state, activeSpeakingIdx, speakingPrompts]);
 
     // Play Dialogue Listening
-    const handlePlayAudio = (qId: string, lines: any[]) => {
+    const handlePlayAudio = (qId: string, lines: any[], audioSrc?: string) => {
         const plays = audioPlayCount[qId] || 0;
         if (plays >= 2) return;
 
         setIsPlayingAudio(true);
         setAudioPlayCount(prev => ({ ...prev, [qId]: plays + 1 }));
 
-        playDialogueSpeech(
-            lines,
-            (lineIdx) => setActiveDialogueLine(lineIdx),
-            () => {
-                setIsPlayingAudio(false);
-                setActiveDialogueLine(null);
-            }
-        );
+        const done = () => {
+            setIsPlayingAudio(false);
+            setActiveDialogueLine(null);
+        };
+        if (audioSrc) playAudioFile(audioSrc, done);
+        else playDialogueSpeech(lines, (lineIdx) => setActiveDialogueLine(lineIdx), done);
     };
 
-    const handleSelectOption = (qId: string, optIdx: number) => {
-        setAnswers(prev => ({ ...prev, [qId]: optIdx }));
+    // Stopping playback never calls its completion, so the play state is released here
+    const stopAudio = () => {
+        stopDialogueSpeech();
+        setIsPlayingAudio(false);
+        setActiveDialogueLine(null);
     };
+
+    const setAnswer = (qId: string, response: ExamResponse) => {
+        setAnswers(prev => ({ ...prev, [qId]: response }));
+    };
+
+    // The questions shown so far: adaptive sections reveal their second stage after the router
+    const visible = visibleQuestions(questions, stageChoice);
+    const current = visible[currentIdx];
+    const closesRouter = endsRouter(questions, visible, currentIdx, stageChoice);
+
+    const goNext = () => {
+        stopAudio();
+        if (closesRouter && current) {
+            const chosen = { ...stageChoice, [current.section]: chooseStage(questions, current.section, answers) };
+            setStageChoice(chosen);
+            // Never step past the questions that will actually be shown
+            const nextCount = visibleQuestions(questions, chosen).length;
+            setCurrentIdx(prev => Math.min(prev + 1, nextCount - 1));
+            return;
+        }
+        setCurrentIdx(prev => Math.min(prev + 1, visible.length - 1));
+    };
+
+    // A second stage can't go back into its router (as in adaptive exams)
+    const canGoBack = currentIdx > 0 && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
 
     const proceedToWritingOrComplete = () => {
-        stopDialogueSpeech();
+        stopAudio();
         if (selectedPreset?.id !== 'placement' && writingPromptsList.length > 0) {
             setState('writing');
         } else {
@@ -330,32 +352,8 @@ export default function CEFRSimulator() {
         setState('grading');
 
         try {
-            // 1. Evaluate Receptive Skills
-            let useOfEnglishCorrect = 0, useOfEnglishTotal = 0;
-            let listeningCorrect = 0, listeningTotal = 0;
-            let readingCorrect = 0, readingTotal = 0;
-
-            questions.forEach(q => {
-                const answer = answers[q.id];
-                const isCorrect = answer === q.correctIndex;
-                if (q.section === 'use-of-english') {
-                    useOfEnglishTotal++;
-                    if (isCorrect) useOfEnglishCorrect++;
-                } else if (q.section === 'listening') {
-                    listeningTotal++;
-                    if (isCorrect) listeningCorrect++;
-                } else if (q.section === 'reading') {
-                    readingTotal++;
-                    if (isCorrect) readingCorrect++;
-                }
-            });
-
-            const useOfEnglishScore = useOfEnglishTotal > 0 ? Math.round((useOfEnglishCorrect / useOfEnglishTotal) * 100) : 80;
-            const listeningScore = listeningTotal > 0 ? Math.round((listeningCorrect / listeningTotal) * 100) : 80;
-            const readingScore = readingTotal > 0 ? Math.round((readingCorrect / readingTotal) * 100) : 80;
-
-            // 2. Evaluate Writing Skills for multiple tasks combined
-            let writingScore = 0;
+            // 1. Writing (AI). When it can't be evaluated it stays out of the result: never estimated
+            let writingScore: number | null = null;
             let aiFeedbackObj = null;
 
             const hasWriting = selectedPreset?.id !== 'placement' && writingPromptsList.length > 0;
@@ -365,12 +363,13 @@ export default function CEFRSimulator() {
             const combinedWritingPrompt = hasWriting
                 ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${p.prompt}`).join('\n\n')
                 : '';
-
             const totalWritingLength = writingPromptsList.reduce((acc, p) => acc + (writingAnswers[p.id] || '').trim().length, 0);
+            const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
 
+            // A task left (almost) empty scores 0; it is not left out of the result
+            if (hasWriting && totalWritingLength <= 10) writingScore = 0;
             if (hasWriting && totalWritingLength > 10) {
                 try {
-                    const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
                     const aiResult = await evaluateWriting(
                         combinedWritingText,
                         combinedWritingPrompt,
@@ -382,23 +381,12 @@ export default function CEFRSimulator() {
                     aiFeedbackObj = aiResult;
                 } catch (err) {
                     console.error("Error evaluating writing:", err);
-                    writingScore = Math.round((readingScore + listeningScore) / 2);
-                    aiFeedbackObj = {
-                        score: writingScore,
-                        feedback: {
-                            grammar: { score: readingScore, note: 'Buen intento, tu gramática demuestra solidez conceptual.' },
-                            vocabulary: { score: listeningScore, note: 'Rango léxico adecuado para comunicación profesional.' },
-                            coherence: { score: 80, note: 'Coherencia estructural bien organizada.' }
-                        },
-                        corrections: [],
-                        improvedVersion: combinedWritingText,
-                        encouragement: '¡Sigue adelante practicando tu redacción!'
-                    };
+                    toast.error({ title: 'No se pudo evaluar la escritura', description: 'No cuenta en este resultado. Inténtalo de nuevo más tarde.' });
                 }
             }
 
-            // 3. Evaluate Speaking Skills
-            let speakingScore = 0;
+            // 2. Speaking (AI), same rule
+            let speakingScore: number | null = null;
             let aiSpeakingFeedbackObj = null;
 
             const hasSpeaking = selectedPreset?.id !== 'placement' && speakingPrompts.length > 0;
@@ -406,88 +394,44 @@ export default function CEFRSimulator() {
             const prompts = hasSpeaking ? speakingPrompts.map(p => p.prompt) : [];
             const totalSpeakingLength = transcripts.reduce((acc, t) => acc + t.trim().length, 0);
 
+            if (hasSpeaking && totalSpeakingLength <= 5) speakingScore = 0;
             if (hasSpeaking && totalSpeakingLength > 5) {
                 try {
-                    const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
-                    const aiResult = await evaluateSpeaking(
-                        transcripts,
-                        prompts,
-                        targetLvl
-                    );
+                    const aiResult = await evaluateSpeaking(transcripts, prompts, targetLvl);
                     speakingScore = aiResult.score;
                     aiSpeakingFeedbackObj = aiResult;
                 } catch (err) {
                     console.error("Error evaluating speaking:", err);
-                    speakingScore = Math.round((readingScore + listeningScore) / 2);
-                    aiSpeakingFeedbackObj = {
-                        score: speakingScore,
-                        pronunciationScore: Math.round(readingScore),
-                        fluencyScore: Math.round(listeningScore),
-                        vocabularyScore: Math.round(useOfEnglishScore),
-                        detailedFeedback: 'Buen esfuerzo oral en tu simulacro de speaking. Se detecta coherencia y pronunciación aceptables.',
-                        corrections: []
-                    };
+                    toast.error({ title: 'No se pudo evaluar el speaking', description: 'No cuenta en este resultado. Inténtalo de nuevo más tarde.' });
                 }
             }
 
-            // 4. Overall calculation (5-axis Radar chart model)
-            const overallScore = selectedPreset?.id === 'placement'
-                ? Math.round((useOfEnglishScore + listeningScore + readingScore) / 3)
-                : Math.round((useOfEnglishScore + listeningScore + readingScore + writingScore + speakingScore) / 5);
+            // 3. The exam's own score (band, scale or placement level) from the questions seen
+            const report = buildReport(selectedPreset!.id, visible, answers, stageChoice, writingScore, speakingScore);
 
-            // Determine estimated CEFR level
-            let level = 'A1';
-            if (overallScore >= 85) level = 'C1';
-            else if (overallScore >= 70) level = 'B2';
-            else if (overallScore >= 50) level = 'B1';
-            else if (overallScore >= 30) level = 'A2';
-
-            // 5. Save results to Supabase (with try-catch safety fallback for missing speaking columns)
+            // 4. Save
             if (user) {
-                try {
-                    await supabase.from('cefr_simulations' as any).insert({
-                        user_id: user.id,
-                        test_type: selectedPreset!.id,
-                        level,
-                        score: overallScore,
-                        listening_score: listeningScore,
-                        reading_score: readingScore,
-                        use_of_english_score: useOfEnglishScore,
-                        writing_score: selectedPreset!.id === 'placement' ? null : writingScore,
-                        writing_feedback: aiFeedbackObj,
-                        speaking_score: selectedPreset!.id === 'placement' ? null : speakingScore,
-                        speaking_feedback: aiSpeakingFeedbackObj
-                    });
-                } catch (dbErr) {
-                    console.warn("Speaking columns might be missing in DB, falling back:", dbErr);
-                    try {
-                        await supabase.from('cefr_simulations' as any).insert({
-                            user_id: user.id,
-                            test_type: selectedPreset!.id,
-                            level,
-                            score: overallScore,
-                            listening_score: listeningScore,
-                            reading_score: readingScore,
-                            use_of_english_score: useOfEnglishScore,
-                            writing_score: selectedPreset!.id === 'placement' ? null : writingScore,
-                            writing_feedback: aiFeedbackObj
-                        });
-                    } catch (err2) {
-                        console.error("Secondary fallback DB insert failed:", err2);
-                    }
-                }
+                const { error: dbErr } = await supabase.from('cefr_simulations' as any).insert({
+                    user_id: user.id,
+                    test_type: selectedPreset!.id,
+                    level: report.level,
+                    score: report.overallPercent,
+                    listening_score: report.percent.listening,
+                    reading_score: report.percent.reading,
+                    use_of_english_score: report.percent.useOfEnglish,
+                    writing_score: report.percent.writing,
+                    writing_feedback: aiFeedbackObj,
+                    speaking_score: report.percent.speaking,
+                    speaking_feedback: aiSpeakingFeedbackObj,
+                    report: { headline: report.headline, breakdown: report.breakdown, stages: stageChoice }
+                });
+                if (dbErr) console.error('Saving the simulation failed:', dbErr);
             }
 
             setResults({
                 testType: selectedPreset!.title,
-                level,
-                score: overallScore,
-                reading: readingScore,
-                listening: listeningScore,
-                useOfEnglish: useOfEnglishScore,
-                writing: writingScore,
+                report,
                 writingFeedback: aiFeedbackObj,
-                speaking: selectedPreset?.id === 'placement' ? undefined : speakingScore,
                 speakingFeedback: aiSpeakingFeedbackObj
             });
 
@@ -501,6 +445,8 @@ export default function CEFRSimulator() {
             setState('selection');
         }
     };
+
+    finishRef.current = handleCompleteGrading;
 
     return (
         <div className="py-6 px-4 max-w-4xl mx-auto space-y-8">
@@ -598,7 +544,7 @@ export default function CEFRSimulator() {
                             </p>
                             <p className="flex items-start gap-2.5">
                                 <span className="font-bold text-[var(--color-tertiary-ink)]">3.</span>
-                                <span>En el Listening, cuentas con **máximo 2 reproducciones** por audio. Usa audífonos para mejor nitidez.</span>
+                                <span>En el Listening, cuentas con <strong>máximo 2 reproducciones</strong> por audio. Usa audífonos para mejor nitidez.</span>
                             </p>
                         </div>
 
@@ -620,7 +566,7 @@ export default function CEFRSimulator() {
                 )}
 
                 {/* 3. TESTING STATE */}
-                {state === 'testing' && questions.length > 0 && (
+                {state === 'testing' && current && (
                     <motion.div
                         key="testing"
                         initial={{ opacity: 0, x: 20 }}
@@ -631,7 +577,7 @@ export default function CEFRSimulator() {
                         {/* Status bar */}
                         <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                             <span className="font-bold text-[var(--color-primary)]">
-                                {selectedPreset?.title} • Pregunta {currentIdx + 1} de {questions.length}
+                                {selectedPreset?.title} • Pregunta {currentIdx + 1} de {visible.length}{closesRouter ? '+' : ''}
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
@@ -640,14 +586,14 @@ export default function CEFRSimulator() {
 
                         <div className="widget space-y-6">
                             {/* 3A. READING COMPONENT */}
-                            {questions[currentIdx].passage && (
-                                <div className="bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)] max-h-[220px] overflow-y-auto text-sm leading-relaxed text-[var(--color-on-surface-muted)] italic font-serif">
-                                    {questions[currentIdx].passage}
+                            {current.passage && (
+                                <div className="bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)] max-h-[45vh] overflow-y-auto text-[15px] leading-relaxed text-[var(--color-on-surface)] whitespace-pre-line">
+                                    {current.passage}
                                 </div>
                             )}
 
                             {/* 3B. DIALOGUE LISTENING COMPONENT */}
-                            {questions[currentIdx].dialogue && (
+                            {current.dialogue && (
                                 <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-6 text-center space-y-4 border border-[var(--color-surface-container)]">
                                     <h4 className="text-xs uppercase tracking-widest font-black text-[var(--color-on-surface-muted)] flex items-center justify-center gap-1.5">
                                         <Volume2 className="w-4.5 h-4.5 text-[var(--color-primary)]" /> Comprensión de Audio
@@ -655,14 +601,14 @@ export default function CEFRSimulator() {
                                     
                                     <div className="flex justify-center items-center gap-3">
                                         <button
-                                            onClick={() => handlePlayAudio(questions[currentIdx].id, questions[currentIdx].dialogue!)}
-                                            disabled={isPlayingAudio || (audioPlayCount[questions[currentIdx].id] || 0) >= 2}
+                                            onClick={() => handlePlayAudio(current.id, current.dialogue!, current.audioSrc)}
+                                            disabled={isPlayingAudio || (audioPlayCount[current.id] || 0) >= 2}
                                             className="w-14 h-14 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95 transition-all shadow-md"
                                         >
                                             <Play className="w-6 h-6 fill-current" />
                                         </button>
                                         <div className="text-left text-xs text-[var(--color-on-surface-muted)] font-bold">
-                                            <p>Reproducciones: {audioPlayCount[questions[currentIdx].id] || 0} / 2</p>
+                                            <p>Reproducciones: {audioPlayCount[current.id] || 0} / 2</p>
                                             <p className="text-[10px] text-[var(--color-tertiary-ink)] mt-0.5">El diálogo cuenta con acentos nativos mixtos</p>
                                         </div>
                                     </div>
@@ -676,7 +622,7 @@ export default function CEFRSimulator() {
                                     )}
 
                                     {/* Inline play limit warning */}
-                                    {(audioPlayCount[questions[currentIdx].id] || 0) >= 2 && (
+                                    {(audioPlayCount[current.id] || 0) >= 2 && (
                                         <div className="text-[11px] font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5 pt-1">
                                             <AlertCircle className="w-3.5 h-3.5" /> Límite de 2 reproducciones alcanzado para este audio.
                                         </div>
@@ -684,46 +630,26 @@ export default function CEFRSimulator() {
                                 </div>
                             )}
 
-                            {/* Question text */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-bold leading-snug">{questions[currentIdx].text}</h3>
-                                
-                                <div className="space-y-3">
-                                    {questions[currentIdx].options.map((opt, oIdx) => {
-                                        const isSelected = answers[questions[currentIdx].id] === oIdx;
-                                        return (
-                                            <button
-                                                key={oIdx}
-                                                onClick={() => handleSelectOption(questions[currentIdx].id, oIdx)}
-                                                className={`w-full p-4 rounded-[1.25rem] text-left text-sm font-semibold border-2 transition-all active:scale-99 ${
-                                                    isSelected
-                                                        ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]'
-                                                        : 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)]'
-                                                }`}
-                                            >
-                                                {opt}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                            <QuestionView
+                                key={current.id}
+                                question={current}
+                                response={answers[current.id]}
+                                onChange={(r) => setAnswer(current.id, r)}
+                            />
                         </div>
 
                         {/* Navigation controls */}
                         <div className="flex justify-between items-center shrink-0">
                             <button
-                                onClick={() => setCurrentIdx(prev => Math.max(0, prev - 1))}
-                                disabled={currentIdx === 0}
+                                onClick={() => { stopAudio(); setCurrentIdx(prev => Math.max(0, prev - 1)); }}
+                                disabled={!canGoBack}
                                 className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
                             >
                                 Anterior
                             </button>
-                            {currentIdx + 1 < questions.length ? (
+                            {currentIdx + 1 < visible.length || closesRouter ? (
                                 <button
-                                    onClick={() => {
-                                        stopDialogueSpeech();
-                                        setCurrentIdx(prev => prev + 1);
-                                    }}
+                                    onClick={goNext}
                                     className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-tertiary)] bg-[var(--color-tertiary)] active:scale-95 transition-all"
                                 >
                                     Siguiente
@@ -981,7 +907,7 @@ export default function CEFRSimulator() {
                         <div className="flex justify-between items-center shrink-0">
                             <div>
                                 <h1 className="text-3xl font-black tracking-tight text-[var(--color-success)]">¡Evaluación Completada!</h1>
-                                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-widest font-black mt-1">Informe Oficial de Rendimiento</p>
+                                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-widest font-black mt-1">Informe de rendimiento</p>
                             </div>
                             <button
                                 onClick={() => setState('selection')}
@@ -998,12 +924,18 @@ export default function CEFRSimulator() {
                             <div className="widget text-center flex flex-col justify-center items-center space-y-4 !py-8 bg-[var(--color-success)]/5 border-l-4 border-[var(--color-success)]">
                                 <p className="text-[10px] text-[var(--color-success)] uppercase tracking-widest font-black">Tu Nivel CEFR Estimado</p>
                                 <div className="w-24 h-24 rounded-full bg-[var(--color-success)]/20 flex items-center justify-center shadow-lg">
-                                    <span className="text-5xl font-black text-[var(--color-success)]">{results.level}</span>
+                                    <span className="text-5xl font-black text-[var(--color-success)]">{results.report.level}</span>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-2xl font-black text-[var(--color-on-surface)]">{results.score}% de aciertos</p>
-                                    <p className="text-[10px] text-[var(--color-on-surface-muted)] font-bold">
-                                        TOEFL equiv: {results.score >= 85 ? '95-120' : results.score >= 70 ? '72-94' : results.score >= 50 ? '42-71' : '10-41'} | IELTS equiv: {results.score >= 85 ? '7.0+' : results.score >= 70 ? '6.0' : results.score >= 50 ? '5.0' : '4.0'}
+                                    <p className="text-[10px] uppercase tracking-widest font-black text-[var(--color-on-surface-muted)]">{results.report.headline.label}</p>
+                                    <p className="text-3xl font-black text-[var(--color-on-surface)]">{results.report.headline.value}</p>
+                                    <ul className="pt-2 text-xs font-bold text-[var(--color-on-surface-muted)] space-y-0.5">
+                                        {results.report.breakdown.map(b => (
+                                            <li key={b.skill}>{b.skill}: <span className="text-[var(--color-on-surface)]">{b.value}</span></li>
+                                        ))}
+                                    </ul>
+                                    <p className="pt-2 text-[10px] leading-snug text-[var(--color-on-surface-muted)]">
+                                        Estimación con las tablas públicas de conversión; no es una calificación oficial.
                                     </p>
                                 </div>
                             </div>
@@ -1065,13 +997,8 @@ export default function CEFRSimulator() {
                                                 -Math.PI / 2 + (2 * Math.PI / 5) * 4  // Use of English
                                             ];
 
-                                            const values = [
-                                                results.reading,
-                                                results.listening,
-                                                results.writing,
-                                                results.speaking ?? 0,
-                                                results.useOfEnglish
-                                            ];
+                                            const p = results.report.percent;
+                                            const values = [p.reading, p.listening, p.writing, p.speaking, p.useOfEnglish].map(v => v ?? 0);
 
                                             const points = angles.map((angle, idx) => {
                                                 const val = values[idx];
@@ -1123,24 +1050,26 @@ export default function CEFRSimulator() {
                                     <div className="space-y-2 text-xs w-full sm:w-auto font-bold font-mono">
                                         <div className="flex items-center justify-between gap-6">
                                             <span className="text-[var(--color-on-surface-muted)]">Use of English:</span>
-                                            <span className="text-[var(--color-primary)]">{results.useOfEnglish}%</span>
+                                            <span className="text-[var(--color-primary)]">{results.report.percent.useOfEnglish ?? '—'}{results.report.percent.useOfEnglish !== null && '%'}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-6">
                                             <span className="text-[var(--color-on-surface-muted)]">Reading:</span>
-                                            <span className="text-[var(--color-success)]">{results.reading}%</span>
+                                            <span className="text-[var(--color-success)]">{results.report.percent.reading ?? '—'}{results.report.percent.reading !== null && '%'}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-6">
                                             <span className="text-[var(--color-on-surface-muted)]">Listening:</span>
-                                            <span className="text-[var(--color-tertiary-ink)]">{results.listening}%</span>
+                                            <span className="text-[var(--color-tertiary-ink)]">{results.report.percent.listening ?? '—'}{results.report.percent.listening !== null && '%'}</span>
                                         </div>
-                                        <div className="flex items-center justify-between gap-6">
-                                            <span className="text-[var(--color-on-surface-muted)]">Writing:</span>
-                                            <span className="text-[var(--color-error)]">{results.writing}%</span>
-                                        </div>
-                                        {results.speaking !== undefined && (
+                                        {selectedPreset?.id !== 'placement' && (
+                                            <div className="flex items-center justify-between gap-6">
+                                                <span className="text-[var(--color-on-surface-muted)]">Writing:</span>
+                                                <span className="text-[var(--color-error)]">{results.report.percent.writing ?? 'sin evaluar'}{results.report.percent.writing !== null && '%'}</span>
+                                            </div>
+                                        )}
+                                        {selectedPreset?.id !== 'placement' && (
                                             <div className="flex items-center justify-between gap-6">
                                                 <span className="text-[var(--color-on-surface-muted)]">Speaking:</span>
-                                                <span className="text-[var(--color-accent-blue)]">{results.speaking}%</span>
+                                                <span className="text-[var(--color-accent-blue)]">{results.report.percent.speaking ?? 'sin evaluar'}{results.report.percent.speaking !== null && '%'}</span>
                                             </div>
                                         )}
                                     </div>

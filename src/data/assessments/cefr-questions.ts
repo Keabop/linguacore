@@ -1,20 +1,6 @@
-export interface DialogueLine {
-    speaker: 'A' | 'B';
-    accent: 'US' | 'UK';
-    gender: 'male' | 'female';
-    text: string;
-}
-
-export interface AssessmentQuestion {
-    id: string;
-    section: 'use-of-english' | 'reading' | 'listening';
-    level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
-    text: string; // The instruction or question
-    dialogue?: DialogueLine[]; // For listening sections
-    passage?: string | null; // For reading sections
-    options: string[];
-    correctIndex: number;
-}
+// Question types live with the exam engine; re-exported for the data files
+export type { AssessmentQuestion, DialogueLine } from '../../lib/exam/types';
+import type { AssessmentQuestion } from '../../lib/exam/types';
 
 export interface WritingPrompt {
     id: string;
