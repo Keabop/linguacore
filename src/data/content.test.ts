@@ -1,7 +1,7 @@
 // Integrity of the teaching content: every item must be answerable as written.
 import { describe, expect, it } from 'vitest';
 import { allExercises, allGrammarSkills, allStories, allUnits, allVocabulary } from './index';
-import { placementQuestions } from './assessments/cefr-questions';
+import { placementBlocks, placementQuestions } from './assessments/placement';
 import { cambridgeB1Questions, cambridgeB1Speaking, cambridgeB1Writing } from './assessments/cambridge/b1';
 import { cambridgeB2Questions, cambridgeB2Speaking, cambridgeB2Writing } from './assessments/cambridge/b2';
 import { ieltsQuestions, ieltsSpeaking, ieltsWriting } from './assessments/ielts-questions';
@@ -137,6 +137,39 @@ describe('plan targets for rebuilt levels', () => {
             expect(qs.filter(q => isTemplated(q.text)).map(q => q.id), name).toEqual([]);
             expect(new Set(qs.map(questionKey)).size, name).toBe(qs.length);
         }
+    });
+});
+
+describe('placement test', () => {
+    type PQ = (typeof placementQuestions)[number];
+    const mc = placementQuestions.filter((q): q is Extract<PQ, { correctIndex: number }> => 'correctIndex' in q);
+
+    it('has 15 items per level from A1 to C1, in three blocks of five', () => {
+        for (const level of ['A1', 'A2', 'B1', 'B2', 'C1']) {
+            const blocks = placementBlocks.filter(b => b.level === level);
+            expect(blocks.map(b => b.questions.length), level).toEqual([5, 5, 5]);
+            expect(blocks.flatMap(b => b.questions).every(q => q.level === level), level).toBe(true);
+        }
+    });
+
+    it('mixes grammar, vocabulary, reading and listening in every block', () => {
+        for (const b of placementBlocks) {
+            expect(b.questions.map(q => q.task), b.id).toEqual(['Grammar', 'Grammar', 'Vocabulary', 'Reading', 'Listening']);
+        }
+    });
+
+    it('quotes the evidence of every reading and listening answer', () => {
+        for (const q of placementQuestions) {
+            if (q.section !== 'use-of-english') expect(q.evidence, q.id).toBeTruthy();
+        }
+    });
+
+    it('does not give the answer away as the longest option', () => {
+        // The simulator shuffles the options, so only their length could give the answer away
+        const longest = mc.filter(q => q.options.every((o, i) => i === q.correctIndex || o.length < q.options[q.correctIndex].length));
+        expect(longest.map(q => q.id).length / mc.length).toBeLessThanOrEqual(0.25);
+        const comprehension = mc.filter(q => q.section !== 'use-of-english');
+        expect(comprehension.filter(q => longest.includes(q)).map(q => q.id).length / comprehension.length).toBeLessThanOrEqual(0.33);
     });
 });
 

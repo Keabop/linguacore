@@ -872,7 +872,7 @@ export default function Account() {
                                         <div className="flex items-center justify-between pt-2 border-t border-dashed border-[var(--color-surface-container-high)]">
                                             <div className="text-[11px] text-[var(--color-on-surface-muted)]">
                                                 {sim.report?.headline
-                                                    ? <>{t(`simulator.report.${sim.report.headline.label}`, { defaultValue: sim.report.headline.label })}: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.report.headline.value}</span></>
+                                                    ? <>{t(`simulator.report.${sim.report.headline.label}`, { defaultValue: sim.report.headline.label })}: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.report.confidence ? t(`simulator.confidence.${sim.report.confidence}`) : sim.report.headline.value}</span></>
                                                     : <>Puntaje Promedio: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.score}%</span></>}
                                             </div>
                                             {sim.writing_feedback && (
