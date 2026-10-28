@@ -3,7 +3,8 @@ import { initReactI18next } from 'react-i18next';
 import es from './es.json';
 import en from './en.json';
 
-const savedLang = localStorage.getItem('voxie-display-language') || 'es';
+// No localStorage outside the browser (server-side tests): Spanish by default
+const savedLang = (typeof localStorage !== 'undefined' && localStorage.getItem('voxie-display-language')) || 'es';
 const activeLang = savedLang === 'bilingual' ? 'en' : savedLang;
 
 i18n.use(initReactI18next).init({
