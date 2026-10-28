@@ -449,8 +449,8 @@
     "notAssessed": "not assessed",
     "presets": {
       "placement": {
-        "title": "Quick Placement Test",
-        "description": "Measures your reading, listening and grammar in minutes. A quick way to find your starting level (A1–C1).",
+        "title": "Placement Test",
+        "description": "Grammar, vocabulary, reading and listening questions that adapt to your answers, from A1 to C1. It tells you your level and how sure the result is.",
         "advice": "Take it every 2 weeks to track your progress and adjust your study plan."
       },
       "toefl": {
@@ -475,7 +475,6 @@
       }
     },
     "report": {
-      "placementScore": "Correct answers",
       "ieltsBand": "Estimated IELTS band",
       "toeflBand": "Estimated TOEFL band (1–6)",
       "cambridgeScale": "Estimated Cambridge English Scale",
@@ -483,13 +482,27 @@
       "levelQuestions_A2": "A2 questions",
       "levelQuestions_B1": "B1 questions",
       "levelQuestions_B2": "B2 questions",
-      "levelQuestions_C1": "C1 questions"
+      "levelQuestions_C1": "C1 questions",
+      "placementConfidence": "How sure the result is",
+      "placementScore": "Correct answers"
     },
     "listeningComprehension": "Listening",
     "teacher": "Teacher",
     "speakingFeedbackTitle": "Speaking feedback",
     "chooseTask": "Choose a task",
-    "chooseTaskFirst": "Choose one of the tasks to continue."
+    "chooseTaskFirst": "Choose one of the tasks to continue.",
+    "ruleAdaptive": "The test adapts to you: it starts at A2 and, every 5 questions, moves up, down or stays at a level depending on your answers. It has about {{min}} questions and {{max}} at most (fewer if you are starting from scratch), and you can't go back to a finished block.",
+    "confidence": {
+      "clear": "High",
+      "close": "Medium",
+      "unfinished": "Low"
+    },
+    "confidenceWhy": {
+      "clear": "Your answers mark your level clearly.",
+      "close": "You are close to the boundary with the next level. Take the test again in a few weeks to confirm it.",
+      "unfinished": "The test ended before your level was confirmed. Take this as a guide and repeat it calmly."
+    },
+    "atMost": "max. {{max}}"
   },
   "exam": {
     "tfngPrompt": "What does the text say about this statement?",

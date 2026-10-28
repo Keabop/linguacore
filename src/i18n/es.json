@@ -449,8 +449,8 @@
     "notAssessed": "sin evaluar",
     "presets": {
       "placement": {
-        "title": "Test de Nivelación Rápida",
-        "description": "Mide tus habilidades de comprensión lectora, auditiva y gramatical en minutos. Ideal para conocer tu nivel general de partida (A1-C1) de forma inmediata.",
+        "title": "Test de nivelación",
+        "description": "Preguntas de gramática, vocabulario, lectura y escucha que se adaptan a tus respuestas, de A1 a C1. Te dice tu nivel y qué tan seguro es el resultado.",
         "advice": "Recomendado cada 2 semanas para medir tu progreso regular y adaptar tu plan de estudio de forma dinámica."
       },
       "toefl": {
@@ -475,7 +475,6 @@
       }
     },
     "report": {
-      "placementScore": "Aciertos",
       "ieltsBand": "Banda IELTS estimada",
       "toeflBand": "Banda TOEFL estimada (1–6)",
       "cambridgeScale": "Cambridge English Scale estimada",
@@ -483,13 +482,27 @@
       "levelQuestions_A2": "Preguntas A2",
       "levelQuestions_B1": "Preguntas B1",
       "levelQuestions_B2": "Preguntas B2",
-      "levelQuestions_C1": "Preguntas C1"
+      "levelQuestions_C1": "Preguntas C1",
+      "placementConfidence": "Seguridad del resultado",
+      "placementScore": "Aciertos"
     },
     "listeningComprehension": "Comprensión de audio",
     "teacher": "Docente",
     "speakingFeedbackTitle": "Retroalimentación de tu expresión oral",
     "chooseTask": "Elige una tarea",
-    "chooseTaskFirst": "Elige una de las tareas para poder continuar."
+    "chooseTaskFirst": "Elige una de las tareas para poder continuar.",
+    "ruleAdaptive": "El test se adapta a ti: empieza en A2 y, cada 5 preguntas, sube, baja o se queda en el nivel según tus respuestas. Son unas {{min}} preguntas y {{max}} como máximo (menos si empiezas desde cero), y no puedes volver a un bloque ya terminado.",
+    "confidence": {
+      "clear": "Alta",
+      "close": "Media",
+      "unfinished": "Baja"
+    },
+    "confidenceWhy": {
+      "clear": "Tus respuestas marcan tu nivel con claridad.",
+      "close": "Estás cerca del límite con el nivel de al lado. Repite el test en unas semanas para confirmarlo.",
+      "unfinished": "El test terminó antes de confirmar tu nivel. Tómalo como orientación y repítelo con calma."
+    },
+    "atMost": "máx. {{max}}"
   },
   "exam": {
     "tfngPrompt": "¿Qué dice el texto sobre esta afirmación?",
