@@ -503,6 +503,8 @@
     "paragraph": "Párrafo {{letter}}"
   },
   "auth": {
-    "tagline": "Tu inglés crece un poco cada día."
+    "tagline": "Tu inglés crece un poco cada día.",
+    "sessionEndedTitle": "Tu sesión terminó",
+    "sessionEndedBody": "Vuelve a iniciar sesión para continuar."
   }
 }

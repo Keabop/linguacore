@@ -67,6 +67,18 @@ describe('orchestrator', () => {
         expect(res.status).toBe(401);
     });
 
+    it('answers 500, not 401, when the server lacks its Supabase keys (the app must not sign users out)', async () => {
+        const request = new Request('https://voxie.pages.dev/api/orchestrator', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer valid', 'CF-Connecting-IP': '10.9.9.9' },
+            body: JSON.stringify({ agent: 'vocab-enricher', params: {} }),
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = await onRequestPost({ request, env: {} } as any);
+        expect(res.status).toBe(500);
+        expect(getUser).not.toHaveBeenCalled();
+    });
+
     it('rejects an invalid session', async () => {
         getUser.mockResolvedValueOnce({ data: { user: null }, error: new Error('jwt expired') });
         const res = await call({ agent: 'vocab-enricher', params: {} });

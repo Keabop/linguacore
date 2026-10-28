@@ -57,7 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const signOut = async () => {
-        await supabase.auth.signOut();
+        // Only this device: the phone or the other browser stay signed in
+        await supabase.auth.signOut({ scope: 'local' });
     };
 
     return (

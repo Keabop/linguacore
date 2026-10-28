@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/apiFetch';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -37,12 +38,9 @@ export function useSubscription() {
     const manageSubscription = async (action: 'cancel' | 'reactivate') => {
         if (!session?.access_token) throw new Error('No session');
 
-        const res = await fetch('/api/payments/create-subscription', {
+        const res = await apiFetch('/api/payments/create-subscription', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${session.access_token}`,
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action }),
         });
 
