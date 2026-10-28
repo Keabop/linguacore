@@ -64,7 +64,8 @@ function MultipleChoice({ q, value, onChange }: { q: MultipleChoiceQuestion; val
                         onClick={() => onChange(i)}
                         className={`${OPTION} ${value === i ? OPTION_ON : OPTION_IDLE}`}
                     >
-                        {q.fixedOrder && <span className="mr-2 font-mono text-[var(--color-on-surface-muted)]">{String.fromCharCode(65 + i)}</span>}
+                        {/* Fixed lists get a letter, unless they carry their own numbering (headings i–viii) */}
+                        {q.fixedOrder && !/^[ivx]+\.\s/i.test(opt) && <span className="mr-2 font-mono text-[var(--color-on-surface-muted)]">{String.fromCharCode(65 + i)}</span>}
                         {opt}
                     </button>
                 ))}

@@ -4,7 +4,7 @@ import { allExercises, allGrammarSkills, allStories, allUnits, allVocabulary } f
 import { placementQuestions } from './assessments/cefr-questions';
 import { cambridgeB1Questions } from './assessments/cambridge-b1-questions';
 import { cambridgeB2Questions } from './assessments/cambridge-b2-questions';
-import { ieltsQuestions } from './assessments/ielts-questions';
+import { ieltsQuestions, ieltsSpeaking, ieltsWriting } from './assessments/ielts-questions';
 import { toeflQuestions } from './assessments/toefl-questions';
 import { validateExamStructure, validateQuestion } from '../lib/exam/validate';
 import reference from '../../content/reference/cefrj-vocabulary.json';
@@ -130,11 +130,48 @@ describe('plan targets for rebuilt levels', () => {
     }
 
     it('has no templated or repeated questions in the rebuilt exam banks', () => {
-        const banks = { placement: placementQuestions, cambridgeB1: cambridgeB1Questions, cambridgeB2: cambridgeB2Questions };
+        const banks = { placement: placementQuestions, cambridgeB1: cambridgeB1Questions, cambridgeB2: cambridgeB2Questions, ielts: ieltsQuestions };
         for (const name of ENFORCED_EXAMS) {
             const qs = banks[name];
             expect(qs.filter(q => isTemplated(q.text)).map(q => q.id), name).toEqual([]);
             expect(new Set(qs.map(q => q.text)).size, name).toBe(qs.length);
         }
+    });
+});
+
+describe('IELTS Academic simulator', () => {
+    const listening = ieltsQuestions.filter(q => q.section === 'listening');
+    const reading = ieltsQuestions.filter(q => q.section === 'reading');
+    const sizes = (qs: typeof ieltsQuestions) => [...new Set(qs.map(q => q.group))].map(g => qs.filter(q => q.group === g).length);
+
+    it('has the real structure: 4 listening parts of 10 and 3 passages, 40 questions each', () => {
+        expect(sizes(listening)).toEqual([10, 10, 10, 10]);
+        expect(sizes(reading)).toEqual([13, 13, 14]);
+        expect(ieltsQuestions.slice(0, 40).every(q => q.section === 'listening')).toBe(true);
+    });
+
+    it('uses passages of exam length', () => {
+        for (const passage of new Set(reading.map(q => q.passage))) {
+            expect(passage!.split(/\s+/).length).toBeGreaterThanOrEqual(700);
+        }
+    });
+
+    it('quotes the evidence of every answer (not-given items have none to quote)', () => {
+        for (const q of ieltsQuestions) {
+            const notGiven = q.kind === 'tfng' && q.answer === 'not-given';
+            expect(Boolean(q.evidence), q.id).toBe(!notGiven);
+        }
+    });
+
+    it('mixes the question types of the real exam', () => {
+        const kinds = new Set(ieltsQuestions.map(q => q.kind ?? 'mc'));
+        expect([...kinds].sort()).toEqual(['gap', 'mc', 'tfng']);
+    });
+
+    it('gives Task 1 a chart to describe and Part 2 a cue card', () => {
+        expect(ieltsWriting[0].chart?.series.length).toBeGreaterThan(1);
+        expect(ieltsWriting[0].chart?.series.every(s => s.values.length === ieltsWriting[0].chart!.categories.length)).toBe(true);
+        expect(ieltsSpeaking.map(s => s.title.slice(0, 6))).toEqual(['Part 1', 'Part 2', 'Part 3']);
+        expect(ieltsSpeaking[1].cueCard?.length).toBeGreaterThanOrEqual(3);
     });
 });
