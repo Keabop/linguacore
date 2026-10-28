@@ -10,10 +10,13 @@ export type ExamId = 'placement' | 'toefl' | 'ielts' | 'cambridge_b1' | 'cambrid
 
 export interface ExamReport {
     level: CefrResult;
-    /** The exam's own score ("6.5", "4.5", "152"), labelled as an estimate in the UI. */
+    /**
+     * The exam's own score ("6.5", "4.5", "152"), labelled as an estimate in the UI. `label`
+     * is a key of simulator.report in the locale files (older saved reports hold the text).
+     */
     headline: { label: string; value: string };
-    /** One line per skill in the exam's own units. */
-    breakdown: { skill: string; value: string }[];
+    /** One line per skill in the exam's own units; null when the skill wasn't assessed. */
+    breakdown: { skill: string; value: string | null }[];
     /** 0–100 per skill for the chart; null when the skill wasn't assessed. */
     percent: { reading: number | null; listening: number | null; useOfEnglish: number | null; writing: number | null; speaking: number | null };
     /** Mean of the assessed skills, 0–100. */
@@ -55,14 +58,14 @@ export function buildReport(
     };
     const assessed = Object.values(percent).filter((v): v is number => v !== null);
     const overallPercent = assessed.length ? Math.round(mean(assessed)) : 0;
-    const shown = (v: number | null, f: (n: number) => string) => (v === null ? 'sin evaluar' : f(v));
+    const shown = (v: number | null, f: (n: number) => string) => (v === null ? null : f(v));
 
     if (exam === 'placement') {
         const byLevel = ratioByLevel(questions, responses);
         return {
             level: placementLevel(byLevel),
-            headline: { label: 'Aciertos', value: `${overallPercent}%` },
-            breakdown: Object.entries(byLevel).map(([lvl, r]) => ({ skill: `Preguntas ${lvl}`, value: `${Math.round(r * 100)}%` })),
+            headline: { label: 'placementScore', value: `${overallPercent}%` },
+            breakdown: Object.entries(byLevel).map(([lvl, r]) => ({ skill: `levelQuestions_${lvl}`, value: `${Math.round(r * 100)}%` })),
             percent,
             overallPercent,
         };
@@ -78,7 +81,7 @@ export function buildReport(
         const overall = ieltsOverall(Object.values(bands).filter((b): b is number => b !== null));
         return {
             level: cefrFromIelts(overall),
-            headline: { label: 'Banda IELTS estimada', value: fmt(overall) },
+            headline: { label: 'ieltsBand', value: fmt(overall) },
             breakdown: Object.entries(bands).map(([skill, b]) => ({ skill, value: shown(b, fmt) })),
             percent,
             overallPercent,
@@ -100,7 +103,7 @@ export function buildReport(
         const overall = toeflOverall(Object.values(bands).filter((b): b is number => b !== null));
         return {
             level: cefrFromToefl(overall),
-            headline: { label: 'Banda TOEFL estimada (1–6)', value: fmt(overall) },
+            headline: { label: 'toeflBand', value: fmt(overall) },
             breakdown: Object.entries(bands).map(([skill, b]) => ({ skill, value: shown(b, fmt) })),
             percent,
             overallPercent,
@@ -122,7 +125,7 @@ export function buildReport(
     const overall = Math.round(mean(scored));
     return {
         level: cefrFromCambridge(overall),
-        headline: { label: 'Cambridge English Scale estimada', value: String(overall) },
+        headline: { label: 'cambridgeScale', value: String(overall) },
         breakdown: Object.entries(scales).map(([skill, v]) => ({ skill, value: shown(v, String) })),
         percent,
         overallPercent,

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Compass, Shield, Award, Sparkles, Play, Volume2, Edit3, Activity, ChevronRight, CheckCircle, Crown, Calendar, AlertCircle, Timer, Check } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
@@ -26,9 +27,6 @@ type PageState = 'selection' | 'instructions' | 'testing' | 'writing' | 'speakin
 
 interface TestPreset {
     id: 'placement' | 'toefl' | 'ielts' | 'cambridge_b1' | 'cambridge_b2';
-    title: string;
-    description: string;
-    pedagogicalAdvice: string;
     isPro: boolean;
     durationMinutes: number;
     /** Times each recording can be played, as in the real exam (IELTS and TOEFL: once). */
@@ -40,18 +38,12 @@ interface TestPreset {
 const presets: TestPreset[] = [
     {
         id: 'placement',
-        title: 'Test de Nivelación Rápida',
-        description: 'Mide tus habilidades de comprensión lectora, auditiva y gramatical en minutos. Ideal para conocer tu nivel general de partida (A1-C1) de forma inmediata.',
-        pedagogicalAdvice: 'Recomendado cada 2 semanas para medir tu progreso regular y adaptar tu plan de estudio de forma dinámica.',
         isPro: false,
         durationMinutes: 25,
         audioPlays: 2
     },
     {
         id: 'toefl',
-        title: 'Simulacro TOEFL iBT Style',
-        description: 'El formato de 2026: Reading y Listening adaptativos en dos módulos, Writing (ordenar oraciones, un email y un foro académico) y Speaking (escuchar y repetir, y una entrevista). Bandas de 1 a 6.',
-        pedagogicalAdvice: 'Recomendado una vez al mes para evaluar a fondo tu avance académico bajo estándares oficiales.',
         isPro: true,
         // About the real test's 85 minutes with fewer items: Reading 22, Listening 27, Writing 12, Speaking 11
         durationMinutes: 75,
@@ -60,9 +52,6 @@ const presets: TestPreset[] = [
     },
     {
         id: 'ielts',
-        title: 'Simulacro IELTS Academic Style',
-        description: 'Las cuatro partes del IELTS Academic: Listening (4 partes, 40 preguntas), Reading (3 textos, 40 preguntas), Writing (gráfica y ensayo) y Speaking (3 partes) calificados por IA.',
-        pedagogicalAdvice: 'Recomendado una vez al mes para medir el desarrollo de tu producción escrita y oral profesional.',
         isPro: true,
         // Listening 30 + Reading 60 + Writing 60 + Speaking ~12
         durationMinutes: 162,
@@ -70,18 +59,12 @@ const presets: TestPreset[] = [
     },
     {
         id: 'cambridge_b1',
-        title: 'Simulacro Cambridge B1 Preliminary',
-        description: 'Prueba oficial de nivel intermedio para consolidar tus bases. Evalúa Use of English, Listening, Writing de dos tareas y Speaking interactivo con feedback instantáneo.',
-        pedagogicalAdvice: 'Recomendado cada mes para certificar y consolidar tus bases de nivel B1.',
         isPro: true,
         durationMinutes: 60,
         audioPlays: 2
     },
     {
         id: 'cambridge_b2',
-        title: 'Simulacro Cambridge B2 First',
-        description: 'Prueba de alta exigencia académica que evalúa gramática avanzada (Use of English), comprensión de lectura y audios complejos, redacción técnica y examen oral estructurado.',
-        pedagogicalAdvice: 'Recomendado una vez al mes para validar tu solidez gramatical, producción escrita y fluidez oral ejecutiva.',
         isPro: true,
         durationMinutes: 65,
         audioPlays: 2
@@ -110,6 +93,8 @@ const LEVEL_COLOR: Record<ExamReport['level'], string> = {
 
 
 export default function CEFRSimulator() {
+    const { t } = useTranslation();
+    const presetTitle = (preset: TestPreset) => t(`simulator.presets.${preset.id}.title`);
     const navigate = useNavigate();
     const { user } = useAuth();
     const { isPro, isFree } = useTier();
@@ -205,8 +190,8 @@ export default function CEFRSimulator() {
         if (!active || timeLeft > 0 || isTimeUp) return;
         setIsTimeUp(true);
         toast.error({
-            title: 'Tiempo agotado',
-            description: 'Se ha agotado el tiempo límite para el examen.'
+            title: t('simulator.timeUpTitle'),
+            description: t('simulator.timeUpBody')
         });
         finishRef.current();
     }, [timeLeft, state, isTimeUp]);
@@ -349,7 +334,7 @@ export default function CEFRSimulator() {
             done();
             setAudioPlayCount(prev => ({ ...prev, [key]: plays }));
             setAudioFailed(prev => ({ ...prev, [key]: true }));
-            toast.error({ title: 'No se pudo reproducir el audio', description: 'Tu navegador no tiene voces disponibles. Prueba con Chrome o Edge.' });
+            toast.error({ title: t('simulator.audioFailedTitle'), description: t('simulator.audioFailedBody') });
         };
         if (audioSrc) playAudioFile(audioSrc, done, failed);
         else playDialogueSpeech(lines, (lineIdx) => setActiveDialogueLine(lineIdx), done, failed);
@@ -454,7 +439,7 @@ export default function CEFRSimulator() {
                     aiFeedbackObj = aiResult;
                 } catch (err) {
                     console.error("Error evaluating writing:", err);
-                    toast.error({ title: 'No se pudo evaluar la escritura', description: 'No cuenta en este resultado. Inténtalo de nuevo más tarde.' });
+                    toast.error({ title: t('simulator.writingFailedTitle'), description: t('simulator.aiFailedBody') });
                 }
             }
 
@@ -475,7 +460,7 @@ export default function CEFRSimulator() {
                     aiSpeakingFeedbackObj = aiResult;
                 } catch (err) {
                     console.error("Error evaluating speaking:", err);
-                    toast.error({ title: 'No se pudo evaluar el speaking', description: 'No cuenta en este resultado. Inténtalo de nuevo más tarde.' });
+                    toast.error({ title: t('simulator.speakingFailedTitle'), description: t('simulator.aiFailedBody') });
                 }
             }
 
@@ -502,7 +487,7 @@ export default function CEFRSimulator() {
             }
 
             setResults({
-                testType: selectedPreset!.title,
+                testType: presetTitle(selectedPreset!),
                 report,
                 writingFeedback: aiFeedbackObj,
                 speakingFeedback: aiSpeakingFeedbackObj
@@ -512,8 +497,8 @@ export default function CEFRSimulator() {
         } catch (err) {
             console.error(err);
             toast.error({
-                title: 'Error de evaluación',
-                description: 'Ocurrió un error al procesar tu evaluación.'
+                title: t('simulator.gradingErrorTitle'),
+                description: t('simulator.gradingErrorBody')
             });
             setState('selection');
         }
@@ -539,8 +524,8 @@ export default function CEFRSimulator() {
                         className="space-y-8"
                     >
                         <div>
-                            <h1 className="text-3xl font-black tracking-tight">Centro de Certificación</h1>
-                            <p className="text-sm text-[var(--color-on-surface-muted)]">Evalúa tu nivel CEFR real con simuladores interactivos de alto rigor académico.</p>
+                            <h1 className="text-3xl font-black tracking-tight">{t('simulator.centerTitle')}</h1>
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">{t('simulator.centerSubtitle')}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -568,16 +553,16 @@ export default function CEFRSimulator() {
                                                 )}
                                             </div>
 
-                                            <h3 className="text-lg md:text-xl font-extrabold tracking-tight text-[var(--color-on-surface)]">{p.title}</h3>
-                                            <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{p.description}</p>
+                                            <h3 className="text-lg md:text-xl font-extrabold tracking-tight text-[var(--color-on-surface)]">{presetTitle(p)}</h3>
+                                            <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{t(`simulator.presets.${p.id}.description`)}</p>
                                         </div>
 
                                         <div className="pt-4 border-t border-[var(--color-surface-container)] space-y-3">
-                                            <p className="text-xs font-semibold text-[var(--color-success)] dark:text-[var(--color-success)] leading-relaxed">{p.pedagogicalAdvice}</p>
+                                            <p className="text-xs font-semibold text-[var(--color-success)] dark:text-[var(--color-success)] leading-relaxed">{t(`simulator.presets.${p.id}.advice`)}</p>
                                             <div className="flex items-center justify-between text-xs text-[var(--color-on-surface-muted)] pt-1 font-bold">
-                                                <span className="inline-flex items-center gap-1.5"><Timer className="w-3.5 h-3.5" aria-hidden="true" />{p.durationMinutes} minutos</span>
+                                                <span className="inline-flex items-center gap-1.5"><Timer className="w-3.5 h-3.5" aria-hidden="true" />{t('simulator.minutes', { count: p.durationMinutes })}</span>
                                                 <span className="flex items-center gap-1 group-hover:text-[var(--color-on-surface)] transition-colors">
-                                                    Comenzar <ChevronRight className="w-4.5 h-4.5" />
+                                                    {t('simulator.start')} <ChevronRight className="w-4.5 h-4.5" />
                                                 </span>
                                             </div>
                                         </div>
@@ -602,22 +587,22 @@ export default function CEFRSimulator() {
                         </div>
 
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black">{selectedPreset.title}</h2>
-                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">Instrucciones formales</p>
+                            <h2 className="text-2xl font-black">{presetTitle(selectedPreset)}</h2>
+                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">{t('simulator.formalInstructions')}</p>
                         </div>
 
                         <div className="text-sm text-left bg-[var(--color-surface-container)] rounded-[1.5rem] p-5 space-y-3 text-[var(--color-on-surface-muted)]">
                             <p className="flex items-start gap-2.5">
                                 <span className="font-bold text-[var(--color-tertiary-ink)]">1.</span>
-                                <span>No utilices traductores ni diccionarios durante la sesión. Queremos medir tu nivel natural.</span>
+                                <span>{t('simulator.ruleNoTranslators')}</span>
                             </p>
                             <p className="flex items-start gap-2.5">
                                 <span className="font-bold text-[var(--color-tertiary-ink)]">2.</span>
-                                <span>El tiempo corre de forma continua. Si sales del examen, el temporizador seguirá avanzando.</span>
+                                <span>{t('simulator.ruleTimer')}</span>
                             </p>
                             <p className="flex items-start gap-2.5">
                                 <span className="font-bold text-[var(--color-tertiary-ink)]">3.</span>
-                                <span>En el Listening, cada audio se puede reproducir <strong>{selectedPreset.audioPlays === 1 ? 'una sola vez' : `${selectedPreset.audioPlays} veces`}</strong>, como en el examen real. Usa audífonos para mejor nitidez.</span>
+                                <span><Trans i18nKey="simulator.listeningPlays" count={selectedPreset.audioPlays} components={{ strong: <strong /> }} /></span>
                             </p>
                         </div>
 
@@ -626,13 +611,13 @@ export default function CEFRSimulator() {
                                 onClick={() => setState('selection')}
                                 className="flex-1 bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] py-3.5 rounded-full font-bold text-sm active:scale-97"
                             >
-                                Volver
+                                {t('simulator.back')}
                             </button>
                             <button
                                 onClick={handleStartTest}
                                 className="flex-1 bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-3.5 rounded-full font-black text-sm active:scale-97 hover:shadow-[0_4px_20px_color-mix(in_oklch,var(--color-tertiary)_25%,transparent)]"
                             >
-                                Entrar al Test
+                                {t('simulator.enterTest')}
                             </button>
                         </div>
                     </motion.div>
@@ -650,7 +635,9 @@ export default function CEFRSimulator() {
                         {/* Status bar */}
                         <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                             <span className="font-bold text-[var(--color-primary)]">
-                                {selectedPreset?.title} • {pageQuestions.length > 1 ? `Preguntas ${currentIdx + 1}–${lastOnPage + 1}` : `Pregunta ${currentIdx + 1}`} de {visible.length}{closesRouter ? '+' : ''}
+                                {selectedPreset && presetTitle(selectedPreset)} • {pageQuestions.length > 1
+                                    ? t('simulator.questionsOf', { from: currentIdx + 1, to: lastOnPage + 1, total: `${visible.length}${closesRouter ? '+' : ''}` })
+                                    : t('simulator.questionOf', { n: currentIdx + 1, total: `${visible.length}${closesRouter ? '+' : ''}` })}
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
@@ -668,22 +655,22 @@ export default function CEFRSimulator() {
                             {current.dialogue && (
                                 <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-6 text-center space-y-4 border border-[var(--color-surface-container)]">
                                     <h4 className="text-xs uppercase tracking-widest font-black text-[var(--color-on-surface-muted)] flex items-center justify-center gap-1.5">
-                                        <Volume2 className="w-4.5 h-4.5 text-[var(--color-primary)]" /> Comprensión de Audio
+                                        <Volume2 className="w-4.5 h-4.5 text-[var(--color-primary)]" /> {t('simulator.listeningComprehension')}
                                     </h4>
                                     
                                     <div className="flex justify-center items-center gap-3">
                                         <button
                                             onClick={() => handlePlayAudio(audioKey, current.dialogue!, current.audioSrc)}
                                             disabled={isPlayingAudio || (audioPlayCount[audioKey] || 0) >= maxPlays}
-                                            aria-label="Reproducir el audio"
+                                            aria-label={t('simulator.playAudio')}
                                             className="w-14 h-14 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95 transition-all shadow-md"
                                         >
                                             <Play className="w-6 h-6 fill-current" />
                                         </button>
                                         <div className="text-left text-xs text-[var(--color-on-surface-muted)] font-bold">
-                                            <p>Reproducciones: {audioPlayCount[audioKey] || 0} / {maxPlays}</p>
+                                            <p>{t('simulator.plays', { used: audioPlayCount[audioKey] || 0, max: maxPlays })}</p>
                                             {new Set(current.dialogue.map(l => l.accent)).size > 1 && (
-                                                <p className="text-[10px] text-[var(--color-tertiary-ink)] mt-0.5">Voces con acentos distintos</p>
+                                                <p className="text-[10px] text-[var(--color-tertiary-ink)] mt-0.5">{t('simulator.mixedAccents')}</p>
                                             )}
                                         </div>
                                     </div>
@@ -692,14 +679,14 @@ export default function CEFRSimulator() {
                                     {isPlayingAudio && (
                                         <div className="pt-2 flex justify-center items-center gap-1 text-[var(--color-primary)] font-bold text-xs">
                                             <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-ping" />
-                                            <span>Reproduciendo diálogo interactivo en curso...</span>
+                                            <span>{t('simulator.playing')}</span>
                                         </div>
                                     )}
 
                                     {/* Inline play limit warning */}
                                     {(audioPlayCount[audioKey] || 0) >= maxPlays && (
                                         <div className="text-[11px] font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5 pt-1">
-                                            <AlertCircle className="w-3.5 h-3.5" /> Límite de reproducciones alcanzado para este audio.
+                                            <AlertCircle className="w-3.5 h-3.5" /> {t('simulator.limitReached')}
                                         </div>
                                     )}
                                 </div>
@@ -707,22 +694,22 @@ export default function CEFRSimulator() {
 
                             {pageQuestions.length > 1 && !selectedPreset?.questionsAfterAudio && (
                                 <p className="text-xs font-semibold text-[var(--color-on-surface-muted)]">
-                                    Lee las preguntas antes de reproducir el audio; puedes responder mientras suena.
+                                    {t('simulator.readQuestionsFirst')}
                                 </p>
                             )}
                             {selectedPreset?.questionsAfterAudio && current.dialogue && (
-                                <p className="sr-only" aria-live="polite">{questionsHidden ? '' : 'Ya puedes responder las preguntas.'}</p>
+                                <p className="sr-only" aria-live="polite">{questionsHidden ? '' : t('simulator.questionsReady')}</p>
                             )}
                             {questionsHidden ? (
                                 <p className="text-sm font-semibold text-center text-[var(--color-on-surface-muted)]">
-                                    {isPlayingAudio ? 'Escucha con atención; puedes tomar notas.' : 'Reproduce el audio. Las preguntas aparecen cuando termine.'}
+                                    {isPlayingAudio ? t('simulator.listenCarefully') : t('simulator.questionsAfterAudio')}
                                 </p>
                             ) : (
                             <div ref={questionsRef} tabIndex={-1} className="space-y-8 focus:outline-none">
                                 {pageQuestions.map((q, i) => (
-                                    <section key={q.id} aria-label={`Pregunta ${currentIdx + i + 1}`} className="space-y-2">
+                                    <section key={q.id} aria-label={t('simulator.question', { n: currentIdx + i + 1 })} className="space-y-2">
                                         {pageQuestions.length > 1 && (
-                                            <p className="text-[11px] font-black uppercase tracking-wider text-[var(--color-primary)]">Pregunta {currentIdx + i + 1}</p>
+                                            <p className="text-[11px] font-black uppercase tracking-wider text-[var(--color-primary)]">{t('simulator.question', { n: currentIdx + i + 1 })}</p>
                                         )}
                                         <QuestionView question={q} response={answers[q.id]} onChange={(r) => setAnswer(q.id, r)} />
                                     </section>
@@ -738,7 +725,7 @@ export default function CEFRSimulator() {
                                 disabled={!canGoBack}
                                 className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
                             >
-                                Anterior
+                                {t('simulator.previous')}
                             </button>
                             {lastOnPage + 1 < visible.length || closesRouter ? (
                                 <button
@@ -746,14 +733,14 @@ export default function CEFRSimulator() {
                                     disabled={lockedByAudio}
                                     className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-tertiary)] bg-[var(--color-tertiary)] active:scale-95 transition-all"
                                 >
-                                    Siguiente
+                                    {t('simulator.next')}
                                 </button>
                             ) : (
                                 <button
                                     onClick={proceedToWritingOrComplete}
                                     className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-primary)] bg-[var(--color-success)] active:scale-95 transition-all"
                                 >
-                                    Continuar
+                                    {t('simulator.continue')}
                                 </button>
                             )}
                         </div>
@@ -781,7 +768,7 @@ export default function CEFRSimulator() {
                                 <>
                                     <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                                         <span className="font-bold text-[var(--color-primary)] flex items-center gap-1.5">
-                                            <Edit3 className="w-4.5 h-4.5" /> Redacción - Tarea {activeWritingIdx + 1} de {writingPromptsList.length}
+                                            <Edit3 className="w-4.5 h-4.5" /> {t('simulator.writingTaskOf', { n: activeWritingIdx + 1, total: writingPromptsList.length })}
                                         </span>
                                         <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
                                             <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
@@ -790,7 +777,7 @@ export default function CEFRSimulator() {
 
                                     <div className="widget space-y-6">
                                         <div className="space-y-3 bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)]">
-                                            <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">Instrucciones específicas</p>
+                                            <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">{t('simulator.specificInstructions')}</p>
                                             <p className="text-base font-bold leading-relaxed">{activePrompt.prompt}</p>
                                             {activePrompt.points && (
                                                 <ul className="list-disc pl-5 text-sm font-semibold text-[var(--color-on-surface)] space-y-1">
@@ -802,7 +789,7 @@ export default function CEFRSimulator() {
                                                     {activePrompt.discussion.map((post: DiscussionPost) => (
                                                         <article key={post.author} className={`rounded-xl bg-[var(--color-card)] p-4 space-y-1 ${post.role === 'student' ? 'ml-4 sm:ml-8' : ''}`}>
                                                             <p className="text-xs font-black text-[var(--color-primary)]">
-                                                                {post.author}{post.role === 'professor' ? ' · Docente' : ''}
+                                                                {post.author}{post.role === 'professor' ? ` · ${t('simulator.teacher')}` : ''}
                                                             </p>
                                                             <p className="text-sm leading-relaxed text-[var(--color-on-surface)]">{post.text}</p>
                                                         </article>
@@ -816,7 +803,7 @@ export default function CEFRSimulator() {
                                             )}
                                             <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{activePrompt.instructions}</p>
                                             <div className="text-[11px] font-black text-[var(--color-primary)]">
-                                                Tamaño sugerido: {activePrompt.targetWords}
+                                                {t('simulator.suggestedLength', { length: activePrompt.targetWords })}
                                             </div>
                                         </div>
 
@@ -824,13 +811,13 @@ export default function CEFRSimulator() {
                                             <textarea
                                                 value={currentText}
                                                 onChange={(e) => setWritingAnswers(prev => ({ ...prev, [activePrompt.id]: e.target.value }))}
-                                                placeholder="Comienza a redactar tu ensayo aquí en inglés..."
+                                                placeholder={t('simulator.writingPlaceholder')}
                                                 rows={10}
                                                 className="w-full p-5 rounded-[1.5rem] bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] text-sm focus:outline-none focus:border-[var(--color-primary)] transition-all font-sans leading-relaxed"
                                             />
                                             <div className="flex justify-between text-xs text-[var(--color-on-surface-muted)] px-1">
-                                                <span>Palabras redactadas: {wordCount}</span>
-                                                <span>Caracteres: {charCount} / 3000</span>
+                                                <span>{t('simulator.wordsWritten', { count: wordCount })}</span>
+                                                <span>{t('simulator.characters', { count: charCount })}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -840,7 +827,7 @@ export default function CEFRSimulator() {
                                         disabled={currentText.trim().length < 20}
                                         className="w-full py-4 text-sm font-black rounded-full text-[var(--color-on-primary)] bg-[var(--color-success)] active:scale-98 disabled:opacity-40"
                                     >
-                                        {isNextTask ? 'Siguiente Tarea' : speakingPrompts.length > 0 ? 'Continuar al Speaking' : 'Finalizar Examen y Enviar a Calificar'}
+                                        {isNextTask ? t('simulator.nextTask') : speakingPrompts.length > 0 ? t('simulator.toSpeaking') : t('simulator.finishAndGrade')}
                                     </button>
                                 </>
                             );
@@ -859,7 +846,7 @@ export default function CEFRSimulator() {
                     >
                         <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                             <span className="font-bold text-[var(--color-primary)] flex items-center gap-1.5">
-                                <Volume2 className="w-4.5 h-4.5" /> Sección Oral (Speaking)
+                                <Volume2 className="w-4.5 h-4.5" /> {t('simulator.speakingSection')}
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
@@ -876,10 +863,10 @@ export default function CEFRSimulator() {
                                     <div className="flex justify-between items-center">
                                         <div>
                                             <h3 className="text-lg font-black text-[var(--color-on-surface)]">{activePrompt.title}</h3>
-                                            <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">Tarea {activeSpeakingIdx + 1} de {speakingPrompts.length}</p>
+                                            <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">{t('simulator.taskOf', { n: activeSpeakingIdx + 1, total: speakingPrompts.length })}</p>
                                         </div>
                                         <span className="text-xs font-bold text-[var(--color-tertiary-ink)] bg-[var(--color-tertiary)]/10 px-2.5 py-1 rounded-full">
-                                            <Timer className="inline w-3.5 h-3.5 -mt-0.5 mr-1" aria-hidden="true" />Duración sugerida: {activePrompt.timeSeconds}s
+                                            <Timer className="inline w-3.5 h-3.5 -mt-0.5 mr-1" aria-hidden="true" />{t('simulator.suggestedTime', { seconds: activePrompt.timeSeconds })}
                                         </span>
                                     </div>
 
@@ -892,7 +879,7 @@ export default function CEFRSimulator() {
                                                     speakPrompt(activePrompt.prompt);
                                                 }}
                                                 disabled={!synthesisSupported || (activePrompt.listenOnly && heardPrompts[activePrompt.id])}
-                                                aria-label={activePrompt.listenOnly ? 'Escuchar la oración (una vez)' : 'Escuchar pregunta'}
+                                                aria-label={activePrompt.listenOnly ? t('simulator.listenOnce') : t('simulator.listenQuestion')}
                                                 className={`w-12 h-12 shrink-0 rounded-full flex items-center justify-center transition-all disabled:opacity-40 disabled:pointer-events-none ${
                                                     isSpeaking 
                                                         ? 'bg-[var(--color-tertiary)] text-[var(--color-on-primary)] animate-pulse' 
@@ -903,17 +890,17 @@ export default function CEFRSimulator() {
                                             </button>
                                             <div className="space-y-1.5 flex-1">
                                                 <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">
-                                                    {activePrompt.listenOnly ? 'Oración para repetir' : 'Pregunta del Examinador'}
+                                                    {activePrompt.listenOnly ? t('simulator.sentenceToRepeat') : t('simulator.examinerQuestion')}
                                                 </p>
                                                 {activePrompt.listenOnly && !synthesisSupported ? (
                                                     // Without voices the sentence can't be heard: it is shown instead of losing the task
                                                     <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]">
                                                         {activePrompt.prompt}
-                                                        <span className="block text-xs font-semibold text-[var(--color-on-surface-muted)]">Tu navegador no puede leerla en voz alta: léela una vez y repítela.</span>
+                                                        <span className="block text-xs font-semibold text-[var(--color-on-surface-muted)]">{t('simulator.noVoicesRepeat')}</span>
                                                     </p>
                                                 ) : activePrompt.listenOnly ? (
                                                     <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]" aria-live="polite">
-                                                        {heardPrompts[activePrompt.id] ? 'Ahora grábate repitiéndola.' : 'Pulsa el altavoz para escucharla. Solo suena una vez.'}
+                                                        {heardPrompts[activePrompt.id] ? t('simulator.nowRecord') : t('simulator.tapSpeaker')}
                                                     </p>
                                                 ) : (
                                                     <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]">{activePrompt.prompt}</p>
@@ -943,7 +930,7 @@ export default function CEFRSimulator() {
                                                 }}
                                                 // Recording would cut the sentence off before it is heard in full
                                                 disabled={activePrompt.listenOnly && isSpeaking}
-                                                aria-label={isListening ? 'Detener la grabación' : 'Grabar respuesta'}
+                                                aria-label={isListening ? t('simulator.stopRecording') : t('simulator.recordAnswer')}
                                                 className={`w-16 h-16 rounded-full disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 ${
                                                     isListening 
                                                         ? 'bg-[var(--color-error)] text-[var(--color-on-error)] animate-pulse' 
@@ -959,17 +946,17 @@ export default function CEFRSimulator() {
                                                 )}
                                             </button>
                                             <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
-                                                {isListening ? 'Grabando... Habla ahora' : 'Presiona para Grabar Respuesta'}
+                                                {isListening ? t('simulator.recordingNow') : t('simulator.pressToRecord')}
                                             </span>
                                         </div>
 
                                         {/* Transcript Display Area */}
                                         <div className="space-y-2 text-left">
-                                            <label className="text-xs font-black uppercase text-[var(--color-on-surface-muted)] tracking-wider">Tu respuesta transcrita (puedes editarla):</label>
+                                            <label className="text-xs font-black uppercase text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.transcriptLabel')}</label>
                                             <textarea
                                                 value={recordedText}
                                                 onChange={(e) => setSpeakingAnswers(prev => ({ ...prev, [activePrompt.id]: e.target.value }))}
-                                                placeholder="Tu respuesta en inglés aparecerá aquí mientras hablas..."
+                                                placeholder={t('simulator.transcriptPlaceholder')}
                                                 rows={4}
                                                 className="w-full p-4 rounded-xl bg-[var(--color-surface-container)] border border-[var(--color-surface-container-highest)] text-sm focus:outline-none focus:border-[var(--color-primary)] transition-all font-sans leading-relaxed"
                                             />
@@ -986,7 +973,7 @@ export default function CEFRSimulator() {
                                             disabled={activeSpeakingIdx === 0}
                                             className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
                                         >
-                                            Pregunta Anterior
+                                            {t('simulator.previousQuestion')}
                                         </button>
                                         
                                         {activeSpeakingIdx + 1 < speakingPrompts.length ? (
@@ -997,7 +984,7 @@ export default function CEFRSimulator() {
                                                 }}
                                                 className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-tertiary)] bg-[var(--color-tertiary)] active:scale-95 transition-all"
                                             >
-                                                Siguiente Pregunta
+                                                {t('simulator.nextQuestion')}
                                             </button>
                                         ) : (
                                             <button
@@ -1007,7 +994,7 @@ export default function CEFRSimulator() {
                                                 }}
                                                 className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-primary)] bg-[var(--color-success)] active:scale-95 transition-all"
                                             >
-                                                Finalizar Examen
+                                                {t('simulator.finishExam')}
                                             </button>
                                         )}
                                     </div>
@@ -1029,10 +1016,10 @@ export default function CEFRSimulator() {
                             <Activity className="w-8 h-8 text-[var(--color-tertiary-ink)] animate-spin" />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black">Procesando tu Examen...</h2>
-                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">Rigor Académico Gemini 1.5 Pro</p>
+                            <h2 className="text-2xl font-black">{t('simulator.processing')}</h2>
+                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">{t('simulator.aiGrading')}</p>
                             <p className="text-sm text-[var(--color-on-surface-muted)] max-w-sm mx-auto leading-relaxed">
-                                Evaluando tus respuestas de Use of English, Reading, Listening y analizando minuciosamente tu ensayo bajo la rúbrica de examen oficial de Cambridge.
+                                {t('simulator.processingDetail')}
                             </p>
                         </div>
                     </motion.div>
@@ -1050,14 +1037,14 @@ export default function CEFRSimulator() {
                         {/* Header */}
                         <div className="flex justify-between items-center shrink-0">
                             <div>
-                                <h1 className="text-3xl font-black tracking-tight text-[var(--color-success)]">¡Evaluación Completada!</h1>
-                                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-widest font-black mt-1">Informe de rendimiento</p>
+                                <h1 className="text-3xl font-black tracking-tight text-[var(--color-success)]">{t('simulator.completed')}</h1>
+                                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-widest font-black mt-1">{t('simulator.performanceReport')}</p>
                             </div>
                             <button
                                 onClick={() => setState('selection')}
                                 className="bg-[var(--color-surface-container)] text-[var(--color-on-surface)] py-2 px-5 rounded-full text-xs font-bold hover:bg-[var(--color-surface-container-highest)] transition-colors active:scale-95"
                             >
-                                Salir al Panel
+                                {t('simulator.exitToPanel')}
                             </button>
                         </div>
 
@@ -1067,31 +1054,31 @@ export default function CEFRSimulator() {
                             {/* Score Card */}
                             <div className="widget flex flex-col items-center gap-5 text-center !py-8">
                                 <div className="space-y-2">
-                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">Tu nivel CEFR estimado</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('simulator.estimatedLevel')}</p>
                                     <span className="level-leaf px-5 py-2 text-3xl" style={{ background: LEVEL_COLOR[results.report.level] }}>
                                         {results.report.level}
                                     </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{results.report.headline.label}</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t(`simulator.report.${results.report.headline.label}`, { defaultValue: results.report.headline.label })}</p>
                                     <p className="font-mono text-5xl font-bold text-[var(--color-on-surface)]">{results.report.headline.value}</p>
                                 </div>
                                 <dl className="grid w-full grid-cols-2 gap-2">
                                     {results.report.breakdown.map(b => (
                                         <div key={b.skill} className="rounded-[var(--radius-sm)] bg-[var(--color-surface-container)] px-3 py-2">
-                                            <dt className="text-xs font-semibold text-[var(--color-on-surface-muted)]">{b.skill}</dt>
-                                            <dd className="font-mono text-base font-bold text-[var(--color-on-surface)]">{b.value}</dd>
+                                            <dt className="text-xs font-semibold text-[var(--color-on-surface-muted)]">{t(`simulator.report.${b.skill}`, { defaultValue: b.skill })}</dt>
+                                            <dd className="font-mono text-base font-bold text-[var(--color-on-surface)]">{b.value ?? t('simulator.notAssessed')}</dd>
                                         </div>
                                     ))}
                                 </dl>
                                 <p className="text-xs leading-snug text-[var(--color-on-surface-muted)]">
-                                    Estimación con las tablas públicas de conversión; no es una calificación oficial.
+                                    {t('simulator.estimateNote')}
                                 </p>
                             </div>
 
                             {/* Radar Chart SVG Widget */}
                             <div className="widget md:col-span-2 space-y-3 flex flex-col justify-center">
-                                <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">Desglose Técnico de Habilidades</h4>
+                                <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.skillsBreakdown')}</h4>
                                 
                                 <div className="flex flex-col sm:flex-row justify-around items-center gap-6">
                                     {/* SVG Radar Chart */}
@@ -1212,13 +1199,13 @@ export default function CEFRSimulator() {
                                         {selectedPreset?.id !== 'placement' && (
                                             <div className="flex items-center justify-between gap-6">
                                                 <span className="text-[var(--color-on-surface-muted)]">Writing:</span>
-                                                <span className="text-[var(--color-error)]">{results.report.percent.writing ?? 'sin evaluar'}{results.report.percent.writing !== null && '%'}</span>
+                                                <span className="text-[var(--color-error)]">{results.report.percent.writing ?? t('simulator.notAssessed')}{results.report.percent.writing !== null && '%'}</span>
                                             </div>
                                         )}
                                         {selectedPreset?.id !== 'placement' && (
                                             <div className="flex items-center justify-between gap-6">
                                                 <span className="text-[var(--color-on-surface-muted)]">Speaking:</span>
-                                                <span className="text-[var(--color-accent-blue)]">{results.report.percent.speaking ?? 'sin evaluar'}{results.report.percent.speaking !== null && '%'}</span>
+                                                <span className="text-[var(--color-accent-blue)]">{results.report.percent.speaking ?? t('simulator.notAssessed')}{results.report.percent.speaking !== null && '%'}</span>
                                             </div>
                                         )}
                                     </div>
@@ -1230,7 +1217,7 @@ export default function CEFRSimulator() {
                         {results.writingFeedback && (
                             <div className="widget space-y-6">
                                 <h3 className="text-lg font-black tracking-tight border-b border-[var(--color-surface-container)] pb-3 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-[var(--color-tertiary-ink)]" /> Diagnóstico y Retroalimentación Experta de Redacción
+                                    <Sparkles className="w-5 h-5 text-[var(--color-tertiary-ink)]" /> {t('simulator.writingFeedbackTitle')}
                                 </h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1253,14 +1240,14 @@ export default function CEFRSimulator() {
 
                                 {/* Encouragement */}
                                 <div className="p-5 rounded-2xl bg-[var(--color-tertiary)]/5 border-l-4 border-[var(--color-tertiary)] text-xs leading-relaxed text-[var(--color-on-surface-muted)]">
-                                    <span className="font-black text-[var(--color-tertiary-ink)] uppercase tracking-wider mr-2">Consejo del Tutor:</span>
+                                    <span className="font-black text-[var(--color-tertiary-ink)] uppercase tracking-wider mr-2">{t('simulator.tutorTip')}</span>
                                     {results.writingFeedback.encouragement}
                                 </div>
 
                                 {/* Text Corrections block */}
                                 {results.writingFeedback.corrections && results.writingFeedback.corrections.length > 0 && (
                                     <div className="space-y-4">
-                                        <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">Correcciones Específicas Detectadas:</h4>
+                                        <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.writingCorrections')}</h4>
                                         <div className="space-y-3">
                                             {results.writingFeedback.corrections.map((corr: any, cIdx: number) => (
                                                 <div key={cIdx} className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] rounded-2xl p-4 text-xs space-y-2">
@@ -1275,7 +1262,7 @@ export default function CEFRSimulator() {
                                                     <p className="text-[var(--color-on-surface-muted)] leading-relaxed">{corr.explanation}</p>
                                                     {corr.example_variants && corr.example_variants.length > 0 && (
                                                         <div className="pt-1.5 border-t border-[var(--color-surface-container)] space-y-1">
-                                                            <p className="text-[10px] text-[var(--color-primary)] font-bold">Variaciones sugeridas para practicar:</p>
+                                                            <p className="text-[10px] text-[var(--color-primary)] font-bold">{t('simulator.suggestedVariations')}</p>
                                                             {corr.example_variants.map((v: string, vIdx: number) => (
                                                                 <p key={vIdx} className="italic text-[10px] text-[var(--color-on-surface-muted)] flex items-center gap-1.5">
                                                                     <CheckCircle className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" /> {v}
@@ -1295,7 +1282,7 @@ export default function CEFRSimulator() {
                         {results.speakingFeedback && (
                             <div className="widget space-y-6">
                                 <h3 className="text-lg font-black tracking-tight border-b border-[var(--color-surface-container)] pb-3 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-[var(--color-accent-blue)]" /> Diagnóstico y Retroalimentación Experta de Expresión Oral
+                                    <Sparkles className="w-5 h-5 text-[var(--color-accent-blue)]" /> {t('simulator.speakingFeedbackTitle')}
                                 </h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1315,14 +1302,14 @@ export default function CEFRSimulator() {
 
                                 {/* Detailed feedback */}
                                 <div className="p-5 rounded-2xl bg-[var(--color-accent-blue)]/5 border-l-4 border-[var(--color-accent-blue)] text-xs leading-relaxed text-[var(--color-on-surface-muted)]">
-                                    <span className="font-black text-[var(--color-accent-blue)] uppercase tracking-wider mr-2">Evaluación del Examinador:</span>
+                                    <span className="font-black text-[var(--color-accent-blue)] uppercase tracking-wider mr-2">{t('simulator.examinerAssessment')}</span>
                                     {results.speakingFeedback.detailedFeedback}
                                 </div>
 
                                 {/* Speaking Corrections block */}
                                 {results.speakingFeedback.corrections && results.speakingFeedback.corrections.length > 0 && (
                                     <div className="space-y-4">
-                                        <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">Correcciones Específicas en tu Habla:</h4>
+                                        <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.speakingCorrections')}</h4>
                                         <div className="space-y-3">
                                             {results.speakingFeedback.corrections.map((corr: any, cIdx: number) => (
                                                 <div key={cIdx} className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] rounded-2xl p-4 text-xs space-y-2">
@@ -1357,16 +1344,16 @@ export default function CEFRSimulator() {
                                 <Crown className="w-8 h-8 fill-[var(--color-tertiary)]/20" />
                             </div>
                             <div className="space-y-2 text-center">
-                                <h3 className="text-2xl font-black text-[var(--color-on-surface)]">Desbloquea Voxie Pro</h3>
-                                <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">Plan Académico Premium</p>
+                                <h3 className="text-2xl font-black text-[var(--color-on-surface)]">{t('simulator.unlockPro')}</h3>
+                                <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">{t('simulator.premiumPlan')}</p>
                                 <p className="text-xs leading-relaxed text-[var(--color-on-surface-muted)] pt-1">
-                                    Los simuladores de certificación oficial (TOEFL, IELTS y Cambridge) y la evaluación experta de ensayos con inteligencia artificial están reservados para miembros Pro.
+                                    {t('simulator.proOnly')}
                                 </p>
                             </div>
                             <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-left text-[11px] text-[var(--color-on-surface-muted)] space-y-2 font-bold font-mono">
-                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />A1, A2, B1 y B2 desbloqueados</p>
-                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />Evaluaciones avanzadas de redacción</p>
-                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />Intentos ilimitados en simuladores</p>
+                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />{t('simulator.proLevels')}</p>
+                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />{t('simulator.proWriting')}</p>
+                                <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />{t('simulator.proUnlimited')}</p>
                             </div>
                             <div className="flex flex-col gap-3 pt-2">
                                 <button
@@ -1376,13 +1363,13 @@ export default function CEFRSimulator() {
                                     }}
                                     className="w-full bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-3.5 rounded-full font-black text-sm active:scale-97 shadow-md hover:shadow-lg transition-all"
                                 >
-                                    Ver Planes Premium
+                                    {t('simulator.seePlans')}
                                 </button>
                                 <button
                                     onClick={() => setShowUpgradeModal(false)}
                                     className="w-full text-xs font-bold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] py-1 transition-all"
                                 >
-                                    Quizás más tarde
+                                    {t('simulator.maybeLater')}
                                 </button>
                             </div>
                         </motion.div>
@@ -1404,14 +1391,14 @@ export default function CEFRSimulator() {
                                 <Calendar className="w-8 h-8" />
                             </div>
                             <div className="space-y-2 text-center">
-                                <h3 className="text-2xl font-black text-[var(--color-on-surface)]">Espera de Nivelación</h3>
-                                <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">Test semanal en curso</p>
+                                <h3 className="text-2xl font-black text-[var(--color-on-surface)]">{t('simulator.weeklyWait')}</h3>
+                                <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">{t('simulator.weeklyInProgress')}</p>
                                 <p className="text-xs leading-relaxed text-[var(--color-on-surface-muted)] pt-1">
-                                    Para asegurar un aprendizaje óptimo y dar tiempo a tu cerebro para asimilar los conocimientos, puedes tomar el Test de Nivelación **una vez a la semana**.
+                                    {t('simulator.weeklyLimitBody')}
                                 </p>
                             </div>
                             <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-[11px] text-[var(--color-on-surface-muted)] font-bold text-center">
-                                Podrás tomar tu siguiente test en: <span className="text-[var(--color-tertiary-ink)] text-sm font-black ml-1">{limitDaysRemaining} día(s)</span>
+                                {t('simulator.nextTestIn', { count: limitDaysRemaining })}
                             </div>
                             <div className="flex flex-col gap-3 pt-2">
                                 <button
@@ -1421,13 +1408,13 @@ export default function CEFRSimulator() {
                                     }}
                                     className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3.5 rounded-full font-black text-sm active:scale-97 shadow-md transition-all"
                                 >
-                                    Obtener Acceso Ilimitado con Pro
+                                    {t('simulator.getUnlimited')}
                                 </button>
                                 <button
                                     onClick={() => setShowLimitModal(false)}
                                     className="w-full text-xs font-bold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] py-1 transition-all"
                                 >
-                                    Continuar practicando
+                                    {t('simulator.keepPracticing')}
                                 </button>
                             </div>
                         </motion.div>
