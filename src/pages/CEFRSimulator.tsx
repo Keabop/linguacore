@@ -11,16 +11,17 @@ import { chooseStage, endsRouter, pageEnd, pageStart, visibleQuestions, type Sta
 import { buildReport, type ExamReport } from '../lib/exam/report';
 import { isMultipleChoice, type DiscussionPost, type ExamResponse, type ExamWritingTask } from '../lib/exam/types';
 import QuestionView from '../components/exam/QuestionView';
+import TaskChoice from '../components/exam/TaskChoice';
 import TaskChart from '../components/exam/TaskChart';
 import PassageView from '../components/exam/PassageView';
 import { shuffleQuestion } from '../lib/shuffle';
 import { placementQuestions, AssessmentQuestion } from '../data/assessments/cefr-questions';
-import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
-import { cambridgeB2Questions, cambridgeB2Writing, cambridgeB2Speaking } from '../data/assessments/cambridge-b2-questions';
+import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge/b1';
+import { cambridgeB2Questions, cambridgeB2Writing, cambridgeB2Speaking } from '../data/assessments/cambridge/b2';
 import { toeflQuestions, toeflWriting, toeflSpeaking } from '../data/assessments/toefl-questions';
 import { ieltsQuestions, ieltsWriting, ieltsSpeaking } from '../data/assessments/ielts-questions';
 import { useSpeech } from '../hooks/useSpeech';
-import { evaluateWriting, evaluateSpeaking } from '../lib/ai';
+import { evaluateWriting, evaluateSpeaking, type CriterionScore } from '../lib/ai';
 import { toast } from '../lib/toast';
 
 type PageState = 'selection' | 'instructions' | 'testing' | 'writing' | 'speaking' | 'grading' | 'dashboard';
@@ -60,13 +61,15 @@ const presets: TestPreset[] = [
     {
         id: 'cambridge_b1',
         isPro: true,
-        durationMinutes: 60,
+        // Reading 45 + Writing 45 + Listening ~30 + Speaking ~12
+        durationMinutes: 132,
         audioPlays: 2
     },
     {
         id: 'cambridge_b2',
         isPro: true,
-        durationMinutes: 65,
+        // Reading and Use of English 75 + Writing 80 + Listening ~40 + Speaking ~14
+        durationMinutes: 209,
         audioPlays: 2
     }
 ];
@@ -75,10 +78,32 @@ const presets: TestPreset[] = [
  * Everything a writing task shows, as text for the AI evaluator: the email's points and the
  * discussion posts are part of the task, so relevance can only be judged with them.
  */
-function writingBrief(task: ExamWritingTask): string {
+function writingBrief(task: ExamWritingTask, choiceId?: string): string {
     const points = task.points?.map(point => `- ${point}`).join('\n');
     const posts = task.discussion?.map(post => `${post.author} (${post.role}): ${post.text}`).join('\n');
-    return [task.prompt, points, posts && `Discussion so far:\n${posts}`].filter(Boolean).join('\n');
+    const choice = task.choices?.find(c => c.id === choiceId);
+    // No choice made (the time ran out): the AI sees every task offered and judges against the one written
+    const offered = !choice && task.choices?.map(c => `- ${c.label}: ${c.prompt}`).join('\n');
+    return [task.prompt, points, posts && `Discussion so far:\n${posts}`, choice && `Chosen task (${choice.label}): ${choice.prompt}`, offered && `Tasks offered:\n${offered}`]
+        .filter(Boolean).join('\n');
+}
+
+
+/** The exam's official criteria as the AI banded them (0 to 5), each with its note. */
+function CriteriaGrid({ criteria }: { criteria: CriterionScore[] }) {
+    return (
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {criteria.map(c => (
+                <div key={c.name} className="rounded-[var(--radius-sm)] bg-[var(--color-surface-container)] p-4">
+                    <div className="flex items-baseline justify-between gap-3">
+                        <dt className="text-xs font-bold text-[var(--color-on-surface-muted)]">{c.name}</dt>
+                        <dd className="font-mono text-lg font-bold text-[var(--color-on-surface)]">{c.band}/5</dd>
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed text-[var(--color-on-surface-muted)]">{c.note}</p>
+                </div>
+            ))}
+        </dl>
+    );
 }
 
 // Leaf colour of each result level: the garden's growth stages, and C1–C2 in full flower
@@ -117,6 +142,8 @@ export default function CEFRSimulator() {
     const [activeWritingIdx, setActiveWritingIdx] = useState(0);
     const [writingPromptsList, setWritingPromptsList] = useState<any[]>([]);
     const [writingAnswers, setWritingAnswers] = useState<Record<string, string>>({});
+    // Cambridge Part 2: the task the learner chose, per writing task
+    const [writingChoices, setWritingChoices] = useState<Record<string, string>>({});
     const [speakingPrompts, setSpeakingPrompts] = useState<any[]>([]);
     const [speakingAnswers, setSpeakingAnswers] = useState<Record<string, string>>({});
     const [activeSpeakingIdx, setActiveSpeakingIdx] = useState(0);
@@ -264,6 +291,7 @@ export default function CEFRSimulator() {
         setCurrentIdx(0);
         setAnswers({});
         setWritingAnswers({});
+        setWritingChoices({});
         setSpeakingAnswers({});
         setActiveWritingIdx(0);
         setActiveSpeakingIdx(0);
@@ -419,7 +447,7 @@ export default function CEFRSimulator() {
                 ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${writingAnswers[p.id] || ''}`).join('\n\n')
                 : '';
             const combinedWritingPrompt = hasWriting
-                ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${writingBrief(p)}`).join('\n\n')
+                ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${writingBrief(p, writingChoices[p.id])}`).join('\n\n')
                 : '';
             const totalWritingLength = writingPromptsList.reduce((acc, p) => acc + (writingAnswers[p.id] || '').trim().length, 0);
             const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
@@ -433,7 +461,9 @@ export default function CEFRSimulator() {
                         combinedWritingPrompt,
                         targetLvl as any,
                         'free-writing',
-                        ['Advanced Cohesion', 'Technical Vocabulary']
+                        [],
+                        undefined,
+                        selectedPreset!.id,
                     );
                     writingScore = aiResult.score;
                     aiFeedbackObj = aiResult;
@@ -455,7 +485,7 @@ export default function CEFRSimulator() {
             if (hasSpeaking && totalSpeakingLength <= 5) speakingScore = 0;
             if (hasSpeaking && totalSpeakingLength > 5) {
                 try {
-                    const aiResult = await evaluateSpeaking(transcripts, prompts, targetLvl);
+                    const aiResult = await evaluateSpeaking(transcripts, prompts, targetLvl, selectedPreset!.id);
                     speakingScore = aiResult.score;
                     aiSpeakingFeedbackObj = aiResult;
                 } catch (err) {
@@ -692,7 +722,7 @@ export default function CEFRSimulator() {
                                 </div>
                             )}
 
-                            {pageQuestions.length > 1 && !selectedPreset?.questionsAfterAudio && (
+                            {pageQuestions.length > 1 && current.dialogue && !selectedPreset?.questionsAfterAudio && (
                                 <p className="text-xs font-semibold text-[var(--color-on-surface-muted)]">
                                     {t('simulator.readQuestionsFirst')}
                                 </p>
@@ -778,7 +808,15 @@ export default function CEFRSimulator() {
                                     <div className="widget space-y-6">
                                         <div className="space-y-3 bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)]">
                                             <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">{t('simulator.specificInstructions')}</p>
-                                            <p className="text-base font-bold leading-relaxed">{activePrompt.prompt}</p>
+                                            <p className="text-base font-bold leading-relaxed whitespace-pre-line">{activePrompt.prompt}</p>
+                                            {activePrompt.choices && (
+                                                <TaskChoice
+                                                    choices={activePrompt.choices}
+                                                    value={writingChoices[activePrompt.id]}
+                                                    onChange={id => setWritingChoices(prev => ({ ...prev, [activePrompt.id]: id }))}
+                                                    hintId="task-choice-hint"
+                                                />
+                                            )}
                                             {activePrompt.points && (
                                                 <ul className="list-disc pl-5 text-sm font-semibold text-[var(--color-on-surface)] space-y-1">
                                                     {activePrompt.points.map((point: string) => <li key={point}>{point}</li>)}
@@ -822,9 +860,14 @@ export default function CEFRSimulator() {
                                         </div>
                                     </div>
 
+                                    {/* Why the button waits, when it is the choice that is missing */}
+                                    {activePrompt.choices && !writingChoices[activePrompt.id] && (
+                                        <p id="task-choice-hint" className="text-center text-xs font-semibold text-[var(--color-on-surface-muted)]">{t('simulator.chooseTaskFirst')}</p>
+                                    )}
                                     <button
                                         onClick={handleNextWriting}
-                                        disabled={currentText.trim().length < 20}
+                                        disabled={currentText.trim().length < 20 || (!!activePrompt.choices && !writingChoices[activePrompt.id])}
+                                        aria-describedby={activePrompt.choices && !writingChoices[activePrompt.id] ? 'task-choice-hint' : undefined}
                                         className="w-full py-4 text-sm font-black rounded-full text-[var(--color-on-primary)] bg-[var(--color-success)] active:scale-98 disabled:opacity-40"
                                     >
                                         {isNextTask ? t('simulator.nextTask') : speakingPrompts.length > 0 ? t('simulator.toSpeaking') : t('simulator.finishAndGrade')}
@@ -1220,6 +1263,7 @@ export default function CEFRSimulator() {
                                     <Sparkles className="w-5 h-5 text-[var(--color-tertiary-ink)]" /> {t('simulator.writingFeedbackTitle')}
                                 </h3>
 
+                                {results.writingFeedback.criteria?.length ? <CriteriaGrid criteria={results.writingFeedback.criteria} /> : (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
                                         <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Grammatical Accuracy</span>
@@ -1237,6 +1281,7 @@ export default function CEFRSimulator() {
                                         <p className="text-[11px] text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{results.writingFeedback.feedback.coherence.note}</p>
                                     </div>
                                 </div>
+                                )}
 
                                 {/* Encouragement */}
                                 <div className="p-5 rounded-2xl bg-[var(--color-tertiary)]/5 border-l-4 border-[var(--color-tertiary)] text-xs leading-relaxed text-[var(--color-on-surface-muted)]">
@@ -1285,6 +1330,7 @@ export default function CEFRSimulator() {
                                     <Sparkles className="w-5 h-5 text-[var(--color-accent-blue)]" /> {t('simulator.speakingFeedbackTitle')}
                                 </h3>
 
+                                {results.speakingFeedback.criteria?.length ? <CriteriaGrid criteria={results.speakingFeedback.criteria} /> : (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
                                         <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Pronunciation Accuracy</span>
@@ -1299,6 +1345,7 @@ export default function CEFRSimulator() {
                                         <span className="text-3xl font-black text-[var(--color-success)] block mt-1">{results.speakingFeedback.vocabularyScore}%</span>
                                     </div>
                                 </div>
+                                )}
 
                                 {/* Detailed feedback */}
                                 <div className="p-5 rounded-2xl bg-[var(--color-accent-blue)]/5 border-l-4 border-[var(--color-accent-blue)] text-xs leading-relaxed text-[var(--color-on-surface-muted)]">

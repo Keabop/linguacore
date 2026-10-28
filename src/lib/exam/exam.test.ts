@@ -206,4 +206,24 @@ describe('pages', () => {
         expect(pageStart(qs, 1)).toBe(0);
         expect(pageStart(qs, 2)).toBe(2);
     });
+
+    it('puts a reading group marked sharePage on one page (a cloze or a gapped text)', async () => {
+        const { pageEnd, pageStart } = await import('./adaptive');
+        const shared = (id: string): AssessmentQuestion => ({ ...lq(id, 'cloze', 'reading'), sharePage: true });
+        const qs = [lq('a', 'r1', 'reading'), shared('b'), shared('c'), shared('d'), lq('e', 'r2', 'reading')];
+        expect(pageEnd(qs, 1)).toBe(3);
+        expect(pageStart(qs, 3)).toBe(1);
+        expect(pageEnd(qs, 0)).toBe(0);
+        expect(pageEnd(qs, 4)).toBe(4);
+    });
+});
+
+describe('marks', () => {
+    it('counts the marks a question is worth (B2 First Parts 4 to 6 are worth 2)', async () => {
+        const { grade, marksOf } = await import('./grading');
+        const q: AssessmentQuestion = { id: 'k', section: 'use-of-english', level: 'B2', kind: 'gap', text: 'x ___', answers: ['was called off'], marks: 2 };
+        expect(marksOf(q)).toBe(2);
+        expect(grade(q, 'was called off')).toBe(2);
+        expect(grade(q, 'was cancelled')).toBe(0);
+    });
 });
