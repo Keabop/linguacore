@@ -8,8 +8,9 @@ import { generateCareerDeck } from '../../server/agents/career-deck.js';
 import { evaluateSpeaking } from '../../server/agents/speaking-evaluator.js';
 import { env, setEnv } from '../../server/lib/config.js';
 import { checkUsageLimit, checkWeeklyLimit, incrementUsage, getUserTier } from '../../server/lib/usageLimits.js';
+import { accessTier } from '../../server/lib/roles.js';
 import { isCacheable, generateCacheKey, getCachedResponse, setCachedResponse } from '../../server/lib/aiCache.js';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type User } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../../server/lib/cors.js';
 
 // ---------------------------------------------------------------------------
@@ -30,7 +31,7 @@ function isRateLimited(ip: string): boolean {
 // ---------------------------------------------------------------------------
 // Authenticate
 // ---------------------------------------------------------------------------
-async function authenticate(request: Request): Promise<string | null> {
+async function authenticate(request: Request): Promise<User | null> {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) return null;
 
@@ -43,7 +44,7 @@ async function authenticate(request: Request): Promise<string | null> {
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) return null;
-    return user.id;
+    return user;
 }
 
 // ---------------------------------------------------------------------------
@@ -143,8 +144,8 @@ export const onRequestPost: PagesFunction = async (context) => {
     }
 
     // Authenticate
-    const userId = await authenticate(request);
-    if (!userId) {
+    const user = await authenticate(request);
+    if (!user) {
         return new Response(JSON.stringify({ error: 'Unauthorized — valid Supabase session required' }), {
             status: 401,
             headers: corsHeaders,
@@ -152,7 +153,8 @@ export const onRequestPost: PagesFunction = async (context) => {
     }
 
     // Fetch user tier for per-user limits
-    const userTier = await getUserTier(userId);
+    const userId = user.id;
+    const userTier = accessTier(user, await getUserTier(userId));
 
     try {
         const { agent, params } = await request.json() as { agent: AgentType; params: any };
