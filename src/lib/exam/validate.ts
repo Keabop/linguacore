@@ -2,11 +2,17 @@ import { normalizeAnswer, parseCompleteWords } from './grading';
 import { adaptiveSections } from './adaptive';
 import { isMultipleChoice, type AssessmentQuestion } from './types';
 
+const flat = (s: string) => s.toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();
+
+/** The text a question is answered from: its passage or its listening script. */
+const sourceText = (q: AssessmentQuestion) => flat(`${q.passage ?? ''} ${(q.dialogue ?? []).map(l => l.text).join(' ')}`);
+
 /** Problems that would make a question unanswerable or ambiguous as written (empty when fine). */
 export function validateQuestion(q: AssessmentQuestion): string[] {
     const problems: string[] = [];
     if (!q.text?.trim()) problems.push('sin enunciado');
     if (q.section === 'listening' && !q.dialogue?.length && !q.audioSrc) problems.push('escucha sin audio ni guion');
+    if (q.evidence && !sourceText(q).includes(flat(q.evidence))) problems.push('la evidencia no aparece en el texto o el guion');
 
     if (isMultipleChoice(q)) {
         if (q.options.length < 2) problems.push('menos de 2 opciones');
