@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { chooseStage, endsRouter, visibleQuestions } from './adaptive';
 import {
-    cambridgeScale, cefrFromCambridge, cefrFromIelts, cefrFromToefl, ieltsBand, ieltsOverall, placementLevel,
+    cambridgeScale, cefrFromCambridge, cefrFromIelts, cefrFromToefl, ieltsBand, ieltsOverall,
     toeflBand, toeflOverall,
 } from './bands';
-import { grade, marksOf, normalizeAnswer, parseCompleteWords, ratioByLevel, scoreSections } from './grading';
-import type { AssessmentQuestion } from './types';
+import { grade, marksOf, normalizeAnswer, parseCompleteWords, scoreSections } from './grading';
+import { tallyByLevel } from './placement';
+import type { AssessmentQuestion, ExamLevel } from './types';
 
 const mc: AssessmentQuestion = { id: 'mc', section: 'use-of-english', level: 'A1', text: 'She ___ a doctor.', options: ['is', 'are'], correctIndex: 0 };
 const tfng: AssessmentQuestion = { id: 'tf', kind: 'tfng', section: 'reading', level: 'B2', text: 'Maps began on paper.', answer: 'false' };
@@ -43,7 +44,7 @@ describe('grading', () => {
         expect(sections['use-of-english']).toEqual({ earned: 1, total: 1, ratio: 1 });
         expect(sections.reading).toEqual({ earned: 3, total: 4, ratio: 0.75 });
         expect(sections.listening.ratio).toBeNull();
-        expect(ratioByLevel(qs, { mc: 0 })).toEqual({ A1: 1, B2: 0 });
+        expect(tallyByLevel(qs, { mc: 0 })).toEqual({ A1: { earned: 1, total: 1 }, B2: { earned: 0, total: 4 } });
     });
 });
 
@@ -72,15 +73,6 @@ describe('bands', () => {
         expect(cefrFromCambridge(cambridgeScale(0.95, 'b2'))).toBe('C1');
         expect(cefrFromCambridge(cambridgeScale(0.5, 'b1'))).toBe('A2');
     });
-
-    it('places at the highest level reached before a clearly failed one', () => {
-        expect(placementLevel({ A1: 1, A2: 0.8, B1: 0.6, B2: 0.25, C1: 0.75 })).toBe('B1');
-        expect(placementLevel({ A1: 0.25, A2: 1 })).toBe('A1');
-    });
-
-    it('does not sink a strong learner for one shaky level', () => {
-        expect(placementLevel({ A1: 0.75, A2: 0.5, B1: 1, B2: 1, C1: 1 })).toBe('C1');
-    });
 });
 
 describe('two-stage adaptive sections', () => {
@@ -103,7 +95,7 @@ describe('two-stage adaptive sections', () => {
 });
 
 describe('exam report', () => {
-    const r = (id: string, section: 'reading' | 'listening' | 'use-of-english', level: 'A1' | 'B1' | 'C1' = 'B1'): AssessmentQuestion =>
+    const r = (id: string, section: 'reading' | 'listening' | 'use-of-english', level: ExamLevel = 'B1'): AssessmentQuestion =>
         ({ id, section, level, text: id, options: ['a', 'b'], correctIndex: 0 });
 
     it('reports IELTS bands and leaves unevaluated skills out instead of guessing', async () => {
@@ -120,10 +112,16 @@ describe('exam report', () => {
         expect(report.percent.writing).toBeNull();
     });
 
-    it('places by levels in the placement test', async () => {
+    it('reports the placement level, its confidence and the marks per level seen', async () => {
         const { buildReport } = await import('./report');
-        const qs = [r('a', 'use-of-english', 'A1'), r('b', 'use-of-english', 'B1'), r('c', 'use-of-english', 'C1')];
-        expect(buildReport('placement', qs, { a: 0, b: 0, c: 1 }, {}, null, null).level).toBe('B1');
+        const qs = [r('a', 'use-of-english', 'A2'), r('b', 'use-of-english', 'B1'), r('c', 'use-of-english', 'B2')];
+        const report = buildReport('placement', qs, { a: 0, b: 0, c: 1 }, {}, null, null);
+        expect(report).toMatchObject({ level: 'B1', confidence: 'unfinished' });
+        expect(report.breakdown).toEqual([
+            { skill: 'levelQuestions_A2', value: '1/1' },
+            { skill: 'levelQuestions_B1', value: '1/1' },
+            { skill: 'levelQuestions_B2', value: '0/1' },
+        ]);
     });
 
     it('caps a TOEFL section answered on the lower stage', async () => {

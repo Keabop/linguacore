@@ -86,14 +86,3 @@ export function scoreSections(questions: AssessmentQuestion[], responses: Record
     }
     return out;
 }
-
-/** Share of marks earned on each CEFR level's questions (placement). */
-export function ratioByLevel(questions: AssessmentQuestion[], responses: Record<string, ExamResponse>): Record<string, number> {
-    const out: Record<string, number> = {};
-    for (const level of [...new Set(questions.map(q => q.level))]) {
-        const qs = questions.filter(q => q.level === level);
-        const total = qs.reduce((n, q) => n + marksOf(q), 0);
-        out[level] = total ? qs.reduce((n, q) => n + grade(q, responses[q.id]), 0) / total : 0;
-    }
-    return out;
-}
