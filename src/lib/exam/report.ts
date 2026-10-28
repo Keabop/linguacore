@@ -1,9 +1,10 @@
 import type { StageChoice } from './adaptive';
 import {
-    cambridgeScale, cefrFromCambridge, cefrFromIelts, cefrFromToefl, ieltsBand, ieltsOverall, placementLevel,
+    cambridgeScale, cefrFromCambridge, cefrFromIelts, cefrFromToefl, ieltsBand, ieltsOverall,
     toeflBand, toeflOverall, type CefrResult,
 } from './bands';
-import { ratioByLevel, scoreSections } from './grading';
+import { scoreSections } from './grading';
+import { placementStanding, tallyByLevel, type ConfidenceReason } from './placement';
 import type { AssessmentQuestion, ExamResponse } from './types';
 
 export type ExamId = 'placement' | 'toefl' | 'ielts' | 'cambridge_b1' | 'cambridge_b2';
@@ -21,6 +22,8 @@ export interface ExamReport {
     percent: { reading: number | null; listening: number | null; useOfEnglish: number | null; writing: number | null; speaking: number | null };
     /** Mean of the assessed skills, 0–100. */
     overallPercent: number;
+    /** Placement: how firmly the answers place the learner, and why. */
+    confidence?: ConfidenceReason;
 }
 
 const pct = (r: number | null) => (r === null ? null : Math.round(r * 100));
@@ -61,13 +64,20 @@ export function buildReport(
     const shown = (v: number | null, f: (n: number) => string) => (v === null ? null : f(v));
 
     if (exam === 'placement') {
-        const byLevel = ratioByLevel(questions, responses);
+        // Adaptive: each learner meets other items, so the result is the level and its
+        // confidence, with the marks per level seen; a total percentage would compare nothing
+        const standing = placementStanding(questions, responses);
+        const tally = tallyByLevel(questions, responses);
         return {
-            level: placementLevel(byLevel),
-            headline: { label: 'placementScore', value: `${overallPercent}%` },
-            breakdown: Object.entries(byLevel).map(([lvl, r]) => ({ skill: `levelQuestions_${lvl}`, value: `${Math.round(r * 100)}%` })),
+            level: standing.level,
+            headline: { label: 'placementConfidence', value: standing.reason },
+            breakdown: (['A1', 'A2', 'B1', 'B2', 'C1'] as const).flatMap(lvl => {
+                const t = tally[lvl];
+                return t ? [{ skill: `levelQuestions_${lvl}`, value: `${t.earned}/${t.total}` }] : [];
+            }),
             percent,
             overallPercent,
+            confidence: standing.reason,
         };
     }
 

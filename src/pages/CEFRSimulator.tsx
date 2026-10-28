@@ -9,13 +9,15 @@ import { supabase } from '../lib/supabase';
 import { playAudioFile, playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
 import { chooseStage, endsRouter, pageEnd, pageStart, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
 import { buildReport, type ExamReport } from '../lib/exam/report';
+import { PLACEMENT, answeredWhenTimeIsUp, nextPlacementBlock } from '../lib/exam/placement';
 import { isMultipleChoice, type DiscussionPost, type ExamResponse, type ExamWritingTask } from '../lib/exam/types';
 import QuestionView from '../components/exam/QuestionView';
 import TaskChoice from '../components/exam/TaskChoice';
 import TaskChart from '../components/exam/TaskChart';
 import PassageView from '../components/exam/PassageView';
 import { shuffleQuestion } from '../lib/shuffle';
-import { placementQuestions, AssessmentQuestion } from '../data/assessments/cefr-questions';
+import { placementBlocks } from '../data/assessments/placement';
+import type { AssessmentQuestion } from '../lib/exam/types';
 import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge/b1';
 import { cambridgeB2Questions, cambridgeB2Writing, cambridgeB2Speaking } from '../data/assessments/cambridge/b2';
 import { toeflQuestions, toeflWriting, toeflSpeaking } from '../data/assessments/toefl-questions';
@@ -40,7 +42,8 @@ const presets: TestPreset[] = [
     {
         id: 'placement',
         isPro: false,
-        durationMinutes: 25,
+        // 30 to 40 adaptive items, listening included
+        durationMinutes: 40,
         audioPlays: 2
     },
     {
@@ -105,6 +108,9 @@ function CriteriaGrid({ criteria }: { criteria: CriterionScore[] }) {
         </dl>
     );
 }
+
+/** Options in a new order for each attempt, except where the exam lists them in a fixed order. */
+const withShuffledOptions = (q: AssessmentQuestion) => (isMultipleChoice(q) && !q.fixedOrder ? shuffleQuestion(q) : q);
 
 // Leaf colour of each result level: the garden's growth stages, and C1–C2 in full flower
 const LEVEL_COLOR: Record<ExamReport['level'], string> = {
@@ -263,7 +269,8 @@ export default function CEFRSimulator() {
         let sPrompts: any[] = [];
 
         if (selectedPreset.id === 'placement') {
-            selectedQuestions = [...placementQuestions].slice(0, 20); // 20 questions
+            // Adaptive: the first block now, the next ones as each block is finished
+            selectedQuestions = nextPlacementBlock(placementBlocks, [], {})!.questions;
         } else if (selectedPreset.id === 'toefl') {
             selectedQuestions = [...toeflQuestions];
             wPrompts = [...toeflWriting];
@@ -282,7 +289,7 @@ export default function CEFRSimulator() {
             sPrompts = [...cambridgeB2Speaking];
         }
 
-        setQuestions(selectedQuestions.map(q => (isMultipleChoice(q) && !q.fixedOrder ? shuffleQuestion(q) : q)));
+        setQuestions(selectedQuestions.map(withShuffledOptions));
         setStageChoice({});
         setWritingPromptsList(wPrompts);
         setSpeakingPrompts(sPrompts);
@@ -401,8 +408,23 @@ export default function CEFRSimulator() {
         wereHidden.current = questionsHidden;
     }, [questionsHidden]);
 
+    const isPlacement = selectedPreset?.id === 'placement';
+    // Placement: the end of the questions served is the end of a block; the next one (or the
+    // end of the test) depends on the answers, so it is only decided when the learner moves on
+    const endsPlacementBlock = isPlacement && lastOnPage + 1 >= visible.length;
+
     const goNext = () => {
         stopAudio();
+        if (endsPlacementBlock) {
+            const block = nextPlacementBlock(placementBlocks, questions, answers);
+            if (!block) {
+                proceedToWritingOrComplete();
+                return;
+            }
+            setQuestions(prev => [...prev, ...block.questions.map(withShuffledOptions)]);
+            setCurrentIdx(lastOnPage + 1);
+            return;
+        }
         if (closesRouter && current) {
             const chosen = { ...stageChoice, [current.section]: chooseStage(questions, current.section, answers) };
             setStageChoice(chosen);
@@ -419,8 +441,11 @@ export default function CEFRSimulator() {
         setCurrentIdx(pageStart(visible, currentIdx - 1));
     };
 
-    // A second stage can't go back into its router (as in adaptive exams)
-    const canGoBack = currentIdx > 0 && !lockedByAudio && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
+    // A second stage can't go back into its router, nor a placement block into the one before (as in adaptive exams)
+    const startsPlacementBlock = isPlacement && placementBlocks.some(b => b.questions[0].id === current?.id);
+    const canGoBack = currentIdx > 0 && !lockedByAudio && !startsPlacementBlock && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
+    // Placement: how many items the test can take, as it is not known in advance
+    const totalLabel = isPlacement ? t('simulator.atMost', { max: PLACEMENT.maxItems }) : `${visible.length}${closesRouter ? '+' : ''}`;
 
     const proceedToWritingOrComplete = () => {
         stopAudio();
@@ -431,7 +456,8 @@ export default function CEFRSimulator() {
         }
     };
 
-    const handleCompleteGrading = async () => {
+    /** `timeUp`: the timer ended the exam, not the learner. */
+    const handleCompleteGrading = async (timeUp = false) => {
         if (timerRef.current) clearInterval(timerRef.current);
         stopDialogueSpeech();
         cancelSpeech();
@@ -495,7 +521,8 @@ export default function CEFRSimulator() {
             }
 
             // 3. The exam's own score (band, scale or placement level) from the questions seen
-            const report = buildReport(selectedPreset!.id, visible, answers, stageChoice, writingScore, speakingScore);
+            const scored = timeUp && selectedPreset!.id === 'placement' ? answeredWhenTimeIsUp(placementBlocks, visible, answers) : visible;
+            const report = buildReport(selectedPreset!.id, scored, answers, stageChoice, writingScore, speakingScore);
 
             // 4. Save
             if (user) {
@@ -511,7 +538,7 @@ export default function CEFRSimulator() {
                     writing_feedback: aiFeedbackObj,
                     speaking_score: report.percent.speaking,
                     speaking_feedback: aiSpeakingFeedbackObj,
-                    report: { headline: report.headline, breakdown: report.breakdown, stages: stageChoice }
+                    report: { headline: report.headline, breakdown: report.breakdown, stages: stageChoice, confidence: report.confidence }
                 });
                 if (dbErr) console.error('Saving the simulation failed:', dbErr);
             }
@@ -534,7 +561,7 @@ export default function CEFRSimulator() {
         }
     };
 
-    finishRef.current = handleCompleteGrading;
+    finishRef.current = () => handleCompleteGrading(true);
 
     return (
         <div className="py-6 px-4 max-w-4xl mx-auto space-y-8">
@@ -634,6 +661,12 @@ export default function CEFRSimulator() {
                                 <span className="font-bold text-[var(--color-tertiary-ink)]">3.</span>
                                 <span><Trans i18nKey="simulator.listeningPlays" count={selectedPreset.audioPlays} components={{ strong: <strong /> }} /></span>
                             </p>
+                            {selectedPreset.id === 'placement' && (
+                                <p className="flex items-start gap-2.5">
+                                    <span className="font-bold text-[var(--color-tertiary-ink)]">4.</span>
+                                    <span>{t('simulator.ruleAdaptive', { min: PLACEMENT.minItems, max: PLACEMENT.maxItems })}</span>
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex gap-4">
@@ -666,8 +699,8 @@ export default function CEFRSimulator() {
                         <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                             <span className="font-bold text-[var(--color-primary)]">
                                 {selectedPreset && presetTitle(selectedPreset)} • {pageQuestions.length > 1
-                                    ? t('simulator.questionsOf', { from: currentIdx + 1, to: lastOnPage + 1, total: `${visible.length}${closesRouter ? '+' : ''}` })
-                                    : t('simulator.questionOf', { n: currentIdx + 1, total: `${visible.length}${closesRouter ? '+' : ''}` })}
+                                    ? t('simulator.questionsOf', { from: currentIdx + 1, to: lastOnPage + 1, total: totalLabel })
+                                    : t('simulator.questionOf', { n: currentIdx + 1, total: totalLabel })}
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
@@ -757,13 +790,14 @@ export default function CEFRSimulator() {
                             >
                                 {t('simulator.previous')}
                             </button>
-                            {lastOnPage + 1 < visible.length || closesRouter ? (
+                            {lastOnPage + 1 < visible.length || closesRouter || endsPlacementBlock ? (
                                 <button
                                     onClick={goNext}
                                     disabled={lockedByAudio}
                                     className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-tertiary)] bg-[var(--color-tertiary)] active:scale-95 transition-all"
                                 >
-                                    {t('simulator.next')}
+                                    {/* The end of a placement block may be the end of the test: the label promises neither */}
+                                    {endsPlacementBlock ? t('simulator.continue') : t('simulator.next')}
                                 </button>
                             ) : (
                                 <button
@@ -1104,7 +1138,14 @@ export default function CEFRSimulator() {
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t(`simulator.report.${results.report.headline.label}`, { defaultValue: results.report.headline.label })}</p>
-                                    <p className="font-mono text-5xl font-bold text-[var(--color-on-surface)]">{results.report.headline.value}</p>
+                                    {results.report.confidence ? (
+                                        <>
+                                            <p className="text-2xl font-black text-[var(--color-on-surface)]">{t(`simulator.confidence.${results.report.confidence}`)}</p>
+                                            <p className="text-xs leading-snug text-[var(--color-on-surface-muted)]">{t(`simulator.confidenceWhy.${results.report.confidence}`)}</p>
+                                        </>
+                                    ) : (
+                                        <p className="font-mono text-5xl font-bold text-[var(--color-on-surface)]">{results.report.headline.value}</p>
+                                    )}
                                 </div>
                                 <dl className="grid w-full grid-cols-2 gap-2">
                                     {results.report.breakdown.map(b => (
