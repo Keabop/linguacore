@@ -2,11 +2,11 @@
 import { describe, expect, it } from 'vitest';
 import { allExercises, allGrammarSkills, allStories, allUnits, allVocabulary } from './index';
 import { placementQuestions } from './assessments/cefr-questions';
-import { cambridgeB1Questions } from './assessments/cambridge-b1-questions';
-import { cambridgeB2Questions } from './assessments/cambridge-b2-questions';
+import { cambridgeB1Questions, cambridgeB1Speaking, cambridgeB1Writing } from './assessments/cambridge/b1';
+import { cambridgeB2Questions, cambridgeB2Speaking, cambridgeB2Writing } from './assessments/cambridge/b2';
 import { ieltsQuestions, ieltsSpeaking, ieltsWriting } from './assessments/ielts-questions';
 import { toeflQuestions, toeflSpeaking, toeflWriting } from './assessments/toefl-questions';
-import { parseCompleteWords } from '../lib/exam/grading';
+import { marksOf, parseCompleteWords } from '../lib/exam/grading';
 import { validateExamStructure, validateQuestion } from '../lib/exam/validate';
 import reference from '../../content/reference/cefrj-vocabulary.json';
 import {
@@ -286,4 +286,76 @@ describe('TOEFL iBT simulator (2026 format)', () => {
         const lengths = toeflSpeaking.filter(s => s.listenOnly).map(s => s.prompt.split(' ').length);
         expect(lengths).toEqual([...lengths].sort((a, b) => a - b));
     });
+});
+
+describe('Cambridge simulators', () => {
+    type CQ = (typeof cambridgeB1Questions)[number];
+    const EXAMS = [
+        {
+            name: 'B1 Preliminary', qs: cambridgeB1Questions, writing: cambridgeB1Writing, speaking: cambridgeB1Speaking,
+            parts: { 'Reading Part 1': 5, 'Reading Part 2': 5, 'Reading Part 3': 5, 'Reading Part 4': 5, 'Reading Part 5': 6, 'Reading Part 6': 6, 'Listening Part 1': 7, 'Listening Part 2': 6, 'Listening Part 3': 6, 'Listening Part 4': 6 },
+            cloze: ['Reading Part 5', 'Reading Part 6'],
+            unordered: ['Reading Part 2'],
+        },
+        {
+            name: 'B2 First', qs: cambridgeB2Questions, writing: cambridgeB2Writing, speaking: cambridgeB2Speaking,
+            parts: { 'Reading and Use of English Part 1': 8, 'Reading and Use of English Part 2': 8, 'Reading and Use of English Part 3': 8, 'Reading and Use of English Part 4': 6, 'Reading and Use of English Part 5': 6, 'Reading and Use of English Part 6': 6, 'Reading and Use of English Part 7': 10, 'Listening Part 1': 8, 'Listening Part 2': 10, 'Listening Part 3': 5, 'Listening Part 4': 7 },
+            cloze: ['Reading and Use of English Part 1', 'Reading and Use of English Part 2', 'Reading and Use of English Part 3', 'Reading and Use of English Part 4'],
+            unordered: ['Reading and Use of English Part 7'],
+        },
+    ];
+    const partOf = (q: CQ) => q.task!.split(':')[0];
+
+    for (const exam of EXAMS) {
+        describe(exam.name, () => {
+            it('has the parts of the real exam, in order and with their number of questions', () => {
+                const counts: Record<string, number> = {};
+                for (const q of exam.qs) counts[partOf(q)] = (counts[partOf(q)] ?? 0) + 1;
+                expect(counts).toEqual(exam.parts);
+                expect(Object.keys(counts)).toEqual(Object.keys(exam.parts));
+            });
+
+            it('puts every cloze gap in its text exactly once', () => {
+                for (const q of exam.qs.filter(q => exam.cloze.includes(partOf(q)) && q.passage)) {
+                    const n = q.id.match(/\d+$/)![0];
+                    expect(q.passage!.split(`(${n}) ________`).length - 1, q.id).toBe(1);
+                }
+            });
+
+            it('quotes the evidence of every comprehension answer, in the order of the text or recording', () => {
+                const flat = (t: string) => t.toLowerCase().replace(/\s+/g, ' ');
+                const comprehension = exam.qs.filter(q => !exam.cloze.includes(partOf(q)));
+                for (const q of comprehension) expect(q.evidence, q.id).toBeTruthy();
+                for (const group of new Set(comprehension.filter(q => !exam.unordered.includes(partOf(q))).map(q => q.group))) {
+                    const qs = comprehension.filter(q => q.group === group);
+                    const positions = qs.map(q => flat(q.passage ?? q.dialogue!.map(l => l.text).join(' ')).indexOf(flat(q.evidence!)));
+                    expect(positions, group).toEqual([...positions].sort((a, b) => a - b));
+                }
+            });
+
+            it('does not give answers away by position or length', () => {
+                // Single-word cloze options say nothing by their length; sentences can
+                const mc = exam.qs.filter((q): q is Extract<CQ, { correctIndex: number }> => 'correctIndex' in q && !q.fixedOrder && !exam.cloze.includes(partOf(q)));
+                for (const i of [0, 1, 2]) expect(mc.filter(q => q.correctIndex === i).length, `position ${i}`).toBeGreaterThanOrEqual(mc.length / 6);
+                const longest = mc.filter(q => q.options.every((o, i) => i === q.correctIndex || o.length < q.options[q.correctIndex].length)).length;
+                expect(longest / mc.length).toBeLessThanOrEqual(0.35);
+            });
+
+            it('weighs the papers as Cambridge reports them', () => {
+                const marks = (section: string) => exam.qs.filter(q => q.section === section).reduce((n, q) => n + marksOf(q), 0);
+                if (exam.name === 'B2 First') {
+                    // Reading: Parts 1 and 5 to 7 (8 + 12 + 12 + 10); Use of English: Parts 2 to 4 (8 + 8 + 12)
+                    expect([marks('reading'), marks('use-of-english')]).toEqual([42, 28]);
+                } else {
+                    expect([marks('reading'), marks('listening')]).toEqual([32, 25]);
+                }
+            });
+
+            it('has Writing with notes and a choice of tasks, and the four Speaking parts', () => {
+                expect(exam.writing[0].points?.length).toBeGreaterThanOrEqual(3);
+                expect(exam.writing[1].choices?.length).toBeGreaterThanOrEqual(2);
+                expect(exam.speaking.map(t => t.title.slice(0, 15))).toEqual(['Speaking Part 1', 'Speaking Part 2', 'Speaking Part 3', 'Speaking Part 4']);
+            });
+        });
+    }
 });

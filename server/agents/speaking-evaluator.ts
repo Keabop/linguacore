@@ -1,9 +1,12 @@
 import { generateWithFallback } from '../lib/gemini.js';
+import { EXAM_CRITERIA, criteriaInstructions, isCriteriaExam, type CriterionScore } from '../lib/examCriteria.js';
 
 interface SpeakingEvaluationRequest {
     transcripts: string[];
     prompts: string[];
     level: string;
+    /** The simulator's exam: the score uses its official speaking criteria. */
+    exam?: string;
 }
 
 interface SpeakingEvaluation {
@@ -13,9 +16,12 @@ interface SpeakingEvaluation {
     fluencyScore: number;
     vocabularyScore: number;
     detailedFeedback: string;
+    /** One entry per official criterion, when an exam was given. */
+    criteria?: CriterionScore[];
 }
 
 export async function evaluateSpeaking(params: SpeakingEvaluationRequest): Promise<SpeakingEvaluation> {
+    const exam = isCriteriaExam(params.exam) ? criteriaInstructions(EXAM_CRITERIA[params.exam].speaking) : null;
     const prompt = `Eres un examinador de inglés oficial (Cambridge/TOEFL). Evalúa las siguientes respuestas habladas (transcritas) para el nivel CEFR: "${params.level}".
 
 Prompts del examinador:
@@ -23,7 +29,7 @@ ${params.prompts.map((p, i) => `[Pregunta ${i + 1}]: ${p}`).join('\n')}
 
 Respuestas transcritas del candidato:
 ${params.transcripts.map((t, i) => `[Respuesta ${i + 1}]: ${t}`).join('\n')}
-
+${exam ? `\n${exam.rules} Las notas van en español.\n` : ''}
 Genera un informe analítico riguroso. Responde SOLO con JSON válido (sin markdown ni bloques de código) con este formato exacto:
 {
   "score": 85,
@@ -37,7 +43,8 @@ Genera un informe analítico riguroso. Responde SOLO con JSON válido (sin markd
       "suggestion": "sugerencia corregida",
       "explanation": "explicación del error"
     }
-  ]
+  ]${exam ? `,
+  ${exam.field}` : ''}
 }`;
 
     const text = await generateWithFallback(prompt);

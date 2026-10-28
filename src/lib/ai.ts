@@ -173,6 +173,15 @@ export interface WritingEvaluationResponse {
     };
     improvedVersion: string;
     encouragement: string;
+    /** The exam's official criteria, each banded 0 to 5, when an exam was given. */
+    criteria?: CriterionScore[];
+}
+
+/** One official criterion of an exam, as the AI scored it. */
+export interface CriterionScore {
+    name: string;
+    band: number;
+    note: string;
 }
 
 export async function evaluateWriting(
@@ -181,10 +190,11 @@ export async function evaluateWriting(
     level: CEFRLevel,
     type: 'sentence-construction' | 'paragraph-completion' | 'free-writing' | 'error-correction',
     targetGrammar: string[],
-    referenceAnswer?: string
+    referenceAnswer?: string,
+    exam?: string,
 ): Promise<WritingEvaluationResponse> {
     return callAgent<WritingEvaluationResponse>('writing-evaluator', {
-        text, prompt, level, type, targetGrammar, referenceAnswer,
+        text, prompt, level, type, targetGrammar, referenceAnswer, exam,
     });
 }
 
@@ -212,13 +222,15 @@ export interface SpeakingEvaluationResponse {
     fluencyScore: number;
     vocabularyScore: number;
     detailedFeedback: string;
+    criteria?: CriterionScore[];
 }
 
 export async function evaluateSpeaking(
     transcripts: string[],
     prompts: string[],
-    level: string
+    level: string,
+    exam?: string,
 ): Promise<SpeakingEvaluationResponse> {
-    return callAgent<SpeakingEvaluationResponse>('speaking-evaluator', { transcripts, prompts, level });
+    return callAgent<SpeakingEvaluationResponse>('speaking-evaluator', { transcripts, prompts, level, exam });
 }
 

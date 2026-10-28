@@ -38,23 +38,23 @@ export function parseCompleteWords(text: string): (string | WordGap)[] {
 
 const gapsOf = (text: string) => parseCompleteWords(text).filter((p): p is WordGap => typeof p !== 'string');
 
-/** Marks a question is worth: one per missing word in Complete the Words, otherwise one. */
+/** Marks a question is worth: one per missing word in Complete the Words, otherwise its own (1 by default). */
 export function marksOf(q: AssessmentQuestion): number {
-    return q.kind === 'complete-words' ? gapsOf(q.text).length : 1;
+    return q.kind === 'complete-words' ? gapsOf(q.text).length : q.marks ?? 1;
 }
 
 /** Marks earned by a response (0 when unanswered or of the wrong shape). */
 export function grade(q: AssessmentQuestion, response: ExamResponse | undefined): number {
     if (response === undefined) return 0;
-    if (isMultipleChoice(q)) return response === q.correctIndex ? 1 : 0;
+    if (isMultipleChoice(q)) return response === q.correctIndex ? marksOf(q) : 0;
     switch (q.kind) {
         case 'tfng':
-            return response === q.answer ? 1 : 0;
+            return response === q.answer ? marksOf(q) : 0;
         case 'gap': {
             if (typeof response !== 'string') return 0;
             const given = normalizeAnswer(response);
             if (q.maxWords && countWords(given, q.allowNumber) > q.maxWords) return 0;
-            return q.answers.some(a => normalizeAnswer(a) === given) ? 1 : 0;
+            return q.answers.some(a => normalizeAnswer(a) === given) ? marksOf(q) : 0;
         }
         case 'complete-words': {
             if (!Array.isArray(response)) return 0;
@@ -63,7 +63,7 @@ export function grade(q: AssessmentQuestion, response: ExamResponse | undefined)
         case 'build-sentence': {
             if (!Array.isArray(response) || response.length !== q.pieces.length) return 0;
             const built = (response as number[]).map(i => q.pieces[i]).join(' ');
-            return normalizeAnswer(built) === normalizeAnswer(q.answer) ? 1 : 0;
+            return normalizeAnswer(built) === normalizeAnswer(q.answer) ? marksOf(q) : 0;
         }
     }
 }
