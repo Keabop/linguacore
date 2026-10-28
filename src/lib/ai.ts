@@ -1,5 +1,5 @@
 import type { CEFRLevel, Story, Vocabulary } from './db';
-import { supabase } from './supabase';
+import { apiFetch } from './apiFetch';
 
 const API_BASE = '/api/orchestrator';
 
@@ -24,15 +24,9 @@ async function retry<T>(
 
 async function callAgent<T>(agent: string, params: Record<string, any>): Promise<T> {
     return retry(async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (session?.access_token) {
-            headers['Authorization'] = `Bearer ${session.access_token}`;
-        }
-
-        const response = await fetch(API_BASE, {
+        const response = await apiFetch(API_BASE, {
             method: 'POST',
-            headers,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agent, params }),
         });
 
