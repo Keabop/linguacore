@@ -39,10 +39,11 @@ export function endsRouter(all: AssessmentQuestion[], visible: AssessmentQuestio
 }
 
 // ---------- Pages: the questions of one listening part are answered on one screen, as in the
-// exam, so they can be read before the recording starts and answered while it plays.
+// exam, so they can be read before the recording starts and answered while it plays; so are
+// the gaps of a cloze or a gapped text, and a matching task, which share one text.
 
 const sharesPage = (a: AssessmentQuestion | undefined, b: AssessmentQuestion | undefined) =>
-    Boolean(a && b && a.section === 'listening' && a.group && a.group === b.group);
+    Boolean(a && b && (a.section === 'listening' || a.sharePage) && a.group && a.group === b.group);
 
 /** Index of the last question on the page that starts at `start`. */
 export function pageEnd(visible: AssessmentQuestion[], start: number): number {

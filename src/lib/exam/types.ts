@@ -33,6 +33,13 @@ interface QuestionBase {
      * limit counts per group, as the exam plays each part for all its questions.
      */
     group?: string;
+    /**
+     * The group's questions go on one screen with their text (a cloze, a gapped text, a
+     * matching task), as in the exam. Listening groups always do.
+     */
+    sharePage?: boolean;
+    /** Marks for a right answer when the exam gives more than one (B2 First Parts 4 to 6). */
+    marks?: number;
     stage?: ExamStage;
     /** Name of the exam task, shown above the question ("Read in Daily Life"). */
     task?: string;
@@ -68,6 +75,8 @@ export interface GapQuestion extends QuestionBase {
     maxWords?: number;
     /** "… AND/OR A NUMBER": figures don't count towards `maxWords`. */
     allowNumber?: boolean;
+    /** The exam's own instruction, when the word limit alone doesn't say it all. */
+    instruction?: string;
 }
 
 /**
@@ -106,7 +115,8 @@ export interface DiscussionPost {
 
 /**
  * A writing task. IELTS Task 1 carries the chart to describe; the TOEFL email lists the
- * points it must cover, and the academic discussion the posts it answers.
+ * points it must cover, and the academic discussion the posts it answers; a Cambridge Part 2
+ * offers a choice of tasks.
  */
 export interface ExamWritingTask {
     id: string;
@@ -117,6 +127,8 @@ export interface ExamWritingTask {
     chart?: ChartData;
     points?: string[];
     discussion?: DiscussionPost[];
+    /** Cambridge Part 2: the learner picks one of these tasks and answers only that one. */
+    choices?: { id: string; label: string; prompt: string }[];
 }
 
 export interface ExamSpeakingTask {
