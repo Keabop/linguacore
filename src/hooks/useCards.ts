@@ -5,7 +5,7 @@ import { useAuth } from '../lib/AuthContext';
 import { createNewCard, calculateNextReview, Rating } from '../lib/fsrs';
 import { CardState } from '../lib/db';
 import type { CardRow, Profile } from '../lib/database.types';
-import { offlineInsert, offlineUpdate } from '../lib/offlineMutation';
+import { offlineInsertMany, offlineUpdate } from '../lib/offlineMutation';
 
 // Convert Supabase row to the shape FSRS expects
 function rowToCard(row: CardRow) {
@@ -77,99 +77,52 @@ export function useCards() {
         return (data?.length ?? 0) > 0;
     }, []);
 
-    const addCard = useCallback(async (wordId: string, storyId: string) => {
-        if (!userId) return false;
-        const exists = await isWordInDeck(wordId);
-        if (exists) return false;
-
-        const cardData = createNewCard(wordId, storyId);
-        const insertPayload = {
-            user_id: userId,
-            word_id: wordId,
-            story_id: storyId,
-            state: cardData.state,
-            due: cardData.due.toISOString(),
-            stability: cardData.stability,
-            difficulty: cardData.difficulty,
-            elapsed_days: cardData.elapsedDays,
-            scheduled_days: cardData.scheduledDays,
-            reps: cardData.reps,
-            lapses: cardData.lapses,
-            last_review: null,
-        };
-
-        // Optimistic: increment card count
-        qc.setQueryData(['cards', 'count', userId], (old: number | undefined) =>
-            (old ?? 0) + 1,
-        );
-
-        // Optimistic: update profile word count
-        qc.setQueryData(['profile', userId], (old: any) => {
-            if (!old) return old;
-            return { ...old, total_words_learned: (old.total_words_learned ?? 0) + 1 };
-        });
-
-        try {
-            const executed = await offlineInsert('cards', insertPayload);
-            if (executed) {
-                // Also update profile word count on server
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('total_words_learned')
-                    .eq('id', userId)
-                    .single() as { data: Pick<Profile, 'total_words_learned'> | null };
-                if (profile) {
-                    await offlineUpdate('profiles', {
-                        total_words_learned: profile.total_words_learned + 1,
-                    }, { id: userId });
-                }
-            }
-            qc.invalidateQueries({ queryKey: ['cards'] });
-        } catch {
-            // Revert optimistic updates on error
-            qc.invalidateQueries({ queryKey: ['cards'] });
-            qc.invalidateQueries({ queryKey: ['profile'] });
-        }
-        return true;
-    }, [userId, isWordInDeck, qc]);
-
-    const markAsKnown = useCallback(async (wordId: string) => {
-        if (!userId) return false;
-        const alreadyKnown = await isWordKnown(wordId);
-        const alreadyInDeck = await isWordInDeck(wordId);
-        if (alreadyKnown || alreadyInDeck) return false;
-
-        // Optimistic: update profile word count
-        qc.setQueryData(['profile', userId], (old: any) => {
-            if (!old) return old;
-            return { ...old, total_words_learned: (old.total_words_learned ?? 0) + 1 };
-        });
-
-        try {
-            await offlineInsert('known_words', {
+    /**
+     * Saves the words of a finished story in one write per table: new cards for the words
+     * added to the deck, and the words the learner already knew. A word already saved is
+     * skipped by the database (unique on user and word), so a retry can't fail on it.
+     */
+    const saveStoryWords = useCallback(async (storyId: string, deckIds: string[], knownIds: string[]) => {
+        if (!userId) return 0;
+        const now = new Date().toISOString();
+        const cards = deckIds.map(wordId => {
+            const card = createNewCard(wordId, storyId);
+            return {
                 user_id: userId,
                 word_id: wordId,
-                known_at: new Date().toISOString(),
-            });
+                story_id: storyId,
+                state: card.state,
+                due: card.due.toISOString(),
+                stability: card.stability,
+                difficulty: card.difficulty,
+                elapsed_days: card.elapsedDays,
+                scheduled_days: card.scheduledDays,
+                reps: card.reps,
+                lapses: card.lapses,
+                last_review: null,
+            };
+        });
+        const known = knownIds.map(wordId => ({ user_id: userId, word_id: wordId, known_at: now }));
+        const added = cards.length + known.length;
+        if (!added) return 0;
 
-            if (navigator.onLine) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('total_words_learned')
-                    .eq('id', userId)
-                    .single() as { data: Pick<Profile, 'total_words_learned'> | null };
-                if (profile) {
-                    await offlineUpdate('profiles', {
-                        total_words_learned: profile.total_words_learned + 1,
-                    }, { id: userId });
-                }
-            }
-            qc.invalidateQueries({ queryKey: ['profile'] });
-        } catch {
-            qc.invalidateQueries({ queryKey: ['profile'] });
+        const skipSaved = { onConflict: 'user_id,word_id', ignoreDuplicates: true };
+        if (cards.length) await offlineInsertMany('cards', cards, skipSaved);
+        if (known.length) await offlineInsertMany('known_words', known, skipSaved);
+
+        // Offline, the cached profile is the base, and the update waits in the queue
+        const cached = qc.getQueryData<Pick<Profile, 'total_words_learned'>>(['profile', userId]);
+        const { data: fresh } = navigator.onLine
+            ? await supabase.from('profiles').select('total_words_learned').eq('id', userId).single() as { data: Pick<Profile, 'total_words_learned'> | null }
+            : { data: null };
+        const base = (fresh ?? cached)?.total_words_learned;
+        if (base !== undefined) {
+            await offlineUpdate('profiles', { total_words_learned: base + added }, { id: userId });
         }
-        return true;
-    }, [userId, isWordInDeck, isWordKnown, qc]);
+        qc.invalidateQueries({ queryKey: ['cards'] });
+        qc.invalidateQueries({ queryKey: ['profile'] });
+        return added;
+    }, [userId, qc]);
 
     const reviewCard = useCallback(async (card: ReturnType<typeof rowToCard>, rating: Rating) => {
         if (!userId) return null;
@@ -239,8 +192,7 @@ export function useCards() {
         totalCards: totalCards ?? 0,
         isWordInDeck,
         isWordKnown,
-        addCard,
-        markAsKnown,
+        saveStoryWords,
         reviewCard,
     };
 }

@@ -1,14 +1,18 @@
 import { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import type { ReadStoryRow } from '../lib/database.types';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw } from 'lucide-react';
+import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
 import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
 import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap, getSkillsByUnit } from '../data';
 import { shuffle } from '../lib/shuffle';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
-import Plant from '../components/garden/Plant';
+import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
 import { toast } from '../lib/toast';
 import GrammarCard from '../components/GrammarCard';
@@ -75,9 +79,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
             className="flex flex-col items-center justify-center py-16"
         >
             <div role="status" className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-10 w-full max-w-sm text-center space-y-6 shadow-[var(--shadow-float)]">
-                <div className="garden mx-auto" style={{ width: '9rem', height: '9rem' }}>
-                    <Plant species={species} stage="grown" height={46} grow delay={200} />
-                </div>
+                <PlantCircle species={species} size="lg" height={44} delay={200} />
 
                 <div className="space-y-2">
                     <h2 className="text-3xl font-extrabold tracking-tight text-[var(--color-on-surface)]">
@@ -471,7 +473,22 @@ function StoryStep({
     onComplete: () => void;
     onNavigateStories: () => void;
 }) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { user } = useAuth();
+    // Same query as the story list, so the lesson and Learn agree on what was read
+    const { data: readStories } = useQuery({
+        queryKey: ['readStories', user?.id],
+        queryFn: async () => {
+            const { data } = await supabase.from('read_stories').select('*');
+            return (data ?? []) as ReadStoryRow[];
+        },
+        enabled: !!user?.id,
+    });
+    const isRead = !!unitStory && !!readStories?.some(r => r.story_id === unitStory.id);
+    // The story sends the learner back to this step once it is completed
+    const readStory = () => unitStory && navigate(`/learn/${unitStory.id}`, { state: { returnTo: location.pathname } });
 
     return (
         <div className="space-y-6">
@@ -488,7 +505,7 @@ function StoryStep({
                             Tienes una historia asignada para esta unidad:
                         </p>
                         <button
-                            onClick={() => navigate(`/learn/${unitStory.id}`)}
+                            onClick={readStory}
                             className="w-full bg-[var(--color-surface-container)] rounded-2xl p-5 flex items-center justify-between hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] transition-all duration-300 group"
                         >
                             <div className="flex items-center gap-3">
@@ -496,6 +513,11 @@ function StoryStep({
                                 <span className="font-bold text-sm group-hover:text-[var(--color-primary)] transition-colors">
                                     {unitStory.title}
                                 </span>
+                                {isRead && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary-container)] px-2.5 py-0.5 text-xs font-bold text-[var(--color-primary)]">
+                                        <Check className="h-3 w-3" aria-hidden="true" /> {t('unitFlow.storyRead')}
+                                    </span>
+                                )}
                             </div>
                             <ChevronRight className="w-4 h-4 text-[var(--color-on-surface-muted)] group-hover:text-[var(--color-primary)] group-hover:translate-x-0.5 transition-all" />
                         </button>
@@ -521,11 +543,12 @@ function StoryStep({
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    {/* With a story, the step is done once it is read (and its words marked) */}
                     <button
-                        onClick={onComplete}
+                        onClick={unitStory && !isRead ? readStory : onComplete}
                         className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
                     >
-                        {unitStory ? 'Marcar como completado' : 'Saltar por ahora'}
+                        {!unitStory ? 'Saltar por ahora' : isRead ? t('unitFlow.continue') : t('unitFlow.readStory')}
                     </button>
                 </div>
             </div>
