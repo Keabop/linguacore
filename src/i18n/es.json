@@ -465,12 +465,12 @@
       },
       "cambridge_b1": {
         "title": "Simulacro Cambridge B1 Preliminary",
-        "description": "Prueba oficial de nivel intermedio para consolidar tus bases. Evalúa Use of English, Listening, Writing de dos tareas y Speaking interactivo con feedback instantáneo.",
+        "description": "El formato real del B1 Preliminary: Reading en 6 partes (32 preguntas), Listening en 4 partes (25), Writing (un email y un artículo o historia a elegir) y Speaking en 4 partes, calificados con los criterios de Cambridge.",
         "advice": "Recomendado cada mes para certificar y consolidar tus bases de nivel B1."
       },
       "cambridge_b2": {
         "title": "Simulacro Cambridge B2 First",
-        "description": "Prueba de alta exigencia académica que evalúa gramática avanzada (Use of English), comprensión de lectura y audios complejos, redacción técnica y examen oral estructurado.",
+        "description": "El formato real del B2 First: Reading y Use of English en 7 partes (52 preguntas), Listening en 4 partes (30), Writing (un ensayo y otra tarea a elegir) y Speaking en 4 partes, calificados con los criterios de Cambridge.",
         "advice": "Recomendado una vez al mes para validar tu solidez gramatical, producción escrita y fluidez oral ejecutiva."
       }
     },
@@ -487,7 +487,9 @@
     },
     "listeningComprehension": "Comprensión de audio",
     "teacher": "Docente",
-    "speakingFeedbackTitle": "Retroalimentación de tu expresión oral"
+    "speakingFeedbackTitle": "Retroalimentación de tu expresión oral",
+    "chooseTask": "Elige una tarea",
+    "chooseTaskFirst": "Elige una de las tareas para poder continuar."
   },
   "exam": {
     "tfngPrompt": "¿Qué dice el texto sobre esta afirmación?",

@@ -12,9 +12,9 @@ interface Props {
     onChange: (response: ExamResponse) => void;
 }
 
-const OPTION = 'w-full p-4 rounded-[1.25rem] text-left text-sm font-semibold border-2 transition-colors duration-[var(--dur-short)]';
-const OPTION_IDLE = 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)]';
-const OPTION_ON = 'border-[var(--color-primary)] bg-[var(--color-primary-container)] text-[var(--color-primary)]';
+export const OPTION = 'w-full p-4 rounded-[1.25rem] text-left text-sm font-semibold border-2 transition-colors duration-[var(--dur-short)]';
+export const OPTION_IDLE = 'border-transparent bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)]';
+export const OPTION_ON = 'border-[var(--color-primary)] bg-[var(--color-primary-container)] text-[var(--color-primary)]';
 const INPUT = 'rounded-[var(--radius-sm)] border-[1.5px] border-[var(--color-outline-variant)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-on-surface)] focus:border-[var(--color-primary)] focus:outline-none';
 
 /** One exam question of any kind, with its answer controls. */
@@ -32,7 +32,7 @@ export default function QuestionView({ question, response, onChange }: Props) {
  * Radio group keyboard behaviour: Tab reaches the group once (the chosen option, or the first),
  * arrows move and choose, as in a native radio group.
  */
-function useRadioKeys<T>(values: T[], selected: T | undefined, onSelect: (v: T) => void) {
+export function useRadioKeys<T>(values: T[], selected: T | undefined, onSelect: (v: T) => void) {
     const refs = useRef<(HTMLButtonElement | null)[]>([]);
     const onKeyDown = (e: KeyboardEvent, i: number) => {
         const step = ({ ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 } as Record<string, number>)[e.key];
@@ -110,7 +110,7 @@ function TrueFalseNotGiven({ q, value, onChange }: { q: TfngQuestion; value?: Tf
     );
 }
 
-const WORD_LIMIT = ['', 'ONE WORD', 'TWO WORDS', 'THREE WORDS'];
+const WORD_LIMIT = ['', 'ONE WORD', 'TWO WORDS', 'THREE WORDS', 'FOUR WORDS', 'FIVE WORDS'];
 
 /** The exam's wording: "ONE WORD ONLY", "ONE WORD AND/OR A NUMBER", "NO MORE THAN TWO WORDS"… */
 export function wordLimitLabel(maxWords: number, allowNumber = false): string {
@@ -123,9 +123,9 @@ function Gap({ q, value, onChange }: { q: GapQuestion; value: string; onChange: 
     const [before, after = ''] = q.text.split('___');
     return (
         <div className="space-y-3">
-            {q.maxWords && (
+            {(q.instruction || q.maxWords) && (
                 <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
-                    Write {wordLimitLabel(q.maxWords, q.allowNumber)}
+                    {q.instruction ?? `Write ${wordLimitLabel(q.maxWords!, q.allowNumber)}`}
                 </p>
             )}
             <label className="block text-lg font-bold leading-loose">

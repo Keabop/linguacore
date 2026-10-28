@@ -8,6 +8,7 @@ import { generateCareerDeck } from '../../server/agents/career-deck.js';
 import { evaluateSpeaking } from '../../server/agents/speaking-evaluator.js';
 import { env, setEnv } from '../../server/lib/config.js';
 import { authenticateRequest } from '../../server/lib/auth.js';
+import { isCriteriaExam } from '../../server/lib/examCriteria.js';
 import { checkUsageLimit, checkWeeklyLimit, incrementUsage, getUserTier } from '../../server/lib/usageLimits.js';
 import { accessTier } from '../../server/lib/roles.js';
 import { isCacheable, generateCacheKey, getCachedResponse, setCachedResponse } from '../../server/lib/aiCache.js';
@@ -31,6 +32,9 @@ function isRateLimited(ip: string): boolean {
 // ---------------------------------------------------------------------------
 // Input Size Validator (from security patch)
 // ---------------------------------------------------------------------------
+/** The evaluators take an exam id (its criteria are chosen on the server), or none. */
+const validExam = (exam: unknown) => exam === undefined || isCriteriaExam(exam);
+
 function validateInputSize(agent: AgentType, params: any): { valid: boolean; error?: string } {
     if (!params) return { valid: true };
 
@@ -82,6 +86,7 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
             if (params.text && typeof params.text === 'string' && params.text.length > 3000) {
                 return { valid: false, error: 'El texto a evaluar es demasiado largo (máximo 3000 caracteres).' };
             }
+            if (!validExam(params.exam)) return { valid: false, error: 'Examen desconocido.' };
             break;
         }
         case 'career-deck': {
@@ -92,13 +97,15 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
         }
         case 'speaking-evaluator': {
             const { transcripts, prompts } = params;
-            if (!Array.isArray(transcripts) || !Array.isArray(prompts) || transcripts.length > 10 || prompts.length > 10) {
+            // TOEFL has 11 speaking tasks (7 repeat sentences and a 4-question interview)
+            if (!Array.isArray(transcripts) || !Array.isArray(prompts) || transcripts.length > 12 || prompts.length > 12) {
                 return { valid: false, error: 'Formato de respuestas orales inválido.' };
             }
             const all = [...transcripts, ...prompts];
             if (all.some(t => typeof t !== 'string' || t.length > 3000)) {
                 return { valid: false, error: 'Cada respuesta oral debe ser texto de máximo 3000 caracteres.' };
             }
+            if (!validExam(params.exam)) return { valid: false, error: 'Examen desconocido.' };
             break;
         }
     }

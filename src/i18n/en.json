@@ -465,12 +465,12 @@
       },
       "cambridge_b1": {
         "title": "Cambridge B1 Preliminary Mock Exam",
-        "description": "An intermediate exam to consolidate your foundations: Use of English, Listening, two Writing tasks and Speaking, with instant feedback.",
+        "description": "The real B1 Preliminary format: Reading in 6 parts (32 questions), Listening in 4 parts (25), Writing (an email, then an article or a story) and Speaking in 4 parts, marked with the Cambridge criteria.",
         "advice": "Take it every month to consolidate your B1 level."
       },
       "cambridge_b2": {
         "title": "Cambridge B2 First Mock Exam",
-        "description": "A demanding exam of advanced grammar (Use of English), reading and listening, writing and a structured speaking test.",
+        "description": "The real B2 First format: Reading and Use of English in 7 parts (52 questions), Listening in 4 parts (30), Writing (an essay and a task of your choice) and Speaking in 4 parts, marked with the Cambridge criteria.",
         "advice": "Take it once a month to check your grammar, writing and speaking."
       }
     },
@@ -487,7 +487,9 @@
     },
     "listeningComprehension": "Listening",
     "teacher": "Teacher",
-    "speakingFeedbackTitle": "Speaking feedback"
+    "speakingFeedbackTitle": "Speaking feedback",
+    "chooseTask": "Choose a task",
+    "chooseTaskFirst": "Choose one of the tasks to continue."
   },
   "exam": {
     "tfngPrompt": "What does the text say about this statement?",

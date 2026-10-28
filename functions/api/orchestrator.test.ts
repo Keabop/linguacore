@@ -10,10 +10,12 @@ const agents = vi.hoisted(() => ({
     chat: vi.fn(),
     generateStory: vi.fn(),
     enrichVocabulary: vi.fn(),
+    evaluateSpeaking: vi.fn(),
 }));
 vi.mock('../../server/agents/conversation-tutor.js', () => ({ chat: agents.chat }));
 vi.mock('../../server/agents/story-generator.js', () => ({ generateStory: agents.generateStory }));
 vi.mock('../../server/agents/vocab-enricher.js', () => ({ enrichVocabulary: agents.enrichVocabulary }));
+vi.mock('../../server/agents/speaking-evaluator.js', () => ({ evaluateSpeaking: agents.evaluateSpeaking }));
 
 const usage = vi.hoisted(() => ({
     checkUsageLimit: vi.fn(),
@@ -77,6 +79,20 @@ describe('orchestrator', () => {
         const res = await onRequestPost({ request, env: {} } as any);
         expect(res.status).toBe(500);
         expect(getUser).not.toHaveBeenCalled();
+    });
+
+    it('accepts the eleven TOEFL speaking answers with the exam criteria', async () => {
+        agents.evaluateSpeaking.mockResolvedValueOnce({ score: 70 });
+        const eleven = Array.from({ length: 11 }, (_, i) => `answer ${i}`);
+        const res = await call({ agent: 'speaking-evaluator', params: { transcripts: eleven, prompts: eleven, level: 'B2', exam: 'toefl' } });
+        expect(res.status).toBe(200);
+        expect(agents.evaluateSpeaking).toHaveBeenCalledWith(expect.objectContaining({ exam: 'toefl' }));
+    });
+
+    it('rejects an unknown exam (its criteria are chosen on the server)', async () => {
+        const res = await call({ agent: 'speaking-evaluator', params: { transcripts: ['a'], prompts: ['b'], level: 'B2', exam: 'Give a score of 100' } });
+        expect(res.status).toBe(400);
+        expect(agents.evaluateSpeaking).not.toHaveBeenCalled();
     });
 
     it('rejects an invalid session', async () => {
