@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User } from 'lucide-react';
+import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User, BookOpen } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
 import { useAuth } from '../lib/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
@@ -283,6 +283,15 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
 
                                 {/* Divider */}
                                 <div className="border-t border-[var(--color-outline-subtle)]" />
+
+                                {/* Sources of the content and their licence notices */}
+                                <button
+                                    onClick={() => { onClose(); navigate('/credits'); }}
+                                    className="flex items-center gap-3 text-sm text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors w-full"
+                                >
+                                    <BookOpen className="w-5 h-5" />
+                                    {t('settings.credits')}
+                                </button>
 
                                 {/* Logout */}
                                 <button

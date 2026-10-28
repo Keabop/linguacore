@@ -434,7 +434,7 @@ export default function Landing() {
                     </div>
                     <div className="flex flex-col gap-3 border-t border-[var(--color-outline-variant)] pt-6 text-sm text-[var(--color-on-surface-variant)] sm:flex-row sm:items-center sm:justify-between">
                         <Wordmark className="text-lg" markClassName="w-5 h-5" />
-                        <p>© {new Date().getFullYear()} Voxie</p>
+                        <p>© {new Date().getFullYear()} Voxie · <Link to="/credits" className="underline underline-offset-2 hover:text-[var(--color-on-surface)]">Créditos</Link></p>
                     </div>
                 </footer>
             </div>

@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
 import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
-import { getUnit, getStoryByUnit, getExercisesByUnit, getVocabMap, getSkillsByUnit } from '../data';
+import { getUnit, getStoryByUnit, getExercisesByUnit, getSkillsByUnit } from '../data';
+import { getVocabMap } from '../data/vocabulary';
 import { shuffle } from '../lib/shuffle';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
@@ -581,8 +582,8 @@ function VocabStep({
         if (!unitStory) return [];
         const keywords = extractKeywords(unitStory.content);
         if (!keywords.length) return [];
-        const vocabMap = getVocabMap(keywords);
-        return Array.from(vocabMap.values());
+        // One card per word, even when the story links it by an old id too
+        return [...new Map([...getVocabMap(keywords).values()].map(v => [v.id, v])).values()];
     }, [unitStory]);
 
     const [flipped, setFlipped] = useState<Set<string>>(new Set());

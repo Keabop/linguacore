@@ -1,7 +1,8 @@
 import type { Story } from '../lib/db';
 
-function w(word: string): string {
-    return `<span data-word="${word}">${word}</span>`;
+/** A tappable word: `w('tooth', 'teeth')` links the card and shows the form the text needs. */
+function w(word: string, shown = word): string {
+    return `<span data-word="${word}">${shown}</span>`;
 }
 
 /** Words in the story's text, without the markup. */
@@ -19,7 +20,7 @@ const stories: Story[] = [
     // ===== A1 STORIES (10) =====
     {
         id: "a1-001", level: "A1", unitId: "a1-u3", title: "My Morning Routine", wordCount: 45, estimatedMinutes: 2,
-        content: `<p>I ${w('wake')} up at 7 AM every day. First, I ${w('brush')} my ${w('teeth')} and wash my face. Then I ${w('eat')} ${w('breakfast')} with my ${w('family')}.</p><p>I ${w('drink')} ${w('coffee')} and ${w('read')} the news. After that, I ${w('walk')} to ${w('school')}. I ${w('like')} mornings because they are quiet.</p>`
+        content: `<p>I ${w('wake')} up at 7 AM every day. First, I ${w('brush')} my ${w('tooth', 'teeth')} and wash my face. Then I ${w('eat')} ${w('breakfast')} with my ${w('family')}.</p><p>I ${w('drink')} ${w('coffee')} and ${w('read')} the news. After that, I ${w('walk')} to ${w('school')}. I ${w('like')} mornings because they are quiet.</p>`
     },
     {
         id: "a1-002", level: "A1", unitId: "a1-u1", title: "My Family", wordCount: 50, estimatedMinutes: 2,
@@ -55,13 +56,13 @@ const stories: Story[] = [
     },
     {
         id: "a1-010", level: "A1", title: "Dinner Time", wordCount: 48, estimatedMinutes: 2,
-        content: `<p>Every evening, my ${w('family')} eats dinner together. My ${w('mother')} cooks ${w('good')} ${w('food')}. Tonight we ${w('eat')} chicken and ${w('vegetables')}.</p><p>I ${w('help')} my mother in the kitchen. My ${w('father')} and ${w('brother')} set the table. We talk about our day. I ${w('love')} dinner time with my ${w('family')}.</p>`
+        content: `<p>Every evening, my ${w('family')} eats dinner together. My ${w('mother')} cooks ${w('good')} ${w('food')}. Tonight we ${w('eat')} chicken and ${w('vegetable', 'vegetables')}.</p><p>I ${w('help')} my mother in the kitchen. My ${w('father')} and ${w('brother')} set the table. We talk about our day. I ${w('love')} dinner time with my ${w('family')}.</p>`
     },
 
     // ===== A2 STORIES (10) =====
     {
         id: "a2-001", level: "A2", unitId: "a2-u5", title: "A Trip to the Market", wordCount: 60, estimatedMinutes: 3,
-        content: `<p>Last Saturday, I ${w('decided')} to ${w('visit')} the local ${w('market')}. The ${w('vegetables')} looked ${w('fresh')} and ${w('colorful')}. I ${w('choose')} tomatoes, peppers, and lettuce.</p><p>An old woman was selling ${w('beautiful')} flowers. I ${w('decided')} to ${w('buy')} some for my ${w('mother')}. She was ${w('surprised')} and ${w('happy')} when I gave them to her.</p>`
+        content: `<p>Last Saturday, I ${w('decide', 'decided')} to ${w('visit')} the local ${w('market')}. The ${w('vegetable', 'vegetables')} looked ${w('fresh')} and ${w('colorful')}. I ${w('choose')} tomatoes, peppers, and lettuce.</p><p>An old woman was selling ${w('beautiful')} flowers. I ${w('decide', 'decided')} to ${w('buy')} some for my ${w('mother')}. She was ${w('surprised')} and ${w('happy')} when I gave them to her.</p>`
     },
     {
         id: "a2-002", level: "A2", unitId: "a2-u1", title: "My First Day at Work", wordCount: 65, estimatedMinutes: 3,
@@ -73,7 +74,7 @@ const stories: Story[] = [
     },
     {
         id: "a2-004", level: "A2", unitId: "a2-u3", title: "The New Student", wordCount: 58, estimatedMinutes: 3,
-        content: `<p>A new student ${w('arrive')}d at our school today. Her name is Sofia and she is from Brazil. She speaks Portuguese and is learning English.</p><p>At first, she was quiet and looked ${w('worried')}. I ${w('decided')} to talk to her. We ${w('already')} have many things in common. Now we are ${w('friend')}s and we ${w('practice')} English ${w('together')}.</p>`
+        content: `<p>A new student ${w('arrive')}d at our school today. Her name is Sofia and she is from Brazil. She speaks Portuguese and is learning English.</p><p>At first, she was quiet and looked ${w('worried')}. I ${w('decide', 'decided')} to talk to her. We ${w('already')} have many things in common. Now we are ${w('friend')}s and we ${w('practice')} English ${w('together')}.</p>`
     },
     {
         id: "a2-005", level: "A2", unitId: "a2-u2", title: "A Weekend in the Country", wordCount: 64, estimatedMinutes: 3,
@@ -81,15 +82,15 @@ const stories: Story[] = [
     },
     {
         id: "a2-006", level: "A2", unitId: "a2-u8", title: "Learning to Cook", wordCount: 60, estimatedMinutes: 3,
-        content: `<p>I ${w('decided')} to learn how to cook. I ${w('usually')} eat at restaurants, but it is expensive. My ${w('friend')} gave me an easy ${w('recipe')} for pasta.</p><p>I went to the ${w('market')} and bought all the ingredients. I followed the instructions ${w('carefully')}. The result was not perfect, but it tasted ${w('good')}. I want to ${w('improve')} and ${w('practice')} more.</p>`
+        content: `<p>I ${w('decide', 'decided')} to learn how to cook. I ${w('usually')} eat at restaurants, but it is expensive. My ${w('friend')} gave me an easy ${w('recipe')} for pasta.</p><p>I went to the ${w('market')} and bought all the ingredients. I followed the instructions ${w('carefully')}. The result was not perfect, but it tasted ${w('good')}. I want to ${w('improve')} and ${w('practice')} more.</p>`
     },
     {
         id: "a2-007", level: "A2", unitId: "a2-u9", title: "The Lost Dog", wordCount: 62, estimatedMinutes: 3,
-        content: `<p>While I was ${w('walk')}ing in the park, I found a lost ${w('dog')}. He was ${w('small')} and ${w('scared')}. I ${w('decided')} to ${w('help')} him find his owner.</p><p>I took him to the ${w('neighbor')}hood and asked people. ${w('eventually')}, an old man recognized the ${w('dog')}. He was so ${w('happy')} and grateful. ${w('sometimes')}, ${w('small')} actions make a ${w('big')} ${w('different')}.</p>`
+        content: `<p>While I was ${w('walk')}ing in the park, I found a lost ${w('dog')}. He was ${w('small')} and ${w('scared')}. I ${w('decide', 'decided')} to ${w('help')} him find his owner.</p><p>I took him to the ${w('neighbor')}hood and asked people. ${w('eventually')}, an old man recognized the ${w('dog')}. He was so ${w('happy')} and grateful. ${w('sometimes')}, ${w('small')} actions make a ${w('big')} ${w('different')}.</p>`
     },
     {
         id: "a2-008", level: "A2", unitId: "a2-u6", title: "My Healthy Habits", wordCount: 58, estimatedMinutes: 3,
-        content: `<p>This year, I ${w('decided')} to live a more ${w('healthy')} life. I ${w('wake')} up early and ${w('drink')} ${w('water')} before ${w('breakfast')}.</p><p>I ${w('usually')} ${w('eat')} ${w('fresh')} fruits and ${w('vegetables')}. I also ${w('run')} three times a week. ${w('sometimes')} it is hard, but I feel much better. My ${w('friend')}s say I look more ${w('happy')} and full of energy.</p>`
+        content: `<p>This year, I ${w('decide', 'decided')} to live a more ${w('healthy')} life. I ${w('wake')} up early and ${w('drink')} ${w('water')} before ${w('breakfast')}.</p><p>I ${w('usually')} ${w('eat')} ${w('fresh')} fruits and ${w('vegetable', 'vegetables')}. I also ${w('run')} three times a week. ${w('sometimes')} it is hard, but I feel much better. My ${w('friend')}s say I look more ${w('happy')} and full of energy.</p>`
     },
     {
         id: "a2-009", level: "A2", unitId: "a2-u4", title: "The Music Festival", wordCount: 60, estimatedMinutes: 3,
@@ -97,7 +98,7 @@ const stories: Story[] = [
     },
     {
         id: "a2-010", level: "A2", title: "Moving to a New City", wordCount: 64, estimatedMinutes: 3,
-        content: `<p>Next month, I am ${w('leave')}ing my hometown. I ${w('decided')} to move to a new city for ${w('work')}. It is ${w('exciting')} but also a little scary.</p><p>I will miss my ${w('family')} and ${w('friend')}s. But I think this ${w('change')} is ${w('important')} for my future. My ${w('mother')} says I should be brave. I ${w('understand')} that new ${w('experience')}s help us grow.</p>`
+        content: `<p>Next month, I am ${w('leave')}ing my hometown. I ${w('decide', 'decided')} to move to a new city for ${w('work')}. It is ${w('exciting')} but also a little scary.</p><p>I will miss my ${w('family')} and ${w('friend')}s. But I think this ${w('change')} is ${w('important')} for my future. My ${w('mother')} says I should be brave. I ${w('understand')} that new ${w('experience')}s help us grow.</p>`
     },
 
     // ===== B1 STORIES (11) =====
@@ -119,7 +120,7 @@ const stories: Story[] = [
     },
     {
         id: "b1-005", level: "B1", unitId: "b1-u4", title: "Starting a Small Business", wordCount: 84, estimatedMinutes: 4,
-        content: `<p>Maria always dreamed of starting her own bakery. After years of ${w('experience')} working in restaurants, she ${w('decided')} to take the ${w('challenge')}.</p><p>She had to ${w('develop')} a business plan and find ${w('available')} locations. The ${w('government')} offered ${w('support')} for small businesses. ${w('although')} the first months were difficult, her ${w('community')} ${w('encourage')}d her. ${w('eventually')}, the bakery became ${w('popular')} and ${w('effective')}ly profitable. Her story shows that hard work and ${w('opportunity')} can lead to success.</p>`
+        content: `<p>Maria always dreamed of starting her own bakery. After years of ${w('experience')} working in restaurants, she ${w('decide', 'decided')} to take the ${w('challenge')}.</p><p>She had to ${w('develop')} a business plan and find ${w('available')} locations. The ${w('government')} offered ${w('support')} for small businesses. ${w('although')} the first months were difficult, her ${w('community')} ${w('encourage')}d her. ${w('eventually')}, the bakery became ${w('popular')} and ${w('effective')}ly profitable. Her story shows that hard work and ${w('opportunity')} can lead to success.</p>`
     },
     {
         id: "b1-006", level: "B1", unitId: "b1-u11", title: "Mental Health Awareness", wordCount: 80, estimatedMinutes: 4,
