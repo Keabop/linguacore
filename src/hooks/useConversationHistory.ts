@@ -75,8 +75,19 @@ export function useConversationHistory() {
         return data?.id;
     }, [userId, qc]);
 
+    // Delete one of the learner's conversations (RLS only allows their own)
+    const deleteSession = useCallback(async (id: number) => {
+        // RLS turns a forbidden delete into an empty one, not an error: check something went
+        const { data, error } = await supabase.from('conversation_sessions').delete().eq('id', id).select('id');
+        if (error) throw error;
+        if (!data?.length) throw new Error('Conversation not deleted');
+        qc.setQueryData<ConversationSession[]>(['conversation-sessions', userId], prev => prev?.filter(s => s.id !== id));
+        qc.invalidateQueries({ queryKey: ['conversation-sessions'] });
+    }, [userId, qc]);
+
     return {
         sessions: sessions ?? [],
         saveSession,
+        deleteSession,
     };
 }

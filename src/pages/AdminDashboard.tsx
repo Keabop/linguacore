@@ -13,6 +13,7 @@ import { toast } from '../lib/toast';
 import LevelBadge from '../components/ui/LevelBadge';
 import CountUp from '../components/reactbits/CountUp';
 import type { Profile } from '../lib/database.types';
+import PageLoader from '../components/PageLoader';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -527,12 +528,8 @@ export default function AdminDashboard() {
             )}
 
             {/* ── Loading ── */}
-            {isLoading && (
-                <div className="flex items-center justify-center py-20 gap-3 text-[var(--color-on-surface-muted)]">
-                    <RefreshCw className="w-5 h-5 animate-spin text-[var(--color-primary)]" />
-                    <span className="text-sm font-medium">Cargando usuarios…</span>
-                </div>
-            )}
+            {/* The same sprout as the page loader, so it keeps growing until the users arrive */}
+            {isLoading && <PageLoader />}
 
             {/* ── Error ── */}
             {error && (
