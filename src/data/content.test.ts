@@ -163,6 +163,27 @@ describe('IELTS Academic simulator', () => {
         }
     });
 
+    it('asks in the order of the recording, and of the text within each block of a type', () => {
+        const flat = (t: string) => t.toLowerCase().replace(/\s+/g, ' ');
+        const position = (q: (typeof ieltsQuestions)[number]) => {
+            const source = flat(q.passage ?? q.dialogue!.map(l => l.text).join(' '));
+            return source.indexOf(flat(q.evidence!));
+        };
+        for (const group of new Set(ieltsQuestions.map(q => q.group))) {
+            const qs = ieltsQuestions.filter(q => q.group === group && q.evidence);
+            // Listening follows the recording throughout; reading restarts with each block of a type
+            const blocks = qs[0].section === 'listening' ? [qs] : qs.reduce<(typeof qs)[]>((acc, q, i) => {
+                if (i === 0 || (q.kind ?? 'mc') !== (qs[i - 1].kind ?? 'mc')) acc.push([]);
+                acc.at(-1)!.push(q);
+                return acc;
+            }, []);
+            for (const block of blocks) {
+                const positions = block.map(position);
+                expect(positions, `${group}: ${block.map(q => q.id).join(', ')}`).toEqual([...positions].sort((a, b) => a - b));
+            }
+        }
+    });
+
     it('mixes the question types of the real exam', () => {
         const kinds = new Set(ieltsQuestions.map(q => q.kind ?? 'mc'));
         expect([...kinds].sort()).toEqual(['gap', 'mc', 'tfng']);

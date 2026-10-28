@@ -11,6 +11,11 @@ export function normalizeAnswer(text: string): string {
         .replace(/^[\s.,;:!?"'()-]+|[\s.,;:!?"'()-]+$/g, '');
 }
 
+/** Words of an answer; with `allowNumber`, figures ("14", "07946 381 205") don't count. */
+export function countWords(answer: string, allowNumber = false): number {
+    return normalizeAnswer(answer).split(' ').filter(w => w && !(allowNumber && /^\d[\d.,:]*(st|nd|rd|th)?$/.test(w))).length;
+}
+
 export interface WordGap {
     /** Letters shown to the learner. */
     shown: string;
@@ -48,7 +53,7 @@ export function grade(q: AssessmentQuestion, response: ExamResponse | undefined)
         case 'gap': {
             if (typeof response !== 'string') return 0;
             const given = normalizeAnswer(response);
-            if (q.maxWords && given.split(' ').length > q.maxWords) return 0;
+            if (q.maxWords && countWords(given, q.allowNumber) > q.maxWords) return 0;
             return q.answers.some(a => normalizeAnswer(a) === given) ? 1 : 0;
         }
         case 'complete-words': {

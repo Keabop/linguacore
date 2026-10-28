@@ -1,4 +1,4 @@
-import { normalizeAnswer, parseCompleteWords } from './grading';
+import { countWords, normalizeAnswer, parseCompleteWords } from './grading';
 import { adaptiveSections } from './adaptive';
 import { isMultipleChoice, type AssessmentQuestion } from './types';
 
@@ -28,7 +28,7 @@ export function validateQuestion(q: AssessmentQuestion): string[] {
         case 'gap':
             if (q.text.split('___').length !== 2) problems.push('el hueco debe aparecer una vez (___)');
             if (!q.answers.length) problems.push('sin respuestas aceptadas');
-            if (q.maxWords && q.answers.some(a => normalizeAnswer(a).split(' ').length > q.maxWords!)) {
+            if (q.maxWords && q.answers.some(a => countWords(a, q.allowNumber) > q.maxWords!)) {
                 problems.push('una respuesta aceptada pasa el límite de palabras');
             }
             break;

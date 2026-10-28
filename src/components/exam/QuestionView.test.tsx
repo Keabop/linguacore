@@ -47,3 +47,13 @@ describe('QuestionView', () => {
         expect(sentence).toHaveTextContent('opens');
     });
 });
+
+describe('wordLimitLabel', () => {
+    it('uses the wording of the exam', async () => {
+        const { wordLimitLabel } = await import('./QuestionView');
+        expect(wordLimitLabel(1)).toBe('ONE WORD ONLY');
+        expect(wordLimitLabel(1, true)).toBe('ONE WORD AND/OR A NUMBER');
+        expect(wordLimitLabel(2)).toBe('NO MORE THAN TWO WORDS');
+        expect(wordLimitLabel(2, true)).toBe('NO MORE THAN TWO WORDS AND/OR A NUMBER');
+    });
+});

@@ -18,7 +18,7 @@ export const ieltsWriting: ExamWritingTask[] = [
                 { name: 'Northport', values: [4, 6, 9, 14, 18] },
                 { name: 'Eastvale', values: [12, 11, 10, 9, 9] },
                 { name: 'Westbridge', values: [2, 3, 3, 7, 12] },
-                { name: 'Southam', values: [8, 8, 9, 10, 10] },
+                { name: 'Southam', values: [8, 8, 8, 10, 10] },
             ],
         },
     },
