@@ -6,11 +6,12 @@ import { useAuth } from '../lib/AuthContext';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { playAudioFile, playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
-import { chooseStage, endsRouter, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
+import { chooseStage, endsRouter, pageEnd, pageStart, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
 import { buildReport, type ExamReport } from '../lib/exam/report';
 import { isMultipleChoice, type ExamResponse } from '../lib/exam/types';
 import QuestionView from '../components/exam/QuestionView';
 import TaskChart from '../components/exam/TaskChart';
+import PassageView from '../components/exam/PassageView';
 import { shuffleQuestion } from '../lib/shuffle';
 import { placementQuestions, writingPrompts, AssessmentQuestion, WritingPrompt } from '../data/assessments/cefr-questions';
 import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
@@ -330,28 +331,33 @@ export default function CEFRSimulator() {
     // A recording is shared by its group (an IELTS Listening part) and limited per exam
     const audioKey = current?.group ?? current?.id ?? '';
     const maxPlays = selectedPreset?.audioPlays ?? 2;
-    const closesRouter = endsRouter(questions, visible, currentIdx, stageChoice);
-
-    // A recording keeps playing while the learner moves between the questions of its part
-    const leaveFor = (target: AssessmentQuestion | undefined) => {
-        if (!current?.group || target?.group !== current.group) stopAudio();
-    };
+    // currentIdx is the first question of the page on screen; a listening part is one page
+    const lastOnPage = current ? pageEnd(visible, currentIdx) : currentIdx;
+    const pageQuestions = visible.slice(currentIdx, lastOnPage + 1);
+    const closesRouter = endsRouter(questions, visible, lastOnPage, stageChoice);
+    // The recording of a part plays once: the page can't be left while it is playing
+    const lockedByAudio = isPlayingAudio && current?.section === 'listening';
 
     const goNext = () => {
-        leaveFor(visible[currentIdx + 1]);
+        stopAudio();
         if (closesRouter && current) {
             const chosen = { ...stageChoice, [current.section]: chooseStage(questions, current.section, answers) };
             setStageChoice(chosen);
             // Never step past the questions that will actually be shown
             const nextCount = visibleQuestions(questions, chosen).length;
-            setCurrentIdx(prev => Math.min(prev + 1, nextCount - 1));
+            setCurrentIdx(Math.min(lastOnPage + 1, nextCount - 1));
             return;
         }
-        setCurrentIdx(prev => Math.min(prev + 1, visible.length - 1));
+        setCurrentIdx(Math.min(lastOnPage + 1, visible.length - 1));
+    };
+
+    const goBack = () => {
+        stopAudio();
+        setCurrentIdx(pageStart(visible, currentIdx - 1));
     };
 
     // A second stage can't go back into its router (as in adaptive exams)
-    const canGoBack = currentIdx > 0 && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
+    const canGoBack = currentIdx > 0 && !lockedByAudio && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
 
     const proceedToWritingOrComplete = () => {
         stopAudio();
@@ -594,7 +600,7 @@ export default function CEFRSimulator() {
                         {/* Status bar */}
                         <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                             <span className="font-bold text-[var(--color-primary)]">
-                                {selectedPreset?.title} • Pregunta {currentIdx + 1} de {visible.length}{closesRouter ? '+' : ''}
+                                {selectedPreset?.title} • {pageQuestions.length > 1 ? `Preguntas ${currentIdx + 1}–${lastOnPage + 1}` : `Pregunta ${currentIdx + 1}`} de {visible.length}{closesRouter ? '+' : ''}
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
@@ -603,11 +609,7 @@ export default function CEFRSimulator() {
 
                         <div className="widget space-y-6">
                             {/* 3A. READING COMPONENT */}
-                            {current.passage && (
-                                <div className="bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)] max-h-[45vh] overflow-y-auto text-[15px] leading-relaxed text-[var(--color-on-surface)] whitespace-pre-line">
-                                    {current.passage}
-                                </div>
-                            )}
+                            {current.passage && <PassageView text={current.passage} />}
 
                             {/* 3B. DIALOGUE LISTENING COMPONENT */}
                             {current.dialogue && (
@@ -647,26 +649,36 @@ export default function CEFRSimulator() {
                                 </div>
                             )}
 
-                            <QuestionView
-                                key={current.id}
-                                question={current}
-                                response={answers[current.id]}
-                                onChange={(r) => setAnswer(current.id, r)}
-                            />
+                            {pageQuestions.length > 1 && (
+                                <p className="text-xs font-semibold text-[var(--color-on-surface-muted)]">
+                                    Lee las preguntas antes de reproducir el audio; puedes responder mientras suena.
+                                </p>
+                            )}
+                            <div className="space-y-8">
+                                {pageQuestions.map((q, i) => (
+                                    <section key={q.id} aria-label={`Pregunta ${currentIdx + i + 1}`} className="space-y-2">
+                                        {pageQuestions.length > 1 && (
+                                            <p className="text-[11px] font-black uppercase tracking-wider text-[var(--color-primary)]">Pregunta {currentIdx + i + 1}</p>
+                                        )}
+                                        <QuestionView question={q} response={answers[q.id]} onChange={(r) => setAnswer(q.id, r)} />
+                                    </section>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Navigation controls */}
                         <div className="flex justify-between items-center shrink-0">
                             <button
-                                onClick={() => { leaveFor(visible[currentIdx - 1]); setCurrentIdx(prev => Math.max(0, prev - 1)); }}
+                                onClick={goBack}
                                 disabled={!canGoBack}
                                 className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
                             >
                                 Anterior
                             </button>
-                            {currentIdx + 1 < visible.length || closesRouter ? (
+                            {lastOnPage + 1 < visible.length || closesRouter ? (
                                 <button
                                     onClick={goNext}
+                                    disabled={lockedByAudio}
                                     className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-tertiary)] bg-[var(--color-tertiary)] active:scale-95 transition-all"
                                 >
                                     Siguiente

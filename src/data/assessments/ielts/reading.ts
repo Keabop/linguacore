@@ -90,25 +90,25 @@ const p2 = passageKit(2, P2, 'B2');
 
 // Matching headings: one shared list, kept in its printed order
 const HEADINGS = [
-    'i. A record built up over thousands of years',
-    'ii. Air from the distant past',
-    'iii. Careful work in extreme conditions',
-    'iv. Working out the age of deep ice',
-    'v. What the longest record reveals',
-    'vi. The search for an even older record',
+    'i. Air from the distant past',
+    'ii. The rising cost of polar research',
+    'iii. What the longest record reveals',
+    'iv. A record built up over thousands of years',
+    'v. The search for an even older record',
+    'vi. Careful work in extreme conditions',
     'vii. Why some ice sheets are melting faster',
-    'viii. The rising cost of polar research',
+    'viii. Working out the age of deep ice',
 ];
 const heading = (id: number, paragraph: string, correctIndex: number, evidence: string) =>
     p2.mc(id, `Choose the correct heading for paragraph ${paragraph}.`, HEADINGS, correctIndex, evidence, true);
 
 const passage2: Q[] = [
-    heading(14, 'A', 0, 'Over thousands of years it turns into solid ice'),
-    heading(15, 'B', 1, 'these bubbles become samples of the air that existed at that time'),
-    heading(16, 'C', 2, 'Drilling teams typically work in temperatures far below freezing'),
-    heading(17, 'D', 3, 'Dating the layers presents its own challenges'),
-    heading(18, 'E', 4, 'The longest continuous record yet recovered'),
-    heading(19, 'F', 5, 'Researchers are now searching for even older ice'),
+    heading(14, 'A', 3, 'Over thousands of years it turns into solid ice'),
+    heading(15, 'B', 0, 'these bubbles become samples of the air that existed at that time'),
+    heading(16, 'C', 5, 'Drilling teams typically work in temperatures far below freezing'),
+    heading(17, 'D', 7, 'Dating the layers presents its own challenges'),
+    heading(18, 'E', 2, 'The longest continuous record yet recovered'),
+    heading(19, 'F', 4, 'Researchers are now searching for even older ice'),
     p2.gap(20, 'Air bubbles allow direct measurement of past levels of carbon dioxide and ___.', ['methane'], 'carbon dioxide and methane directly', 1),
     p2.gap(21, 'Sections of core are stored at around minus ___ °C.', ['30', 'thirty'], 'stored at around minus 30°C', 1),
     p2.gap(22, 'Near the surface, summer and winter snow differ in texture and ___.', ['chemistry'], 'differ in texture and chemistry', 1),
@@ -147,15 +147,15 @@ Later work has helped to identify what those conditions are. A second analysis, 
 
 This more nuanced picture has practical implications, although I suspect they are less dramatic than some business consultants claim. Reducing the number of products on a shelf is not, in itself, a reliable way to increase sales. What appears to help is making the choice easier to navigate: grouping options into a small number of clear categories, describing them in terms that customers understand, or offering a sensible default that people can accept if they do not wish to decide. Pension schemes that automatically enrol employees in a well-chosen fund, while allowing them to change it, have been notably successful at increasing participation.
 
-There is also a question that the original experiment could not address: whether people who choose from a larger range end up more or less satisfied with what they select. Some studies suggest that a wide selection raises expectations, so that a good outcome feels disappointing when people imagine that a better one was available. Others have found that experienced choosers, who know what they are looking for, are happier with more options. Researchers have also noticed that people who expect to explain their decision to others tend to find large selections harder, presumably because every rejected option is one they might have to justify. It seems likely that both are true for different people, which is perhaps the most important lesson of the whole debate: the effect of choice depends less on the number of options than on the person doing the choosing.`;
+There is also a question that the original experiment could not address: whether people who choose from a larger range end up more or less satisfied with what they select. Researchers have noticed that people who expect to explain their decision to others tend to find large selections harder, presumably because every rejected option is one they might have to justify. Beyond that, the evidence points in two directions. Some studies suggest that a wide selection raises expectations, so that a good outcome feels disappointing when people imagine that a better one was available. Others have found that experienced choosers, who know what they are looking for, are happier with more options. It seems likely that both are true for different people, which is perhaps the most important lesson of the whole debate: the effect of choice depends less on the number of options than on the person doing the choosing.`;
 
 const p3 = passageKit(3, P3, 'C1');
 const view = (id: number, text: string, answer: TfngAnswer, evidence?: string) => p3.tfng(id, text, answer, evidence, 'yes-no');
 
 const passage3: Q[] = [
     view(27, 'The 2010 analysis proves that choice overload does not exist.', 'false', 'it would be a mistake to read this as proof that choice overload is a myth'),
-    view(28, 'Reducing the number of products is a dependable way for shops to sell more.', 'false', 'is not, in itself, a reliable way to increase sales'),
-    view(29, 'Some business consultants exaggerate the practical lessons of research on choice.', 'true', 'less dramatic than some business consultants claim'),
+    view(28, 'Some business consultants exaggerate the practical lessons of research on choice.', 'true', 'less dramatic than some business consultants claim'),
+    view(29, 'Reducing the number of products is a dependable way for shops to sell more.', 'false', 'is not, in itself, a reliable way to increase sales'),
     view(30, 'Dating apps should limit the number of profiles they show their users.', 'not-given'),
     view(31, 'How much people are affected by choice depends mainly on the individual.', 'true', 'depends less on the number of options than on the person doing the choosing'),
     p3.mc(32, 'In the jam experiment, which display led to more purchases?', [

@@ -44,6 +44,14 @@ export function pickSpeakerVoices(lines: DialogueLine[], voices: SpeechSynthesis
     return out;
 }
 
+/**
+ * Splits a line into sentences. Some browser voices stop after about 15 seconds without
+ * signalling the end, so long monologue lines are spoken one sentence at a time.
+ */
+export function splitSentences(text: string): string[] {
+    return (text.match(/[^.!?]+(?:[.!?]+["')]*|$)/g) ?? [text]).map(t => t.trim()).filter(Boolean);
+}
+
 let activeUtterance: SpeechSynthesisUtterance | null = null;
 let activeAudio: HTMLAudioElement | null = null;
 
@@ -79,15 +87,18 @@ export function playDialogueSpeech(
 
     stopDialogueSpeech();
 
+    // Each sentence is spoken on its own; onLineStart still reports the line it belongs to
+    const chunks = lines.flatMap((l, lineIndex) => splitSentences(l.text).map(text => ({ ...l, text, lineIndex })));
+
     const start = () => {
         const voices = pickSpeakerVoices(lines, window.speechSynthesis.getVoices());
         const speakLine = (index: number) => {
-            if (index >= lines.length) {
+            if (index >= chunks.length) {
                 onComplete();
                 return;
             }
-            const line = lines[index];
-            onLineStart(index);
+            const line = chunks[index];
+            if (index === 0 || chunks[index - 1].lineIndex !== line.lineIndex) onLineStart(line.lineIndex);
 
             const utterance = new SpeechSynthesisUtterance(line.text);
             activeUtterance = utterance;
@@ -98,7 +109,9 @@ export function playDialogueSpeech(
             utterance.rate = 0.95;
 
             utterance.onend = () => {
-                if (activeUtterance === utterance) setTimeout(() => speakLine(index + 1), 600);
+                // A short pause between sentences, a longer one when the speaker changes turn
+                const pause = chunks[index + 1]?.lineIndex === line.lineIndex ? 150 : 600;
+                if (activeUtterance === utterance) setTimeout(() => speakLine(index + 1), pause);
             };
             utterance.onerror = () => {
                 if (activeUtterance === utterance) speakLine(index + 1);

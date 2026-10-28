@@ -110,13 +110,20 @@ function TrueFalseNotGiven({ q, value, onChange }: { q: TfngQuestion; value?: Tf
 
 const WORD_LIMIT = ['', 'ONE WORD', 'TWO WORDS', 'THREE WORDS'];
 
+/** The exam's wording: "ONE WORD ONLY", "ONE WORD AND/OR A NUMBER", "NO MORE THAN TWO WORDS"… */
+export function wordLimitLabel(maxWords: number, allowNumber = false): string {
+    const words = WORD_LIMIT[maxWords] ?? `${maxWords} WORDS`;
+    if (maxWords === 1) return allowNumber ? 'ONE WORD AND/OR A NUMBER' : 'ONE WORD ONLY';
+    return `NO MORE THAN ${words}${allowNumber ? ' AND/OR A NUMBER' : ''}`;
+}
+
 function Gap({ q, value, onChange }: { q: GapQuestion; value: string; onChange: (v: string) => void }) {
     const [before, after = ''] = q.text.split('___');
     return (
         <div className="space-y-3">
             {q.maxWords && (
                 <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
-                    Write NO MORE THAN {WORD_LIMIT[q.maxWords] ?? `${q.maxWords} WORDS`}
+                    Write {wordLimitLabel(q.maxWords, q.allowNumber)}
                 </p>
             )}
             <label className="block text-lg font-bold leading-loose">

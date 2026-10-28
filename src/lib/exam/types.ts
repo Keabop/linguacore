@@ -64,6 +64,8 @@ export interface GapQuestion extends QuestionBase {
     answers: string[];
     /** "NO MORE THAN TWO WORDS" → 2. */
     maxWords?: number;
+    /** "… AND/OR A NUMBER": figures don't count towards `maxWords`. */
+    allowNumber?: boolean;
 }
 
 /**

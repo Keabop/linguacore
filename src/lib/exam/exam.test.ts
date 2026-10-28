@@ -181,3 +181,29 @@ describe('validateExamStructure', () => {
         expect(validateExamStructure([q('l', 'lower'), q('r', 'router'), q('u', 'upper')])).toHaveLength(1);
     });
 });
+
+describe('word limits with numbers', () => {
+    it('does not count figures as words when the task allows a number', async () => {
+        const { countWords } = await import('./grading');
+        expect(countWords('07946 381 205', true)).toBe(0);
+        expect(countWords('14th March', true)).toBe(1);
+        expect(countWords('14th March')).toBe(2);
+        const phone: AssessmentQuestion = { ...gap, id: 'ph', text: 'Phone: ___', answers: ['07946 381 205'], maxWords: 1, allowNumber: true };
+        expect(grade(phone, '07946 381 205')).toBe(1);
+    });
+});
+
+describe('pages', () => {
+    const lq = (id: string, group?: string, section: 'listening' | 'reading' = 'listening'): AssessmentQuestion =>
+        ({ id, section, level: 'B1', group, text: id, options: ['a', 'b'], correctIndex: 0, dialogue: [] });
+
+    it('puts a listening part on one page and keeps other questions alone', async () => {
+        const { pageEnd, pageStart } = await import('./adaptive');
+        const qs = [lq('a', 'p1'), lq('b', 'p1'), lq('c', 'p2'), lq('d', 'r1', 'reading'), lq('e', 'r1', 'reading')];
+        expect(pageEnd(qs, 0)).toBe(1);
+        expect(pageEnd(qs, 2)).toBe(2);
+        expect(pageEnd(qs, 3)).toBe(3); // reading passages keep one question per screen
+        expect(pageStart(qs, 1)).toBe(0);
+        expect(pageStart(qs, 2)).toBe(2);
+    });
+});

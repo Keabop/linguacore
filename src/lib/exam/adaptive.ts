@@ -37,3 +37,23 @@ export function endsRouter(all: AssessmentQuestion[], visible: AssessmentQuestio
     const next = visible.slice(index + 1).find(n => n.section === q.section);
     return next?.stage !== 'router' && adaptiveSections(all).includes(q.section);
 }
+
+// ---------- Pages: the questions of one listening part are answered on one screen, as in the
+// exam, so they can be read before the recording starts and answered while it plays.
+
+const sharesPage = (a: AssessmentQuestion | undefined, b: AssessmentQuestion | undefined) =>
+    Boolean(a && b && a.section === 'listening' && a.group && a.group === b.group);
+
+/** Index of the last question on the page that starts at `start`. */
+export function pageEnd(visible: AssessmentQuestion[], start: number): number {
+    let end = start;
+    while (sharesPage(visible[start], visible[end + 1])) end++;
+    return end;
+}
+
+/** Index of the first question on the page that contains `index`. */
+export function pageStart(visible: AssessmentQuestion[], index: number): number {
+    let start = index;
+    while (start > 0 && sharesPage(visible[index], visible[start - 1])) start--;
+    return start;
+}
