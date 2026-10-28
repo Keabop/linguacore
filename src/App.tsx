@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader, { afterSproutGrows } from './components/PageLoader';
 import { useAuth } from './lib/AuthContext';
+import { useAdmin } from './hooks/useAdmin';
 import type { ReactNode, ComponentType } from 'react';
 
 /**
@@ -63,12 +64,11 @@ function RequireAuth({ children }: { children: ReactNode }) {
     return <>{children}</>;
 }
 
-const ADMIN_EMAIL = 'luiszwazagamer@gmail.com';
-
 function RequireAdmin({ children }: { children: ReactNode }) {
-    const { user, loading } = useAuth();
+    const { loading } = useAuth();
+    const { isAdmin } = useAdmin();
     if (loading) return <PageLoader />;
-    if (!user || user.email !== ADMIN_EMAIL) return <Navigate to="/dashboard" replace />;
+    if (!isAdmin) return <Navigate to="/dashboard" replace />;
     return <>{children}</>;
 }
 

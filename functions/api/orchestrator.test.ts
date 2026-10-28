@@ -97,6 +97,20 @@ describe('orchestrator', () => {
         expect(res).toMatchObject({ status: 429, body: { error: 'weekly_limit_reached' } });
     });
 
+    it('gives the admin Pro limits without a paid tier', async () => {
+        getUser.mockResolvedValueOnce({ data: { user: { id: 'user-1', app_metadata: { role: 'admin' } } }, error: null });
+        agents.chat.mockResolvedValueOnce({ reply: 'Hi!', corrections: [], suggestions: [] });
+        await call({ agent: 'conversation-tutor', params: { messages: [{ role: 'user', content: 'hi' }] } });
+        expect(usage.checkUsageLimit).toHaveBeenCalledWith('user-1', 'conversation-tutor', 'pro');
+    });
+
+    it('ignores an admin role in user_metadata, which the user can edit', async () => {
+        getUser.mockResolvedValueOnce({ data: { user: { id: 'user-1', app_metadata: {}, user_metadata: { role: 'admin' } } }, error: null });
+        agents.chat.mockResolvedValueOnce({ reply: 'Hi!', corrections: [], suggestions: [] });
+        await call({ agent: 'conversation-tutor', params: { messages: [{ role: 'user', content: 'hi' }] } });
+        expect(usage.checkUsageLimit).toHaveBeenCalledWith('user-1', 'conversation-tutor', 'free');
+    });
+
     it('runs the agent and counts the tutor message', async () => {
         agents.chat.mockResolvedValueOnce({ reply: 'Hi!', corrections: [], suggestions: [] });
         const res = await call({ agent: 'conversation-tutor', params: { messages: [{ role: 'user', content: 'hi' }] } });

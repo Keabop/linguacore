@@ -8,12 +8,12 @@ import { supabase } from '../lib/supabase';
 import { playAudioFile, playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
 import { chooseStage, endsRouter, pageEnd, pageStart, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
 import { buildReport, type ExamReport } from '../lib/exam/report';
-import { isMultipleChoice, type ExamResponse } from '../lib/exam/types';
+import { isMultipleChoice, type DiscussionPost, type ExamResponse, type ExamWritingTask } from '../lib/exam/types';
 import QuestionView from '../components/exam/QuestionView';
 import TaskChart from '../components/exam/TaskChart';
 import PassageView from '../components/exam/PassageView';
 import { shuffleQuestion } from '../lib/shuffle';
-import { placementQuestions, writingPrompts, AssessmentQuestion, WritingPrompt } from '../data/assessments/cefr-questions';
+import { placementQuestions, AssessmentQuestion } from '../data/assessments/cefr-questions';
 import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
 import { cambridgeB2Questions, cambridgeB2Writing, cambridgeB2Speaking } from '../data/assessments/cambridge-b2-questions';
 import { toeflQuestions, toeflWriting, toeflSpeaking } from '../data/assessments/toefl-questions';
@@ -31,9 +31,10 @@ interface TestPreset {
     pedagogicalAdvice: string;
     isPro: boolean;
     durationMinutes: number;
-    questionCount: number;
     /** Times each recording can be played, as in the real exam (IELTS and TOEFL: once). */
     audioPlays: number;
+    /** TOEFL: a recording's questions appear once it has been heard, as in the exam. */
+    questionsAfterAudio?: boolean;
 }
 
 const presets: TestPreset[] = [
@@ -44,18 +45,18 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: 'Recomendado cada 2 semanas para medir tu progreso regular y adaptar tu plan de estudio de forma dinámica.',
         isPro: false,
         durationMinutes: 25,
-        questionCount: 20,
         audioPlays: 2
     },
     {
         id: 'toefl',
         title: 'Simulacro TOEFL iBT Style',
-        description: 'Evaluación académica rigurosa que imita la estructura real del TOEFL. Incluye lectura avanzada, audios con acentos, redacción de ensayos y sección oral.',
+        description: 'El formato de 2026: Reading y Listening adaptativos en dos módulos, Writing (ordenar oraciones, un email y un foro académico) y Speaking (escuchar y repetir, y una entrevista). Bandas de 1 a 6.',
         pedagogicalAdvice: 'Recomendado una vez al mes para evaluar a fondo tu avance académico bajo estándares oficiales.',
         isPro: true,
-        durationMinutes: 65,
-        questionCount: 70,
-        audioPlays: 1
+        // About the real test's 85 minutes with fewer items: Reading 22, Listening 27, Writing 12, Speaking 11
+        durationMinutes: 75,
+        audioPlays: 1,
+        questionsAfterAudio: true
     },
     {
         id: 'ielts',
@@ -65,7 +66,6 @@ const presets: TestPreset[] = [
         isPro: true,
         // Listening 30 + Reading 60 + Writing 60 + Speaking ~12
         durationMinutes: 162,
-        questionCount: 80,
         audioPlays: 1
     },
     {
@@ -75,7 +75,6 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: 'Recomendado cada mes para certificar y consolidar tus bases de nivel B1.',
         isPro: true,
         durationMinutes: 60,
-        questionCount: 69,
         audioPlays: 2
     },
     {
@@ -85,10 +84,29 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: 'Recomendado una vez al mes para validar tu solidez gramatical, producción escrita y fluidez oral ejecutiva.',
         isPro: true,
         durationMinutes: 65,
-        questionCount: 97,
         audioPlays: 2
     }
 ];
+
+/**
+ * Everything a writing task shows, as text for the AI evaluator: the email's points and the
+ * discussion posts are part of the task, so relevance can only be judged with them.
+ */
+function writingBrief(task: ExamWritingTask): string {
+    const points = task.points?.map(point => `- ${point}`).join('\n');
+    const posts = task.discussion?.map(post => `${post.author} (${post.role}): ${post.text}`).join('\n');
+    return [task.prompt, points, posts && `Discussion so far:\n${posts}`].filter(Boolean).join('\n');
+}
+
+// Leaf colour of each result level: the garden's growth stages, and C1–C2 in full flower
+const LEVEL_COLOR: Record<ExamReport['level'], string> = {
+    A1: 'var(--color-level-a1)',
+    A2: 'var(--color-level-a2)',
+    B1: 'var(--color-level-b1)',
+    B2: 'var(--color-level-b2)',
+    C1: 'var(--color-level-b2)',
+    C2: 'var(--color-level-b2)',
+};
 
 
 export default function CEFRSimulator() {
@@ -106,13 +124,11 @@ export default function CEFRSimulator() {
     const [answers, setAnswers] = useState<Record<string, ExamResponse>>({});
     // Adaptive sections: which second stage each one got after its router questions
     const [stageChoice, setStageChoice] = useState<StageChoice>({});
-    const [writingPrompt, setWritingPrompt] = useState<WritingPrompt | null>(null);
-    const [writingText, setWritingText] = useState('');
     const [timeLeft, setTimeLeft] = useState(0);
     const [isTimeUp, setIsTimeUp] = useState(false);
 
     // Speech and multi-task states
-    const { isListening, transcript, startListening, stopListening, speak: speakPrompt, cancelSpeech, isSpeaking } = useSpeech();
+    const { isListening, transcript, startListening, stopListening, speak: speakPrompt, cancelSpeech, isSpeaking, synthesisSupported } = useSpeech();
     const [activeWritingIdx, setActiveWritingIdx] = useState(0);
     const [writingPromptsList, setWritingPromptsList] = useState<any[]>([]);
     const [writingAnswers, setWritingAnswers] = useState<Record<string, string>>({});
@@ -120,6 +136,18 @@ export default function CEFRSimulator() {
     const [speakingAnswers, setSpeakingAnswers] = useState<Record<string, string>>({});
     const [activeSpeakingIdx, setActiveSpeakingIdx] = useState(0);
     const [speakingResults, setSpeakingResults] = useState<any | null>(null);
+    // Listen and Repeat sentences already played (each is heard once)
+    const [heardPrompts, setHeardPrompts] = useState<Record<string, boolean>>({});
+    // The sentence asked to play; it only counts as heard once the voice actually starts
+    const [pendingRepeat, setPendingRepeat] = useState<string | null>(null);
+    const recordButtonRef = useRef<HTMLButtonElement>(null);
+    useEffect(() => {
+        if (!isSpeaking || !pendingRepeat) return;
+        setHeardPrompts(prev => ({ ...prev, [pendingRepeat]: true }));
+        setPendingRepeat(null);
+        // The speaker button turns disabled: keyboard focus goes on to recording
+        recordButtonRef.current?.focus();
+    }, [isSpeaking, pendingRepeat]);
 
     // Modal state variables
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -128,6 +156,8 @@ export default function CEFRSimulator() {
 
     // Dialogue listening states
     const [audioPlayCount, setAudioPlayCount] = useState<Record<string, number>>({});
+    // Recordings the browser couldn't play at all
+    const [audioFailed, setAudioFailed] = useState<Record<string, boolean>>({});
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
     const [activeDialogueLine, setActiveDialogueLine] = useState<number | null>(null);
 
@@ -253,10 +283,13 @@ export default function CEFRSimulator() {
         setActiveWritingIdx(0);
         setActiveSpeakingIdx(0);
         setSpeakingResults(null);
-        
+        setHeardPrompts({});
+        setPendingRepeat(null);
+
         setTimeLeft(selectedPreset.durationMinutes * 60);
         setIsTimeUp(false);
         setAudioPlayCount({});
+        setAudioFailed({});
         setState('testing');
     };
 
@@ -275,7 +308,8 @@ export default function CEFRSimulator() {
     // Autoplay speaking prompt when activeSpeakingIdx changes
     useEffect(() => {
         if (state === 'speaking' && speakingPrompts.length > 0) {
-            const promptText = speakingPrompts[activeSpeakingIdx]?.prompt;
+            const task = speakingPrompts[activeSpeakingIdx];
+            const promptText = task?.listenOnly ? null : task?.prompt;
             if (promptText) {
                 const timer = setTimeout(() => {
                     speakPrompt(promptText);
@@ -310,8 +344,15 @@ export default function CEFRSimulator() {
             setIsPlayingAudio(false);
             setActiveDialogueLine(null);
         };
-        if (audioSrc) playAudioFile(audioSrc, done);
-        else playDialogueSpeech(lines, (lineIdx) => setActiveDialogueLine(lineIdx), done);
+        // Nothing could be played: the play isn't spent, and the questions aren't held back
+        const failed = () => {
+            done();
+            setAudioPlayCount(prev => ({ ...prev, [key]: plays }));
+            setAudioFailed(prev => ({ ...prev, [key]: true }));
+            toast.error({ title: 'No se pudo reproducir el audio', description: 'Tu navegador no tiene voces disponibles. Prueba con Chrome o Edge.' });
+        };
+        if (audioSrc) playAudioFile(audioSrc, done, failed);
+        else playDialogueSpeech(lines, (lineIdx) => setActiveDialogueLine(lineIdx), done, failed);
     };
 
     // Stopping playback never calls its completion, so the play state is released here
@@ -337,6 +378,15 @@ export default function CEFRSimulator() {
     const closesRouter = endsRouter(questions, visible, lastOnPage, stageChoice);
     // The recording of a part plays once: the page can't be left while it is playing
     const lockedByAudio = isPlayingAudio && current?.section === 'listening';
+    // TOEFL shows a recording's questions only once it has been heard
+    const questionsHidden = Boolean(selectedPreset?.questionsAfterAudio && current?.dialogue && !audioFailed[audioKey] && (!audioPlayCount[audioKey] || isPlayingAudio));
+    // The Play button turns disabled when they appear: keyboard focus moves on to the questions
+    const questionsRef = useRef<HTMLDivElement>(null);
+    const wereHidden = useRef(false);
+    useEffect(() => {
+        if (wereHidden.current && !questionsHidden) questionsRef.current?.focus();
+        wereHidden.current = questionsHidden;
+    }, [questionsHidden]);
 
     const goNext = () => {
         stopAudio();
@@ -384,7 +434,7 @@ export default function CEFRSimulator() {
                 ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${writingAnswers[p.id] || ''}`).join('\n\n')
                 : '';
             const combinedWritingPrompt = hasWriting
-                ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${p.prompt}`).join('\n\n')
+                ? writingPromptsList.map((p, idx) => `[Task ${idx+1}]: ${writingBrief(p)}`).join('\n\n')
                 : '';
             const totalWritingLength = writingPromptsList.reduce((acc, p) => acc + (writingAnswers[p.id] || '').trim().length, 0);
             const targetLvl = selectedPreset?.id === 'cambridge_b1' ? 'B1' : 'B2';
@@ -414,7 +464,7 @@ export default function CEFRSimulator() {
 
             const hasSpeaking = selectedPreset?.id !== 'placement' && speakingPrompts.length > 0;
             const transcripts = hasSpeaking ? speakingPrompts.map(p => speakingAnswers[p.id] || '') : [];
-            const prompts = hasSpeaking ? speakingPrompts.map(p => p.prompt) : [];
+            const prompts = hasSpeaking ? speakingPrompts.map(p => (p.listenOnly ? `Repeat this sentence exactly: "${p.prompt}"` : p.prompt)) : [];
             const totalSpeakingLength = transcripts.reduce((acc, t) => acc + t.trim().length, 0);
 
             if (hasSpeaking && totalSpeakingLength <= 5) speakingScore = 0;
@@ -608,6 +658,9 @@ export default function CEFRSimulator() {
                         </div>
 
                         <div className="widget space-y-6">
+                            {current.task && (
+                                <p className="text-[11px] font-black uppercase tracking-wider text-[var(--color-tertiary-ink)]">{current.task}</p>
+                            )}
                             {/* 3A. READING COMPONENT */}
                             {current.passage && <PassageView text={current.passage} />}
 
@@ -622,13 +675,16 @@ export default function CEFRSimulator() {
                                         <button
                                             onClick={() => handlePlayAudio(audioKey, current.dialogue!, current.audioSrc)}
                                             disabled={isPlayingAudio || (audioPlayCount[audioKey] || 0) >= maxPlays}
+                                            aria-label="Reproducir el audio"
                                             className="w-14 h-14 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95 transition-all shadow-md"
                                         >
                                             <Play className="w-6 h-6 fill-current" />
                                         </button>
                                         <div className="text-left text-xs text-[var(--color-on-surface-muted)] font-bold">
                                             <p>Reproducciones: {audioPlayCount[audioKey] || 0} / {maxPlays}</p>
-                                            <p className="text-[10px] text-[var(--color-tertiary-ink)] mt-0.5">El diálogo cuenta con acentos nativos mixtos</p>
+                                            {new Set(current.dialogue.map(l => l.accent)).size > 1 && (
+                                                <p className="text-[10px] text-[var(--color-tertiary-ink)] mt-0.5">Voces con acentos distintos</p>
+                                            )}
                                         </div>
                                     </div>
 
@@ -649,12 +705,20 @@ export default function CEFRSimulator() {
                                 </div>
                             )}
 
-                            {pageQuestions.length > 1 && (
+                            {pageQuestions.length > 1 && !selectedPreset?.questionsAfterAudio && (
                                 <p className="text-xs font-semibold text-[var(--color-on-surface-muted)]">
                                     Lee las preguntas antes de reproducir el audio; puedes responder mientras suena.
                                 </p>
                             )}
-                            <div className="space-y-8">
+                            {selectedPreset?.questionsAfterAudio && current.dialogue && (
+                                <p className="sr-only" aria-live="polite">{questionsHidden ? '' : 'Ya puedes responder las preguntas.'}</p>
+                            )}
+                            {questionsHidden ? (
+                                <p className="text-sm font-semibold text-center text-[var(--color-on-surface-muted)]">
+                                    {isPlayingAudio ? 'Escucha con atención; puedes tomar notas.' : 'Reproduce el audio. Las preguntas aparecen cuando termine.'}
+                                </p>
+                            ) : (
+                            <div ref={questionsRef} tabIndex={-1} className="space-y-8 focus:outline-none">
                                 {pageQuestions.map((q, i) => (
                                     <section key={q.id} aria-label={`Pregunta ${currentIdx + i + 1}`} className="space-y-2">
                                         {pageQuestions.length > 1 && (
@@ -664,6 +728,7 @@ export default function CEFRSimulator() {
                                     </section>
                                 ))}
                             </div>
+                            )}
                         </div>
 
                         {/* Navigation controls */}
@@ -727,6 +792,23 @@ export default function CEFRSimulator() {
                                         <div className="space-y-3 bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)]">
                                             <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">Instrucciones específicas</p>
                                             <p className="text-base font-bold leading-relaxed">{activePrompt.prompt}</p>
+                                            {activePrompt.points && (
+                                                <ul className="list-disc pl-5 text-sm font-semibold text-[var(--color-on-surface)] space-y-1">
+                                                    {activePrompt.points.map((point: string) => <li key={point}>{point}</li>)}
+                                                </ul>
+                                            )}
+                                            {activePrompt.discussion && (
+                                                <div className="space-y-3">
+                                                    {activePrompt.discussion.map((post: DiscussionPost) => (
+                                                        <article key={post.author} className={`rounded-xl bg-[var(--color-card)] p-4 space-y-1 ${post.role === 'student' ? 'ml-4 sm:ml-8' : ''}`}>
+                                                            <p className="text-xs font-black text-[var(--color-primary)]">
+                                                                {post.author}{post.role === 'professor' ? ' · Docente' : ''}
+                                                            </p>
+                                                            <p className="text-sm leading-relaxed text-[var(--color-on-surface)]">{post.text}</p>
+                                                        </article>
+                                                    ))}
+                                                </div>
+                                            )}
                                             {activePrompt.chart && (
                                                 <div className="rounded-xl bg-[var(--color-card)] p-4">
                                                     <TaskChart chart={activePrompt.chart} />
@@ -792,9 +874,10 @@ export default function CEFRSimulator() {
                             return (
                                 <div className="widget space-y-6">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-black text-[var(--color-on-surface)]">
-                                            Speaking - Tarea {activeSpeakingIdx + 1} de {speakingPrompts.length}
-                                        </h3>
+                                        <div>
+                                            <h3 className="text-lg font-black text-[var(--color-on-surface)]">{activePrompt.title}</h3>
+                                            <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">Tarea {activeSpeakingIdx + 1} de {speakingPrompts.length}</p>
+                                        </div>
                                         <span className="text-xs font-bold text-[var(--color-tertiary-ink)] bg-[var(--color-tertiary)]/10 px-2.5 py-1 rounded-full">
                                             <Timer className="inline w-3.5 h-3.5 -mt-0.5 mr-1" aria-hidden="true" />Duración sugerida: {activePrompt.timeSeconds}s
                                         </span>
@@ -804,19 +887,37 @@ export default function CEFRSimulator() {
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-6 border border-[var(--color-surface-container-highest)] space-y-4">
                                         <div className="flex items-start gap-4">
                                             <button
-                                                onClick={() => speakPrompt(activePrompt.prompt)}
-                                                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                                                onClick={() => {
+                                                    if (activePrompt.listenOnly) setPendingRepeat(activePrompt.id);
+                                                    speakPrompt(activePrompt.prompt);
+                                                }}
+                                                disabled={!synthesisSupported || (activePrompt.listenOnly && heardPrompts[activePrompt.id])}
+                                                aria-label={activePrompt.listenOnly ? 'Escuchar la oración (una vez)' : 'Escuchar pregunta'}
+                                                className={`w-12 h-12 shrink-0 rounded-full flex items-center justify-center transition-all disabled:opacity-40 disabled:pointer-events-none ${
                                                     isSpeaking 
                                                         ? 'bg-[var(--color-tertiary)] text-[var(--color-on-primary)] animate-pulse' 
                                                         : 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:scale-105 active:scale-95'
                                                 }`}
-                                                title="Escuchar pregunta"
                                             >
                                                 <Volume2 className="w-5 h-5" />
                                             </button>
                                             <div className="space-y-1.5 flex-1">
-                                                <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">Pregunta del Examinador</p>
-                                                <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]">{activePrompt.prompt}</p>
+                                                <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">
+                                                    {activePrompt.listenOnly ? 'Oración para repetir' : 'Pregunta del Examinador'}
+                                                </p>
+                                                {activePrompt.listenOnly && !synthesisSupported ? (
+                                                    // Without voices the sentence can't be heard: it is shown instead of losing the task
+                                                    <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]">
+                                                        {activePrompt.prompt}
+                                                        <span className="block text-xs font-semibold text-[var(--color-on-surface-muted)]">Tu navegador no puede leerla en voz alta: léela una vez y repítela.</span>
+                                                    </p>
+                                                ) : activePrompt.listenOnly ? (
+                                                    <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]" aria-live="polite">
+                                                        {heardPrompts[activePrompt.id] ? 'Ahora grábate repitiéndola.' : 'Pulsa el altavoz para escucharla. Solo suena una vez.'}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]">{activePrompt.prompt}</p>
+                                                )}
                                                 {activePrompt.cueCard && (
                                                     <ul className="list-disc pl-5 text-sm text-[var(--color-on-surface)] space-y-0.5">
                                                         {activePrompt.cueCard.map((point: string) => <li key={point}>{point}</li>)}
@@ -831,6 +932,7 @@ export default function CEFRSimulator() {
                                     <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-6 border border-[var(--color-surface-container)] text-center space-y-4">
                                         <div className="flex flex-col items-center justify-center space-y-3">
                                             <button
+                                                ref={recordButtonRef}
                                                 onClick={() => {
                                                     if (isListening) {
                                                         stopListening();
@@ -839,7 +941,10 @@ export default function CEFRSimulator() {
                                                         startListening();
                                                     }
                                                 }}
-                                                className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 ${
+                                                // Recording would cut the sentence off before it is heard in full
+                                                disabled={activePrompt.listenOnly && isSpeaking}
+                                                aria-label={isListening ? 'Detener la grabación' : 'Grabar respuesta'}
+                                                className={`w-16 h-16 rounded-full disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 ${
                                                     isListening 
                                                         ? 'bg-[var(--color-error)] text-[var(--color-on-error)] animate-pulse' 
                                                         : 'bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)]'
@@ -960,23 +1065,28 @@ export default function CEFRSimulator() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             
                             {/* Score Card */}
-                            <div className="widget text-center flex flex-col justify-center items-center space-y-4 !py-8 bg-[var(--color-success)]/5 border-l-4 border-[var(--color-success)]">
-                                <p className="text-[10px] text-[var(--color-success)] uppercase tracking-widest font-black">Tu Nivel CEFR Estimado</p>
-                                <div className="w-24 h-24 rounded-full bg-[var(--color-success)]/20 flex items-center justify-center shadow-lg">
-                                    <span className="text-5xl font-black text-[var(--color-success)]">{results.report.level}</span>
+                            <div className="widget flex flex-col items-center gap-5 text-center !py-8">
+                                <div className="space-y-2">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">Tu nivel CEFR estimado</p>
+                                    <span className="level-leaf px-5 py-2 text-3xl" style={{ background: LEVEL_COLOR[results.report.level] }}>
+                                        {results.report.level}
+                                    </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] uppercase tracking-widest font-black text-[var(--color-on-surface-muted)]">{results.report.headline.label}</p>
-                                    <p className="text-3xl font-black text-[var(--color-on-surface)]">{results.report.headline.value}</p>
-                                    <ul className="pt-2 text-xs font-bold text-[var(--color-on-surface-muted)] space-y-0.5">
-                                        {results.report.breakdown.map(b => (
-                                            <li key={b.skill}>{b.skill}: <span className="text-[var(--color-on-surface)]">{b.value}</span></li>
-                                        ))}
-                                    </ul>
-                                    <p className="pt-2 text-[10px] leading-snug text-[var(--color-on-surface-muted)]">
-                                        Estimación con las tablas públicas de conversión; no es una calificación oficial.
-                                    </p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{results.report.headline.label}</p>
+                                    <p className="font-mono text-5xl font-bold text-[var(--color-on-surface)]">{results.report.headline.value}</p>
                                 </div>
+                                <dl className="grid w-full grid-cols-2 gap-2">
+                                    {results.report.breakdown.map(b => (
+                                        <div key={b.skill} className="rounded-[var(--radius-sm)] bg-[var(--color-surface-container)] px-3 py-2">
+                                            <dt className="text-xs font-semibold text-[var(--color-on-surface-muted)]">{b.skill}</dt>
+                                            <dd className="font-mono text-base font-bold text-[var(--color-on-surface)]">{b.value}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                                <p className="text-xs leading-snug text-[var(--color-on-surface-muted)]">
+                                    Estimación con las tablas públicas de conversión; no es una calificación oficial.
+                                </p>
                             </div>
 
                             {/* Radar Chart SVG Widget */}
