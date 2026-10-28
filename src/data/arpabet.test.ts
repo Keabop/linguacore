@@ -20,6 +20,14 @@ describe('arpabetToIpa', () => {
         ['bird', '/bɝːd/'],
         ['ambiguity', '/ˌæmbɪˈɡjuːəti/'],
         ['happy', '/ˈhæpi/'],
+        // An unstressed r-vowel before a vowel: /ər/, with the r starting the next syllable
+        ['arrive', '/əˈraɪv/'],
+        ['different', '/ˈdɪfərənt/'],
+        ['restaurant', '/ˈrestərɑːnt/'],
+        // Secondary stress only before the main one, with a syllable between them
+        ['important', '/ɪmˈpɔːrtənt/'],
+        ['probably', '/ˈprɑːbəbli/'],
+        ['tomorrow', '/təˈmɑːroʊ/'],
     ])('%s → %s', (word, expected) => {
         expect(ipa(word)).toBe(expected);
     });

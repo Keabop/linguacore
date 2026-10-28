@@ -324,7 +324,8 @@
     "planAndSubscription": "Plan y suscripción",
     "adminAccess": "Acceso Pro de administrador",
     "adminAccessHint": "Sin suscripción: viene de tu rol, no de un pago.",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "credits": "Créditos y licencias"
   },
   "garden": {
     "stage": {
@@ -521,5 +522,14 @@
     "tagline": "Tu inglés crece un poco cada día.",
     "sessionEndedTitle": "Tu sesión terminó",
     "sessionEndedBody": "Vuelve a iniciar sesión para continuar."
+  },
+  "credits": {
+    "title": "Créditos",
+    "intro": "Voxie usa estas fuentes abiertas para el vocabulario y la pronunciación. Sus licencias piden citarlas.",
+    "cefrjTitle": "Niveles del vocabulario: CEFR-J Wordlist",
+    "cefrjBody": "El nivel de cada palabra (A1 a B2) sigue la lista CEFR-J, que se puede usar libremente citándola.",
+    "cmudictTitle": "Pronunciación: CMU Pronouncing Dictionary",
+    "cmudictBody": "La transcripción fonética de las palabras se obtiene del diccionario de pronunciación de Carnegie Mellon, convertida al IPA americano. Su licencia pide reproducir este aviso:",
+    "newTab": "se abre en otra pestaña"
   }
 }

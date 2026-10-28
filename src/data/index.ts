@@ -1,7 +1,6 @@
 // Centralized static data lookups — replaces all Dexie queries for static content
 import { storiesData } from './stories';
 import { allUnits, getUnitsByLevel } from './curriculum/units';
-import { vocabularyData } from './vocabulary';
 import {
     a1GrammarCards, a1Exercises,
     a2GrammarCards, a2Exercises,
@@ -17,7 +16,6 @@ import {
 } from './output';
 
 export const allStories = storiesData;
-export const allVocabulary = vocabularyData;
 export { allUnits, getUnitsByLevel };
 export const allGrammarCards = [...a1GrammarCards, ...a2GrammarCards, ...b1GrammarCards, ...b2GrammarCards];
 export const allExercises = [...a1Exercises, ...a2Exercises, ...b1Exercises, ...b2Exercises];
@@ -26,7 +24,6 @@ export const allSpeakingPrompts = [...a1SpeakingPrompts, ...a2SpeakingPrompts, .
 
 // Lookup helpers
 export const getStory = (id: string) => allStories.find(s => s.id === id);
-export const getVocab = (id: string) => allVocabulary.find(v => v.id === id);
 export const getUnit = (id: string) => allUnits.find(u => u.id === id);
 export const getGrammarCardByUnit = (unitId: string) =>
     allGrammarCards.find(gc => gc.unitId === unitId);
@@ -44,20 +41,9 @@ export const getWritingPromptsByUnit = (unitId: string) =>
     allWritingPrompts.filter(p => p.unitId === unitId);
 export const getSpeakingPromptsByUnit = (unitId: string) =>
     allSpeakingPrompts.filter(p => p.unitId === unitId);
-export const getVocabByIds = (ids: string[]) => {
-    const set = new Set(ids);
-    return allVocabulary.filter(v => set.has(v.id));
-};
 export const allGrammarSkills = [...a1Skills, ...a2Skills, ...b1Skills, ...b2Skills];
 export const getSkillsByUnit = (unitId: string) =>
     allGrammarSkills.filter(s => s.unitId === unitId);
 export const getSkill = (skillId: string) =>
     allGrammarSkills.find(s => s.id === skillId);
 
-export const getVocabMap = (ids: string[]) => {
-    const map = new Map<string, typeof allVocabulary[0]>();
-    for (const v of allVocabulary) {
-        if (ids.includes(v.id)) map.set(v.id, v);
-    }
-    return map;
-};

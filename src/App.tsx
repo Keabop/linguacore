@@ -45,6 +45,7 @@ const Pricing = lazyRetry(() => import('./pages/Pricing'));
 const ErrorLab = lazyRetry(() => import('./pages/ErrorLab'));
 const CEFRSimulator = lazyRetry(() => import('./pages/CEFRSimulator'));
 const AdminDashboard = lazyRetry(() => import('./pages/AdminDashboard'));
+const Credits = lazyRetry(() => import('./pages/Credits'));
 
 function SafeRoute({ children }: { children: ReactNode }) {
     const location = useLocation();
@@ -87,6 +88,7 @@ export default function App() {
                 {/* Public routes */}
                 <Route path="/" element={<SmartHome />} />
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><div className="page-enter"><Auth /></div></Suspense>} />
+                <Route path="/credits" element={<SafeRoute><Credits /></SafeRoute>} />
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>
