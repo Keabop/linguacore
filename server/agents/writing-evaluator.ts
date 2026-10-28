@@ -1,4 +1,5 @@
 import { generateWithFallback } from '../lib/gemini.js';
+import { EXAM_CRITERIA, criteriaInstructions, isCriteriaExam, type CriterionScore } from '../lib/examCriteria.js';
 
 interface WritingEvaluationRequest {
     text: string;          // User's writing
@@ -7,6 +8,8 @@ interface WritingEvaluationRequest {
     type: 'sentence-construction' | 'paragraph-completion' | 'free-writing' | 'error-correction';
     targetGrammar: string[];
     referenceAnswer?: string;
+    /** The simulator's exam: its official criteria replace the default weighting. */
+    exam?: string;
 }
 
 interface WritingCorrection {
@@ -26,6 +29,8 @@ interface WritingEvaluationResponse {
     };
     improvedVersion: string;
     encouragement: string;
+    /** One entry per official criterion, when an exam was given. */
+    criteria?: CriterionScore[];
 }
 
 const LEVEL_STRICTNESS: Record<string, string> = {
@@ -37,6 +42,7 @@ const LEVEL_STRICTNESS: Record<string, string> = {
 
 export async function evaluateWriting(params: WritingEvaluationRequest): Promise<WritingEvaluationResponse> {
     const strictness = LEVEL_STRICTNESS[params.level] || LEVEL_STRICTNESS['A1'];
+    const exam = isCriteriaExam(params.exam) ? criteriaInstructions(EXAM_CRITERIA[params.exam].writing) : null;
 
     const typeInstructions: Record<string, string> = {
         'sentence-construction': `The student was asked to construct a sentence/translation. Compare their answer to the reference answer (if provided) and evaluate grammatical accuracy. Focus on whether they used the target grammar patterns correctly.`,
@@ -62,10 +68,12 @@ ${typeInstructions[params.type] || ''}
 
 ALL feedback text (corrections explanations, notes, encouragement) MUST be in SPANISH.
 
-Score breakdown:
+${exam
+    ? exam.rules
+    : `Score breakdown:
 - Grammar: 40% weight — accuracy of grammar, especially target patterns
 - Vocabulary: 30% weight — range, appropriateness, spelling
-- Coherence: 30% weight — logical flow, organization, clarity
+- Coherence: 30% weight — logical flow, organization, clarity`}
 
 You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exact format:
 {
@@ -85,7 +93,8 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exac
     "coherence": { "score": 75, "note": "Nota en español sobre la coherencia" }
   },
   "improvedVersion": "The full text rewritten correctly with improvements",
-  "encouragement": "Mensaje motivacional en español para el estudiante"
+  "encouragement": "Mensaje motivacional en español para el estudiante"${exam ? `,
+  ${exam.field}` : ''}
 }
 
 For each correction, include 2 "example_variants": additional correct sentences that demonstrate proper usage of the same pattern.
