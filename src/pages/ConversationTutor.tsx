@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useConversationHistory, type ConversationSession } from '../hooks/useConversationHistory';
 import { chatWithTutor, type ConversationMessage, type ConversationResponse } from '../lib/ai';
-import { Sparkles, MessageCircle, AlertCircle, History, Plus, Lock, X, Lightbulb, UtensilsCrossed, Briefcase } from 'lucide-react';
+import { Sparkles, MessageCircle, AlertCircle, History, Plus, Lock, X, Lightbulb, UtensilsCrossed, Briefcase, Trash2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import AIErrorCard from '../components/AIErrorCard';
@@ -14,6 +14,8 @@ import { useUsageLimits } from '../hooks/useUsageLimits';
 import { UsageBadge } from '../components/UsageBadge';
 import { SendIcon } from '../components/icons';
 import BackButton from '../components/ui/BackButton';
+import { useDialogKeys } from '../hooks/useDialogKeys';
+import { toast } from '../lib/toast';
 
 interface ChatBubble {
     role: 'user' | 'assistant';
@@ -27,7 +29,7 @@ export default function ConversationTutor() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { user } = useLevelProgression();
-    const { sessions, saveSession } = useConversationHistory();
+    const { sessions, saveSession, deleteSession } = useConversationHistory();
     const { addErrorCard } = useErrorCards();
     const { isFree } = useTier();
     const { data: usage } = useUsageLimits();
@@ -41,6 +43,31 @@ export default function ConversationTutor() {
     const [view, setView] = useState<'history' | 'chat' | 'readonly'>('history');
     const [readonlySession, setReadonlySession] = useState<ConversationSession | null>(null);
     const [showEndConfirm, setShowEndConfirm] = useState(false);
+    // The conversation asking to be deleted, confirmed in its own card
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    // Focus goes back where it was: the card's trash button, or the start button once the card is gone
+    const trashRefs = useRef<Record<number, HTMLButtonElement | null>>({});
+    const newConversationRef = useRef<HTMLButtonElement>(null);
+    const closeDeleteConfirm = () => {
+        const id = confirmDeleteId;
+        setConfirmDeleteId(null);
+        if (id !== null) requestAnimationFrame(() => trashRefs.current[id]?.focus());
+    };
+    const deleteDialogRef = useDialogKeys(confirmDeleteId !== null, closeDeleteConfirm);
+
+    const removeSession = async (id: number) => {
+        setDeletingId(id);
+        try {
+            await deleteSession(id);
+            setConfirmDeleteId(null);
+            requestAnimationFrame(() => newConversationRef.current?.focus());
+        } catch {
+            toast.error({ title: t('chat.deleteFailed') });
+        } finally {
+            setDeletingId(null);
+        }
+    };
     const chatEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const hasStarted = useRef(false);
@@ -163,7 +190,7 @@ export default function ConversationTutor() {
                 </motion.div>
 
                 {/* New conversation button */}
-                <button onClick={startNewConversation}
+                <button ref={newConversationRef} onClick={startNewConversation}
                     className="w-full py-4 font-bold flex items-center justify-center gap-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300 text-base">
                     <Plus className="w-5 h-5" /> {t('chat.startConversation')}
                 </button>
@@ -178,17 +205,43 @@ export default function ConversationTutor() {
                             const msgCount = session.messages.filter(m => m.role === 'user').length;
                             const dateStr = session.startedAt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                             const preview = session.messages.find(m => m.role === 'user')?.content || '';
+                            const confirming = confirmDeleteId === session.id;
                             return (
-                                <button key={session.id}
-                                    onClick={() => { setReadonlySession(session); setView('readonly'); }}
-                                    className="w-full min-w-0 max-w-full overflow-hidden text-left bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 space-y-2 flex flex-col justify-between">
-                                    <div className="flex justify-between items-center w-full min-w-0">
-                                        <span className="text-xs text-[var(--color-on-surface-muted)] shrink-0">{dateStr}</span>
-                                        <span className="text-xs bg-[var(--color-surface-container)] px-3 py-0.5 rounded-full text-[var(--color-on-surface-muted)] font-medium shrink-0">{session.level}</span>
-                                    </div>
-                                    <p className="text-sm text-[var(--color-on-surface)] truncate font-medium block w-full min-w-0">{preview}</p>
-                                    <p className="text-xs text-[var(--color-on-surface-muted)] shrink-0">{msgCount} {msgCount === 1 ? 'mensaje' : 'mensajes'}</p>
-                                </button>
+                                <div key={session.id} className="relative w-full min-w-0 max-w-full">
+                                    <button
+                                        onClick={() => { setReadonlySession(session); setView('readonly'); }}
+                                        className="w-full min-w-0 max-w-full overflow-hidden text-left bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 pr-16 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all duration-300 space-y-2 flex flex-col justify-between">
+                                        <div className="flex justify-between items-center w-full min-w-0">
+                                            <span className="text-xs text-[var(--color-on-surface-muted)] shrink-0">{dateStr}</span>
+                                            <span className="text-xs bg-[var(--color-surface-container)] px-3 py-0.5 rounded-full text-[var(--color-on-surface-muted)] font-medium shrink-0">{session.level}</span>
+                                        </div>
+                                        <p className="text-sm text-[var(--color-on-surface)] truncate font-medium block w-full min-w-0">{preview}</p>
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] shrink-0">{msgCount} {msgCount === 1 ? 'mensaje' : 'mensajes'}</p>
+                                    </button>
+                                    {/* A sibling of the card's button: a button can't hold another */}
+                                    <button
+                                        ref={el => { trashRefs.current[session.id] = el; }}
+                                        onClick={() => setConfirmDeleteId(session.id)}
+                                        aria-label={t('chat.deleteConversation')}
+                                        className="absolute bottom-4 right-4 flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-on-surface-muted)] hover:bg-[var(--color-error)]/10 hover:text-[var(--color-error)] transition-colors"
+                                    >
+                                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                    </button>
+                                    {confirming && (
+                                        <div ref={deleteDialogRef} role="alertdialog" aria-modal="true" aria-label={t('chat.deleteConfirm')}
+                                            className="absolute inset-0 flex flex-wrap items-center justify-center gap-3 rounded-[var(--radius-lg)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-elevated)]">
+                                            <p className="w-full text-center text-sm font-semibold text-[var(--color-on-surface)]">{t('chat.deleteConfirm')}</p>
+                                            <button onClick={closeDeleteConfirm} autoFocus
+                                                className="rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)] px-5 py-2 text-sm font-bold">
+                                                {t('common.cancel')}
+                                            </button>
+                                            <button onClick={() => removeSession(session.id)} disabled={deletingId === session.id}
+                                                className="rounded-full bg-[var(--color-error)] px-5 py-2 text-sm font-bold text-[var(--color-on-error)] disabled:opacity-60">
+                                                {t('chat.delete')}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             );
                         })}
                         {isFree && sessions.length > 2 && (
