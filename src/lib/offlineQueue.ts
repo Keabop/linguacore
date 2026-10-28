@@ -10,6 +10,10 @@ export interface QueuedMutation {
     operation: 'insert' | 'update';
     data: Record<string, unknown>;
     match?: Record<string, unknown>;   // .eq() filters for updates
+    /** Unique columns of an insert: the row is upserted on them instead of inserted. */
+    onConflict?: string;
+    /** With onConflict: keep the existing row instead of updating it. */
+    ignoreDuplicates?: boolean;
 }
 
 let memoryQueue: QueuedMutation[] = [];
@@ -91,12 +95,14 @@ export async function processQueue(
     for (const mutation of memoryQueue) {
         try {
             if (mutation.operation === 'insert') {
-                // Use upsert to handle duplicate key conflicts gracefully
-                // (e.g. unit_progress already synced from another session/tab)
-                const { error } = await supabase.from(mutation.table).upsert(mutation.data, { onConflict: 'user_id,unit_id', ignoreDuplicates: false });
+                // Each insert names its own unique columns; unit_progress rows queued before
+                // that field existed keep the target they always had
+                const onConflict = mutation.onConflict ?? (mutation.table === 'unit_progress' ? 'user_id,unit_id' : undefined);
+                const { error } = onConflict
+                    ? await supabase.from(mutation.table).upsert(mutation.data, { onConflict, ignoreDuplicates: mutation.ignoreDuplicates ?? false })
+                    : await supabase.from(mutation.table).insert(mutation.data);
                 if (error) {
-                    // If upsert also fails (e.g. different conflict constraint), try plain insert
-                    // but ignore duplicate key errors (23505) — the record already exists
+                    // A duplicate means the row is already there (synced from another tab)
                     if (error.code === '23505') {
                         // Record already exists, treat as success
                         console.info('[OfflineQueue] Record already exists, skipping:', mutation.table);

@@ -19,7 +19,7 @@ import { useTier } from '../hooks/useTier';
 import { UsageBadge } from '../components/UsageBadge';
 import CountUp from '../components/reactbits/CountUp';
 import BackButton from '../components/ui/BackButton';
-import Plant from '../components/garden/Plant';
+import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
 
 export default function ReviewSession() {
@@ -85,9 +85,7 @@ export default function ReviewSession() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center py-12 space-y-4"
             >
-                <div className="mx-auto flex h-24 w-24 items-end justify-center rounded-full bg-[var(--color-primary-container)] pb-3">
-                    <Plant species={species} stage="grown" height={64} grow />
-                </div>
+                <PlantCircle species={species} />
                 <h2 className="text-2xl font-black tracking-tight">{t('review.allDone')}</h2>
                 <p className="text-[var(--color-on-surface-muted)]">{t('review.comeBack')}</p>
                 <button

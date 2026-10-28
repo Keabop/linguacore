@@ -1,4 +1,5 @@
 import { useId, useRef, type KeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { parseCompleteWords } from '../../lib/exam/grading';
 import {
     isMultipleChoice, type AssessmentQuestion, type BuildSentenceQuestion, type CompleteWordsQuestion, type ExamResponse,
@@ -78,13 +79,14 @@ function TrueFalseNotGiven({ q, value, onChange }: { q: TfngQuestion; value?: Tf
     const labels: Record<TfngAnswer, string> = q.variant === 'yes-no'
         ? { true: 'Yes', false: 'No', 'not-given': 'Not given' }
         : { true: 'True', false: 'False', 'not-given': 'Not given' };
+    const { t } = useTranslation();
     const id = useId();
     const values = Object.keys(labels) as TfngAnswer[];
     const keys = useRadioKeys(values, value, onChange);
     return (
         <div className="space-y-4">
             <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
-                {q.variant === 'yes-no' ? '¿Coincide con la opinión del autor?' : '¿Qué dice el texto sobre esta afirmación?'}
+                {q.variant === 'yes-no' ? t('exam.yesNoPrompt') : t('exam.tfngPrompt')}
             </p>
             <p id={id} className="text-lg font-bold leading-snug">{q.text}</p>
             <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-labelledby={id}>
@@ -143,10 +145,11 @@ function Gap({ q, value, onChange }: { q: GapQuestion; value: string; onChange: 
 }
 
 function CompleteWords({ q, value, onChange }: { q: CompleteWordsQuestion; value: string[]; onChange: (v: string[]) => void }) {
+    const { t } = useTranslation();
     let gap = -1;
     return (
         <div className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">Completa las letras que faltan en cada palabra</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('exam.completeWords')}</p>
             <p className="text-base leading-[2.4] text-[var(--color-on-surface)]">
                 {parseCompleteWords(q.text).map((part, i) => {
                     if (typeof part === 'string') return <span key={i}>{part}</span>;
@@ -165,7 +168,7 @@ function CompleteWords({ q, value, onChange }: { q: CompleteWordsQuestion; value
                                 }}
                                 autoComplete="off"
                                 spellCheck={false}
-                                aria-label={`Letras que faltan en «${part.shown}…» (${part.missing.length})`}
+                                aria-label={t('exam.missingLetters', { start: part.shown, count: part.missing.length })}
                                 style={{ width: `calc(${part.missing.length}ch + 1.25rem)` }}
                                 className={`${INPUT} inline-block h-8 px-2 py-0 align-baseline font-mono text-[15px] tracking-wide`}
                             />
@@ -178,6 +181,7 @@ function CompleteWords({ q, value, onChange }: { q: CompleteWordsQuestion; value
 }
 
 function BuildSentence({ q, value, onChange }: { q: BuildSentenceQuestion; value: number[]; onChange: (v: number[]) => void }) {
+    const { t } = useTranslation();
     const remaining = q.pieces.map((_, i) => i).filter(i => !value.includes(i));
     const sentenceRef = useRef<HTMLDivElement>(null);
     const poolRef = useRef<HTMLDivElement>(null);
@@ -189,17 +193,17 @@ function BuildSentence({ q, value, onChange }: { q: BuildSentenceQuestion; value
     });
     return (
         <div className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">Ordena las piezas para responder</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('exam.buildSentence')}</p>
             <p className="text-lg font-bold leading-snug">{q.text}</p>
-            <div ref={sentenceRef} role="group" aria-label="Tu oración" className="min-h-14 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-outline-variant)] p-3 flex flex-wrap gap-2">
-                {value.length === 0 && <span className="text-sm text-[var(--color-on-surface-muted)] self-center">Toca las piezas en orden</span>}
+            <div ref={sentenceRef} role="group" aria-label={t('exam.yourSentence')} className="min-h-14 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-outline-variant)] p-3 flex flex-wrap gap-2">
+                {value.length === 0 && <span className="text-sm text-[var(--color-on-surface-muted)] self-center">{t('exam.tapPieces')}</span>}
                 {value.map((pieceIdx, pos) => (
-                    <button key={pos} type="button" onClick={() => { onChange(value.filter((_, k) => k !== pos)); refocus(sentenceRef.current, pos); }} className="rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold" aria-label={`Quitar «${q.pieces[pieceIdx]}»`}>
+                    <button key={pos} type="button" onClick={() => { onChange(value.filter((_, k) => k !== pos)); refocus(sentenceRef.current, pos); }} className="rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold" aria-label={t('exam.removePiece', { piece: q.pieces[pieceIdx] })}>
                         {q.pieces[pieceIdx]}
                     </button>
                 ))}
             </div>
-            <div ref={poolRef} role="group" aria-label="Piezas disponibles" className="flex flex-wrap gap-2">
+            <div ref={poolRef} role="group" aria-label={t('exam.availablePieces')} className="flex flex-wrap gap-2">
                 {remaining.map((i, pos) => (
                     <button key={i} type="button" onClick={() => { onChange([...value, i]); refocus(poolRef.current, pos); }} className="rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] px-3 py-1.5 text-sm font-semibold">
                         {q.pieces[i]}

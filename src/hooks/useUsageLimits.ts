@@ -1,5 +1,5 @@
+import { apiFetch } from '../lib/apiFetch';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { useTier } from './useTier';
 
 interface UsageLimit {
@@ -23,10 +23,7 @@ export function useUsageLimits() {
   return useQuery({
     queryKey: ['usage-limits'],
     queryFn: async (): Promise<UsageLimitsData> => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch('/api/usage', {
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-      });
+      const res = await apiFetch('/api/usage');
       if (!res.ok) throw new Error('Failed to fetch usage');
       return res.json();
     },

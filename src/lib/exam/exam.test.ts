@@ -113,7 +113,7 @@ describe('exam report', () => {
         expect(report.breakdown).toEqual([
             { skill: 'Listening', value: '5.5' }, // 1 of 2 → 20 of 40
             { skill: 'Reading', value: '9.0' },
-            { skill: 'Writing', value: 'sin evaluar' },
+            { skill: 'Writing', value: null },
             { skill: 'Speaking', value: '6.5' },
         ]);
         expect(report.headline.value).toBe('7.0'); // mean of 5.5, 9 and 6.5
