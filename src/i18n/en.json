@@ -305,6 +305,8 @@
     "themeDark": "Dark",
     "language": "Language",
     "planAndSubscription": "Plan and subscription",
+    "adminAccess": "Admin Pro access",
+    "adminAccessHint": "No subscription: it comes from your role, not a payment.",
     "logout": "Log out"
   },
   "garden": {

@@ -305,6 +305,8 @@
     "themeDark": "Oscuro",
     "language": "Idioma",
     "planAndSubscription": "Plan y suscripción",
+    "adminAccess": "Acceso Pro de administrador",
+    "adminAccessHint": "Sin suscripción: viene de tu rol, no de un pago.",
     "logout": "Cerrar sesión"
   },
   "garden": {

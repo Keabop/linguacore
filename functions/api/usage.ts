@@ -1,12 +1,13 @@
 import { env, setEnv } from '../../server/lib/config.js';
 import { getUserTier, getAllLimitsForUser } from '../../server/lib/usageLimits.js';
-import { createClient } from '@supabase/supabase-js';
+import { accessTier } from '../../server/lib/roles.js';
+import { createClient, type User } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../../server/lib/cors.js';
 
 // ---------------------------------------------------------------------------
 // Authenticate
 // ---------------------------------------------------------------------------
-async function authenticate(request: Request): Promise<string | null> {
+async function authenticate(request: Request): Promise<User | null> {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) return null;
 
@@ -19,7 +20,7 @@ async function authenticate(request: Request): Promise<string | null> {
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) return null;
-    return user.id;
+    return user;
 }
 
 // ---------------------------------------------------------------------------
@@ -32,8 +33,8 @@ export const onRequestGet: PagesFunction = async (context) => {
     const corsHeaders = getCorsHeaders(request, 'GET, OPTIONS');
 
     // Authenticate
-    const userId = await authenticate(request);
-    if (!userId) {
+    const user = await authenticate(request);
+    if (!user) {
         return new Response(JSON.stringify({ error: 'Unauthorized — valid Supabase session required' }), {
             status: 401,
             headers: corsHeaders,
@@ -41,8 +42,8 @@ export const onRequestGet: PagesFunction = async (context) => {
     }
 
     try {
-        const tier = await getUserTier(userId);
-        const limits = await getAllLimitsForUser(userId, tier);
+        const tier = accessTier(user, await getUserTier(user.id));
+        const limits = await getAllLimitsForUser(user.id, tier);
 
         return new Response(JSON.stringify({ tier, limits }), {
             status: 200,

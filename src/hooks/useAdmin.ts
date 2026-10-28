@@ -1,10 +1,11 @@
 import { useAuth } from '../lib/AuthContext';
 
-/** Hardcoded admin email list. Only users with these emails get admin access. */
-const ADMIN_EMAILS: readonly string[] = ['luiszwazagamer@gmail.com'];
-
+/**
+ * Whether the signed-in user has the admin role. It lives in app_metadata, which only the
+ * server can set; this only shows or hides admin screens, the database enforces the same
+ * check through is_admin().
+ */
 export function useAdmin() {
     const { user } = useAuth();
-    const isAdmin = Boolean(user?.email && ADMIN_EMAILS.includes(user.email));
-    return { isAdmin, adminEmail: ADMIN_EMAILS[0] };
+    return { isAdmin: user?.app_metadata?.role === 'admin' };
 }

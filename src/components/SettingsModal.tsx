@@ -20,7 +20,8 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
     const { mode, toggleMode } = useTheme();
     const { user, signOut } = useAuth();
     const { subscription, cancelSubscription, reactivateSubscription } = useSubscription();
-    const { isPro } = useTier();
+    // Subscription controls follow the paid tier: the admin's Pro access has nothing to cancel
+    const { tier, isPro, adminAccess } = useTier();
     const navigate = useNavigate();
 
     const [username, setUsername] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || '');
@@ -213,7 +214,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <span className="text-sm font-medium text-[var(--color-on-surface)]">{t('settings.planAndSubscription')}</span>
                                     </div>
 
-                                    {isPro && subscription?.subscriptionStatus === 'active' && (
+                                    {tier === 'pro' && subscription?.subscriptionStatus === 'active' && (
                                         <div className="bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4 space-y-3">
                                             <div className="flex items-center gap-2">
                                                 <Crown className="w-4 h-4 text-[var(--color-primary)]" />
@@ -231,7 +232,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         </div>
                                     )}
 
-                                    {isPro && subscription?.subscriptionStatus === 'cancelled' && (
+                                    {tier === 'pro' && subscription?.subscriptionStatus === 'cancelled' && (
                                         <div className="bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4 space-y-3">
                                             <div className="flex items-center gap-2">
                                                 <Crown className="w-4 h-4 text-accent-amber" />
@@ -248,6 +249,16 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                                 {actionLoading && <Loader2 className="w-3 h-3 animate-spin" />}
                                                 {t('account.reactivateSubscription')}
                                             </button>
+                                        </div>
+                                    )}
+
+                                    {adminAccess && (
+                                        <div className="bg-[var(--color-background)] border border-[var(--color-outline-subtle)] rounded-xl p-4">
+                                            <div className="flex items-center gap-2">
+                                                <Crown className="w-4 h-4 text-[var(--color-primary)]" />
+                                                <span className="text-sm font-bold text-[var(--color-on-surface)]">{t('settings.adminAccess')}</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-[var(--color-on-surface-muted)]">{t('settings.adminAccessHint')}</p>
                                         </div>
                                     )}
 

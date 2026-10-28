@@ -5,11 +5,12 @@ import { placementQuestions } from './assessments/cefr-questions';
 import { cambridgeB1Questions } from './assessments/cambridge-b1-questions';
 import { cambridgeB2Questions } from './assessments/cambridge-b2-questions';
 import { ieltsQuestions, ieltsSpeaking, ieltsWriting } from './assessments/ielts-questions';
-import { toeflQuestions } from './assessments/toefl-questions';
+import { toeflQuestions, toeflSpeaking, toeflWriting } from './assessments/toefl-questions';
+import { parseCompleteWords } from '../lib/exam/grading';
 import { validateExamStructure, validateQuestion } from '../lib/exam/validate';
 import reference from '../../content/reference/cefrj-vocabulary.json';
 import {
-    ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, storyCoverage,
+    ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, questionKey, storyCoverage,
     storyEncounters, type ReferenceEntry,
 } from './contentMetrics';
 
@@ -130,11 +131,11 @@ describe('plan targets for rebuilt levels', () => {
     }
 
     it('has no templated or repeated questions in the rebuilt exam banks', () => {
-        const banks = { placement: placementQuestions, cambridgeB1: cambridgeB1Questions, cambridgeB2: cambridgeB2Questions, ielts: ieltsQuestions };
+        const banks = { placement: placementQuestions, cambridgeB1: cambridgeB1Questions, cambridgeB2: cambridgeB2Questions, ielts: ieltsQuestions, toefl: toeflQuestions };
         for (const name of ENFORCED_EXAMS) {
             const qs = banks[name];
             expect(qs.filter(q => isTemplated(q.text)).map(q => q.id), name).toEqual([]);
-            expect(new Set(qs.map(q => q.text)).size, name).toBe(qs.length);
+            expect(new Set(qs.map(questionKey)).size, name).toBe(qs.length);
         }
     });
 });
@@ -194,5 +195,95 @@ describe('IELTS Academic simulator', () => {
         expect(ieltsWriting[0].chart?.series.every(s => s.values.length === ieltsWriting[0].chart!.categories.length)).toBe(true);
         expect(ieltsSpeaking.map(s => s.title.slice(0, 6))).toEqual(['Part 1', 'Part 2', 'Part 3']);
         expect(ieltsSpeaking[1].cueCard?.length).toBeGreaterThanOrEqual(3);
+    });
+});
+
+describe('TOEFL iBT simulator (2026 format)', () => {
+    type TQ = (typeof toeflQuestions)[number];
+    const of = (section: string, stage: string) => toeflQuestions.filter(q => q.section === section && q.stage === stage);
+    const STAGES = ['router', 'lower', 'upper'];
+
+    it('runs Reading and Listening in two modules, then Build a Sentence', () => {
+        const order = [...new Set(toeflQuestions.map(q => q.section))];
+        expect(order).toEqual(['reading', 'listening', 'use-of-english']);
+        for (const section of ['reading', 'listening']) {
+            for (const stage of STAGES) expect(of(section, stage).length, `${section} ${stage}`).toBeGreaterThanOrEqual(11);
+        }
+        expect(toeflQuestions.filter(q => q.kind === 'build-sentence')).toHaveLength(10);
+    });
+
+    it('gives every Reading module the three tasks: Complete the Words, two daily texts and an academic passage', () => {
+        for (const stage of STAGES) {
+            const qs = of('reading', stage);
+            expect(qs.filter(q => q.kind === 'complete-words'), stage).toHaveLength(1);
+            expect(new Set(qs.filter(q => q.task === 'Read in Daily Life').map(q => q.group)).size, stage).toBe(2);
+            const academic = [...new Set(qs.filter(q => q.task === 'Read an Academic Passage').map(q => q.passage!))];
+            expect(academic, stage).toHaveLength(1);
+            const words = academic[0].split(/\s+/).length;
+            expect(words, stage).toBeGreaterThanOrEqual(150);
+            expect(words, stage).toBeLessThanOrEqual(250);
+        }
+    });
+
+    it('cuts the second half of ten words after an intact first sentence', () => {
+        for (const q of toeflQuestions.filter(q => q.kind === 'complete-words')) {
+            const parts = parseCompleteWords(q.text);
+            const gaps = parts.filter(p => typeof p !== 'string');
+            expect(gaps, q.id).toHaveLength(10);
+            for (const g of gaps) expect(g.shown.length, `${q.id}: ${g.shown}[${g.missing}]`).toBe(Math.floor((g.shown + g.missing).length / 2));
+            expect(typeof parts[0] === 'string' && /^[^[]+?[.!?]\s/.test(parts[0]), q.id).toBe(true);
+        }
+    });
+
+    it('gives every Listening module the four tasks', () => {
+        for (const stage of STAGES) {
+            const tasks = of('listening', stage).map(q => q.task);
+            expect(tasks.filter(t => t === 'Listen and Choose a Response'), stage).toHaveLength(5);
+            for (const task of ['Listen to a Conversation', 'Listen to an Announcement', 'Listen to an Academic Talk']) {
+                expect(tasks.filter(t => t === task).length, `${stage} ${task}`).toBeGreaterThanOrEqual(2);
+            }
+        }
+    });
+
+    it('quotes the evidence of every answer, in the order of the text or recording', () => {
+        const flat = (t: string) => t.toLowerCase().replace(/\s+/g, ' ');
+        const position = (q: TQ) => flat(q.passage ?? q.dialogue!.map(l => l.text).join(' ')).indexOf(flat(q.evidence!));
+        const answered = toeflQuestions.filter(q => q.kind !== 'complete-words' && q.kind !== 'build-sentence');
+        for (const q of answered) expect(q.evidence, q.id).toBeTruthy();
+        for (const group of new Set(answered.map(q => q.group).filter(Boolean))) {
+            const positions = answered.filter(q => q.group === group).map(position);
+            expect(positions, group).toEqual([...positions].sort((a, b) => a - b));
+        }
+    });
+
+    it('spreads the right answer across the four positions', () => {
+        const mc = toeflQuestions.filter((q): q is Extract<TQ, { correctIndex: number }> => 'correctIndex' in q);
+        for (const i of [0, 1, 2, 3]) expect(mc.filter(q => q.correctIndex === i).length, `position ${i}`).toBeGreaterThanOrEqual(mc.length / 6);
+    });
+
+    it('does not give the answer away as the longest option', () => {
+        const mc = toeflQuestions.filter((q): q is Extract<TQ, { correctIndex: number }> => 'correctIndex' in q);
+        const longest = (qs: typeof mc) => qs.filter(q => q.options.every((o, i) => i === q.correctIndex || o.length < q.options[q.correctIndex].length)).length / qs.length;
+        // Chance is 25%: well above it, picking the longest option scores without reading
+        expect(longest(mc)).toBeLessThanOrEqual(0.33);
+        expect(longest(mc.filter(q => q.section === 'listening'))).toBeLessThanOrEqual(0.33);
+    });
+
+    it('lists the Build a Sentence chunks out of order', () => {
+        for (const q of toeflQuestions) {
+            if (q.kind !== 'build-sentence') continue;
+            expect(q.pieces.join(' ').toLowerCase(), q.id).not.toBe(q.answer.replace(/[.?!]$/, '').toLowerCase());
+        }
+    });
+
+    it('has the email with its points, the discussion with its posts, and both Speaking tasks', () => {
+        expect(toeflWriting.map(w => w.id)).toEqual(['w_toefl_email', 'w_toefl_discussion']);
+        expect(toeflWriting[0].points).toHaveLength(3);
+        expect(toeflWriting[1].discussion?.map(p => p.role)).toEqual(['professor', 'student', 'student']);
+        expect(toeflSpeaking.filter(s => s.listenOnly)).toHaveLength(7);
+        expect(toeflSpeaking.filter(s => !s.listenOnly).map(s => s.timeSeconds)).toEqual([45, 45, 45, 45]);
+        // Listen and Repeat sentences grow longer, as in the exam
+        const lengths = toeflSpeaking.filter(s => s.listenOnly).map(s => s.prompt.split(' ').length);
+        expect(lengths).toEqual([...lengths].sort((a, b) => a - b));
     });
 });
