@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickSpeakerVoices } from './assessmentSpeech';
+import { pickSpeakerVoices, splitSentences } from './assessmentSpeech';
 import type { DialogueLine } from './exam/types';
 
 const voice = (name: string, lang: string) => ({ name, lang, localService: true, default: false, voiceURI: name }) as SpeechSynthesisVoice;
@@ -32,5 +32,11 @@ describe('pickSpeakerVoices', () => {
 
     it('ignores voices that are not English', () => {
         expect(pickSpeakerVoices(lines, [voice('Español', 'es-ES')]).A.voice).toBeUndefined();
+    });
+});
+
+describe('splitSentences', () => {
+    it('splits a long line into its sentences', () => {
+        expect(splitSentences('Hello there. Is it ready? Yes! And the rest')).toEqual(['Hello there.', 'Is it ready?', 'Yes!', 'And the rest']);
     });
 });

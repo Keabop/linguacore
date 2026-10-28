@@ -28,6 +28,11 @@ interface QuestionBase {
     dialogue?: DialogueLine[];
     /** Pre-generated audio of the dialogue (public/audio/...). */
     audioSrc?: string;
+    /**
+     * Questions that share one text or recording (an IELTS Listening part). The audio's play
+     * limit counts per group, as the exam plays each part for all its questions.
+     */
+    group?: string;
     stage?: ExamStage;
     /** Fragment of the passage or script that answers the question (for review and tests). */
     evidence?: string;
@@ -59,6 +64,8 @@ export interface GapQuestion extends QuestionBase {
     answers: string[];
     /** "NO MORE THAN TWO WORDS" → 2. */
     maxWords?: number;
+    /** "… AND/OR A NUMBER": figures don't count towards `maxWords`. */
+    allowNumber?: boolean;
 }
 
 /**
@@ -77,6 +84,35 @@ export interface BuildSentenceQuestion extends QuestionBase {
     text: string;
     pieces: string[];
     answer: string;
+}
+
+export interface ChartData {
+    kind: 'bar' | 'line';
+    title: string;
+    /** Unit of the values, shown on the axis ("%", "millions"). */
+    unit: string;
+    categories: string[];
+    series: { name: string; values: number[] }[];
+}
+
+/** A writing task; IELTS Task 1 carries the chart to describe. */
+export interface ExamWritingTask {
+    id: string;
+    title: string;
+    prompt: string;
+    targetWords: string;
+    instructions: string;
+    chart?: ChartData;
+}
+
+export interface ExamSpeakingTask {
+    id: string;
+    title: string;
+    prompt: string;
+    instructions: string;
+    timeSeconds: number;
+    /** IELTS Part 2 cue card points. */
+    cueCard?: string[];
 }
 
 export type AssessmentQuestion =
