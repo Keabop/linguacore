@@ -93,7 +93,7 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
                     completed_at: null,
                     ...updates,
                 };
-                await offlineInsert('unit_progress', insertData);
+                await offlineInsert('unit_progress', insertData, { onConflict: 'user_id,unit_id' });
             }
 
             qc.invalidateQueries({ queryKey: ['unit-progress'] });
