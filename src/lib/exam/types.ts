@@ -34,6 +34,8 @@ interface QuestionBase {
      */
     group?: string;
     stage?: ExamStage;
+    /** Name of the exam task, shown above the question ("Read in Daily Life"). */
+    task?: string;
     /** Fragment of the passage or script that answers the question (for review and tests). */
     evidence?: string;
 }
@@ -95,7 +97,17 @@ export interface ChartData {
     series: { name: string; values: number[] }[];
 }
 
-/** A writing task; IELTS Task 1 carries the chart to describe. */
+/** A post of an online class discussion (TOEFL Academic Discussion). */
+export interface DiscussionPost {
+    author: string;
+    role: 'professor' | 'student';
+    text: string;
+}
+
+/**
+ * A writing task. IELTS Task 1 carries the chart to describe; the TOEFL email lists the
+ * points it must cover, and the academic discussion the posts it answers.
+ */
 export interface ExamWritingTask {
     id: string;
     title: string;
@@ -103,6 +115,8 @@ export interface ExamWritingTask {
     targetWords: string;
     instructions: string;
     chart?: ChartData;
+    points?: string[];
+    discussion?: DiscussionPost[];
 }
 
 export interface ExamSpeakingTask {
@@ -113,6 +127,8 @@ export interface ExamSpeakingTask {
     timeSeconds: number;
     /** IELTS Part 2 cue card points. */
     cueCard?: string[];
+    /** TOEFL Listen and Repeat: the prompt is heard once and never shown. */
+    listenOnly?: boolean;
 }
 
 export type AssessmentQuestion =

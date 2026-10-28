@@ -2,14 +2,6 @@
 export type { AssessmentQuestion, DialogueLine } from '../../lib/exam/types';
 import type { AssessmentQuestion } from '../../lib/exam/types';
 
-export interface WritingPrompt {
-    id: string;
-    preset: 'toefl' | 'ielts' | 'cambridge';
-    prompt: string;
-    targetWords: string;
-    instructions: string;
-}
-
 // 1. Placement Questions dataset
 export const placementQuestions: AssessmentQuestion[] = [
     // USE OF ENGLISH (15 questions: 3 per CEFR level)
@@ -194,30 +186,5 @@ export const placementQuestions: AssessmentQuestion[] = [
         ],
         options: ['Lack of government funding', 'Hesitancy of private investors due to long-term lockups', 'High operational cost of solar energy', 'Unwillingness of mid-sized firms to follow green rules'],
         correctIndex: 1
-    }
-];
-
-// 2. Official Exam Prompts
-export const writingPrompts: WritingPrompt[] = [
-    {
-        id: 'w_toefl_1',
-        preset: 'toefl',
-        prompt: 'Do you agree or disagree with the following statement? "With the rise of remote workspaces, working in physical offices will become completely obsolete in the next decade." Use specific reasons and examples to support your answer.',
-        targetWords: '200-250 words',
-        instructions: 'Escribe de manera académica estructurada. Argumenta de forma persuasiva usando párrafos de introducción, desarrollo y conclusión.'
-    },
-    {
-        id: 'w_ielts_1',
-        preset: 'ielts',
-        prompt: 'You are writing a proposal to your department director suggesting a transition to a 4-day workweek. Write an official proposal outlining the benefits to team productivity, cost reductions, and employee well-being, as well as a mitigation plan for client coverage.',
-        targetWords: '180-220 words',
-        instructions: 'Escribe de manera formal y corporativa. Utiliza conectores avanzados de transición y vocabulario especializado de negocios.'
-    },
-    {
-        id: 'w_cambridge_1',
-        preset: 'cambridge',
-        prompt: 'Write an essay discussing whether technology has made modern communication more or less meaningful. You should discuss issues such as speed, superficiality, and global connectivity.',
-        targetWords: '190-240 words',
-        instructions: 'Escribe un ensayo equilibrado. Argumenta de forma lógica evaluando las ventajas y desventajas utilizando oraciones complejas y precisas.'
     }
 ];

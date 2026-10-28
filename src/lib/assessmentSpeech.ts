@@ -64,24 +64,46 @@ export function stopDialogueSpeech() {
     }
 }
 
-/** Plays a pre-generated audio file of a listening question. */
-export function playAudioFile(src: string, onComplete: () => void) {
+/**
+ * Longest a sentence may take before it counts as spoken: some voices stop without signalling
+ * the end, and the exam must never wait for them forever.
+ */
+export const sentenceTimeoutMs = (text: string) => 4000 + text.split(/\s+/).length * 600;
+
+/**
+ * Plays a pre-generated audio file of a listening question. `onFail` runs instead of
+ * `onComplete` when the file can't be played at all.
+ */
+export function playAudioFile(src: string, onComplete: () => void, onFail: () => void = onComplete) {
     stopDialogueSpeech();
     const audio = new Audio(src);
     activeAudio = audio;
-    const done = () => { if (activeAudio === audio) { activeAudio = null; onComplete(); } };
-    audio.addEventListener('ended', done);
-    audio.addEventListener('error', done);
-    audio.play().catch(done);
+    let started = false;
+    const finish = (ok: boolean) => {
+        if (activeAudio !== audio) return;
+        activeAudio = null;
+        if (ok) onComplete();
+        else onFail();
+    };
+    audio.addEventListener('playing', () => { started = true; });
+    audio.addEventListener('ended', () => finish(true));
+    audio.addEventListener('error', () => finish(started));
+    audio.play().catch(() => finish(false));
 }
 
+/**
+ * Speaks a dialogue sentence by sentence with the browser's voices. `onFail` runs instead of
+ * `onComplete` when nothing could be spoken (no speech synthesis, or every sentence failed);
+ * a sentence that never signals its end is skipped after `sentenceTimeoutMs`.
+ */
 export function playDialogueSpeech(
     lines: DialogueLine[],
     onLineStart: (index: number) => void,
-    onComplete: () => void
+    onComplete: () => void,
+    onFail: () => void = onComplete,
 ) {
     if (!window.speechSynthesis) {
-        onComplete();
+        onFail();
         return;
     }
 
@@ -89,12 +111,14 @@ export function playDialogueSpeech(
 
     // Each sentence is spoken on its own; onLineStart still reports the line it belongs to
     const chunks = lines.flatMap((l, lineIndex) => splitSentences(l.text).map(text => ({ ...l, text, lineIndex })));
+    let heard = false;
 
     const start = () => {
         const voices = pickSpeakerVoices(lines, window.speechSynthesis.getVoices());
         const speakLine = (index: number) => {
             if (index >= chunks.length) {
-                onComplete();
+                if (heard) onComplete();
+                else onFail();
                 return;
             }
             const line = chunks[index];
@@ -108,14 +132,24 @@ export function playDialogueSpeech(
             utterance.pitch = pitch;
             utterance.rate = 0.95;
 
-            utterance.onend = () => {
-                // A short pause between sentences, a longer one when the speaker changes turn
-                const pause = chunks[index + 1]?.lineIndex === line.lineIndex ? 150 : 600;
-                if (activeUtterance === utterance) setTimeout(() => speakLine(index + 1), pause);
+            // Moves on once, whichever comes first: the end, an error or the time limit
+            let settled = false;
+            const next = (pause: number) => {
+                if (settled || activeUtterance !== utterance) return;
+                settled = true;
+                clearTimeout(limit);
+                setTimeout(() => { if (activeUtterance === utterance) speakLine(index + 1); }, pause);
             };
-            utterance.onerror = () => {
-                if (activeUtterance === utterance) speakLine(index + 1);
-            };
+            const limit = setTimeout(() => {
+                if (settled || activeUtterance !== utterance) return;
+                next(0);
+                window.speechSynthesis.cancel();
+            }, sentenceTimeoutMs(line.text));
+
+            utterance.onstart = () => { heard = true; };
+            // A short pause between sentences, a longer one when the speaker changes turn
+            utterance.onend = () => next(chunks[index + 1]?.lineIndex === line.lineIndex ? 150 : 600);
+            utterance.onerror = () => next(0);
             window.speechSynthesis.speak(utterance);
         };
         speakLine(0);

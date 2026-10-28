@@ -7,7 +7,7 @@ import { ieltsQuestions } from '../src/data/assessments/ielts-questions';
 import { toeflQuestions } from '../src/data/assessments/toefl-questions';
 import reference from '../content/reference/cefrj-vocabulary.json';
 import {
-    ENFORCED_LEVELS, LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, storyCoverage,
+    ENFORCED_LEVELS, LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, questionKey, storyCoverage,
     storyEncounters, type ReferenceEntry,
 } from '../src/data/contentMetrics';
 
@@ -52,7 +52,7 @@ console.log('\n== Exámenes');
 const exams = { Nivelación: placementQuestions, 'Cambridge B1': cambridgeB1Questions, 'Cambridge B2': cambridgeB2Questions, IELTS: ieltsQuestions, TOEFL: toeflQuestions };
 for (const [name, qs] of Object.entries(exams)) {
     const templated = qs.filter(q => isTemplated(q.text)).length;
-    const repeated = qs.length - new Set(qs.map(q => q.text)).size;
+    const repeated = qs.length - new Set(qs.map(questionKey)).size;
     console.log(`  ${mark(templated === 0 && repeated === 0)}${name}: ${qs.length} preguntas, ${templated} con plantilla, ${repeated} enunciados repetidos`);
 }
 console.log('');

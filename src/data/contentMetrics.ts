@@ -25,11 +25,18 @@ export const TARGETS = {
  */
 export const ENFORCED_LEVELS: Level[] = [];
 
-/** Exam banks that must be free of templated or repeated questions (TOEFL joins when rebuilt). */
-export const ENFORCED_EXAMS = ['placement', 'cambridgeB1', 'cambridgeB2', 'ielts'] as const;
+/** Exam banks that must be free of templated or repeated questions. */
+export const ENFORCED_EXAMS = ['placement', 'cambridgeB1', 'cambridgeB2', 'ielts', 'toefl'] as const;
 
 /** A question written from a template ("Passage 1 - Question 3: …") instead of for its text. */
 export const isTemplated = (text: string) => /Question \d+|Passage \d+ -/.test(text);
+
+/**
+ * What makes a question a repeat: the same wording. The one exception is TOEFL "Choose a
+ * Response", whose question is the same instruction for every recording.
+ */
+export const questionKey = (q: { text: string; task?: string; dialogue?: { text: string }[] }) =>
+    q.task === 'Listen and Choose a Response' ? `${q.text}|${q.dialogue?.map(l => l.text).join(' ')}` : q.text;
 
 // ---------- Words
 
