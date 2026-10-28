@@ -6,10 +6,12 @@ import { useAuth } from '../lib/AuthContext';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { playAudioFile, playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
-import { chooseStage, endsRouter, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
+import { chooseStage, endsRouter, pageEnd, pageStart, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
 import { buildReport, type ExamReport } from '../lib/exam/report';
 import { isMultipleChoice, type ExamResponse } from '../lib/exam/types';
 import QuestionView from '../components/exam/QuestionView';
+import TaskChart from '../components/exam/TaskChart';
+import PassageView from '../components/exam/PassageView';
 import { shuffleQuestion } from '../lib/shuffle';
 import { placementQuestions, writingPrompts, AssessmentQuestion, WritingPrompt } from '../data/assessments/cefr-questions';
 import { cambridgeB1Questions, cambridgeB1Writing, cambridgeB1Speaking } from '../data/assessments/cambridge-b1-questions';
@@ -30,6 +32,8 @@ interface TestPreset {
     isPro: boolean;
     durationMinutes: number;
     questionCount: number;
+    /** Times each recording can be played, as in the real exam (IELTS and TOEFL: once). */
+    audioPlays: number;
 }
 
 const presets: TestPreset[] = [
@@ -40,7 +44,8 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: 'Recomendado cada 2 semanas para medir tu progreso regular y adaptar tu plan de estudio de forma dinámica.',
         isPro: false,
         durationMinutes: 25,
-        questionCount: 20
+        questionCount: 20,
+        audioPlays: 2
     },
     {
         id: 'toefl',
@@ -49,16 +54,19 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: 'Recomendado una vez al mes para evaluar a fondo tu avance académico bajo estándares oficiales.',
         isPro: true,
         durationMinutes: 65,
-        questionCount: 70
+        questionCount: 70,
+        audioPlays: 1
     },
     {
         id: 'ielts',
         title: 'Simulacro IELTS Academic Style',
-        description: 'Estructura enfocada en contextos académicos y profesionales internacionales. Incluye Listening, Reading, múltiples ensayos de Writing y examen oral de Speaking calificados por IA.',
+        description: 'Las cuatro partes del IELTS Academic: Listening (4 partes, 40 preguntas), Reading (3 textos, 40 preguntas), Writing (gráfica y ensayo) y Speaking (3 partes) calificados por IA.',
         pedagogicalAdvice: 'Recomendado una vez al mes para medir el desarrollo de tu producción escrita y oral profesional.',
         isPro: true,
-        durationMinutes: 65,
-        questionCount: 80
+        // Listening 30 + Reading 60 + Writing 60 + Speaking ~12
+        durationMinutes: 162,
+        questionCount: 80,
+        audioPlays: 1
     },
     {
         id: 'cambridge_b1',
@@ -67,7 +75,8 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: 'Recomendado cada mes para certificar y consolidar tus bases de nivel B1.',
         isPro: true,
         durationMinutes: 60,
-        questionCount: 69
+        questionCount: 69,
+        audioPlays: 2
     },
     {
         id: 'cambridge_b2',
@@ -76,7 +85,8 @@ const presets: TestPreset[] = [
         pedagogicalAdvice: 'Recomendado una vez al mes para validar tu solidez gramatical, producción escrita y fluidez oral ejecutiva.',
         isPro: true,
         durationMinutes: 65,
-        questionCount: 97
+        questionCount: 97,
+        audioPlays: 2
     }
 ];
 
@@ -289,12 +299,12 @@ export default function CEFRSimulator() {
     }, [transcript, isListening, state, activeSpeakingIdx, speakingPrompts]);
 
     // Play Dialogue Listening
-    const handlePlayAudio = (qId: string, lines: any[], audioSrc?: string) => {
-        const plays = audioPlayCount[qId] || 0;
-        if (plays >= 2) return;
+    const handlePlayAudio = (key: string, lines: any[], audioSrc?: string) => {
+        const plays = audioPlayCount[key] || 0;
+        if (plays >= maxPlays) return;
 
         setIsPlayingAudio(true);
-        setAudioPlayCount(prev => ({ ...prev, [qId]: plays + 1 }));
+        setAudioPlayCount(prev => ({ ...prev, [key]: plays + 1 }));
 
         const done = () => {
             setIsPlayingAudio(false);
@@ -318,7 +328,15 @@ export default function CEFRSimulator() {
     // The questions shown so far: adaptive sections reveal their second stage after the router
     const visible = visibleQuestions(questions, stageChoice);
     const current = visible[currentIdx];
-    const closesRouter = endsRouter(questions, visible, currentIdx, stageChoice);
+    // A recording is shared by its group (an IELTS Listening part) and limited per exam
+    const audioKey = current?.group ?? current?.id ?? '';
+    const maxPlays = selectedPreset?.audioPlays ?? 2;
+    // currentIdx is the first question of the page on screen; a listening part is one page
+    const lastOnPage = current ? pageEnd(visible, currentIdx) : currentIdx;
+    const pageQuestions = visible.slice(currentIdx, lastOnPage + 1);
+    const closesRouter = endsRouter(questions, visible, lastOnPage, stageChoice);
+    // The recording of a part plays once: the page can't be left while it is playing
+    const lockedByAudio = isPlayingAudio && current?.section === 'listening';
 
     const goNext = () => {
         stopAudio();
@@ -327,14 +345,19 @@ export default function CEFRSimulator() {
             setStageChoice(chosen);
             // Never step past the questions that will actually be shown
             const nextCount = visibleQuestions(questions, chosen).length;
-            setCurrentIdx(prev => Math.min(prev + 1, nextCount - 1));
+            setCurrentIdx(Math.min(lastOnPage + 1, nextCount - 1));
             return;
         }
-        setCurrentIdx(prev => Math.min(prev + 1, visible.length - 1));
+        setCurrentIdx(Math.min(lastOnPage + 1, visible.length - 1));
+    };
+
+    const goBack = () => {
+        stopAudio();
+        setCurrentIdx(pageStart(visible, currentIdx - 1));
     };
 
     // A second stage can't go back into its router (as in adaptive exams)
-    const canGoBack = currentIdx > 0 && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
+    const canGoBack = currentIdx > 0 && !lockedByAudio && !(current?.stage && current.stage !== 'router' && visible[currentIdx - 1]?.stage === 'router');
 
     const proceedToWritingOrComplete = () => {
         stopAudio();
@@ -544,7 +567,7 @@ export default function CEFRSimulator() {
                             </p>
                             <p className="flex items-start gap-2.5">
                                 <span className="font-bold text-[var(--color-tertiary-ink)]">3.</span>
-                                <span>En el Listening, cuentas con <strong>máximo 2 reproducciones</strong> por audio. Usa audífonos para mejor nitidez.</span>
+                                <span>En el Listening, cada audio se puede reproducir <strong>{selectedPreset.audioPlays === 1 ? 'una sola vez' : `${selectedPreset.audioPlays} veces`}</strong>, como en el examen real. Usa audífonos para mejor nitidez.</span>
                             </p>
                         </div>
 
@@ -577,7 +600,7 @@ export default function CEFRSimulator() {
                         {/* Status bar */}
                         <div className="flex justify-between items-center bg-[var(--color-card)] rounded-2xl px-5 py-3 shadow-[var(--shadow-card)] shrink-0 text-sm">
                             <span className="font-bold text-[var(--color-primary)]">
-                                {selectedPreset?.title} • Pregunta {currentIdx + 1} de {visible.length}{closesRouter ? '+' : ''}
+                                {selectedPreset?.title} • {pageQuestions.length > 1 ? `Preguntas ${currentIdx + 1}–${lastOnPage + 1}` : `Pregunta ${currentIdx + 1}`} de {visible.length}{closesRouter ? '+' : ''}
                             </span>
                             <span className="font-black text-[var(--color-tertiary-ink)] tracking-wide font-mono bg-[var(--color-tertiary)]/10 px-3 py-1 rounded-full">
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
@@ -586,11 +609,7 @@ export default function CEFRSimulator() {
 
                         <div className="widget space-y-6">
                             {/* 3A. READING COMPONENT */}
-                            {current.passage && (
-                                <div className="bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)] max-h-[45vh] overflow-y-auto text-[15px] leading-relaxed text-[var(--color-on-surface)] whitespace-pre-line">
-                                    {current.passage}
-                                </div>
-                            )}
+                            {current.passage && <PassageView text={current.passage} />}
 
                             {/* 3B. DIALOGUE LISTENING COMPONENT */}
                             {current.dialogue && (
@@ -601,14 +620,14 @@ export default function CEFRSimulator() {
                                     
                                     <div className="flex justify-center items-center gap-3">
                                         <button
-                                            onClick={() => handlePlayAudio(current.id, current.dialogue!, current.audioSrc)}
-                                            disabled={isPlayingAudio || (audioPlayCount[current.id] || 0) >= 2}
+                                            onClick={() => handlePlayAudio(audioKey, current.dialogue!, current.audioSrc)}
+                                            disabled={isPlayingAudio || (audioPlayCount[audioKey] || 0) >= maxPlays}
                                             className="w-14 h-14 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95 transition-all shadow-md"
                                         >
                                             <Play className="w-6 h-6 fill-current" />
                                         </button>
                                         <div className="text-left text-xs text-[var(--color-on-surface-muted)] font-bold">
-                                            <p>Reproducciones: {audioPlayCount[current.id] || 0} / 2</p>
+                                            <p>Reproducciones: {audioPlayCount[audioKey] || 0} / {maxPlays}</p>
                                             <p className="text-[10px] text-[var(--color-tertiary-ink)] mt-0.5">El diálogo cuenta con acentos nativos mixtos</p>
                                         </div>
                                     </div>
@@ -622,34 +641,44 @@ export default function CEFRSimulator() {
                                     )}
 
                                     {/* Inline play limit warning */}
-                                    {(audioPlayCount[current.id] || 0) >= 2 && (
+                                    {(audioPlayCount[audioKey] || 0) >= maxPlays && (
                                         <div className="text-[11px] font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5 pt-1">
-                                            <AlertCircle className="w-3.5 h-3.5" /> Límite de 2 reproducciones alcanzado para este audio.
+                                            <AlertCircle className="w-3.5 h-3.5" /> Límite de reproducciones alcanzado para este audio.
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            <QuestionView
-                                key={current.id}
-                                question={current}
-                                response={answers[current.id]}
-                                onChange={(r) => setAnswer(current.id, r)}
-                            />
+                            {pageQuestions.length > 1 && (
+                                <p className="text-xs font-semibold text-[var(--color-on-surface-muted)]">
+                                    Lee las preguntas antes de reproducir el audio; puedes responder mientras suena.
+                                </p>
+                            )}
+                            <div className="space-y-8">
+                                {pageQuestions.map((q, i) => (
+                                    <section key={q.id} aria-label={`Pregunta ${currentIdx + i + 1}`} className="space-y-2">
+                                        {pageQuestions.length > 1 && (
+                                            <p className="text-[11px] font-black uppercase tracking-wider text-[var(--color-primary)]">Pregunta {currentIdx + i + 1}</p>
+                                        )}
+                                        <QuestionView question={q} response={answers[q.id]} onChange={(r) => setAnswer(q.id, r)} />
+                                    </section>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Navigation controls */}
                         <div className="flex justify-between items-center shrink-0">
                             <button
-                                onClick={() => { stopAudio(); setCurrentIdx(prev => Math.max(0, prev - 1)); }}
+                                onClick={goBack}
                                 disabled={!canGoBack}
                                 className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
                             >
                                 Anterior
                             </button>
-                            {currentIdx + 1 < visible.length || closesRouter ? (
+                            {lastOnPage + 1 < visible.length || closesRouter ? (
                                 <button
                                     onClick={goNext}
+                                    disabled={lockedByAudio}
                                     className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-tertiary)] bg-[var(--color-tertiary)] active:scale-95 transition-all"
                                 >
                                     Siguiente
@@ -698,7 +727,12 @@ export default function CEFRSimulator() {
                                         <div className="space-y-3 bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)]">
                                             <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">Instrucciones específicas</p>
                                             <p className="text-base font-bold leading-relaxed">{activePrompt.prompt}</p>
-                                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2 italic">{activePrompt.instructions}</p>
+                                            {activePrompt.chart && (
+                                                <div className="rounded-xl bg-[var(--color-card)] p-4">
+                                                    <TaskChart chart={activePrompt.chart} />
+                                                </div>
+                                            )}
+                                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{activePrompt.instructions}</p>
                                             <div className="text-[11px] font-black text-[var(--color-primary)]">
                                                 Tamaño sugerido: {activePrompt.targetWords}
                                             </div>
@@ -783,6 +817,11 @@ export default function CEFRSimulator() {
                                             <div className="space-y-1.5 flex-1">
                                                 <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">Pregunta del Examinador</p>
                                                 <p className="text-base font-extrabold leading-relaxed text-[var(--color-on-surface)]">{activePrompt.prompt}</p>
+                                                {activePrompt.cueCard && (
+                                                    <ul className="list-disc pl-5 text-sm text-[var(--color-on-surface)] space-y-0.5">
+                                                        {activePrompt.cueCard.map((point: string) => <li key={point}>{point}</li>)}
+                                                    </ul>
+                                                )}
                                                 <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed italic">{activePrompt.instructions}</p>
                                             </div>
                                         </div>
