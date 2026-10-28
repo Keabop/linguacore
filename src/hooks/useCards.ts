@@ -6,6 +6,7 @@ import { createNewCard, calculateNextReview, Rating } from '../lib/fsrs';
 import { CardState } from '../lib/db';
 import type { CardRow, Profile } from '../lib/database.types';
 import { offlineInsertMany, offlineUpdate } from '../lib/offlineMutation';
+import { savedIdsOf } from '../data/vocabulary/aliases';
 
 // Convert Supabase row to the shape FSRS expects
 function rowToCard(row: CardRow) {
@@ -55,14 +56,15 @@ export function useCards() {
 
     const isWordInDeck = useCallback(async (wordId: string): Promise<boolean> => {
         // Check cache first for offline support
+        const ids = savedIdsOf(wordId);
         const cachedDue = qc.getQueryData<ReturnType<typeof rowToCard>[]>(['cards', 'due', userId]);
-        if (cachedDue?.some(c => c.wordId === wordId)) return true;
+        if (cachedDue?.some(c => ids.includes(c.wordId))) return true;
 
         if (!navigator.onLine) return false;
         const { data } = await supabase
             .from('cards')
             .select('id')
-            .eq('word_id', wordId)
+            .in('word_id', ids)
             .limit(1);
         return (data?.length ?? 0) > 0;
     }, [userId, qc]);
@@ -72,7 +74,7 @@ export function useCards() {
         const { data } = await supabase
             .from('known_words')
             .select('word_id')
-            .eq('word_id', wordId)
+            .in('word_id', savedIdsOf(wordId))
             .limit(1);
         return (data?.length ?? 0) > 0;
     }, []);

@@ -1,5 +1,6 @@
 // `npm run content:audit`: where the teaching content stands against the plan's targets.
-import { allStories, allUnits, allVocabulary } from '../src/data';
+import { allStories, allUnits } from '../src/data';
+import { allVocabulary } from '../src/data/vocabulary';
 import { placementQuestions } from '../src/data/assessments/placement';
 import { cambridgeB1Questions } from '../src/data/assessments/cambridge/b1';
 import { cambridgeB2Questions } from '../src/data/assessments/cambridge/b2';

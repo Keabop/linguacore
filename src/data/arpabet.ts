@@ -21,7 +21,8 @@ const ONSETS = new Set([
     'P Y', 'B Y', 'F Y', 'G Y', 'M Y', 'V Y', 'S K R', 'S K W', 'S P L', 'S P R', 'S T R', 'S K Y',
 ]);
 
-interface Phone { symbol: string; stress: number } // stress -1 for consonants
+// stress -1 for consonants; secondary stresses the dictionary style leaves unmarked become -2
+interface Phone { symbol: string; stress: number }
 
 function parse(arpabet: string): Phone[] {
     return arpabet.trim().split(/\s+/).map(token => {
@@ -36,10 +37,33 @@ const isVowel = (p: Phone) => p.symbol in VOWELS;
 function vowelIpa(p: Phone): string {
     if (p.symbol === 'AH' && p.stress === 0) return 'ə';
     if (p.symbol === 'ER' && p.stress === 0) return 'ɚ';
-    // Unstressed i and u are short ("happy" /ˈhæpi/, "influence" /ˈɪnfluəns/)
-    if (p.symbol === 'IY' && p.stress === 0) return 'i';
-    if (p.symbol === 'UW' && p.stress === 0) return 'u';
+    // Unstressed i and u are short ("happy" /ˈhæpi/, "influence" /ˈɪnfluəns/), also where a
+    // secondary stress goes unmarked ("probably" /ˈprɑːbəbli/)
+    if (p.symbol === 'IY' && p.stress <= 0) return 'i';
+    if (p.symbol === 'UW' && p.stress <= 0) return 'u';
     return VOWELS[p.symbol];
+}
+
+/**
+ * Brings CMUdict's transcription to the Cambridge Dictionary's style:
+ * - an unstressed r-coloured vowel before another vowel is /ə/ plus an /r/ that starts the next
+ *   syllable ("arrive" /əˈraɪv/, "different" /ˈdɪfərənt/, not /ɚˈaɪv/);
+ * - secondary stress is marked only before the main stress and with a syllable between them
+ *   ("understand" /ˌʌndɚˈstænd/, but "important" /ɪmˈpɔːrtənt/, "perfect" /ˈpɝːfɪkt/).
+ */
+function normalize(phones: Phone[]): Phone[] {
+    const out: Phone[] = [];
+    phones.forEach((p, i) => {
+        if (p.symbol === 'ER' && p.stress === 0 && phones[i + 1] && isVowel(phones[i + 1])) {
+            out.push({ symbol: 'AH', stress: 0 }, { symbol: 'R', stress: -1 });
+        } else out.push({ ...p });
+    });
+    const vowels = out.filter(isVowel);
+    const primary = vowels.findIndex(v => v.stress === 1);
+    vowels.forEach((v, k) => {
+        if (v.stress === 2 && (k > primary || k === primary - 1)) v.stress = -2;
+    });
+    return out;
 }
 
 /** How many of the trailing consonants start the next syllable (longest legal onset, at most 3). */
@@ -52,7 +76,7 @@ function onsetLength(consonants: string[]): number {
 
 /** Converts an ARPAbet transcription (e.g. "AH0 B AW1 T") to IPA between slashes ("/əˈbaʊt/"). */
 export function arpabetToIpa(arpabet: string): string {
-    const phones = parse(arpabet);
+    const phones = normalize(parse(arpabet));
     // One-syllable words carry no stress mark ("cat" → /kæt/)
     const marksStress = phones.filter(isVowel).length > 1;
     const out: string[] = [];

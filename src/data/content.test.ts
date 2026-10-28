@@ -1,6 +1,6 @@
 // Integrity of the teaching content: every item must be answerable as written.
 import { describe, expect, it } from 'vitest';
-import { allExercises, allGrammarSkills, allStories, allUnits, allVocabulary } from './index';
+import { allExercises, allGrammarSkills, allStories, allUnits } from './index';
 import { placementBlocks, placementQuestions } from './assessments/placement';
 import { cambridgeB1Questions, cambridgeB1Speaking, cambridgeB1Writing } from './assessments/cambridge/b1';
 import { cambridgeB2Questions, cambridgeB2Speaking, cambridgeB2Writing } from './assessments/cambridge/b2';
@@ -9,8 +9,12 @@ import { toeflQuestions, toeflSpeaking, toeflWriting } from './assessments/toefl
 import { marksOf, parseCompleteWords } from '../lib/exam/grading';
 import { validateExamStructure, validateQuestion } from '../lib/exam/validate';
 import reference from '../../content/reference/cefrj-vocabulary.json';
+import pronunciations from '../../content/reference/pronunciations.json';
+import { PRONUNCIATION_VARIANT, ipaOf } from './pronunciation';
+import { phonetics } from './vocabulary/phonetics';
+import { allVocabulary, vocabularyAliases } from './vocabulary';
 import {
-    ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, levelRank, questionKey, storyCoverage,
+    ENFORCED_DECKS, ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, lemmaCandidates, levelRank, questionKey, storyCoverage,
     storyEncounters, type ReferenceEntry,
 } from './contentMetrics';
 
@@ -63,7 +67,7 @@ describe('stories', () => {
     it('every tappable word has a vocabulary entry', () => {
         for (const s of allStories) {
             for (const [, word] of s.content.matchAll(/data-word="([^"]+)"/g)) {
-                expect(vocab.has(word), `${s.id}: ${word}`).toBe(true);
+                expect(vocab.has(vocabularyAliases[word] ?? word), `${s.id}: ${word}`).toBe(true);
             }
         }
     });
@@ -136,6 +140,64 @@ describe('plan targets for rebuilt levels', () => {
             const qs = banks[name];
             expect(qs.filter(q => isTemplated(q.text)).map(q => q.id), name).toEqual([]);
             expect(new Set(qs.map(questionKey)).size, name).toBe(qs.length);
+        }
+    });
+});
+
+describe('vocabulary', () => {
+    const index = buildLevelIndex(reference as ReferenceEntry[]);
+    /** The example shows the word, in any of its forms ("teeth" for tooth, "planning" for plan). */
+    const usesWord = (example: string, id: string) => {
+        const forms = (example.toLowerCase().replace(/[’‘]/g, "'").match(/[a-z']+(?:-[a-z']+)*/g) ?? []).map(lemmaCandidates);
+        return id.toLowerCase().split(/\s+/).every(part => forms.some(f => f.includes(part)));
+    };
+
+    for (const level of ENFORCED_DECKS) {
+        describe(`${level} deck`, () => {
+            const deck = allVocabulary.filter(v => v.cefrLevel === level);
+            const units = new Set(allUnits.filter(u => u.level === level && !u.isAssessment).map(u => u.id));
+
+            it(`teaches ${TARGETS.deckSize[level]} words or more, labelled with their CEFR-J level`, () => {
+                expect(deck.length).toBeGreaterThanOrEqual(TARGETS.deckSize[level]);
+                expect(checkVocabularyLevels(deck, index)).toEqual({ mismatched: [], notLemma: [], missing: [] });
+            });
+
+            it('gives every word its unit, translations and two examples that use it', () => {
+                for (const v of deck) {
+                    expect(units.has(v.unitId!), v.id).toBe(true);
+                    expect(v.translations.length, v.id).toBeGreaterThan(0);
+                    expect(v.examples, v.id).toHaveLength(2);
+                    for (const example of v.examples) expect(usesWord(example, v.id), `${v.id}: ${example}`).toBe(true);
+                }
+            });
+
+            it('spreads the words over every unit of the level', () => {
+                for (const unit of units) expect(deck.filter(v => v.unitId === unit).length, unit).toBeGreaterThanOrEqual(50);
+            });
+        });
+    }
+
+    it('has one card per word', () => {
+        const ids = allVocabulary.map(v => v.id.toLowerCase());
+        expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+    });
+
+    it('keeps the old ids of saved cards pointing at a card', () => {
+        const ids = new Set(allVocabulary.map(v => v.id));
+        for (const [old, id] of Object.entries(vocabularyAliases)) {
+            expect(ids.has(id), old).toBe(true);
+            expect(ids.has(old), old).toBe(false);
+        }
+    });
+
+    it('gives every card the IPA of CMUdict, generated up to date (npm run content:phonetics)', () => {
+        for (const v of allVocabulary) expect(v.phonetic, v.id).toBe(ipaOf(v.id, pronunciations));
+        expect(Object.keys(phonetics).sort()).toEqual(allVocabulary.map(v => v.id).sort());
+    });
+
+    it('chooses homograph pronunciations among the word\'s own variants', () => {
+        for (const [word, variant] of Object.entries(PRONUNCIATION_VARIANT)) {
+            expect((pronunciations as Record<string, string[]>)[word], word).toContain(variant);
         }
     });
 });
