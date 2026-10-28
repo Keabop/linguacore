@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/apiFetch';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Loader2, PartyPopper } from 'lucide-react';
@@ -51,12 +52,9 @@ export default function Pricing() {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session?.access_token) return;
 
-                const res = await fetch('/api/payments/create-subscription', {
+                const res = await apiFetch('/api/payments/create-subscription', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${session.access_token}`,
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'verify' }),
                 });
 
@@ -89,12 +87,9 @@ export default function Pricing() {
                 return;
             }
 
-            const res = await fetch('/api/payments/create-subscription', {
+            const res = await apiFetch('/api/payments/create-subscription', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${session.access_token}`,
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ plan }),
             });
 

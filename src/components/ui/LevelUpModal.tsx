@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import type { CEFRLevel } from '../../lib/db';
 import { BookOpen } from 'lucide-react';
-import Plant from '../garden/Plant';
+import PlantCircle from '../garden/PlantCircle';
 import LevelBadge from './LevelBadge';
 import { useGardenPlant } from '../../hooks/useGardenPlant';
 
@@ -13,7 +13,8 @@ interface LevelUpModalProps {
 }
 
 // Plant height grows with each stage so the new level reads as growth
-const STAGE_HEIGHT: Record<CEFRLevel, number> = { A1: 30, A2: 38, B1: 44, B2: 50 };
+// Taller at each level, and never past the circle's top
+const STAGE_HEIGHT: Record<CEFRLevel, number> = { A1: 26, A2: 32, B1: 38, B2: 44 };
 
 export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalProps) {
     const { t } = useTranslation();
@@ -48,9 +49,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                         transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
                         className="relative bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 max-w-sm w-full text-center z-10 space-y-4 shadow-[var(--shadow-float)]"
                     >
-                        <div className="garden mx-auto" style={{ width: '9rem', height: '9rem' }}>
-                            <Plant species={species} stage="grown" height={STAGE_HEIGHT[level]} grow delay={250} />
-                        </div>
+                        <PlantCircle species={species} size="lg" height={STAGE_HEIGHT[level]} delay={250} />
 
                         <h2 id="level-up-title" className="text-2xl font-extrabold text-[var(--color-on-surface)]">
                             {t('levelUp.congratulations')}

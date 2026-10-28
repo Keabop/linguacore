@@ -56,6 +56,9 @@ function draggedBox(pos: SidebarPosition, x: number, y: number, vw: number, vh: 
     return { width, height, left: clamp(left, 8, vw - width - 8), top: clamp(top, 8, vh - height - 8) };
 }
 
+/** Untouched time before the mobile bar fades out. */
+const BAR_IDLE_MS = 3000;
+
 const KEY_TO_EDGE: Record<string, SidebarPosition> = {
     ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'top', ArrowDown: 'bottom',
 };
@@ -182,6 +185,24 @@ export default function Layout() {
         : dockedBox(position, isNavHovered, viewport.w, viewport.h);
 
     const hideFloatingBar = /^\/learn\/.+/.test(location.pathname);
+
+    // Mobile bar: it fades out after a few seconds untouched and comes back on any touch or scroll
+    const [barIdle, setBarIdle] = useState(false);
+    useEffect(() => {
+        let timer = window.setTimeout(() => setBarIdle(true), BAR_IDLE_MS);
+        const wake = () => {
+            setBarIdle(false);
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => setBarIdle(true), BAR_IDLE_MS);
+        };
+        // focusin also covers screen readers, whose gestures don't send pointer or key events
+        const events = ['pointerdown', 'scroll', 'keydown', 'focusin'] as const;
+        events.forEach(e => window.addEventListener(e, wake, { passive: true, capture: true }));
+        return () => {
+            window.clearTimeout(timer);
+            events.forEach(e => window.removeEventListener(e, wake, { capture: true }));
+        };
+    }, []);
 
     // Auto-scroll active nav item into view on route change
     useEffect(() => {
@@ -335,7 +356,8 @@ export default function Layout() {
                             ? (isNavHovered ? 'px-4 mx-4 justify-start w-full' : 'px-0 mx-2.5 justify-center')
                             : 'justify-start'
                     }`}>
-                        <div className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center shrink-0 rounded-full bg-[var(--color-primary-container)]">
+                        {/* Cream, not the green of the active item, so the logo never reads as selected */}
+                        <div className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center shrink-0 rounded-full bg-[var(--color-surface-container)]">
                             <LeafMark className="w-6 h-6" />
                         </div>
                         <AnimatePresence>
@@ -458,29 +480,25 @@ export default function Layout() {
 
             {/* ===== FLOATING BOTTOM BAR (Mobile Only) ===== */}
             {!hideFloatingBar && (
-                <nav ref={scrollRef} className="floating-bar">
+                <nav ref={scrollRef} className={`floating-bar ${barIdle ? 'is-idle' : ''}`} aria-label={t('nav.main')}>
                     {navItems.map(item => (
                         <NavLink
                             key={item.path}
                             to={item.path}
-                            className={({ isActive }) =>
-                                isActive ? 'active' : ''
-                            }
+                            end={item.end}
+                            aria-label={t(item.labelKey)}
+                            className={({ isActive }) => (isActive ? 'active' : '')}
                         >
-                            <item.icon size={20} isAnimated={false} aria-hidden="true" />
-                            <span>{t(item.labelKey)}</span>
+                            <item.icon size={22} isAnimated={false} aria-hidden="true" />
                         </NavLink>
                     ))}
 
-                    {/* Profile pill */}
                     <NavLink
                         to="/account"
-                        className={({ isActive }) =>
-                            `floating-bar-profile ${isActive ? 'active' : ''}`
-                        }
+                        aria-label={t('nav.profile')}
+                        className={({ isActive }) => (isActive ? 'active' : '')}
                     >
-                        <User className="w-5 h-5" />
-                        <span>{t('nav.profile')}</span>
+                        <User className="w-[22px] h-[22px]" aria-hidden="true" />
                     </NavLink>
                 </nav>
             )}

@@ -103,10 +103,10 @@ function TryIt() {
     // Runs after React has applied the right/wrong classes, so the animation class survives
     useEffect(() => {
         if (!picked) return;
-        const el = optionRefs.current[picked];
+        const el = optionRefs.current[`${index}:${picked}`];
         if (picked === q.answer) celebrateCorrect(el);
         else nudgeWrong(el);
-    }, [picked, q.answer]);
+    }, [picked, q.answer, index]);
 
     const next = () => {
         setPicked(null);
@@ -118,6 +118,15 @@ function TryIt() {
         setPicked(null);
         setCorrect(0);
     };
+
+    // Every screen of the card (the three questions, with their answer shown, and the result)
+    // sits in the same grid cell and only the current one is visible: the card is as tall as
+    // the tallest from the start, so answering never moves anything on the page.
+    const layer = (active: boolean) => ({
+        className: `[grid-area:1/1] ${active ? '' : 'invisible'}`,
+        'aria-hidden': !active,
+        inert: !active,
+    });
 
     return (
         <div className="card p-5 sm:p-6 space-y-5 text-left" aria-labelledby="try-title">
@@ -137,76 +146,88 @@ function TryIt() {
                 className="!h-24"
             />
 
-            {done ? (
-                <div className="space-y-4" role="status">
-                    <p className="text-lg font-bold">
-                        {correct === 3 ? 'Tres de tres. Tu jardín ya floreció.' : `Plantaste ${correct} de 3.`}
-                    </p>
-                    <p className="text-sm text-[var(--color-on-surface-muted)]">
-                        Crea tu cuenta para guardar tu jardín y seguir con la unidad 1 del nivel A1.
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                        <Link to="/auth" className="btn-primary px-5 py-3 text-sm inline-flex items-center gap-2">
-                            Guardar mi jardín <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                        </Link>
-                        <button onClick={restart} className="btn-secondary px-5 py-3 text-sm inline-flex items-center gap-2">
-                            <RotateCcw className="w-4 h-4" aria-hidden="true" /> Otra vez
-                        </button>
+            <div className="grid">
+                {TRY_QUESTIONS.map((question, qi) => {
+                    const active = !done && qi === index;
+                    // Hidden screens reserve the room their answer takes once picked
+                    const shownPick = active ? picked : null;
+                    return (
+                        <div key={qi} {...layer(active)}>
+                            <div className="space-y-5">
+                                <p className="font-display text-2xl font-bold tracking-tight">
+                                    {question.sentence[0]}{' '}
+                                    <span className="inline-block min-w-16 border-b-[3px] border-[var(--color-tertiary)] text-center px-2">
+                                        {shownPick ?? '?'}
+                                    </span>{' '}
+                                    {question.sentence[1]}
+                                </p>
+
+                                <div className="grid gap-2" role="group" aria-label="Opciones">
+                                    {question.options.map((option) => {
+                                        const state = !shownPick ? '' : option === question.answer ? 'right' : option === shownPick ? 'wrong' : 'dim';
+                                        return (
+                                            <button
+                                                key={option}
+                                                ref={(el) => { optionRefs.current[`${qi}:${option}`] = el; }}
+                                                onClick={() => choose(option)}
+                                                disabled={!!shownPick}
+                                                className={`flex items-center justify-between rounded-[var(--radius-sm)] border-[1.5px] px-4 py-3 text-left font-medium transition-colors duration-[var(--dur-short)] ${
+                                                    state === 'right'
+                                                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-container)]'
+                                                        : state === 'wrong'
+                                                            ? 'border-[var(--color-error)] bg-[var(--color-error-light)]'
+                                                            : state === 'dim'
+                                                                ? 'border-[var(--color-outline-variant)] opacity-60'
+                                                                : 'border-[var(--color-outline-variant)] bg-[var(--color-card)] hover:border-[var(--color-on-surface-muted)]'
+                                                }`}
+                                            >
+                                                {option}
+                                                {state === 'right' && <PlayOnMount icon={CheckIcon} size={20} className="text-[var(--color-primary)]" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Always laid out, visible once answered */}
+                                <div aria-live={active ? 'polite' : undefined}>
+                                    <div className={`flex flex-wrap items-center justify-between gap-3 ${shownPick ? '' : 'invisible'}`}>
+                                        <p className="text-sm text-[var(--color-on-surface-muted)]">
+                                            {/* As wide as the longer word either way, so the text wraps the same */}
+                                            <strong className={`inline-grid ${!shownPick || isRight ? 'text-[var(--color-primary)]' : 'text-[var(--color-error)]'}`}>
+                                                <span className="invisible [grid-area:1/1]" aria-hidden="true">Correcto.</span>
+                                                <span className="[grid-area:1/1]">{!shownPick || isRight ? 'Correcto.' : 'Casi.'}</span>
+                                            </strong>{' '}
+                                            {question.why}
+                                        </p>
+                                        <button onClick={next} tabIndex={shownPick ? 0 : -1} autoFocus={!!shownPick} className="btn-primary px-5 py-2.5 text-sm">
+                                            {qi === TRY_QUESTIONS.length - 1 ? 'Ver mi jardín' : 'Siguiente'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                <div {...layer(done)} role={done ? 'status' : undefined}>
+                    <div className="space-y-4">
+                        <p className="text-lg font-bold">
+                            {correct === 3 ? 'Tres de tres. Tu jardín ya floreció.' : `Plantaste ${correct} de 3.`}
+                        </p>
+                        <p className="text-sm text-[var(--color-on-surface-muted)]">
+                            Crea tu cuenta para guardar tu jardín y seguir con la unidad 1 del nivel A1.
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                            <Link to="/auth" className="btn-primary px-5 py-3 text-sm inline-flex items-center gap-2">
+                                Guardar mi jardín <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                            </Link>
+                            <button onClick={restart} className="btn-secondary px-5 py-3 text-sm inline-flex items-center gap-2">
+                                <RotateCcw className="w-4 h-4" aria-hidden="true" /> Otra vez
+                            </button>
+                        </div>
                     </div>
                 </div>
-            ) : (
-                <>
-                    <p className="font-display text-2xl font-bold tracking-tight">
-                        {q.sentence[0]}{' '}
-                        <span className="inline-block min-w-16 border-b-[3px] border-[var(--color-tertiary)] text-center px-2">
-                            {picked ?? '?'}
-                        </span>{' '}
-                        {q.sentence[1]}
-                    </p>
-
-                    <div className="grid gap-2" role="group" aria-label="Opciones">
-                        {q.options.map((option) => {
-                            const state = !picked ? '' : option === q.answer ? 'right' : option === picked ? 'wrong' : 'dim';
-                            return (
-                                <button
-                                    key={option}
-                                    ref={(el) => { optionRefs.current[option] = el; }}
-                                    onClick={() => choose(option)}
-                                    disabled={!!picked}
-                                    className={`flex items-center justify-between rounded-[var(--radius-sm)] border-[1.5px] px-4 py-3 text-left font-medium transition-colors duration-[var(--dur-short)] ${
-                                        state === 'right'
-                                            ? 'border-[var(--color-primary)] bg-[var(--color-primary-container)]'
-                                            : state === 'wrong'
-                                                ? 'border-[var(--color-error)] bg-[var(--color-error-light)]'
-                                                : state === 'dim'
-                                                    ? 'border-[var(--color-outline-variant)] opacity-60'
-                                                    : 'border-[var(--color-outline-variant)] bg-[var(--color-card)] hover:border-[var(--color-on-surface-muted)]'
-                                    }`}
-                                >
-                                    {option}
-                                    {state === 'right' && <PlayOnMount icon={CheckIcon} size={20} className="text-[var(--color-primary)]" />}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    <div aria-live="polite" className="min-h-[1.5rem]">
-                        {picked && (
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <p className="text-sm text-[var(--color-on-surface-muted)]">
-                                    <strong className={isRight ? 'text-[var(--color-primary)]' : 'text-[var(--color-error)]'}>
-                                        {isRight ? 'Correcto.' : 'Casi.'}
-                                    </strong>{' '}
-                                    {q.why}
-                                </p>
-                                <button onClick={next} className="btn-primary px-5 py-2.5 text-sm" autoFocus>
-                                    {index === TRY_QUESTIONS.length - 1 ? 'Ver mi jardín' : 'Siguiente'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </>
-            )}
+            </div>
         </div>
     );
 }

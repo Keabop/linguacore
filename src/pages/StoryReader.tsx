@@ -4,7 +4,6 @@ import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { getStory, getVocab, getVocabMap } from '../data';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCards } from '../hooks/useCards';
@@ -14,8 +13,12 @@ import LevelBadge from '../components/ui/LevelBadge';
 import { useSpeech } from '../hooks/useSpeech';
 import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy, Lightbulb, BookOpen, Check } from 'lucide-react';
 import BackButton from '../components/ui/BackButton';
-import Plant from '../components/garden/Plant';
+import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
+import type { ReadStoryRow } from '../lib/database.types';
+import { useDialogKeys } from '../hooks/useDialogKeys';
+
+type WordStatus = 'deck' | 'known' | 'none';
 
 /** Extract unique word IDs from story HTML content */
 function extractKeywords(html: string): string[] {
@@ -36,14 +39,21 @@ export default function StoryReader() {
     const location = useLocation();
     const { user: authUser } = useAuth();
     const qc = useQueryClient();
-    const { addCard, isWordInDeck, isWordKnown, markAsKnown } = useCards();
+    const { isWordInDeck, isWordKnown, saveStoryWords } = useCards();
 
     const [selectedWord, setSelectedWord] = useState<Vocabulary | null>(null);
-    const [wordStatus, setWordStatus] = useState<'none' | 'deck' | 'known'>('none');
+    // Words marked in this reading; they are saved together when the story is completed
     const [addedWords, setAddedWords] = useState<Set<string>>(new Set());
     const [knownWords, setKnownWords] = useState<Set<string>>(new Set());
     const [completed, setCompleted] = useState(false);
-    const [wordStatuses, setWordStatuses] = useState<Map<string, 'deck' | 'known' | 'none'>>(new Map());
+    // Words already saved before this reading (null while they load)
+    const [savedStatuses, setSavedStatuses] = useState<Map<string, WordStatus> | null>(null);
+    // Words still unmarked when the learner tried to complete the story
+    const [missingWords, setMissingWords] = useState<string[] | null>(null);
+    const missingDialogRef = useDialogKeys(missingWords !== null, () => setMissingWords(null));
+    const [saving, setSaving] = useState(false);
+    // A lesson that sent the learner here gets them back once the story is done
+    const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
 
     // --- Audiobook and Speech States ---
     const {
@@ -174,10 +184,9 @@ export default function StoryReader() {
     const story = staticStory ?? (aiStory ? { ...aiStory, level: aiStory.level as any } : undefined);
     const isAIStory = !staticStory && !!aiStory;
 
-    const keywords = useMemo(() => {
-        if (!story) return [];
-        return extractKeywords(story.content);
-    }, [story]);
+    // Keyed on the text: an AI story is a new object on every render
+    const storyContent = story?.content;
+    const keywords = useMemo(() => (storyContent ? extractKeywords(storyContent) : []), [storyContent]);
 
     const vocabMap = useMemo(() => {
         if (!keywords.length) return new Map<string, Vocabulary>();
@@ -191,25 +200,29 @@ export default function StoryReader() {
         return getVocabMap(keywords) as Map<string, Vocabulary>;
     }, [keywords, isAIStory, aiStory]);
 
+    // What the learner had saved before this reading, checked once per story
     useEffect(() => {
         if (!keywords.length) return;
-        const checkStatuses = async () => {
-            const statuses = new Map<string, 'deck' | 'known' | 'none'>();
-            for (const wordId of keywords) {
-                const inDeck = await isWordInDeck(wordId);
-                const known = await isWordKnown(wordId);
-                if (inDeck || addedWords.has(wordId)) {
-                    statuses.set(wordId, 'deck');
-                } else if (known || knownWords.has(wordId)) {
-                    statuses.set(wordId, 'known');
-                } else {
-                    statuses.set(wordId, 'none');
-                }
-            }
-            setWordStatuses(statuses);
-        };
-        checkStatuses();
-    }, [keywords, addedWords, knownWords, isWordInDeck, isWordKnown]);
+        let cancelled = false;
+        Promise.all(keywords.map(async (wordId): Promise<[string, WordStatus]> => {
+            if (await isWordInDeck(wordId)) return [wordId, 'deck'];
+            if (await isWordKnown(wordId)) return [wordId, 'known'];
+            return [wordId, 'none'];
+        })).then(entries => { if (!cancelled) setSavedStatuses(new Map(entries)); });
+        return () => { cancelled = true; };
+    }, [keywords, isWordInDeck, isWordKnown]);
+
+    // Saved status, or the choice made in this reading
+    const wordStatuses = useMemo(() => {
+        const statuses = new Map<string, WordStatus>();
+        for (const wordId of keywords) {
+            const saved = savedStatuses?.get(wordId) ?? 'none';
+            statuses.set(wordId, saved !== 'none' ? saved : addedWords.has(wordId) ? 'deck' : knownWords.has(wordId) ? 'known' : 'none');
+        }
+        return statuses;
+    }, [keywords, savedStatuses, addedWords, knownWords]);
+    const wordStatus = selectedWord ? wordStatuses.get(selectedWord.id) ?? 'none' : 'none';
+    const selectedIsSaved = !!selectedWord && (savedStatuses?.get(selectedWord.id) ?? 'none') !== 'none';
 
     // --- HTML Sentence Wrapping ---
     const { processedHTML, sentences } = useMemo(() => {
@@ -443,87 +456,65 @@ export default function StoryReader() {
         if (!wordId) return;
 
         const vocab = (isAIStory ? vocabMap.get(wordId) : getVocab(wordId)) as Vocabulary | undefined;
-        if (vocab) {
-            setSelectedWord(vocab);
-            const inDeck = await isWordInDeck(wordId);
-            const known = await isWordKnown(wordId);
-            if (inDeck || addedWords.has(wordId)) {
-                setWordStatus('deck');
-            } else if (known || knownWords.has(wordId)) {
-                setWordStatus('known');
-            } else {
-                setWordStatus('none');
-            }
-        }
-    }, [isWordInDeck, isWordKnown, addedWords, knownWords, currentSentenceIdx, isPlaying, speakSentence, vocabMap, isAIStory]);
+        if (vocab) setSelectedWord(vocab);
+    }, [currentSentenceIdx, isPlaying, speakSentence, vocabMap, isAIStory]);
 
-    const handleChipClick = useCallback(async (wordId: string) => {
+    const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
-        if (vocab) {
-            setSelectedWord(vocab);
-            const status = wordStatuses.get(wordId) || 'none';
-            setWordStatus(status);
-        }
-    }, [vocabMap, wordStatuses]);
+        if (vocab) setSelectedWord(vocab);
+    }, [vocabMap]);
 
-    const handleAddWord = async () => {
-        if (!selectedWord || !storyId) return;
-        const added = await addCard(selectedWord.id, storyId);
-        if (added) {
-            setAddedWords(prev => new Set(prev).add(selectedWord.id));
-            setWordStatus('deck');
-        }
-    };
-
-    const handleMarkKnown = async () => {
+    // Marking only records the choice; it can be changed until the story is completed
+    const chooseForWord = (choice: 'deck' | 'known') => {
         if (!selectedWord) return;
-        const marked = await markAsKnown(selectedWord.id);
-        if (marked) {
-            setKnownWords(prev => new Set(prev).add(selectedWord.id));
-            setWordStatus('known');
-        }
+        const id = selectedWord.id;
+        const without = (set: Set<string>) => { const next = new Set(set); next.delete(id); return next; };
+        setAddedWords(prev => (choice === 'deck' ? new Set(prev).add(id) : without(prev)));
+        setKnownWords(prev => (choice === 'known' ? new Set(prev).add(id) : without(prev)));
     };
+
+    // Every key word must be marked first: the ones left are listed so the learner can finish
+    const unmarkedWords = keywords.filter(id => vocabMap.has(id) && wordStatuses.get(id) === 'none');
 
     const handleComplete = async () => {
-        if (!storyId) return;
-        // Check if story was already completed to avoid duplicate counts
-        let alreadyRead = false;
-        if (navigator.onLine) {
-            const { data: existingRead } = await supabase
-                .from('read_stories')
-                .select('id')
-                .eq('story_id', storyId)
-                .limit(1);
-            alreadyRead = (existingRead && existingRead.length > 0) ?? false;
+        if (!storyId || !savedStatuses || !authUser) return;
+        if (unmarkedWords.length) {
+            setMissingWords(unmarkedWords);
+            return;
         }
-        if (!alreadyRead) {
+        // Only the words chosen in this reading, never ones that were already saved
+        const unsaved = (ids: Set<string>) => [...ids].filter(id => savedStatuses.get(id) === 'none');
+        setSaving(true);
+        try {
+            await saveStoryWords(storyId, unsaved(addedWords), unsaved(knownWords));
             const { offlineInsert } = await import('../lib/offlineMutation');
-            await offlineInsert('read_stories', {
-                user_id: authUser!.id,
+            const read = {
+                user_id: authUser.id,
                 story_id: storyId,
                 completed_at: new Date().toISOString(),
                 words_added: addedWords.size,
-            });
+            };
+            // Read once per story: a story read before keeps its first record
+            await offlineInsert('read_stories', read, { onConflict: 'user_id,story_id', ignoreDuplicates: true });
+            // Shown as read right away, offline too, so the lesson that sent here can go on
+            qc.setQueryData<ReadStoryRow[]>(['readStories', authUser.id], prev =>
+                prev?.some(r => r.story_id === storyId) ? prev : [...(prev ?? []), { id: -1, ...read } as ReadStoryRow]);
             qc.invalidateQueries({ queryKey: ['readStories'] });
+            setCompleted(true);
+        } catch {
+            toast.error({ title: t('reader.saveFailed') });
+        } finally {
+            setSaving(false);
         }
-        setCompleted(true);
     };
 
+    // Words in the text show whether they are in the deck
     useEffect(() => {
-        if (!story) return;
         const container = document.getElementById('story-content');
-        if (!container) return;
-        const wordSpans = container.querySelectorAll('span[data-word]');
-        wordSpans.forEach(async (span) => {
-            const wordId = span.getAttribute('data-word');
-            if (wordId) {
-                const inDeck = await isWordInDeck(wordId);
-                if (inDeck || addedWords.has(wordId)) {
-                    span.classList.add('in-deck');
-                }
-            }
+        container?.querySelectorAll('span[data-word]').forEach(span => {
+            span.classList.toggle('in-deck', wordStatuses.get(span.getAttribute('data-word') ?? '') === 'deck');
         });
-    }, [story, addedWords, isWordInDeck]);
+    }, [wordStatuses, processedHTML]);
 
     if (!story) {
         return (
@@ -547,24 +538,34 @@ export default function StoryReader() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-16 space-y-6"
                 >
-                    <Plant species={species} stage="grown" height={88} grow className="mx-auto" />
+                    <PlantCircle species={species} size="lg" height={44} />
                     <h2 className="text-3xl font-black tracking-tight">{t('reader.storyCompleted')}</h2>
                     <p className="text-[var(--color-on-surface-muted)] text-base">
                         {addedWords.size} {t('reader.wordsAdded')}
                     </p>
-                    <div className="flex gap-4 justify-center pt-6">
+                    <div className="flex flex-wrap gap-4 justify-center pt-6">
+                        {returnTo && (
+                            <button
+                                onClick={() => navigate(returnTo)}
+                                className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                            >
+                                {t('reader.backToLesson')}
+                            </button>
+                        )}
                         <button
                             onClick={() => navigate('/learn')}
-                            className="bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
+                            className="rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)] px-7 py-3.5 font-bold transition-colors duration-300"
                         >
                             {t('reader.backToStories')}
                         </button>
-                        <button
-                            onClick={() => navigate('/review')}
-                            className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
-                        >
-                            {t('dashboard.startReview')}
-                        </button>
+                        {!returnTo && (
+                            <button
+                                onClick={() => navigate('/review')}
+                                className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                            >
+                                {t('dashboard.startReview')}
+                            </button>
+                        )}
                     </div>
                 </m.div>
             </LazyMotion>
@@ -576,7 +577,7 @@ export default function StoryReader() {
         <div className="space-y-8">
             {/* Story header */}
             <div className="flex items-center gap-4">
-                <BackButton to="/learn" />
+                <BackButton to={returnTo ?? '/learn'} />
                 <div className="flex-1">
                     <h2 className="text-2xl font-black tracking-tight">{story.title}</h2>
                     <div className="flex items-center gap-2 mt-1.5">
@@ -750,12 +751,70 @@ export default function StoryReader() {
             </AnimatePresence>
 
             {/* Complete button */}
-            <button
-                onClick={handleComplete}
-                className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-black py-4 rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-base tracking-wide"
-            >
-                <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.storyCompleted')}
-            </button>
+            <div className="space-y-2">
+                <p className="text-center text-xs font-semibold text-[var(--color-on-surface-muted)]" aria-live="polite">
+                    {unmarkedWords.length
+                        ? t('reader.wordsLeft', { count: unmarkedWords.length })
+                        : t('reader.allWordsMarked')}
+                </p>
+                <button
+                    onClick={handleComplete}
+                    disabled={!savedStatuses || saving}
+                    className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-black py-4 rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-base tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                >
+                    <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.storyCompleted')}
+                </button>
+            </div>
+
+            {/* Words still to mark: tapping one opens its card */}
+            <AnimatePresence>
+                {missingWords && (
+                    <>
+                        <m.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setMissingWords(null)}
+                            className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)] z-[55]"
+                        />
+                        <m.div
+                            ref={missingDialogRef}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="missing-words-title"
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 30 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            className="fixed bottom-4 left-4 right-4 z-[60]"
+                        >
+                            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[60vh] overflow-y-auto">
+                                <h3 id="missing-words-title" className="text-lg font-black tracking-tight">{t('reader.missingTitle', { count: missingWords.length })}</h3>
+                                <p className="text-sm text-[var(--color-on-surface-muted)]">{t('reader.missingHint')}</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {missingWords.filter(id => wordStatuses.get(id) === 'none').map(id => (
+                                        <button
+                                            key={id}
+                                            onClick={() => { setMissingWords(null); handleChipClick(id); }}
+                                            className="vocab-chip"
+                                        >
+                                            <span>{id}</span>
+                                            <span className="chip-translation">— {vocabMap.get(id)?.translations[0]}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setMissingWords(null)}
+                                    autoFocus
+                                    className="w-full rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)] py-3 font-bold text-sm"
+                                >
+                                    {t('common.close')}
+                                </button>
+                            </div>
+                        </m.div>
+                    </>
+                )}
+            </AnimatePresence>
 
             {/* Floating Audiobook Player Bar */}
             <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
@@ -880,31 +939,47 @@ export default function StoryReader() {
                                 )}
 
                                 <div className="flex gap-3 pt-2">
-                                    {wordStatus === 'deck' ? (
+                                    {selectedIsSaved && wordStatus === 'deck' ? (
                                         <div className="flex-1 bg-[var(--color-primary)]/12 text-[var(--color-primary)] text-center py-3 rounded-full text-sm font-bold">
                                             <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.alreadyAdded')}
                                         </div>
-                                    ) : wordStatus === 'known' ? (
+                                    ) : selectedIsSaved && wordStatus === 'known' ? (
                                         <div className="flex-1 bg-accent-blue/12 text-accent-blue text-center py-3 rounded-full text-sm font-bold">
                                             <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.alreadyKnown')}
                                         </div>
                                     ) : (
                                         <>
                                             <button
-                                                onClick={handleAddWord}
-                                                className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-sm"
+                                                onClick={() => chooseForWord('deck')}
+                                                aria-pressed={wordStatus === 'deck'}
+                                                // Until saved words are known, a choice could repeat one
+                                                disabled={!savedStatuses}
+                                                className={`flex-1 py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] text-sm ${
+                                                    wordStatus === 'deck'
+                                                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:shadow-[var(--shadow-elevated)]'
+                                                        : 'rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)]'
+                                                }`}
                                             >
-                                                + {t('reader.addToDeck')}
+                                                {wordStatus === 'deck' ? <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" /> : '+ '}{t('reader.addToDeck')}
                                             </button>
                                             <button
-                                                onClick={handleMarkKnown}
-                                                className="flex-1 bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] text-sm"
+                                                onClick={() => chooseForWord('known')}
+                                                aria-pressed={wordStatus === 'known'}
+                                                disabled={!savedStatuses}
+                                                className={`flex-1 py-3 rounded-full font-bold transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] text-sm ${
+                                                    wordStatus === 'known'
+                                                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:shadow-[var(--shadow-elevated)]'
+                                                        : 'rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)]'
+                                                }`}
                                             >
                                                 <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.alreadyKnown')}
                                             </button>
                                         </>
                                     )}
                                 </div>
+                                {!selectedIsSaved && wordStatus !== 'none' && (
+                                    <p className="text-center text-xs text-[var(--color-on-surface-muted)]">{t('reader.savedOnComplete')}</p>
+                                )}
                             </div>
                         </m.div>
                     </>

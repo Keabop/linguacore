@@ -1,26 +1,8 @@
 import { env, setEnv } from '../../../server/lib/config.js';
+import { authenticateRequest } from '../../../server/lib/auth.js';
 import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../../../server/lib/cors.js';
 import { createPreapproval, findLatestPreapproval, mapSubscriptionStatus, updatePreapproval } from '../../../server/lib/mercadopago.js';
-
-// ---------------------------------------------------------------------------
-// Authenticate
-// ---------------------------------------------------------------------------
-async function authenticate(request: Request) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) return null;
-
-    const token = authHeader.slice(7);
-    const supabaseUrl = env.SUPABASE_URL;
-    const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return null;
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error || !user) return null;
-    return user;
-}
 
 // ---------------------------------------------------------------------------
 // Plan config
@@ -50,13 +32,9 @@ export const onRequestPost: PagesFunction = async (context) => {
     const corsHeaders = getCorsHeaders(request, 'POST, OPTIONS');
 
     // Authenticate
-    const user = await authenticate(request);
-    if (!user) {
-        return new Response(JSON.stringify({ error: 'Unauthorized — valid Supabase session required' }), {
-            status: 401,
-            headers: corsHeaders,
-        });
-    }
+    const auth = await authenticateRequest(request);
+    if ('response' in auth) return auth.response(corsHeaders);
+    const { user } = auth;
 
     try {
         const { plan, action } = await request.json() as {

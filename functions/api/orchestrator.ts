@@ -7,10 +7,10 @@ import { evaluateWriting } from '../../server/agents/writing-evaluator.js';
 import { generateCareerDeck } from '../../server/agents/career-deck.js';
 import { evaluateSpeaking } from '../../server/agents/speaking-evaluator.js';
 import { env, setEnv } from '../../server/lib/config.js';
+import { authenticateRequest } from '../../server/lib/auth.js';
 import { checkUsageLimit, checkWeeklyLimit, incrementUsage, getUserTier } from '../../server/lib/usageLimits.js';
 import { accessTier } from '../../server/lib/roles.js';
 import { isCacheable, generateCacheKey, getCachedResponse, setCachedResponse } from '../../server/lib/aiCache.js';
-import { createClient, type User } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../../server/lib/cors.js';
 
 // ---------------------------------------------------------------------------
@@ -26,25 +26,6 @@ function isRateLimited(ip: string): boolean {
     timestamps.push(now);
     hits.set(ip, timestamps);
     return timestamps.length > MAX_REQUESTS;
-}
-
-// ---------------------------------------------------------------------------
-// Authenticate
-// ---------------------------------------------------------------------------
-async function authenticate(request: Request): Promise<User | null> {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) return null;
-
-    const token = authHeader.slice(7);
-    const supabaseUrl = env.SUPABASE_URL;
-    const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) return null;
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error || !user) return null;
-    return user;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,13 +125,9 @@ export const onRequestPost: PagesFunction = async (context) => {
     }
 
     // Authenticate
-    const user = await authenticate(request);
-    if (!user) {
-        return new Response(JSON.stringify({ error: 'Unauthorized — valid Supabase session required' }), {
-            status: 401,
-            headers: corsHeaders,
-        });
-    }
+    const auth = await authenticateRequest(request);
+    if ('response' in auth) return auth.response(corsHeaders);
+    const { user } = auth;
 
     // Fetch user tier for per-user limits
     const userId = user.id;

@@ -162,6 +162,12 @@
 
 /* === GLOBAL STYLES === */
 @layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary {
+    cursor: pointer;
+  }
+
   * {
     margin: 0;
     padding: 0;
@@ -691,32 +697,39 @@ span[data-word].in-deck {
   .floating-bar {
     display: flex;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    left: 12px;
+    right: 12px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
     z-index: 50;
-    background: var(--color-card);
-    border-top: 1px solid var(--color-outline-variant);
-    padding: 8px 12px calc(env(safe-area-inset-bottom, 8px) + 8px);
-    gap: 4px;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 6px;
+    gap: 2px;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
+    background: var(--color-card);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 999px;
+    box-shadow: var(--shadow-float);
+    transition: opacity var(--dur-long) var(--ease-out), transform var(--dur-long) var(--ease-out);
+  }
+
+  /* Untouched for a while: it steps back so the page shows, and is still there to tap */
+  .floating-bar.is-idle {
+    opacity: 0.6;
+    transform: translateY(6px);
   }
 
   .floating-bar a {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: center;
     flex: 1;
-    gap: 4px;
-    padding: 8px 4px;
-    border-radius: 1rem;
-    color: var(--color-on-surface-muted);
-    text-decoration: none;
-    font-size: 10px;
-    font-weight: 600;
-    transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
     min-width: 0;
+    height: 44px;
+    border-radius: 999px;
+    color: var(--color-on-surface-muted);
+    transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
   }
 
   .floating-bar a.active {
@@ -724,37 +737,11 @@ span[data-word].in-deck {
     background: var(--color-primary-container);
   }
 
-  .floating-bar a .bar-icon {
-    font-size: 1.3rem;
-    line-height: 1;
-  }
-
-  .floating-bar .floating-bar-profile {
-    margin-left: 0;
-    padding-left: 0;
-  }
-
   .main-content-inner.no-floating-bar-padding {
     padding-bottom: 24px !important;
   }
 }
 
-/* Tablet: spread floating bar evenly */
-@media (min-width: 520px) and (max-width: 1024px) {
-  .floating-bar {
-    justify-content: space-evenly;
-    gap: 0;
-  }
-
-  .floating-bar a {
-    flex: 1;
-    padding: 8px 6px;
-  }
-
-  .floating-bar .floating-bar-profile {
-    flex: 1;
-  }
-}
 
 /* === VOXIE CUSTOM TOAST SYSTEM === */
 @keyframes toast-enter {
@@ -1087,6 +1074,19 @@ span[data-word].in-deck {
 .page-enter { animation: page-enter 360ms var(--ease-out) both; }
 @keyframes page-enter { from { opacity: 0; } to { opacity: 1; } }
 
+/* Auth landscape: a few leaves drift slowly in the wind */
+.auth-leaf {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: auth-leaf-drift 9s var(--ease-in-out) infinite alternate;
+}
+.auth-leaf-2 { animation-duration: 11s; animation-delay: -3s; }
+.auth-leaf-3 { animation-duration: 13s; animation-delay: -6s; }
+@keyframes auth-leaf-drift {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(18px, 10px) rotate(24deg); }
+}
+
 /* Story cards: the corner leaves sway a little when the card is hovered */
 .story-card-leaves { transform-origin: 100% 90%; transition: transform var(--dur-long) var(--ease-out); }
 *:hover > .story-card-leaves { transform: rotate(-6deg) scale(1.04); }
@@ -1097,5 +1097,7 @@ span[data-word].in-deck {
   .sprout-loader-leaf, .sprout-loader-plant { animation: none; transform: none; }
   .sprout-loader { animation: loader-breathe 2s var(--ease-in-out) infinite; }
   .story-card-leaves { transition: none; }
+  .floating-bar.is-idle { transform: none; }
+  .auth-leaf { animation: none; }
 }
 @keyframes loader-breathe { 50% { opacity: 0.55; } }
