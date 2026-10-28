@@ -13,7 +13,7 @@ import LevelBadge from '../components/ui/LevelBadge';
 import SettingsModal from '../components/SettingsModal';
 import type { ReadStoryRow, CardRow } from '../lib/database.types';
 import { generateCareerDeck } from '../lib/ai';
-import { getVocab } from '../data';
+import { getVocab } from '../data/vocabulary';
 import { toast } from '../lib/toast';
 
 /** A skill the simulator didn't assess is shown as a dash, not as 0%. */

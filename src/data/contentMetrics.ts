@@ -25,6 +25,9 @@ export const TARGETS = {
  */
 export const ENFORCED_LEVELS: Level[] = [];
 
+/** Levels whose vocabulary deck has been rebuilt (phase 6 for A1–A2): size and CEFR-J labels. */
+export const ENFORCED_DECKS: Level[] = ['A1', 'A2'];
+
 /** Exam banks that must be free of templated or repeated questions. */
 export const ENFORCED_EXAMS = ['placement', 'cambridgeB1', 'cambridgeB2', 'ielts', 'toefl'] as const;
 
@@ -265,7 +268,7 @@ export function checkVocabularyLevels(vocab: { id: string; cefrLevel: string }[]
     const result: LevelCheck = { mismatched: [], notLemma: [], missing: [] };
     for (const v of vocab) {
         const parts = idWords(v.id);
-        const phrase = parts.join(' ');
+        const phrase = index.has(v.id.toLowerCase()) ? v.id.toLowerCase() : parts.join(' ');
         if (index.has(phrase)) {
             if (index.get(phrase) !== v.cefrLevel) result.mismatched.push({ id: v.id, ours: v.cefrLevel, reference: index.get(phrase)! });
             continue;

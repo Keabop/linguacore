@@ -10,6 +10,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "pages": "npm run build && wrangler pages dev dist --compatibility-date=2026-05-26",
+    "content:phonetics": "esbuild scripts/build-phonetics.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/build-phonetics.mjs --log-level=warning && node node_modules/.cache/build-phonetics.mjs",
     "content:audit": "esbuild scripts/content-audit.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/content-audit.mjs --log-level=warning && node node_modules/.cache/content-audit.mjs"
   },
   "devDependencies": {

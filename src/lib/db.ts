@@ -27,6 +27,8 @@ export interface Vocabulary {
   cefrLevel: import('./database.types').CEFRLevel;
   examples: string[];
   phonetic?: string;
+  /** Unit where the word is first taught (A1 and A2 decks). */
+  unitId?: string;
 }
 
 export interface Card {
