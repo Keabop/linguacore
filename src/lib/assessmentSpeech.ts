@@ -1,4 +1,5 @@
 ﻿import type { DialogueLine } from './exam/types';
+import { rankVoice } from './voices';
 
 // Listening audio of the simulators. A question with `audioSrc` plays its pre-generated file;
 // otherwise the dialogue is read with the browser's voices, one distinct voice per speaker.
@@ -7,20 +8,6 @@ export interface SpeakerVoice {
     voice?: SpeechSynthesisVoice;
     /** Changes the pitch when both speakers had to share one voice. */
     pitch: number;
-}
-
-const FEMALE = /female|woman|zira|samantha|hazel|susan|libby|sonia|aria|jenny|ava|allison|karen|moira|tessa|serena|victoria|fiona/i;
-const MALE = /\bmale\b|\bman\b|david|george|mark|ryan|guy|daniel|alex|fred|oliver|thomas|james|arthur/i;
-
-function score(voice: SpeechSynthesisVoice, line: DialogueLine): number {
-    const lang = line.accent === 'US' ? 'en-US' : 'en-GB';
-    let s = 0;
-    if (voice.lang.replace('_', '-').startsWith(lang)) s += 4;
-    else if (voice.lang.startsWith('en')) s += 1;
-    else return -1;
-    if ((line.gender === 'female' ? FEMALE : MALE).test(voice.name)) s += 3;
-    if (voice.localService) s += 1;
-    return s;
 }
 
 /**
@@ -33,7 +20,7 @@ export function pickSpeakerVoices(lines: DialogueLine[], voices: SpeechSynthesis
     const speakers = [...new Map(lines.map(l => [l.speaker, l])).values()];
     for (const line of speakers) {
         const ranked = voices
-            .map(v => ({ v, s: score(v, line) }))
+            .map(v => ({ v, s: rankVoice(v, line.accent, line.gender) }))
             .filter(x => x.s >= 0)
             .sort((a, b) => b.s - a.s);
         const free = ranked.find(x => !taken.has(x.v));

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { pickVoice } from '../lib/voices';
 
 // Browser compatibility types
 interface SpeechRecognitionEvent extends Event {
@@ -154,10 +155,7 @@ export function useSpeech(): UseSpeechReturn {
         utterance.lang = 'en-US';
         utterance.rate = rate;
 
-        // Try to pick an English voice
-        const voices = window.speechSynthesis.getVoices();
-        const englishVoice = voices.find(v => v.lang.startsWith('en-') && v.localService) ||
-            voices.find(v => v.lang.startsWith('en-'));
+        const englishVoice = pickVoice(window.speechSynthesis.getVoices(), 'US');
         if (englishVoice) utterance.voice = englishVoice;
 
         utterance.onstart = () => setIsSpeaking(true);
