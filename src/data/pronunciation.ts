@@ -21,6 +21,9 @@ export const PRONUNCIATION_VARIANT: Record<string, string> = {
     research: 'R IY1 S ER0 CH', // investigación (the noun)
     graduate: 'G R AE1 JH UW0 EY2 T', // graduarse (the verb)
     perfect: 'P ER1 F IH2 K T', // the adjective
+    wound: 'W UW1 N D', // herida, not the past of wind /waʊnd/
+    suspect: 'S AH1 S P EH2 K T', // sospechoso (the noun)
+    refuse: 'R IH0 F Y UW1 Z', // negarse, not basura /ˈrefjuːs/
     ear: 'IH1 R',
     essay: 'EH1 S EY2',
     often: 'AO1 F AH0 N',
@@ -42,15 +45,6 @@ export const MANUAL_IPA: Record<string, string> = {
     genuine: '/ˈdʒenjuɪn/',
     stomachache: '/ˈstʌməkeɪk/',
     toothache: '/ˈtuːθeɪk/',
-    // B1–B2 cards outside CEFR-J (phase 8 of the plan revises them)
-    rising: '/ˈraɪzɪŋ/',
-    alarming: '/əˈlɑːrmɪŋ/',
-    sustainable: '/səˈsteɪnəbəl/',
-    elaborate: '/ɪˈlæbəreɪt/', // the verb, as on its card
-    profound: '/prəˈfaʊnd/',
-    speculate: '/ˈspekjəleɪt/',
-    spontaneous: '/spɑːnˈteɪniəs/',
-    undermine: '/ˌʌndɚˈmaɪn/',
 };
 
 const strip = (ipa: string) => ipa.replace(/^\/|\/$/g, '');
