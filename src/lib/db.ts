@@ -11,6 +11,14 @@ export enum CardState {
   Relearning = 3,
 }
 
+/** A comprehension question after a story; `evidence` quotes the sentence that answers it. */
+export interface StoryQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  evidence: string;
+}
+
 export interface Story {
   id: string;
   level: import('./database.types').CEFRLevel;
@@ -19,6 +27,7 @@ export interface Story {
   wordCount: number;
   estimatedMinutes: number;
   unitId?: string;
+  questions?: StoryQuestion[];
 }
 
 export interface Vocabulary {

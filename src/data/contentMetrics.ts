@@ -15,7 +15,7 @@ export const TARGETS = {
     storiesPerUnit: 2,
     /** Share of a story's words at or below its level (Hu & Nation: ~95% for unassisted reading). */
     minCoverage: 0.95,
-    /** Stories in which each deck word should appear. */
+    /** Stories in which each key word of a unit should appear (src/data/vocabulary/keyWords.ts). */
     minEncounters: 3,
 };
 
@@ -23,7 +23,7 @@ export const TARGETS = {
  * Levels whose content has been rebuilt under the plan; the content tests enforce the targets
  * only for these. A phase adds its level here when it lands.
  */
-export const ENFORCED_LEVELS: Level[] = [];
+export const ENFORCED_LEVELS: Level[] = ['A1', 'A2'];
 
 /** Levels whose vocabulary deck has been rebuilt (phase 6 for A1–A2): size and CEFR-J labels. */
 export const ENFORCED_DECKS: Level[] = ['A1', 'A2'];
