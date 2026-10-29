@@ -34,7 +34,7 @@ describe('evaluateWriting against the CEFR', () => {
         await evaluateWriting({ ...base, level: 'A2' });
         const prompt = gemini.generateWithFallback.mock.calls.at(-1)![0] as string;
         expect(prompt).toContain(CEFR_DESCRIPTORS.A2.writing);
-        expect(prompt).toContain('50–74: it does what the descriptor expects at A2');
+        expect(prompt).toContain('"meets" (60–79): it does what the descriptor expects at A2');
     });
 
     it('never puts an unknown level into the prompt', async () => {

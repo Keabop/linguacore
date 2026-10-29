@@ -3,7 +3,7 @@ import { chat } from '../../server/agents/conversation-tutor.js';
 import { generateStory } from '../../server/agents/story-generator.js';
 import { enrichVocabulary } from '../../server/agents/vocab-enricher.js';
 import { createExercise } from '../../server/agents/exercise-creator.js';
-import { evaluateWriting } from '../../server/agents/writing-evaluator.js';
+import { WRITING_TYPES, evaluateWriting } from '../../server/agents/writing-evaluator.js';
 import { generateCareerDeck } from '../../server/agents/career-deck.js';
 import { evaluateSpeaking } from '../../server/agents/speaking-evaluator.js';
 import { env, setEnv } from '../../server/lib/config.js';
@@ -35,6 +35,10 @@ function isRateLimited(ip: string): boolean {
 /** The evaluators take an exam id (its criteria are chosen on the server), or none. */
 const validExam = (exam: unknown) => exam === undefined || isCriteriaExam(exam);
 
+/** A string of at most `max` characters; with `optional`, also absent (undefined or null). */
+const isText = (value: unknown, max: number, optional = false) =>
+    (optional && value == null) || (typeof value === 'string' && value.length <= max);
+
 function validateInputSize(agent: AgentType, params: any): { valid: boolean; error?: string } {
     if (!params) return { valid: true };
 
@@ -48,8 +52,15 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
                 return { valid: false, error: 'La conversación es demasiado larga. Intenta iniciar un nuevo chat.' };
             }
             
+            if (!isText(params.topic, 200, true)) {
+                return { valid: false, error: 'El tema de la conversación es demasiado largo (máximo 200 caracteres).' };
+            }
+
             let totalLength = 0;
             for (const msg of messages) {
+                if (msg?.role !== 'user' && msg?.role !== 'assistant') {
+                    return { valid: false, error: 'Formato de mensajes inválido.' };
+                }
                 if (typeof msg.content !== 'string') {
                     return { valid: false, error: 'El contenido del mensaje debe ser texto.' };
                 }
@@ -83,8 +94,16 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
             break;
         }
         case 'writing-evaluator': {
-            if (params.text && typeof params.text === 'string' && params.text.length > 3000) {
-                return { valid: false, error: 'El texto a evaluar es demasiado largo (máximo 3000 caracteres).' };
+            if (!isText(params.text, 3000)) {
+                return { valid: false, error: 'El texto a evaluar debe ser texto de máximo 3000 caracteres.' };
+            }
+            if (!isText(params.prompt, 4000) || !isText(params.referenceAnswer, 1000, true)) {
+                return { valid: false, error: 'La consigna o la respuesta de referencia son demasiado largas.' };
+            }
+            if (!WRITING_TYPES.includes(params.type)) return { valid: false, error: 'Tipo de ejercicio desconocido.' };
+            const grammar = params.targetGrammar;
+            if (grammar != null && (!Array.isArray(grammar) || grammar.length > 10 || grammar.some((g: unknown) => !isText(g, 100)))) {
+                return { valid: false, error: 'La lista de gramática objetivo no es válida.' };
             }
             if (!validExam(params.exam)) return { valid: false, error: 'Examen desconocido.' };
             break;

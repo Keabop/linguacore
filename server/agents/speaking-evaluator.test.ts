@@ -13,7 +13,7 @@ describe('evaluateSpeaking', () => {
         await evaluateSpeaking({ transcripts: ['I like football'], prompts: ['What do you do at weekends?'], level: 'B1' });
         const prompt = gemini.generateWithFallback.mock.calls[0][0] as string;
         expect(prompt).toContain(CEFR_DESCRIPTORS.B1.speaking);
-        expect(prompt).toContain('0–49');
+        expect(prompt).toContain('0–59');
     });
 });
 
