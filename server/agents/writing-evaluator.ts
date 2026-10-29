@@ -1,5 +1,6 @@
 import { generateWithFallback } from '../lib/gemini.js';
 import { EXAM_CRITERIA, criteriaInstructions, isCriteriaExam, type CriterionScore } from '../lib/examCriteria.js';
+import { descriptorRubric, toCefrLevel } from '../lib/cefrDescriptors.js';
 
 interface WritingEvaluationRequest {
     text: string;          // User's writing
@@ -33,15 +34,8 @@ interface WritingEvaluationResponse {
     criteria?: CriterionScore[];
 }
 
-const LEVEL_STRICTNESS: Record<string, string> = {
-    A1: 'Be very lenient. Focus only on the most basic errors. Accept simplified grammar. Praise any correct attempt.',
-    A2: 'Be lenient. Accept minor errors in complex structures. Focus on core grammar patterns being practiced.',
-    B1: 'Be moderately strict. Expect correct use of intermediate grammar. Point out vocabulary range issues.',
-    B2: 'Be strict. Expect near-native accuracy in grammar. Evaluate style, coherence, and vocabulary sophistication.',
-};
-
 export async function evaluateWriting(params: WritingEvaluationRequest): Promise<WritingEvaluationResponse> {
-    const strictness = LEVEL_STRICTNESS[params.level] || LEVEL_STRICTNESS['A1'];
+    const level = toCefrLevel(params.level);
     const exam = isCriteriaExam(params.exam) ? criteriaInstructions(EXAM_CRITERIA[params.exam].writing) : null;
 
     const typeInstructions: Record<string, string> = {
@@ -51,7 +45,7 @@ export async function evaluateWriting(params: WritingEvaluationRequest): Promise
         'error-correction': `The student was given text with deliberate errors and asked to correct them. Evaluate how many errors they found and fixed correctly. Note any errors they missed or incorrectly "fixed."`,
     };
 
-    const prompt = `You are an expert English writing evaluator for Spanish-speaking students learning English at CEFR level ${params.level}.
+    const prompt = `You are an expert English writing evaluator for Spanish-speaking students learning English at CEFR level ${level}.
 
 EVALUATION CONTEXT:
 - Exercise type: ${params.type}
@@ -63,7 +57,7 @@ STUDENT'S TEXT:
 "${params.text}"
 
 EVALUATION RULES:
-${strictness}
+${descriptorRubric(level, 'writing')}
 ${typeInstructions[params.type] || ''}
 
 ALL feedback text (corrections explanations, notes, encouragement) MUST be in SPANISH.
@@ -122,5 +116,6 @@ The "improvedVersion" should always be the best version of what the student was 
         },
         improvedVersion: parsed.improvedVersion || params.text,
         encouragement: parsed.encouragement || '¡Sigue practicando!',
+        ...(exam && Array.isArray(parsed.criteria) ? { criteria: parsed.criteria } : {}),
     };
 }
