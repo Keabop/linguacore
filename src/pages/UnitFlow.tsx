@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import type { ReadStoryRow } from '../lib/database.types';
@@ -8,8 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
 import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
-import { getUnit, getStoryByUnit, getExercisesByUnit, getSkillsByUnit } from '../data';
-import { getVocabMap } from '../data/vocabulary';
+import { getUnit, getStoriesByUnit, getExercisesByUnit, getSkillsByUnit } from '../data';
+import { allVocabulary, getVocabMap, savedIdsOf, vocabularyAliases } from '../data/vocabulary';
+import { unitKeyWords } from '../data/vocabulary/keyWords';
+import { useCards } from '../hooks/useCards';
 import { shuffle } from '../lib/shuffle';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
@@ -111,7 +113,8 @@ export default function UnitFlow() {
     const { addSkillCards } = useSkillCards();
 
     const unit = unitId ? getUnit(unitId) ?? null : null;
-    const unitStory = unitId ? getStoryByUnit(unitId) ?? null : null;
+    const unitStories = unitId ? getStoriesByUnit(unitId) : [];
+    const unitStory = unitStories[0] ?? null;
     const unitExercises = unitId ? getExercisesByUnit(unitId) : ([] as GrammarExercise[]);
 
     // Track animation direction
@@ -232,7 +235,7 @@ export default function UnitFlow() {
 
                     {currentStep === 'story' && (
                         <StoryStep
-                            unitStory={unitStory ?? null}
+                            unitStories={unitStories}
                             onComplete={() => {
                                 markStepComplete('story');
                                 handleStepAdvance();
@@ -243,6 +246,7 @@ export default function UnitFlow() {
 
                     {currentStep === 'vocab' && (
                         <VocabStep
+                            unitId={unitId!}
                             unitStory={unitStory}
                             onComplete={() => {
                                 markStepComplete('vocab');
@@ -466,11 +470,11 @@ function StepHeader({
 /* -- Story Step -- */
 
 function StoryStep({
-    unitStory,
+    unitStories,
     onComplete,
     onNavigateStories,
 }: {
-    unitStory: { id: string; title: string } | null;
+    unitStories: Story[];
     onComplete: () => void;
     onNavigateStories: () => void;
 }) {
@@ -487,9 +491,12 @@ function StoryStep({
         },
         enabled: !!user?.id,
     });
-    const isRead = !!unitStory && !!readStories?.some(r => r.story_id === unitStory.id);
+    const isRead = (id: string) => !!readStories?.some(r => r.story_id === id);
+    const nextUnread = unitStories.find(s => !isRead(s.id));
+    // Until the read stories load, the button can't know which story comes next
+    const loadingRead = !!user?.id && readStories === undefined;
     // The story sends the learner back to this step once it is completed
-    const readStory = () => unitStory && navigate(`/learn/${unitStory.id}`, { state: { returnTo: location.pathname } });
+    const readStory = (story: Story) => navigate(`/learn/${story.id}`, { state: { returnTo: location.pathname } });
 
     return (
         <div className="space-y-6">
@@ -500,28 +507,33 @@ function StoryStep({
             />
 
             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 space-y-7 shadow-[var(--shadow-card)]">
-                {unitStory ? (
+                {unitStories.length > 0 ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
-                            Tienes una historia asignada para esta unidad:
+                            {t('unitFlow.storiesIntro', { count: unitStories.length })}
                         </p>
-                        <button
-                            onClick={readStory}
-                            className="w-full bg-[var(--color-surface-container)] rounded-2xl p-5 flex items-center justify-between hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] transition-all duration-300 group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
-                                <span className="font-bold text-sm group-hover:text-[var(--color-primary)] transition-colors">
-                                    {unitStory.title}
-                                </span>
-                                {isRead && (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary-container)] px-2.5 py-0.5 text-xs font-bold text-[var(--color-primary)]">
-                                        <Check className="h-3 w-3" aria-hidden="true" /> {t('unitFlow.storyRead')}
-                                    </span>
-                                )}
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-[var(--color-on-surface-muted)] group-hover:text-[var(--color-primary)] group-hover:translate-x-0.5 transition-all" />
-                        </button>
+                        <div className="space-y-3">
+                            {unitStories.map(story => (
+                                <button
+                                    key={story.id}
+                                    onClick={() => readStory(story)}
+                                    className="w-full bg-[var(--color-surface-container)] rounded-2xl p-5 flex items-center justify-between hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] transition-all duration-300 group"
+                                >
+                                    <div className="flex flex-wrap items-center gap-3 text-left">
+                                        <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
+                                        <span className="font-bold text-sm group-hover:text-[var(--color-primary)] transition-colors">
+                                            {story.title}
+                                        </span>
+                                        {isRead(story.id) && (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary-container)] px-2.5 py-0.5 text-xs font-bold text-[var(--color-primary)]">
+                                                <Check className="h-3 w-3" aria-hidden="true" /> {t('unitFlow.storyRead')}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 shrink-0 text-[var(--color-on-surface-muted)] group-hover:text-[var(--color-primary)] group-hover:translate-x-0.5 transition-all" />
+                                </button>
+                            ))}
+                        </div>
                     </>
                 ) : (
                     <>
@@ -544,12 +556,13 @@ function StoryStep({
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    {/* With a story, the step is done once it is read (and its words marked) */}
+                    {/* With stories, the step is done once all of them are read (and their words marked) */}
                     <button
-                        onClick={unitStory && !isRead ? readStory : onComplete}
-                        className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                        onClick={nextUnread ? () => readStory(nextUnread) : onComplete}
+                        disabled={loadingRead && unitStories.length > 0}
+                        className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none"
                     >
-                        {!unitStory ? 'Saltar por ahora' : isRead ? t('unitFlow.continue') : t('unitFlow.readStory')}
+                        {!unitStories.length ? t('unitFlow.skipForNow') : nextUnread ? t('unitFlow.readNextStory', { title: nextUnread.title }) : t('unitFlow.continue')}
                     </button>
                 </div>
             </div>
@@ -569,23 +582,73 @@ function extractKeywords(html: string): string[] {
     return Array.from(seen);
 }
 
+/**
+ * The unit's deck: its key words first (the ones its stories keep using), then the rest.
+ * Units without a deck (B1, B2) show the words of their story, as before.
+ */
 function VocabStep({
+    unitId,
     unitStory,
     onComplete,
     onNavigateReview,
 }: {
+    unitId: string;
     unitStory: Story | null;
     onComplete: () => void;
     onNavigateReview: () => void;
 }) {
+    const { t } = useTranslation();
+    const { user } = useAuth();
+    const { saveStoryWords } = useCards();
+    const keyWords = useMemo(() => new Set(unitKeyWords[unitId] ?? []), [unitId]);
     const vocabItems = useMemo(() => {
+        const deck = allVocabulary.filter(v => v.unitId === unitId);
+        if (deck.length) return [...deck.filter(v => keyWords.has(v.id)), ...deck.filter(v => !keyWords.has(v.id))];
         if (!unitStory) return [];
         const keywords = extractKeywords(unitStory.content);
-        if (!keywords.length) return [];
         // One card per word, even when the story links it by an old id too
         return [...new Map([...getVocabMap(keywords).values()].map(v => [v.id, v])).values()];
-    }, [unitStory]);
+    }, [unitId, unitStory, keyWords]);
+    const isDeck = vocabItems.some(v => v.unitId === unitId);
 
+    // Which of these words the learner already has in the review deck (or marked as known)
+    const ids = useMemo(() => vocabItems.flatMap(v => savedIdsOf(v.id)), [vocabItems]);
+    const qc = useQueryClient();
+    const { data: saved } = useQuery({
+        queryKey: ['unitWordsSaved', unitId, user?.id],
+        queryFn: async () => {
+            const [cards, known] = await Promise.all([
+                supabase.from('cards').select('word_id').in('word_id', ids),
+                supabase.from('known_words').select('word_id').in('word_id', ids),
+            ]);
+            // Offline or failing, the query errs and keeps its cached answer instead of "nothing saved"
+            if (cards.error) throw cards.error;
+            if (known.error) throw known.error;
+            const current = (rows: { word_id: string }[]) => new Set(rows.map(r => vocabularyAliases[r.word_id] ?? r.word_id));
+            return { inDeck: current(cards.data ?? []), known: current(known.data ?? []) };
+        },
+        enabled: !!user?.id && isDeck,
+    });
+    const isSaved = (id: string) => !!saved && (saved.inDeck.has(id) || saved.known.has(id));
+    const unsaved = saved ? vocabItems.filter(v => !isSaved(v.id)) : [];
+    const [adding, setAdding] = useState(false);
+    const addToReview = async () => {
+        setAdding(true);
+        try {
+            const ids = unsaved.map(v => v.id);
+            await saveStoryWords(unitId, ids, [], { countLearned: false });
+            // Shown as added at once: offline the refetch fails and would keep offering them again
+            qc.setQueryData<typeof saved>(['unitWordsSaved', unitId, user?.id], prev => prev && { ...prev, inDeck: new Set([...prev.inDeck, ...ids]) });
+            toast.success({ title: t('unitFlow.wordsAdded', { count: unsaved.length }) });
+        } catch {
+            toast.error({ title: t('unitFlow.wordsAddFailed') });
+        } finally {
+            setAdding(false);
+        }
+    };
+
+    const [showAll, setShowAll] = useState(false);
+    const visible = isDeck && !showAll ? vocabItems.filter(v => keyWords.has(v.id)) : vocabItems;
     const [flipped, setFlipped] = useState<Set<string>>(new Set());
 
     const toggleFlip = (id: string) => {
@@ -602,9 +665,11 @@ function VocabStep({
             <StepHeader
                 icon={RefreshCw}
                 label="Vocabulario"
-                description={unitStory
-                    ? `Vocabulario clave de "${unitStory.title}".`
-                    : "Repasa el vocabulario que aprendiste."
+                description={isDeck
+                    ? t('unitFlow.deckDescription', { count: vocabItems.length })
+                    : unitStory
+                        ? t('unitFlow.storyWordsDescription', { title: unitStory.title })
+                        : t('unitFlow.reviewWordsDescription')
                 }
             />
 
@@ -612,13 +677,14 @@ function VocabStep({
                 {vocabItems.length > 0 ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
-                            Toca cada tarjeta para ver la traducción y ejemplo.
+                            {isDeck ? t(showAll ? 'unitFlow.deckAllHint' : 'unitFlow.deckKeyHint', { count: visible.length }) : t('unitFlow.tapCardHint')}
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {vocabItems.map(v => (
+                            {visible.map(v => (
                                 <button
                                     key={v.id}
                                     onClick={() => toggleFlip(v.id)}
+                                    aria-pressed={flipped.has(v.id)}
                                     className={`
                                         relative rounded-2xl p-4 text-left transition-all duration-300 min-h-[72px]
                                         ${flipped.has(v.id)
@@ -633,11 +699,16 @@ function VocabStep({
                                             {v.phonetic && (
                                                 <span className="text-[10px] text-[var(--color-on-surface-muted)]">{v.phonetic}</span>
                                             )}
+                                            {(saved?.inDeck.has(v.id) || saved?.known.has(v.id)) && (
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--color-primary)]">
+                                                    <Check className="h-3 w-3" aria-hidden="true" /> {t(saved.inDeck.has(v.id) ? 'unitFlow.inReview' : 'unitFlow.alreadyKnown')}
+                                                </span>
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-1">
                                             <span className="font-semibold text-xs text-[var(--color-primary)]">{v.translations.join(', ')}</span>
-                                            <span className="text-[10px] text-[var(--color-on-surface-muted)] italic leading-tight">
+                                            <span lang="en" className="text-[10px] text-[var(--color-on-surface-muted)] italic leading-tight">
                                                 {v.examples[0]}
                                             </span>
                                         </div>
@@ -645,6 +716,24 @@ function VocabStep({
                                 </button>
                             ))}
                         </div>
+                        {isDeck && vocabItems.length > visible.length && (
+                            <button
+                                onClick={() => setShowAll(true)}
+                                className="w-full rounded-full py-3 text-sm font-bold text-[var(--color-primary)] hover:bg-[var(--color-primary-container)] transition-colors"
+                            >
+                                {t('unitFlow.deckShowAll', { count: vocabItems.length })}
+                            </button>
+                        )}
+                        {isDeck && saved && (
+                            <button
+                                onClick={addToReview}
+                                disabled={!unsaved.length || adding}
+                                className="w-full bg-[var(--color-surface-container)] rounded-2xl p-5 flex items-center justify-center gap-2 font-bold text-sm hover:bg-[var(--color-surface-container-highest)] transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                            >
+                                <Check className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" />
+                                {unsaved.length ? t('unitFlow.addWords', { count: unsaved.length }) : t('unitFlow.allWordsInReview')}
+                            </button>
+                        )}
                     </>
                 ) : (
                     <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
