@@ -1,4 +1,5 @@
 import { chatWithFallback } from '../lib/gemini.js';
+import { CEFR_DESCRIPTORS, toCefrLevel, type CefrLevel } from '../lib/cefrDescriptors.js';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -21,7 +22,7 @@ interface ConversationResponse {
     suggestions: string[];
 }
 
-const LEVEL_INSTRUCTIONS: Record<string, string> = {
+const LEVEL_INSTRUCTIONS: Record<CefrLevel, string> = {
     A1: 'Use very simple English. Short sentences. Present tense only. Basic vocabulary. If the user writes in Spanish, gently encourage them to try in English.',
     A2: 'Use simple English with basic past and present tenses. Elementary vocabulary. Encourage simple responses.',
     B1: 'Use intermediate English with varied tenses. Introduce idiomatic expressions. Encourage longer responses.',
@@ -29,13 +30,17 @@ const LEVEL_INSTRUCTIONS: Record<string, string> = {
 };
 
 export async function chat(params: ConversationRequest): Promise<ConversationResponse> {
-    const levelInstructions = LEVEL_INSTRUCTIONS[params.level] || LEVEL_INSTRUCTIONS['A1'];
+    const level = toCefrLevel(params.level);
     const topicHint = params.topic ? `Current conversation topic: ${params.topic}` : 'Start with a friendly greeting and suggest a topic to discuss.';
 
-    const systemPrompt = `You are a friendly, encouraging English conversation tutor helping a Spanish-speaking student at CEFR level ${params.level}.
+    const systemPrompt = `You are a friendly, encouraging English conversation tutor helping a Spanish-speaking student at CEFR level ${level}.
+
+What a ${level} learner can do in conversation (CEFR): ${CEFR_DESCRIPTORS[level].interaction}
 
 Rules:
-- ${levelInstructions}
+- ${LEVEL_INSTRUCTIONS[level]}
+- Write so a ${level} learner can follow: no words or grammar above ${level} unless you explain them in Spanish
+- Expect answers like the descriptor above, and correct only what matters at ${level}
 - If the student makes grammar or vocabulary mistakes, gently correct them
 - Always keep the conversation going with a follow-up question
 - Be warm, patient, and encouraging
