@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { getStory } from '../data';
 import { getVocab, getVocabMap } from '../data/vocabulary';
+import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCards } from '../hooks/useCards';
@@ -507,6 +508,9 @@ export default function StoryReader() {
                     </m.div>
                 )}
             </AnimatePresence>
+
+            {/* Comprehension questions, answered while reading (completing the story ends the reading) */}
+            {!!story.questions?.length && <StoryQuestions questions={story.questions} />}
 
             {/* Complete button */}
             <div className="space-y-2">

@@ -1,6 +1,7 @@
 // `npm run content:audit`: where the teaching content stands against the plan's targets.
 import { allStories, allUnits } from '../src/data';
 import { allVocabulary } from '../src/data/vocabulary';
+import { unitKeyWords } from '../src/data/vocabulary/keyWords';
 import { placementQuestions } from '../src/data/assessments/placement';
 import { cambridgeB1Questions } from '../src/data/assessments/cambridge/b1';
 import { cambridgeB2Questions } from '../src/data/assessments/cambridge/b2';
@@ -30,17 +31,19 @@ for (const level of LEVELS) {
     const avgWords = stories.reduce((n, s) => n + s.wordCount, 0) / Math.max(1, stories.length);
     const lowCoverage = coverage.filter(c => c.coverage < TARGETS.minCoverage).length;
     const unknown = [...new Set(coverage.flatMap(c => c.unknown))];
-    const pool = allStories.filter(s => levelRank(s.level) <= levelRank(level) + 1);
-    const encounters = storyEncounters(pool, deck.map(v => v.id), index);
+    const pool = allStories.filter(s => s.level === level || levelRank(s.level) === levelRank(level) + 1);
+    const keys = units.flatMap(u => unitKeyWords[u.id] ?? []);
+    const encounters = storyEncounters(pool, keys, index);
     const rare = [...encounters.values()].filter(n => n < TARGETS.minEncounters).length;
+    const short = stories.filter(s => s.wordCount < TARGETS.storyWords[level] * 0.8).length;
 
     console.log(`== ${level}`);
     console.log(`  ${mark(stories.length >= units.length * TARGETS.storiesPerUnit)}historias: ${stories.length} (meta ${units.length * TARGETS.storiesPerUnit}, ${TARGETS.storiesPerUnit} por unidad)`);
-    console.log(`  ${mark(avgWords >= TARGETS.storyWords[level])}largo medio: ${Math.round(avgWords)} palabras (meta ${TARGETS.storyWords[level]})`);
+    console.log(`  ${mark(short === 0)}largo medio: ${Math.round(avgWords)} palabras (meta ${TARGETS.storyWords[level]}; ${short} historias bajo el 80 %)`);
     console.log(`  ${mark(lowCoverage === 0)}cobertura: ${lowCoverage} de ${stories.length} historias bajo ${pct(TARGETS.minCoverage)}`);
     if (unknown.length) console.log(`      fuera de la lista y sin enseñar: ${list(unknown)}`);
     console.log(`  ${mark(deck.length >= TARGETS.deckSize[level])}vocabulario del nivel: ${deck.length} (meta ${TARGETS.deckSize[level]})`);
-    console.log(`  ${mark(rare === 0)}repetición: ${rare} de ${deck.length} palabras en menos de ${TARGETS.minEncounters} historias`);
+    console.log(`  ${mark(keys.length > 0 && rare === 0)}repetición: ${rare} de ${keys.length} palabras clave en menos de ${TARGETS.minEncounters} historias`);
 }
 
 const check = checkVocabularyLevels(allVocabulary, index);

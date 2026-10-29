@@ -33,8 +33,8 @@ export const getExercisesByLevel = (level: string) => {
     const unitIds = new Set(getUnitsByLevel(level).map(u => u.id));
     return allExercises.filter(e => unitIds.has(e.unitId));
 };
-export const getStoryByUnit = (unitId: string) =>
-    allStories.find(s => s.unitId === unitId);
+export const getStoriesByUnit = (unitId: string) =>
+    allStories.filter(s => s.unitId === unitId);
 export const getStoriesByLevel = (level: string) =>
     allStories.filter(s => s.level === level);
 export const getWritingPromptsByUnit = (unitId: string) =>

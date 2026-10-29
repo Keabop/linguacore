@@ -86,7 +86,13 @@
     "unlockMessage": "Completa el nivel {{level}} para desbloquear",
     "keyVocabulary": "Vocabulario clave",
     "inDeck": "En tu mazo",
-    "known": "Conocida"
+    "known": "Conocida",
+    "questionsTitle": "¿Entendiste la historia?",
+    "questionsIntro": "Responde tres preguntas. Al elegir verás si acertaste y la frase de la historia que lo dice.",
+    "answerRight": "¡Correcto!",
+    "answerWrong": "No es esa.",
+    "answerEvidence": "La historia dice:",
+    "questionsScore": "Acertaste {{right}} de {{total}}."
   },
   "storyList": {
     "subtitle": "Explora historias por nivel",
@@ -261,7 +267,25 @@
     "canSpeakNow": "Ya puedo hablar",
     "storyRead": "Leída",
     "continue": "Continuar",
-    "readStory": "Leer la historia"
+    "storiesIntro_one": "Esta unidad tiene una historia. Léela para practicar su gramática y su vocabulario.",
+    "storiesIntro_other": "Esta unidad tiene {{count}} historias. Léelas para practicar su gramática y su vocabulario.",
+    "readNextStory": "Leer «{{title}}»",
+    "deckDescription": "Las {{count}} palabras que enseña esta unidad.",
+    "deckKeyHint": "Empieza por las {{count}} palabras clave: son las que más aparecen en las historias. Toca una tarjeta para ver su traducción y un ejemplo.",
+    "deckAllHint": "Todas las palabras de la unidad. Toca una tarjeta para ver su traducción y un ejemplo.",
+    "deckShowAll": "Ver las {{count}} palabras de la unidad",
+    "inReview": "En tu repaso",
+    "addWords_one": "Añadir {{count}} palabra a mi repaso",
+    "addWords_other": "Añadir {{count}} palabras a mi repaso",
+    "allWordsInReview": "Todas las palabras están en tu repaso",
+    "wordsAdded_one": "Añadiste {{count}} palabra a tu repaso.",
+    "wordsAdded_other": "Añadiste {{count}} palabras a tu repaso.",
+    "wordsAddFailed": "No se pudieron añadir las palabras. Inténtalo de nuevo.",
+    "skipForNow": "Saltar por ahora",
+    "storyWordsDescription": "Vocabulario clave de «{{title}}».",
+    "reviewWordsDescription": "Repasa el vocabulario que aprendiste.",
+    "tapCardHint": "Toca cada tarjeta para ver la traducción y un ejemplo.",
+    "alreadyKnown": "Ya la conoces"
   },
   "exercises": {
     "title": "Ejercicios",

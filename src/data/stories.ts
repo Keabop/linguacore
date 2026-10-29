@@ -1,9 +1,7 @@
 import type { Story } from '../lib/db';
-
-/** A tappable word: `w('tooth', 'teeth')` links the card and shows the form the text needs. */
-function w(word: string, shown = word): string {
-    return `<span data-word="${word}">${shown}</span>`;
-}
+import { a1Stories } from './stories-a1';
+import { a2Stories } from './stories-a2';
+import { w } from './storyMarkup';
 
 /** Words in the story's text, without the markup. */
 function countWords(content: string): number {
@@ -11,96 +9,12 @@ function countWords(content: string): number {
 }
 
 // About 100 words a minute: a learner reading carefully, tapping unknown words
-const withReadingStats = (s: Story): Story => {
+const withReadingStats = (s: Omit<Story, 'wordCount' | 'estimatedMinutes'>): Story => {
     const wordCount = countWords(s.content);
     return { ...s, wordCount, estimatedMinutes: Math.max(1, Math.round(wordCount / 100)) };
 };
 
 const stories: Story[] = [
-    // ===== A1 STORIES (10) =====
-    {
-        id: "a1-001", level: "A1", unitId: "a1-u3", title: "My Morning Routine", wordCount: 45, estimatedMinutes: 2,
-        content: `<p>I ${w('wake')} up at 7 AM every day. First, I ${w('brush')} my ${w('tooth', 'teeth')} and wash my face. Then I ${w('eat')} ${w('breakfast')} with my ${w('family')}.</p><p>I ${w('drink')} ${w('coffee')} and ${w('read')} the news. After that, I ${w('walk')} to ${w('school')}. I ${w('like')} mornings because they are quiet.</p>`
-    },
-    {
-        id: "a1-002", level: "A1", unitId: "a1-u1", title: "My Family", wordCount: 50, estimatedMinutes: 2,
-        content: `<p>My ${w('family')} is ${w('small')}. I have a ${w('mother')}, a ${w('father')}, and a ${w('sister')}. My ${w('brother')} lives in another city.</p><p>My mother ${w('work')}s at a hospital. My father is a teacher. We ${w('love')} each other very much. On weekends, we ${w('eat')} ${w('food')} ${w('together')} and ${w('play')} games.</p>`
-    },
-    {
-        id: "a1-003", level: "A1", unitId: "a1-u4", title: "My Best Friend", wordCount: 48, estimatedMinutes: 2,
-        content: `<p>My best ${w('friend')} is Ana. She is very ${w('happy')} and kind. We ${w('go')} to ${w('school')} together every day.</p><p>Ana ${w('like')}s to ${w('read')} ${w('book')}s and ${w('play')} music. I ${w('like')} to ${w('run')} and ${w('play')} sports. We are ${w('different')}, but we are ${w('good')} friends.</p>`
-    },
-    {
-        id: "a1-004", level: "A1", title: "A Rainy Day", wordCount: 46, estimatedMinutes: 2,
-        content: `<p>Today the ${w('weather')} is ${w('bad')}. It is ${w('cold')} and there is ${w('rain')}. I cannot ${w('go')} outside to ${w('play')}.</p><p>I stay in my ${w('house')} and ${w('read')} a ${w('book')}. My ${w('cat')} ${w('sleep')}s on the sofa. I ${w('drink')} ${w('hot')} chocolate. ${w('rain')}y days can be nice too.</p>`
-    },
-    {
-        id: "a1-005", level: "A1", unitId: "a1-u7", title: "At the Store", wordCount: 50, estimatedMinutes: 2,
-        content: `<p>I ${w('go')} to the store to ${w('buy')} ${w('food')}. I ${w('need')} ${w('water')}, bread, and fruits. The store is ${w('big')} and has many things.</p><p>I ${w('see')} my ${w('friend')} Carlos at the store. He ${w('want')}s to ${w('buy')} a new ${w('book')}. We ${w('walk')} home together. I ${w('like')} going shopping.</p>`
-    },
-    {
-        id: "a1-006", level: "A1", title: "My Pets", wordCount: 48, estimatedMinutes: 2,
-        content: `<p>I have two pets. My ${w('dog')} is ${w('big')} and ${w('happy')}. His name is Max. My ${w('cat')} is ${w('small')} and she ${w('sleep')}s a lot.</p><p>Every morning, I ${w('walk')} my ${w('dog')} in the park. He ${w('like')}s to ${w('run')} and ${w('play')}. My ${w('cat')} stays at ${w('house')} and watches from the window.</p>`
-    },
-    {
-        id: "a1-007", level: "A1", unitId: "a1-u6", title: "Learning English", wordCount: 44, estimatedMinutes: 2,
-        content: `<p>I ${w('want')} to ${w('read')} and ${w('write')} in English. It is not ${w('easy')}, but I ${w('like')} it. I study every day after ${w('school')}.</p><p>My teacher is very ${w('good')}. She ${w('help')}s me a lot. I ${w('know')} many words now. I am ${w('happy')} with my progress.</p>`
-    },
-    {
-        id: "a1-008", level: "A1", unitId: "a1-u5", title: "The Park", wordCount: 46, estimatedMinutes: 2,
-        content: `<p>The park is near my ${w('house')}. It is very ${w('big')} and ${w('beautiful')}. I ${w('go')} there with my ${w('family')} on ${w('sun')}ny days.</p><p>Children ${w('play')} on the grass. People ${w('walk')} their ${w('dog')}s. I ${w('like')} to sit and ${w('read')} under a tree. The park makes me ${w('happy')}.</p>`
-    },
-    {
-        id: "a1-009", level: "A1", unitId: "a1-u2", title: "My Room", wordCount: 44, estimatedMinutes: 2,
-        content: `<p>My room is ${w('small')} but I ${w('like')} it. I have a bed, a desk, and a ${w('book')}shelf. My ${w('cat')} ${w('sleep')}s on my bed.</p><p>I ${w('read')} and ${w('write')} at my desk. I have many ${w('book')}s. At night, I ${w('close')} the window and ${w('sleep')}. My room is my ${w('favorite')} place.</p>`
-    },
-    {
-        id: "a1-010", level: "A1", title: "Dinner Time", wordCount: 48, estimatedMinutes: 2,
-        content: `<p>Every evening, my ${w('family')} eats dinner together. My ${w('mother')} cooks ${w('good')} ${w('food')}. Tonight we ${w('eat')} chicken and ${w('vegetable', 'vegetables')}.</p><p>I ${w('help')} my mother in the kitchen. My ${w('father')} and ${w('brother')} set the table. We talk about our day. I ${w('love')} dinner time with my ${w('family')}.</p>`
-    },
-
-    // ===== A2 STORIES (10) =====
-    {
-        id: "a2-001", level: "A2", unitId: "a2-u5", title: "A Trip to the Market", wordCount: 60, estimatedMinutes: 3,
-        content: `<p>Last Saturday, I ${w('decide', 'decided')} to ${w('visit')} the local ${w('market')}. The ${w('vegetable', 'vegetables')} looked ${w('fresh')} and ${w('colorful')}. I ${w('choose')} tomatoes, peppers, and lettuce.</p><p>An old woman was selling ${w('beautiful')} flowers. I ${w('decide', 'decided')} to ${w('buy')} some for my ${w('mother')}. She was ${w('surprised')} and ${w('happy')} when I gave them to her.</p>`
-    },
-    {
-        id: "a2-002", level: "A2", unitId: "a2-u1", title: "My First Day at Work", wordCount: 65, estimatedMinutes: 3,
-        content: `<p>I ${w('remember')} my first day at work. I was ${w('worried')} and ${w('excited')} at the same time. I woke up early and got ${w('ready')} ${w('quickly')}.</p><p>My ${w('neighbor')} drove me to the office. Everyone was ${w('friendly')}. My boss ${w('explain')}ed my tasks ${w('carefully')}. By the end of the day, I felt more confident. It was an ${w('important')} day for me.</p>`
-    },
-    {
-        id: "a2-003", level: "A2", unitId: "a2-u7", title: "Cooking with Grandma", wordCount: 62, estimatedMinutes: 3,
-        content: `<p>${w('during')} the holidays, I ${w('visit')} my grandmother. She has a special ${w('recipe')} for chocolate cake. We ${w('prepare')} it ${w('together')} every year.</p><p>First, we mix the flour and sugar ${w('carefully')}. Then we add eggs and chocolate. While we wait, she tells me stories about her life. Cooking with grandma is my ${w('favorite')} ${w('experience')}.</p>`
-    },
-    {
-        id: "a2-004", level: "A2", unitId: "a2-u3", title: "The New Student", wordCount: 58, estimatedMinutes: 3,
-        content: `<p>A new student ${w('arrive')}d at our school today. Her name is Sofia and she is from Brazil. She speaks Portuguese and is learning English.</p><p>At first, she was quiet and looked ${w('worried')}. I ${w('decide', 'decided')} to talk to her. We ${w('already')} have many things in common. Now we are ${w('friend')}s and we ${w('practice')} English ${w('together')}.</p>`
-    },
-    {
-        id: "a2-005", level: "A2", unitId: "a2-u2", title: "A Weekend in the Country", wordCount: 64, estimatedMinutes: 3,
-        content: `<p>Last weekend, my family ${w('travel')}ed to a small town in the country. The ${w('weather')} was ${w('beautiful')} and the air was ${w('fresh')}.</p><p>We ${w('visit')}ed a farm and saw many animals. I ${w('enjoy')}ed feeding the horses. In the evening, we ate at a local restaurant. The ${w('food')} was ${w('different')} from the city, but very ${w('good')}. I want to go back soon.</p>`
-    },
-    {
-        id: "a2-006", level: "A2", unitId: "a2-u8", title: "Learning to Cook", wordCount: 60, estimatedMinutes: 3,
-        content: `<p>I ${w('decide', 'decided')} to learn how to cook. I ${w('usually')} eat at restaurants, but it is expensive. My ${w('friend')} gave me an easy ${w('recipe')} for pasta.</p><p>I went to the ${w('market')} and bought all the ingredients. I followed the instructions ${w('carefully')}. The result was not perfect, but it tasted ${w('good')}. I want to ${w('improve')} and ${w('practice')} more.</p>`
-    },
-    {
-        id: "a2-007", level: "A2", unitId: "a2-u9", title: "The Lost Dog", wordCount: 62, estimatedMinutes: 3,
-        content: `<p>While I was ${w('walk')}ing in the park, I found a lost ${w('dog')}. He was ${w('small')} and ${w('scared')}. I ${w('decide', 'decided')} to ${w('help')} him find his owner.</p><p>I took him to the ${w('neighbor')}hood and asked people. ${w('eventually')}, an old man recognized the ${w('dog')}. He was so ${w('happy')} and grateful. ${w('sometimes')}, ${w('small')} actions make a ${w('big')} ${w('different')}.</p>`
-    },
-    {
-        id: "a2-008", level: "A2", unitId: "a2-u6", title: "My Healthy Habits", wordCount: 58, estimatedMinutes: 3,
-        content: `<p>This year, I ${w('decide', 'decided')} to live a more ${w('healthy')} life. I ${w('wake')} up early and ${w('drink')} ${w('water')} before ${w('breakfast')}.</p><p>I ${w('usually')} ${w('eat')} ${w('fresh')} fruits and ${w('vegetable', 'vegetables')}. I also ${w('run')} three times a week. ${w('sometimes')} it is hard, but I feel much better. My ${w('friend')}s say I look more ${w('happy')} and full of energy.</p>`
-    },
-    {
-        id: "a2-009", level: "A2", unitId: "a2-u4", title: "The Music Festival", wordCount: 60, estimatedMinutes: 3,
-        content: `<p>Last month, I went to a music festival with my ${w('friend')}s. It was ${w('exciting')} and ${w('colorful')}. Many bands played ${w('different')} types of music.</p><p>We ${w('enjoy')}ed dancing and singing ${w('together')}. I was ${w('surprised')} by how ${w('good')} some new bands were. We ${w('spend')} the whole day there. It was an ${w('experience')} I will ${w('always')} ${w('remember')}.</p>`
-    },
-    {
-        id: "a2-010", level: "A2", title: "Moving to a New City", wordCount: 64, estimatedMinutes: 3,
-        content: `<p>Next month, I am ${w('leave')}ing my hometown. I ${w('decide', 'decided')} to move to a new city for ${w('work')}. It is ${w('exciting')} but also a little scary.</p><p>I will miss my ${w('family')} and ${w('friend')}s. But I think this ${w('change')} is ${w('important')} for my future. My ${w('mother')} says I should be brave. I ${w('understand')} that new ${w('experience')}s help us grow.</p>`
-    },
-
     // ===== B1 STORIES (11) =====
     {
         id: "b1-001", level: "B1", unitId: "b1-u2", title: "Climate Change Concerns", wordCount: 80, estimatedMinutes: 4,
@@ -202,4 +116,4 @@ const stories: Story[] = [
     },
 ];
 
-export const storiesData: Story[] = stories.map(withReadingStats);
+export const storiesData: Story[] = [...a1Stories, ...a2Stories, ...stories].map(withReadingStats);
