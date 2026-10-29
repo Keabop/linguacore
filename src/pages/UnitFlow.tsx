@@ -584,7 +584,7 @@ function extractKeywords(html: string): string[] {
 
 /**
  * The unit's deck: its key words first (the ones its stories keep using), then the rest.
- * Units without a deck (B1, B2) show the words of their story, as before.
+ * A unit without key words shows its whole deck.
  */
 function VocabStep({
     unitId,
@@ -648,7 +648,9 @@ function VocabStep({
     };
 
     const [showAll, setShowAll] = useState(false);
-    const visible = isDeck && !showAll ? vocabItems.filter(v => keyWords.has(v.id)) : vocabItems;
+    // Key words first; a unit whose stories don't set key words yet shows its whole deck
+    const keyOnly = isDeck && !showAll && keyWords.size > 0;
+    const visible = keyOnly ? vocabItems.filter(v => keyWords.has(v.id)) : vocabItems;
     const [flipped, setFlipped] = useState<Set<string>>(new Set());
 
     const toggleFlip = (id: string) => {
@@ -677,7 +679,7 @@ function VocabStep({
                 {vocabItems.length > 0 ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
-                            {isDeck ? t(showAll ? 'unitFlow.deckAllHint' : 'unitFlow.deckKeyHint', { count: visible.length }) : t('unitFlow.tapCardHint')}
+                            {isDeck ? t(keyOnly ? 'unitFlow.deckKeyHint' : 'unitFlow.deckAllHint', { count: visible.length }) : t('unitFlow.tapCardHint')}
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {visible.map(v => (
