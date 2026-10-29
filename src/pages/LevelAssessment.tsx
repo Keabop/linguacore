@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -8,15 +8,24 @@ import {
     RotateCcw,
     CheckCircle2,
     XCircle,
+    Headphones,
+    Volume2,
 } from 'lucide-react';
-import type { CEFRLevel, GrammarExercise, Unit } from '../lib/db';
+import type { CEFRLevel } from '../lib/db';
 import type { Profile } from '../lib/database.types';
-import { getExercisesByLevel, getUnitsByLevel } from '../data';
+import type { AssessmentQuestion, ExamResponse } from '../lib/exam/types';
+import { allExercises, getUnitsByLevel } from '../data';
+import { levelFinalBanks, type LessonLevel } from '../data/assessments/level-final';
+import { LEVEL_FINAL_PASS, buildLevelFinal, levelFinalResult } from '../lib/exam/levelFinal';
+import { playListening, stopDialogueSpeech } from '../lib/assessmentSpeech';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
-import ExerciseRunner from '../components/exercises/ExerciseRunner';
+import { toast } from '../lib/toast';
+import QuestionView from '../components/exam/QuestionView';
+import PassageView from '../components/exam/PassageView';
 import BackButton from '../components/ui/BackButton';
+import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 
 interface LevelAssessmentProps {
     level: CEFRLevel;
@@ -24,17 +33,10 @@ interface LevelAssessmentProps {
     onComplete: () => void;
 }
 
-type AssessmentState = 'intro' | 'loading' | 'testing' | 'passed' | 'failed' | 'error';
+type AssessmentState = 'intro' | 'testing' | 'passed' | 'failed' | 'error';
 
-interface FailedTopic {
-    unitId: string;
-    grammarTopic: string;
-    count: number;
-}
-
-const EXERCISE_COUNT_MIN = 15;
-const EXERCISE_COUNT_MAX = 20;
-const PASS_THRESHOLD = 80;
+/** Times each recording can be heard, as in the Cambridge exams. */
+const AUDIO_PLAYS = 2;
 
 const nextLevelMap: Record<string, CEFRLevel> = {
     A1: 'A2',
@@ -42,194 +44,133 @@ const nextLevelMap: Record<string, CEFRLevel> = {
     B1: 'B2',
 };
 
-/**
- * Selects a balanced mix of exercises across units and types.
- * Picks 2-3 exercises per non-assessment unit, shuffled.
- */
-function selectExercises(allExercises: GrammarExercise[], assessmentUnitId: string): GrammarExercise[] {
-    // Filter out exercises from the assessment unit
-    const eligible = allExercises.filter(e => e.unitId !== assessmentUnitId);
-    if (eligible.length === 0) return [];
-
-    // Group by unitId
-    const byUnit = new Map<string, GrammarExercise[]>();
-    for (const ex of eligible) {
-        const group = byUnit.get(ex.unitId) || [];
-        group.push(ex);
-        byUnit.set(ex.unitId, group);
-    }
-
-    const unitIds = Array.from(byUnit.keys());
-    const targetCount = Math.min(
-        Math.max(EXERCISE_COUNT_MIN, Math.min(EXERCISE_COUNT_MAX, eligible.length)),
-        eligible.length,
-    );
-
-    // Calculate how many per unit (roughly balanced)
-    const perUnit = Math.max(2, Math.ceil(targetCount / unitIds.length));
-    const selected: GrammarExercise[] = [];
-
-    // First pass: pick up to `perUnit` from each unit, ensuring type diversity
-    for (const uid of unitIds) {
-        const unitExercises = byUnit.get(uid)!;
-        // Shuffle unit exercises
-        const shuffled = [...unitExercises].sort(() => Math.random() - 0.5);
-
-        // Try to get a mix of types
-        const types = new Set(shuffled.map(e => e.type));
-        const picked: GrammarExercise[] = [];
-
-        // First, pick one of each type available
-        for (const type of types) {
-            const ofType = shuffled.find(e => e.type === type && !picked.includes(e));
-            if (ofType && picked.length < perUnit) {
-                picked.push(ofType);
-            }
-        }
-
-        // Fill remaining slots
-        for (const ex of shuffled) {
-            if (picked.length >= perUnit) break;
-            if (!picked.includes(ex)) {
-                picked.push(ex);
-            }
-        }
-
-        selected.push(...picked);
-    }
-
-    // Trim to target count if we have too many
-    const trimmed = selected.sort(() => Math.random() - 0.5).slice(0, targetCount);
-
-    // Final shuffle
-    return trimmed.sort(() => Math.random() - 0.5);
-}
+const SECTION_KEY = { 'use-of-english': 'sectionGrammar', reading: 'sectionReading', listening: 'sectionListening' } as const;
 
 export default function LevelAssessment({ level, unitId, onComplete }: LevelAssessmentProps) {
     const { t } = useTranslation();
     const { user: authUser } = useAuth();
     const qc = useQueryClient();
     const [state, setState] = useState<AssessmentState>('intro');
-    const [exercises, setExercises] = useState<GrammarExercise[]>([]);
+    const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
+    const [index, setIndex] = useState(0);
+    const [responses, setResponses] = useState<Record<string, ExamResponse>>({});
+    const [plays, setPlays] = useState<Record<string, number>>({});
+    const [isPlayingAudio, setIsPlayingAudio] = useState(false);
     const [score, setScore] = useState(0);
-    const [failedTopics, setFailedTopics] = useState<FailedTopic[]>([]);
+    const [weakTopics, setWeakTopics] = useState<{ unitId: string; grammarTopic: string }[]>([]);
     const [nextLevel, setNextLevel] = useState<CEFRLevel | null>(null);
 
-    const loadExercises = useCallback(async () => {
-        setState('loading');
-        try {
-            // Fetch all exercises for this level from static data
-            const allExercises = getExercisesByLevel(level);
-            const selected = selectExercises(allExercises, unitId);
+    const bank = levelFinalBanks[level as LessonLevel];
+    const units = getUnitsByLevel(level).filter(u => !u.isAssessment);
+    const grammarCount = units.length + (bank?.transfer.length ?? 0);
 
-            if (selected.length === 0) {
-                setState('error');
-                return;
-            }
+    // Leaving the exam stops its recording
+    useEffect(() => () => stopDialogueSpeech(), []);
 
-            setExercises(selected);
-            setState('testing');
-        } catch {
+    const start = useCallback(() => {
+        if (!bank) {
             setState('error');
+            return;
         }
-    }, [level, unitId]);
+        const exam = buildLevelFinal({ units, exercises: allExercises, bank });
+        if (exam.length === 0) {
+            setState('error');
+            return;
+        }
+        setQuestions(exam);
+        setIndex(0);
+        setResponses({});
+        setPlays({});
+        setState('testing');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [bank, level]);
 
-    const handleComplete = useCallback(async (finalScore: number) => {
-        setScore(finalScore);
+    const finish = useCallback(async () => {
+        stopDialogueSpeech();
+        setIsPlayingAudio(false);
+        const result = levelFinalResult(questions, responses);
+        setScore(result.score);
 
-        // Save assessment record
-        await supabase.from('level_assessments').insert({
-            user_id: authUser!.id,
-            level,
-            score: finalScore,
-            passed: finalScore >= PASS_THRESHOLD,
-            attempted_at: new Date().toISOString(),
-        });
-
-        if (finalScore >= PASS_THRESHOLD) {
-            // Mark assessment unit as completed
-            await supabase.from('unit_progress').insert({
+        try {
+            await supabase.from('level_assessments').insert({
                 user_id: authUser!.id,
-                unit_id: unitId,
-                grammar_card_read: true,
-                story_completed: true,
-                vocab_reviewed: true,
-                exercises_score: finalScore,
-                output_completed: true,
-                checkpoint_passed: true,
-                completed_at: new Date().toISOString(),
+                level,
+                score: result.score,
+                passed: result.passed,
+                attempted_at: new Date().toISOString(),
             });
 
-            // Unlock next level
-            const nl = nextLevelMap[level] || null;
-            setNextLevel(nl);
-            if (nl) {
-                const { data: profile } = await supabase.from('profiles').select('unlocked_levels').eq('id', authUser!.id).single() as { data: Pick<Profile, 'unlocked_levels'> | null };
-                if (profile) {
-                    const unlockedLevels = [...(profile.unlocked_levels || ['A1'])];
-                    if (!unlockedLevels.includes(nl)) unlockedLevels.push(nl);
-                    await supabase.from('profiles').update({
-                        current_level: nl,
-                        unlocked_levels: unlockedLevels,
-                    }).eq('id', authUser!.id);
-                }
-                qc.invalidateQueries({ queryKey: ['profile'] });
-                qc.invalidateQueries({ queryKey: ['levelProgression'] });
-            }
+            if (result.passed) {
+                // Mark assessment unit as completed
+                await supabase.from('unit_progress').insert({
+                    user_id: authUser!.id,
+                    unit_id: unitId,
+                    grammar_card_read: true,
+                    story_completed: true,
+                    vocab_reviewed: true,
+                    exercises_score: result.score,
+                    output_completed: true,
+                    checkpoint_passed: true,
+                    completed_at: new Date().toISOString(),
+                });
 
+                // Unlock next level
+                const nl = nextLevelMap[level] || null;
+                setNextLevel(nl);
+                if (nl) {
+                    const { data: profile } = await supabase.from('profiles').select('unlocked_levels').eq('id', authUser!.id).single() as { data: Pick<Profile, 'unlocked_levels'> | null };
+                    if (profile) {
+                        const unlockedLevels = [...(profile.unlocked_levels || ['A1'])];
+                        if (!unlockedLevels.includes(nl)) unlockedLevels.push(nl);
+                        await supabase.from('profiles').update({
+                            current_level: nl,
+                            unlocked_levels: unlockedLevels,
+                        }).eq('id', authUser!.id);
+                    }
+                    qc.invalidateQueries({ queryKey: ['profile'] });
+                    qc.invalidateQueries({ queryKey: ['levelProgression'] });
+                }
+            }
+        } catch {
+            toast.error({ title: t('assessment.saveFailed') });
+        }
+
+        if (result.passed) {
             setState('passed');
         } else {
-            // Determine which topics need review
-            const units = getUnitsByLevel(level);
-            const unitMap = new Map<string, Unit>();
-            for (const u of units) {
-                if (!u.isAssessment) unitMap.set(u.id, u);
-            }
-
-            // Group exercises by unit for the topics that need review
-            const topicCounts = new Map<string, { topic: string; count: number }>();
-            for (const ex of exercises) {
-                const u = unitMap.get(ex.unitId);
-                if (u) {
-                    const existing = topicCounts.get(ex.unitId);
-                    if (existing) {
-                        existing.count++;
-                    } else {
-                        topicCounts.set(ex.unitId, { topic: u.grammarTopic, count: 1 });
-                    }
-                }
-            }
-
-            setFailedTopics(
-                Array.from(topicCounts.entries()).map(([uid, data]) => ({
-                    unitId: uid,
-                    grammarTopic: data.topic,
-                    count: data.count,
-                })),
-            );
-
+            const topicOf = new Map(units.map(u => [u.id, u.grammarTopic]));
+            setWeakTopics(result.weakUnits.filter(u => topicOf.has(u)).map(u => ({ unitId: u, grammarTopic: topicOf.get(u)! })));
             setState('failed');
         }
-    }, [level, unitId, exercises, authUser, qc]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [questions, responses, level, unitId, authUser, qc, t]);
 
-    const handleRetry = useCallback(() => {
-        setScore(0);
-        setExercises([]);
-        setFailedTopics([]);
-        loadExercises();
-    }, [loadExercises]);
+    const current = questions[index];
+    const audioGroup = current?.group ?? current?.id;
+    const playsUsed = audioGroup ? plays[audioGroup] ?? 0 : 0;
+
+    const handlePlay = () => {
+        if (!current?.dialogue || isPlayingAudio || playsUsed >= AUDIO_PLAYS) return;
+        const group = audioGroup!;
+        setIsPlayingAudio(true);
+        setPlays(prev => ({ ...prev, [group]: playsUsed + 1 }));
+        const done = () => setIsPlayingAudio(false);
+        // Nothing could be played: the play isn't spent
+        const failed = () => {
+            setIsPlayingAudio(false);
+            setPlays(prev => ({ ...prev, [group]: playsUsed }));
+        };
+        playListening(current.dialogue, current.level, () => {}, done, failed);
+    };
+
+    const handleNext = () => {
+        stopDialogueSpeech();
+        setIsPlayingAudio(false);
+        if (index + 1 < questions.length) setIndex(index + 1);
+        else finish();
+    };
 
     // -- Render states --
-
-    if (state === 'loading') {
-        return (
-            <div className="flex items-center justify-center min-h-[40vh]">
-                <div className="w-10 h-10 rounded-full bg-[var(--color-tertiary)]/10 flex items-center justify-center animate-pulse">
-                    <div className="w-5 h-5 rounded-full bg-[var(--color-tertiary)]/40 animate-spin" />
-                </div>
-            </div>
-        );
-    }
 
     if (state === 'error') {
         return (
@@ -241,10 +182,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 <div className="w-16 h-16 rounded-2xl bg-[var(--color-error)]/10 flex items-center justify-center">
                     <XCircle className="w-8 h-8 text-[var(--color-error)]" />
                 </div>
-                <p className="text-[var(--color-on-surface-muted)] text-center">
-                    No se encontraron ejercicios para esta evaluaci&oacute;n.
-                </p>
-                <BackButton onClick={onComplete} label="Volver a la ruta" />
+                <p className="text-[var(--color-on-surface-muted)] text-center">{t('assessment.noQuestions')}</p>
+                <BackButton onClick={onComplete} label={t('assessment.back')} />
             </motion.div>
         );
     }
@@ -273,84 +212,104 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     </h1>
 
                     <p className="text-[var(--color-on-surface-muted)] text-base leading-relaxed max-w-sm mx-auto">
-                        Demuestra tu dominio del nivel {level}. Se evaluar&aacute;n todos
-                        los temas de gram&aacute;tica que has estudiado.
+                        {t('assessment.intro', { level })}
                     </p>
                 </div>
 
                 <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 w-full max-w-sm space-y-5 shadow-[var(--shadow-card)]">
-                    <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-2xl bg-[var(--color-tertiary)]/10 flex items-center justify-center flex-shrink-0">
-                            <CheckCircle2 className="w-5 h-5 text-[var(--color-tertiary-ink)]" />
+                    {[
+                        { icon: CheckCircle2, title: t('assessment.partGrammar', { count: grammarCount }), body: t('assessment.partGrammarBody') },
+                        { icon: Headphones, title: t('assessment.partSkills'), body: t('assessment.partSkillsBody') },
+                        { icon: Star, title: t('assessment.passMark', { pass: LEVEL_FINAL_PASS }), body: t('assessment.passMarkBody', { pass: LEVEL_FINAL_PASS }) },
+                        {
+                            icon: Trophy,
+                            title: t('assessment.unlockTitle'),
+                            body: nextLevelMap[level] ? t('assessment.unlock', { level: nextLevelMap[level] }) : t('assessment.unlockLast'),
+                        },
+                    ].map(({ icon: Icon, title, body }) => (
+                        <div key={title} className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-2xl bg-[var(--color-tertiary)]/10 flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-5 h-5 text-[var(--color-tertiary-ink)]" />
+                            </div>
+                            <div>
+                                <p className="font-black text-sm">{title}</p>
+                                <p className="text-xs text-[var(--color-on-surface-muted)]">{body}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="font-black text-sm">15–20 ejercicios</p>
-                            <p className="text-xs text-[var(--color-on-surface-muted)]">Todos los temas del nivel</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-2xl bg-[var(--color-tertiary)]/10 flex items-center justify-center flex-shrink-0">
-                            <Star className="w-5 h-5 text-[var(--color-tertiary-ink)]" />
-                        </div>
-                        <div>
-                            <p className="font-black text-sm">80% para aprobar</p>
-                            <p className="text-xs text-[var(--color-on-surface-muted)]">
-                                Necesitas al menos 80% de respuestas correctas
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-2xl bg-[var(--color-tertiary)]/10 flex items-center justify-center flex-shrink-0">
-                            <Trophy className="w-5 h-5 text-[var(--color-tertiary-ink)]" />
-                        </div>
-                        <div>
-                            <p className="font-black text-sm">Desbloquea el siguiente nivel</p>
-                            <p className="text-xs text-[var(--color-on-surface-muted)]">
-                                {nextLevelMap[level]
-                                    ? `Al aprobar, desbloquear\u00e1s el nivel ${nextLevelMap[level]}`
-                                    : 'Completa tu dominio del nivel'}
-                            </p>
-                        </div>
-                    </div>
+                    ))}
                 </div>
 
                 <button
-                    onClick={loadExercises}
+                    onClick={start}
                     className="w-full max-w-sm bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-tertiary)_30%,transparent)] active:scale-[0.97]"
                 >
-                    Comenzar
+                    {t('assessment.start')}
                 </button>
 
-                <BackButton onClick={onComplete} label="Volver a la ruta" />
+                <BackButton onClick={onComplete} label={t('assessment.back')} />
             </motion.div>
         );
     }
 
     // -- Testing Screen --
-    if (state === 'testing') {
+    if (state === 'testing' && current) {
+        const progress = ((index + 1) / questions.length) * 100;
         return (
-            <div className="space-y-8">
-                {/* Assessment Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-3"
-                >
-                    <div className="w-9 h-9 rounded-full bg-[var(--color-tertiary)]/15 flex items-center justify-center">
-                        <Trophy className="w-4.5 h-4.5 text-[var(--color-tertiary-ink)]" />
+            <div className="space-y-6">
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-[var(--color-tertiary)]/15 flex items-center justify-center">
+                                <Trophy className="w-4.5 h-4.5 text-[var(--color-tertiary-ink)]" />
+                            </div>
+                            <h2 className="text-lg font-black tracking-tight text-[var(--color-tertiary-ink)]">
+                                {t('assessment.title', { level })}
+                            </h2>
+                        </div>
+                        <span className="text-xs font-bold text-[var(--color-on-surface-muted)]">
+                            {t(`assessment.${SECTION_KEY[current.section]}`)} · {t('assessment.progress', { n: index + 1, total: questions.length })}
+                        </span>
                     </div>
-                    <h2 className="text-lg font-black tracking-tight text-[var(--color-tertiary-ink)]">
-                        {t('assessment.title', { level })}
-                    </h2>
-                </motion.div>
+                    <div className="h-2 rounded-full bg-[var(--color-surface-container)] overflow-hidden" role="progressbar" aria-valuenow={index + 1} aria-valuemin={1} aria-valuemax={questions.length}>
+                        <div className="h-full bg-[var(--color-tertiary)] transition-all duration-300" style={{ width: `${progress}%` }} />
+                    </div>
+                </div>
 
-                {/* ExerciseRunner handles progress bar, exercises, and score screen */}
-                <ExerciseRunner
-                    exercises={exercises}
-                    onComplete={handleComplete}
-                />
+                {current.passage && <PassageView text={current.passage} />}
+
+                {current.dialogue && (
+                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 space-y-3 shadow-[var(--shadow-card)]">
+                        <NoEnglishVoices />
+                        <button
+                            onClick={handlePlay}
+                            disabled={isPlayingAudio || playsUsed >= AUDIO_PLAYS}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold disabled:opacity-50 transition-all active:scale-[0.97]"
+                        >
+                            <Volume2 className="w-4 h-4" />
+                            {isPlayingAudio ? t('assessment.playing') : t('assessment.play')}
+                        </button>
+                        <p className="text-xs text-center text-[var(--color-on-surface-muted)]">
+                            {playsUsed >= AUDIO_PLAYS ? t('assessment.noPlaysLeft') : t('assessment.playsLeft', { count: AUDIO_PLAYS - playsUsed })}
+                        </p>
+                    </div>
+                )}
+
+                <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
+                    <QuestionView
+                        key={current.id}
+                        question={current}
+                        response={responses[current.id]}
+                        onChange={r => setResponses(prev => ({ ...prev, [current.id]: r }))}
+                    />
+                </div>
+
+                <button
+                    onClick={handleNext}
+                    disabled={responses[current.id] === undefined}
+                    className="w-full bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 disabled:opacity-50 active:scale-[0.97]"
+                >
+                    {index + 1 < questions.length ? t('assessment.next') : t('assessment.finish')}
+                </button>
             </div>
         );
     }
@@ -450,7 +409,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         onClick={onComplete}
                         className="w-full max-w-sm bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-tertiary)_30%,transparent)] active:scale-[0.97]"
                     >
-                        Volver a la ruta
+                        {t('assessment.back')}
                     </motion.button>
                 </motion.div>
             </AnimatePresence>
@@ -480,12 +439,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             {score}%
                         </p>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
-                            {t('assessment.fail')}
+                            {t('assessment.fail', { pass: LEVEL_FINAL_PASS })}
                         </p>
                     </motion.div>
 
-                    {/* Topics to Review */}
-                    {failedTopics.length > 0 && (
+                    {/* Topics to Review: only the units with a wrong answer */}
+                    {weakTopics.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -493,10 +452,10 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 w-full max-w-sm space-y-4 shadow-[var(--shadow-card)]"
                         >
                             <p className="text-sm font-black text-[var(--color-on-surface-muted)]">
-                                Temas a repasar:
+                                {t('assessment.reviewTopics')}
                             </p>
                             <div className="space-y-3">
-                                {failedTopics.map((topic) => (
+                                {weakTopics.map((topic) => (
                                     <div
                                         key={topic.unitId}
                                         className="flex items-start gap-3 text-sm bg-[var(--color-surface-container)] rounded-2xl p-3"
@@ -519,7 +478,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         className="w-full max-w-sm space-y-4"
                     >
                         <button
-                            onClick={handleRetry}
+                            onClick={start}
                             className="w-full bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_color-mix(in_oklch,var(--color-tertiary)_30%,transparent)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
@@ -531,7 +490,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             className="w-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface-muted)] py-4 rounded-full font-black text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-card)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            Volver a la ruta
+                            {t('assessment.back')}
                         </button>
                     </motion.div>
                 </motion.div>
