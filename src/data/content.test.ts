@@ -1,6 +1,6 @@
 // Integrity of the teaching content: every item must be answerable as written.
 import { describe, expect, it } from 'vitest';
-import { allExercises, allGrammarSkills, allStories, allUnits } from './index';
+import { allExercises, allGrammarCards, allGrammarSkills, allStories, allUnits } from './index';
 import { placementBlocks, placementQuestions } from './assessments/placement';
 import { cambridgeB1Questions, cambridgeB1Speaking, cambridgeB1Writing } from './assessments/cambridge/b1';
 import { cambridgeB2Questions, cambridgeB2Speaking, cambridgeB2Writing } from './assessments/cambridge/b2';
@@ -453,4 +453,21 @@ describe('Cambridge simulators', () => {
             });
         });
     }
+});
+
+describe('grammar cards', () => {
+    const plain = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const a2 = allGrammarCards.filter(c => c.unitId.startsWith('a2-'));
+    const a2Average = a2.reduce((sum, c) => sum + plain(c.explanation).length, 0) / a2.length;
+
+    it('A1 grammar cards reach the depth of A2, with typical errors of Spanish speakers', () => {
+        for (const card of allGrammarCards.filter(c => c.unitId.startsWith('a1-'))) {
+            expect(card.examples.length, card.id).toBeGreaterThanOrEqual(6);
+            expect(card.rules.length, card.id).toBeGreaterThanOrEqual(5);
+            expect(plain(card.explanation).length, card.id).toBeGreaterThanOrEqual(a2Average * 0.8);
+            const errors = card.explanation.split('<h3>Errores típicos</h3>')[1];
+            expect(errors, `${card.id}: sin sección de errores típicos`).toBeDefined();
+            expect(errors.split('<h3>')[0].match(/<li>/g)?.length ?? 0, card.id).toBeGreaterThanOrEqual(3);
+        }
+    });
 });
