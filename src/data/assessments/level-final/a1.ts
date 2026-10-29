@@ -26,8 +26,8 @@ See you on Monday!
 Martin`);
 
 const reading = [
-    r.choice('What time does Sara start on Monday?', ['At 8:30', 'At 9:00', 'At 10:00', 'At 8:00'], 'Please come at half past eight on Monday'),
     r.judge('The shop opens at ten on Saturday.', 'true', 'and at ten on Saturday'),
+    r.choice('What time does Sara start on Monday?', ['At 8:30', 'At 9:00', 'At 10:00', 'At 8:00'], 'Please come at half past eight on Monday'),
     r.judge('Sara can eat her lunch in the shop.', 'false', "you can't eat in the shop"),
     r.judge('Ben is from Spain.', 'not-given'),
     r.choice('What must Sara bring?', ['Her ID card', 'Her passport', 'A uniform', 'Her lunch'], "Don't forget your ID card."),
