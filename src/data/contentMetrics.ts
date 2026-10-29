@@ -23,10 +23,10 @@ export const TARGETS = {
  * Levels whose content has been rebuilt under the plan; the content tests enforce the targets
  * only for these. A phase adds its level here when it lands.
  */
-export const ENFORCED_LEVELS: Level[] = ['A1', 'A2'];
+export const ENFORCED_LEVELS: Level[] = ['A1', 'A2', 'B1', 'B2'];
 
-/** Levels whose vocabulary deck has been rebuilt (phase 6 for A1–A2): size and CEFR-J labels. */
-export const ENFORCED_DECKS: Level[] = ['A1', 'A2'];
+/** Levels whose vocabulary deck has been rebuilt (phase 6 for A1–A2, phase 8 for B1–B2): size and CEFR-J labels. */
+export const ENFORCED_DECKS: Level[] = ['A1', 'A2', 'B1', 'B2'];
 
 /** Exam banks that must be free of templated or repeated questions. */
 export const ENFORCED_EXAMS = ['placement', 'cambridgeB1', 'cambridgeB2', 'ielts', 'toefl'] as const;
