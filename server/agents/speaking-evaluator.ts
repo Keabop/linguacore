@@ -1,5 +1,6 @@
 import { generateWithFallback } from '../lib/gemini.js';
 import { EXAM_CRITERIA, criteriaInstructions, isCriteriaExam, type CriterionScore } from '../lib/examCriteria.js';
+import { descriptorRubric, toCefrLevel } from '../lib/cefrDescriptors.js';
 
 interface SpeakingEvaluationRequest {
     transcripts: string[];
@@ -22,7 +23,11 @@ interface SpeakingEvaluation {
 
 export async function evaluateSpeaking(params: SpeakingEvaluationRequest): Promise<SpeakingEvaluation> {
     const exam = isCriteriaExam(params.exam) ? criteriaInstructions(EXAM_CRITERIA[params.exam].speaking) : null;
-    const prompt = `Eres un examinador de inglés oficial (Cambridge/TOEFL). Evalúa las siguientes respuestas habladas (transcritas) para el nivel CEFR: "${params.level}".
+    const level = toCefrLevel(params.level);
+    const prompt = `Eres un examinador de inglés oficial (Cambridge/TOEFL). Evalúa las siguientes respuestas habladas (transcritas) para el nivel CEFR: "${level}".
+
+${descriptorRubric(level, 'speaking')}
+Son transcripciones automáticas: no penalices la puntuación ni las mayúsculas.
 
 Prompts del examinador:
 ${params.prompts.map((p, i) => `[Pregunta ${i + 1}]: ${p}`).join('\n')}

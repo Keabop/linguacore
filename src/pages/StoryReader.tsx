@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { getStory } from '../data';
 import { getVocab, getVocabMap } from '../data/vocabulary';
@@ -18,6 +18,11 @@ import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
 import type { ReadStoryRow } from '../lib/database.types';
 import { useDialogKeys } from '../hooks/useDialogKeys';
+import { useStoryPlayback } from '../hooks/useStoryPlayback';
+import { storySentences, wrapStorySentences } from '../lib/storySentences';
+import { audioFor, storyKey } from '../lib/audioKey';
+import { SPEECH_RATE, type Accent } from '../lib/voices';
+import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 
 type WordStatus = 'deck' | 'known' | 'none';
 
@@ -65,119 +70,12 @@ export default function StoryReader() {
         resetTranscript
     } = useSpeech();
 
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentSentenceIdx, setCurrentSentenceIdx] = useState(-1);
-    const [playbackRate, setPlaybackRate] = useState(1); // 0.75, 1, 1.25
-    const [accent, setAccent] = useState<'US' | 'UK' | 'AU'>('US');
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+    const [accent, setAccent] = useState<Accent>('US');
 
     const [showShadowing, setShowShadowing] = useState(false);
     const [comparedWords, setComparedWords] = useState<{ word: string; match: boolean }[]>([]);
     const [shadowingScore, setShadowingScore] = useState(0);
     const [hasPracticed, setHasPracticed] = useState(false);
-
-    // Stable refs for play state synchronization
-    const isPlayingRef = useRef(false);
-    const ignoreNextEndRef = useRef(false);
-
-    // Cache of English-only voices, keyed by accent region
-    const cachedVoicesRef = useRef<Record<string, SpeechSynthesisVoice | null>>({});
-    const [voicesReady, setVoicesReady] = useState(false);
-    const hasShownVoiceWarning = useRef(false);
-
-    // Eagerly load and cache English voices on mount
-    useEffect(() => {
-        // Known English voice name fragments (Windows, Chrome, macOS, Android)
-        const KNOWN_EN_NAMES = [
-            'david', 'zira', 'mark', 'hazel', 'susan', 'george', 'james',  // Windows
-            'google us', 'google uk', 'google english',                      // Chrome
-            'samantha', 'alex', 'daniel', 'karen', 'moira', 'tessa',       // macOS
-            'english',                                                       // generic
-        ];
-
-        const norm = (s: string) => s.toLowerCase().replace(/_/g, '-');
-        const nameNorm = (s: string) => s.toLowerCase();
-
-        const loadVoices = () => {
-            const allVoices = window.speechSynthesis.getVoices();
-            if (allVoices.length === 0) return;
-
-            console.log('[Voxie TTS] ALL system voices:', allVoices.map(v => `${v.name} (${v.lang}) local=${v.localService}`));
-
-            // Strategy 1: Filter by lang code
-            let englishVoices = allVoices.filter(v => norm(v.lang).startsWith('en'));
-
-            // Strategy 2: If no lang-based match, search by known English voice names
-            if (englishVoices.length === 0) {
-                console.warn('[Voxie TTS] No voices with en-* lang code. Searching by name...');
-                englishVoices = allVoices.filter(v =>
-                    KNOWN_EN_NAMES.some(name => nameNorm(v.name).includes(name))
-                );
-            }
-
-            console.log('[Voxie TTS] English voices found:', englishVoices.length, englishVoices.map(v => `${v.name} (${v.lang})`));
-
-            if (englishVoices.length === 0 && !hasShownVoiceWarning.current) {
-                hasShownVoiceWarning.current = true;
-                // Show user-friendly instructions
-                toast.error({
-                    title: 'No se encontraron voces en inglés',
-                    description: 'Tu sistema no tiene voces en inglés instaladas. Ve a Configuración → Hora e idioma → Voz → Agregar voces → Inglés (Estados Unidos). Luego reinicia el navegador.',
-                });
-            }
-
-            const findBest = (region: string, altRegion?: string) => {
-                // Priority 1: exact lang match, prefer local
-                const exactLocal = englishVoices.find(v => norm(v.lang) === `en-${region}` && v.localService);
-                if (exactLocal) return exactLocal;
-                // Priority 2: exact lang match
-                const exact = englishVoices.find(v => norm(v.lang) === `en-${region}`);
-                if (exact) return exact;
-                // Priority 3: alt region
-                if (altRegion) {
-                    const alt = englishVoices.find(v => norm(v.lang) === `en-${altRegion}`);
-                    if (alt) return alt;
-                }
-                // Priority 4: any voice with region in name
-                const byName = englishVoices.find(v => nameNorm(v.name).includes(region));
-                if (byName) return byName;
-                // Priority 5: any English voice
-                return englishVoices[0] || null;
-            };
-
-            cachedVoicesRef.current = {
-                US: findBest('us'),
-                UK: findBest('gb', 'uk'),
-                AU: findBest('au'),
-            };
-
-            const usVoice = cachedVoicesRef.current.US;
-            const ukVoice = cachedVoicesRef.current.UK;
-            const auVoice = cachedVoicesRef.current.AU;
-            console.log(`[Voxie TTS] Cached → US: ${usVoice?.name ?? 'NONE'} | UK: ${ukVoice?.name ?? 'NONE'} | AU: ${auVoice?.name ?? 'NONE'}`);
-
-            setVoicesReady(true);
-        };
-
-        // Voices may already be loaded
-        loadVoices();
-
-        // Chrome loads voices asynchronously, sometimes with delay
-        window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
-
-        // Chrome sometimes needs a nudge - retry a few times
-        const retries = [100, 500, 1500, 3000];
-        const timers = retries.map(ms => setTimeout(loadVoices, ms));
-
-        return () => {
-            window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-            timers.forEach(clearTimeout);
-        };
-    }, []);
-
-    useEffect(() => {
-        isPlayingRef.current = isPlaying;
-    }, [isPlaying]);
 
     // Check static data first, then fallback to AI story from navigation state
     const aiStory = (location.state as any)?.aiStory;
@@ -225,37 +123,21 @@ export default function StoryReader() {
     const wordStatus = selectedWord ? wordStatuses.get(selectedWord.id) ?? 'none' : 'none';
     const selectedIsSaved = !!selectedWord && (savedStatuses?.get(selectedWord.id) ?? 'none') !== 'none';
 
-    // --- HTML Sentence Wrapping ---
+    // --- Sentences: the same split the recording was cut with (src/lib/storySentences.ts) ---
     const { processedHTML, sentences } = useMemo(() => {
-        if (!story) return { processedHTML: '', sentences: [] };
-        
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(story.content, 'text/html');
-        const paragraphs = Array.from(doc.querySelectorAll('p'));
-        
-        let sentenceCounter = 0;
-        const sentencesText: string[] = [];
-        
-        paragraphs.forEach(p => {
-            const text = p.innerHTML;
-            const parts = text.split(/(?<=[.!?])\s+/);
-            
-            const wrappedParts = parts.map(part => {
-                if (!part.trim()) return '';
-                const cleanTextForSpeech = part.replace(/<[^>]*>/g, '').trim();
-                sentencesText.push(cleanTextForSpeech);
-                const currentIdx = sentenceCounter++;
-                return `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${currentIdx}">${part}</span>`;
-            });
-            
-            p.innerHTML = wrappedParts.join(' ');
-        });
-        
-        return {
-            processedHTML: doc.body.innerHTML,
-            sentences: sentencesText
-        };
+        if (!story) return { processedHTML: '', sentences: [] as string[] };
+        const html = wrapStorySentences(story.content, (part, i) =>
+            `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${i}">${part}</span>`);
+        return { processedHTML: html, sentences: storySentences(story.content) };
     }, [story]);
+
+    // Static stories have a recording (npm run content:audio); AI stories use the browser's voices
+    const recording = useMemo(
+        () => (staticStory ? audioFor(storyKey(sentences, SPEECH_RATE[staticStory.level])) : undefined),
+        [staticStory, sentences],
+    );
+    const playback = useStoryPlayback({ sentences, level: story?.level ?? 'A1', accent, audio: recording });
+    const { isPlaying, currentIndex: currentSentenceIdx, rate: playbackRate, setRate: setPlaybackRate, seek: seekSentence } = playback;
 
     // --- Sentence Highlighting and Auto-Scroll ---
     useEffect(() => {
@@ -273,136 +155,22 @@ export default function StoryReader() {
         }
     }, [currentSentenceIdx]);
 
-    // --- Speech Synthesis Control ---
-    const cancelSpeech = useCallback(() => {
-        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-            ignoreNextEndRef.current = true;
-            window.speechSynthesis.cancel();
-        }
-    }, []);
-
-    const speakSentence = useCallback((idx: number) => {
-        if (idx < 0 || idx >= sentences.length) {
-            setIsPlaying(false);
-            setCurrentSentenceIdx(-1);
-            return;
-        }
-
-        // Cancel any in-progress speech
-        cancelSpeech();
-
-        const text = sentences[idx];
-        const utterance = new SpeechSynthesisUtterance(text);
-
-        // CRITICAL: Set lang FIRST, before voice, to force English phonetics
-        const langTag = accent === 'US' ? 'en-US' : accent === 'UK' ? 'en-GB' : 'en-AU';
-        utterance.lang = langTag;
-        utterance.rate = playbackRate;
-
-        // Use pre-cached English voice for this accent
-        const voice = cachedVoicesRef.current[accent] ?? null;
-        if (voice) {
-            utterance.voice = voice;
-            utterance.lang = voice.lang; // sync lang with actual voice
-            console.log(`[Voxie TTS] Speaking with: ${voice.name} (${voice.lang})`);
-        } else {
-            console.warn(`[Voxie TTS] No cached voice for ${accent}, using lang tag: ${langTag}`);
-        }
-
-        utterance.onend = () => {
-            if (ignoreNextEndRef.current) {
-                ignoreNextEndRef.current = false;
-                return;
-            }
-            if (!isPlayingRef.current) return;
-
-            setCurrentSentenceIdx(prev => {
-                const next = prev + 1;
-                if (next < sentences.length) {
-                    setTimeout(() => {
-                        if (isPlayingRef.current) {
-                            speakSentence(next);
-                        }
-                    }, 350);
-                    return next;
-                } else {
-                    setIsPlaying(false);
-                    return -1;
-                }
-            });
-        };
-
-        utterance.onerror = (e) => {
-            if (ignoreNextEndRef.current) {
-                ignoreNextEndRef.current = false;
-                return;
-            }
-            console.error('[Voxie TTS] Speech error:', e);
-            setIsPlaying(false);
-        };
-
-        utteranceRef.current = utterance;
-        window.speechSynthesis.speak(utterance);
-    }, [sentences, playbackRate, accent, voicesReady, cancelSpeech]);
-
-    // Re-speak current sentence when accent or rate changes mid-playback
-    useEffect(() => {
-        if (isPlaying && currentSentenceIdx !== -1) {
-            speakSentence(currentSentenceIdx);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [accent, playbackRate]);
-
     const handlePlayPause = () => {
-        if (isListening) {
-            stopListening();
-        }
-        if (isPlaying) {
-            cancelSpeech();
-            setIsPlaying(false);
-        } else {
-            setIsPlaying(true);
-            const startIdx = currentSentenceIdx === -1 ? 0 : currentSentenceIdx;
-            setCurrentSentenceIdx(startIdx);
-            speakSentence(startIdx);
-        }
+        if (isListening) stopListening();
+        playback.toggle();
     };
-
-    const handlePrevSentence = () => {
-        if (currentSentenceIdx > 0) {
-            const prev = currentSentenceIdx - 1;
-            setCurrentSentenceIdx(prev);
-            if (isPlaying) {
-                speakSentence(prev);
-            }
-        }
-    };
-
-    const handleNextSentence = () => {
-        if (currentSentenceIdx < sentences.length - 1) {
-            const next = currentSentenceIdx + 1;
-            setCurrentSentenceIdx(next);
-            if (isPlaying) {
-                speakSentence(next);
-            }
-        }
-    };
+    const handlePrevSentence = () => playback.seek(currentSentenceIdx - 1);
+    const handleNextSentence = () => playback.seek(currentSentenceIdx + 1);
 
     // --- Shadowing Handlers ---
     const handleStartShadowing = () => {
-        if (isPlaying) {
-            cancelSpeech();
-            setIsPlaying(false);
-        }
+        playback.pause();
         resetTranscript();
         startListening();
     };
 
     const handleToggleShadowing = () => {
-        if (!showShadowing && isPlaying) {
-            cancelSpeech();
-            setIsPlaying(false);
-        }
+        if (!showShadowing) playback.pause();
         setShowShadowing(!showShadowing);
         setComparedWords([]);
         setHasPracticed(false);
@@ -431,13 +199,6 @@ export default function StoryReader() {
         setHasPracticed(true);
     }, [transcript, currentSentenceIdx, sentences]);
 
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            window.speechSynthesis.cancel();
-        };
-    }, []);
-
     const handleWordClick = useCallback(async (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         
@@ -445,12 +206,7 @@ export default function StoryReader() {
         const sentenceElement = target.closest('.story-sentence');
         if (sentenceElement) {
             const sIdx = parseInt(sentenceElement.getAttribute('data-sentence-idx') || '-1', 10);
-            if (sIdx !== -1 && sIdx !== currentSentenceIdx) {
-                setCurrentSentenceIdx(sIdx);
-                if (isPlaying) {
-                    speakSentence(sIdx);
-                }
-            }
+            if (sIdx !== -1 && sIdx !== currentSentenceIdx) seekSentence(sIdx);
         }
 
         const wordId = target.getAttribute('data-word');
@@ -458,7 +214,7 @@ export default function StoryReader() {
 
         const vocab = (isAIStory ? vocabMap.get(wordId) : getVocab(wordId)) as Vocabulary | undefined;
         if (vocab) setSelectedWord(vocab);
-    }, [currentSentenceIdx, isPlaying, speakSentence, vocabMap, isAIStory]);
+    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory]);
 
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
@@ -819,6 +575,7 @@ export default function StoryReader() {
 
             {/* Floating Audiobook Player Bar */}
             <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
+                {!playback.usingRecording && <NoEnglishVoices />}
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">Modo Audiolibro</p>

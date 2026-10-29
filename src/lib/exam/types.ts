@@ -45,6 +45,8 @@ interface QuestionBase {
     task?: string;
     /** Fragment of the passage or script that answers the question (for review and tests). */
     evidence?: string;
+    /** Course unit whose grammar the item tests (end-of-level exam), to point to what to review. */
+    unitId?: string;
 }
 
 /** One right option. `fixedOrder` keeps options as listed (headings i–x, A–F). */

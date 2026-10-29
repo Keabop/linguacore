@@ -33,3 +33,7 @@ dev-dist
 # Cloudflare
 .wrangler
 .dev.vars
+
+# Kokoro (npm run content:audio): local venv and model files
+scripts/audio/.venv
+scripts/audio/models

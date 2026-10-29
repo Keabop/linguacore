@@ -1,5 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { pickSpeakerVoices, playDialogueSpeech, sentenceTimeoutMs, splitSentences } from './assessmentSpeech';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { pickSpeakerVoices, playDialogueSpeech, playListening, sentenceTimeoutMs, splitSentences } from './assessmentSpeech';
+import { audioFor, dialogueKey } from './audioKey';
+import { listeningRate } from './voices';
+import { levelFinalBanks } from '../data/assessments/level-final';
 import type { DialogueLine } from './exam/types';
 
 const voice = (name: string, lang: string) => ({ name, lang, localService: true, default: false, voiceURI: name }) as SpeechSynthesisVoice;
@@ -80,5 +83,64 @@ describe('playDialogueSpeech', () => {
         vi.runAllTimers();
         expect(failed).toHaveBeenCalledOnce();
         expect(done).not.toHaveBeenCalled();
+    });
+});
+
+describe('playListening', () => {
+    const recorded = levelFinalBanks.A1.listening[0].dialogue!;
+    const unrecorded: DialogueLine[] = [{ speaker: 'A', accent: 'UK', gender: 'male', text: 'Nobody recorded this.' }];
+
+    /** A fake <audio>: `behave` plays it, fails it, or both. */
+    function fakeAudio(behave: 'plays' | 'rejects') {
+        const sources: string[] = [];
+        vi.stubGlobal('Audio', class {
+            listeners: Record<string, () => void> = {};
+            constructor(src: string) { sources.push(src); }
+            addEventListener(type: string, fn: () => void) { this.listeners[type] = fn; }
+            pause() {}
+            play() {
+                if (behave === 'rejects') return Promise.reject(new Error('NotSupportedError'));
+                this.listeners.playing?.();
+                this.listeners.ended?.();
+                return Promise.resolve();
+            }
+        });
+        return sources;
+    }
+    const speak = vi.fn((u: { onstart?: () => void; onend?: () => void }) => { u.onstart?.(); u.onend?.(); });
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        speak.mockClear();
+        vi.stubGlobal('SpeechSynthesisUtterance', class { text: string; constructor(t: string) { this.text = t; } });
+        vi.stubGlobal('speechSynthesis', { getVoices: () => [voice('Voice', 'en-US')], speak, cancel: vi.fn() });
+    });
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+    });
+
+    it('plays the recording of a script that has one, without the browser voices', () => {
+        const sources = fakeAudio('plays');
+        const done = vi.fn();
+        playListening(recorded, 'A1', () => {}, done);
+        expect(sources).toEqual([audioFor(dialogueKey(recorded, listeningRate('A1')))!.src]);
+        expect(done).toHaveBeenCalledOnce();
+        expect(speak).not.toHaveBeenCalled();
+    });
+
+    it('falls back to the browser voices when the recording cannot be played', async () => {
+        fakeAudio('rejects');
+        playListening(recorded, 'A1', () => {}, vi.fn());
+        await vi.runAllTimersAsync();
+        expect(speak).toHaveBeenCalled();
+    });
+
+    it('uses the browser voices for a script without a recording', () => {
+        const sources = fakeAudio('plays');
+        playListening(unrecorded, 'B2', () => {}, vi.fn());
+        vi.runAllTimers();
+        expect(sources).toEqual([]);
+        expect(speak).toHaveBeenCalled();
     });
 });
