@@ -531,5 +531,13 @@
     "cmudictTitle": "Pronunciación: CMU Pronouncing Dictionary",
     "cmudictBody": "La transcripción fonética de las palabras se obtiene del diccionario de pronunciación de Carnegie Mellon, convertida al IPA americano. Su licencia pide reproducir este aviso:",
     "newTab": "se abre en otra pestaña"
+  },
+  "voices": {
+    "missingTitle": "Tu navegador no tiene voces en inglés",
+    "missingBody": "Sin una voz en inglés no se puede leer en voz alta lo que no tiene audio grabado. Instala una y reinicia el navegador:",
+    "windows": "Windows: Configuración → Hora e idioma → Voz → Agregar voces → Inglés (Estados Unidos).",
+    "mac": "Mac: Ajustes del Sistema → Accesibilidad → Contenido leído → Voz del sistema → Gestionar voces → English.",
+    "android": "Android: Ajustes → Sistema → Idiomas → Salida de texto a voz → Motor de Google → Instalar datos de voz → English.",
+    "ios": "iPhone o iPad: Ajustes → Accesibilidad → Contenido leído → Voces → English."
   }
 }
