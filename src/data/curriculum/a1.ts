@@ -254,7 +254,7 @@ export const a1GrammarCards: GrammarCard[] = [
 <li><strong>under</strong> → debajo de: under the bed</li>
 <li><strong>next to</strong> → al lado de: next to the bank</li>
 <li><strong>between</strong> → entre dos cosas: between the school and the park</li>
-<li><strong>in front of</strong> → enfrente de / delante de; <strong>behind</strong> → detrás de</li>
+<li><strong>in front of</strong> → delante de (pegado, del mismo lado); <strong>behind</strong> → detrás de</li>
 <li><strong>opposite</strong> → frente a, del otro lado de la calle</li>
 </ul>
 

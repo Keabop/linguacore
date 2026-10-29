@@ -13,8 +13,11 @@ const PARAGRAPH = /<p([^>]*)>([\s\S]*?)<\/p>/g;
 
 const plain = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[a-z#0-9]+;/gi, e => ENTITIES[e] ?? e).replace(/\s+/g, ' ').trim();
 
+// A sentence ends at ".", "!" or "?" and a space, but not after a title: "Dr. Patel" is one sentence
+const SENTENCE_END = /(?<=[.!?])(?<!\b(?:Mr|Mrs|Ms|Dr|Prof)\.)\s+/;
+
 const sentencesOf = (inner: string): StorySentence[] =>
-    inner.split(/(?<=[.!?])\s+/)
+    inner.split(SENTENCE_END)
         .filter(part => part.trim())
         .map(part => ({ html: part, text: plain(part) }))
         .filter(s => s.text);

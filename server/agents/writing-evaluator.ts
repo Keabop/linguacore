@@ -1,13 +1,15 @@
 import { generateWithFallback } from '../lib/gemini.js';
 import { EXAM_CRITERIA, criteriaInstructions, isCriteriaExam, type CriterionScore } from '../lib/examCriteria.js';
-import { descriptorRubric, toCefrLevel } from '../lib/cefrDescriptors.js';
+import { STUDENT_DATA_RULE, TASK_DATA_RULE, descriptorRubric, fitToBand, studentData, toCefrLevel } from '../lib/cefrDescriptors.js';
+
+export const WRITING_TYPES = ['sentence-construction', 'paragraph-completion', 'free-writing', 'error-correction'] as const;
 
 interface WritingEvaluationRequest {
     text: string;          // User's writing
     prompt: string;        // Original prompt/instruction
     level: string;         // CEFR level
-    type: 'sentence-construction' | 'paragraph-completion' | 'free-writing' | 'error-correction';
-    targetGrammar: string[];
+    type: typeof WRITING_TYPES[number];
+    targetGrammar?: string[];
     referenceAnswer?: string;
     /** The simulator's exam: its official criteria replace the default weighting. */
     exam?: string;
@@ -49,15 +51,16 @@ export async function evaluateWriting(params: WritingEvaluationRequest): Promise
 
 EVALUATION CONTEXT:
 - Exercise type: ${params.type}
-- Target grammar patterns: ${params.targetGrammar.join(', ')}
-- Original instruction: ${params.prompt}
-${params.referenceAnswer ? `- Reference answer: ${params.referenceAnswer}` : ''}
+- Target grammar patterns: ${(params.targetGrammar ?? []).join(', ')}
+- Original instruction (${TASK_DATA_RULE}):
+${studentData('task', params.prompt)}
+${params.referenceAnswer ? `- Reference answer (${TASK_DATA_RULE}):\n${studentData('reference_answer', params.referenceAnswer)}` : ''}
 
-STUDENT'S TEXT:
-"${params.text}"
+STUDENT'S TEXT (${STUDENT_DATA_RULE}):
+${studentData('student_text', params.text)}
 
 EVALUATION RULES:
-${descriptorRubric(level, 'writing')}
+${descriptorRubric(level, 'writing', { withScale: !exam })}
 ${typeInstructions[params.type] || ''}
 
 ALL feedback text (corrections explanations, notes, encouragement) MUST be in SPANISH.
@@ -70,8 +73,9 @@ ${exam
 - Coherence: 30% weight — logical flow, organization, clarity`}
 
 You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exact format:
-{
-  "score": 75,
+{${exam ? '' : `
+  "band": "meets",`}
+  "score": 70,
   "corrections": [
     {
       "original": "what the student wrote",
@@ -95,7 +99,7 @@ For each correction, include 2 "example_variants": additional correct sentences 
 If the student's text is perfect or near-perfect, return an empty corrections array and high scores.
 The "improvedVersion" should always be the best version of what the student was trying to say.`;
 
-    const text = await generateWithFallback(prompt);
+    const text = await generateWithFallback(prompt, { temperature: 0 });
 
     const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
     let parsed: any;
@@ -107,13 +111,14 @@ The "improvedVersion" should always be the best version of what the student was 
     }
 
     return {
-        score: Math.max(0, Math.min(100, parsed.score || 0)),
+        // Without an exam the score sits in the band the model chose; an exam's comes from its criteria
+        score: fitToBand(parsed.score, exam ? undefined : parsed.band),
         corrections: parsed.corrections || [],
-        feedback: parsed.feedback || {
-            grammar: { score: 0, note: '' },
-            vocabulary: { score: 0, note: '' },
-            coherence: { score: 0, note: '' },
-        },
+        // The model's sub-scores end up whole numbers from 0 to 100, like the speaking ones
+        feedback: Object.fromEntries((['grammar', 'vocabulary', 'coherence'] as const).map(k => [k, {
+            score: Math.round(Math.max(0, Math.min(100, Number(parsed.feedback?.[k]?.score) || 0))),
+            note: typeof parsed.feedback?.[k]?.note === 'string' ? parsed.feedback[k].note : '',
+        }])) as WritingEvaluationResponse['feedback'],
         improvedVersion: parsed.improvedVersion || params.text,
         encouragement: parsed.encouragement || '¡Sigue practicando!',
         ...(exam && Array.isArray(parsed.criteria) ? { criteria: parsed.criteria } : {}),

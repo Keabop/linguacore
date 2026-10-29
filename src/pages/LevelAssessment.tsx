@@ -18,7 +18,7 @@ import { allExercises, getUnitsByLevel } from '../data';
 import { levelFinalBanks, type LessonLevel } from '../data/assessments/level-final';
 import { LEVEL_FINAL_PASS, buildLevelFinal, levelFinalResult } from '../lib/exam/levelFinal';
 import { hasRecording, playListening, stopDialogueSpeech } from '../lib/assessmentSpeech';
-import { offlineInsert } from '../lib/offlineMutation';
+import { offlineInsert, offlineUpdate } from '../lib/offlineMutation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -141,18 +141,25 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     completed_at: new Date().toISOString(),
                 }, { onConflict: 'user_id,unit_id' });
 
-                // Unlock next level: it needs the profile, so only online
+                // Unlock next level. Offline, the cached profile says which levels are open and the update is queued
                 const nl = nextLevelMap[level] || null;
                 if (nl) {
-                    const { data: profile, error } = await supabase.from('profiles').select('unlocked_levels').eq('id', authUser!.id).single() as { data: Pick<Profile, 'unlocked_levels'> | null; error: unknown };
-                    if (error || !profile) throw error ?? new Error('profile not found');
-                    const unlockedLevels = [...(profile.unlocked_levels || ['A1'])];
-                    if (!unlockedLevels.includes(nl)) unlockedLevels.push(nl);
-                    const { error: updateError } = await supabase.from('profiles').update({
-                        current_level: nl,
-                        unlocked_levels: unlockedLevels,
-                    }).eq('id', authUser!.id);
-                    if (updateError) throw updateError;
+                    let unlocked: CEFRLevel[] | undefined;
+                    if (navigator.onLine) {
+                        const { data: profile, error } = await supabase.from('profiles').select('unlocked_levels').eq('id', authUser!.id).single() as { data: Pick<Profile, 'unlocked_levels'> | null; error: unknown };
+                        if (error || !profile) throw error ?? new Error('profile not found');
+                        unlocked = profile.unlocked_levels;
+                    } else {
+                        unlocked = qc.getQueryData<Profile | null>(['profile', authUser!.id])?.unlocked_levels;
+                        if (!unlocked) throw new Error('profile not cached');
+                    }
+                    // Already open (a retake): nothing to write, so a stale cache can't drop a level
+                    // and the current level doesn't move back
+                    if (!(unlocked || ['A1']).includes(nl)) {
+                        const changes = { current_level: nl, unlocked_levels: [...(unlocked || ['A1']), nl] };
+                        await offlineUpdate('profiles', changes, { id: authUser!.id });
+                        qc.setQueryData<Profile | null>(['profile', authUser!.id], p => p && { ...p, ...changes });
+                    }
                     setNextLevel(nl);
                     qc.invalidateQueries({ queryKey: ['profile'] });
                     qc.invalidateQueries({ queryKey: ['levelProgression'] });

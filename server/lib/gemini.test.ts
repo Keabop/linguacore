@@ -14,7 +14,7 @@ vi.mock('@google/genai', async (importOriginal) => {
 });
 
 const { ApiError } = await import('@google/genai');
-const { generateWithFallback, isOverloaded } = await import('./gemini');
+const { MODELS, generateWithFallback, isOverloaded, jsonConfig } = await import('./gemini');
 const { setEnv } = await import('./config');
 
 beforeEach(() => {
@@ -41,9 +41,16 @@ describe('generateWithFallback', () => {
         generateContent.mockResolvedValueOnce({ text: '  {"ok":true}\n' });
         await expect(generateWithFallback('hi')).resolves.toBe('{"ok":true}');
         expect(generateContent).toHaveBeenCalledWith(expect.objectContaining({
-            model: 'gemini-2.5-flash-lite',
-            config: { responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } },
+            model: 'gemini-3.5-flash-lite',
+            config: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: 'MINIMAL' } },
         }));
+    });
+
+    it('asks Gemini 2.5 for a thinking budget of 0, which Gemini 3.5 rejects', () => {
+        expect(jsonConfig('gemini-2.5-flash-lite').thinkingConfig).toEqual({ thinkingBudget: 0 });
+        expect(jsonConfig('gemini-3.5-flash-lite', { temperature: 0 })).toMatchObject({ temperature: 0, thinkingConfig: { thinkingLevel: 'MINIMAL' } });
+        expect(jsonConfig('gemini-3.8-flash').thinkingConfig).toEqual({ thinkingLevel: 'LOW' });
+        expect(jsonConfig('gemma-4-31b-it')).toEqual({ responseMimeType: 'application/json' });
     });
 
     it('moves to the next model when one is busy', async () => {
@@ -51,7 +58,15 @@ describe('generateWithFallback', () => {
             .mockRejectedValueOnce(new ApiError({ message: 'busy', status: 503 }))
             .mockResolvedValueOnce({ text: '{}' });
         await expect(generateWithFallback('hi')).resolves.toBe('{}');
-        expect(generateContent.mock.calls[1][0].model).toBe('gemini-2.5-flash');
+        expect(generateContent.mock.calls[1][0].model).toBe(MODELS[1]);
+    });
+
+    it('moves on from a retired model or an internal error', async () => {
+        generateContent
+            .mockRejectedValueOnce(new ApiError({ message: 'not found', status: 404 }))
+            .mockRejectedValueOnce(new ApiError({ message: 'internal', status: 500 }))
+            .mockResolvedValueOnce({ text: '{}' });
+        await expect(generateWithFallback('hi')).resolves.toBe('{}');
     });
 
     it('throws other errors right away', async () => {
@@ -68,6 +83,6 @@ describe('generateWithFallback', () => {
     it('gives up after the last model', async () => {
         generateContent.mockRejectedValue(new ApiError({ message: 'busy', status: 503 }));
         await expect(generateWithFallback('hi')).rejects.toThrow('busy');
-        expect(generateContent).toHaveBeenCalledTimes(2);
+        expect(generateContent).toHaveBeenCalledTimes(MODELS.length);
     });
 });

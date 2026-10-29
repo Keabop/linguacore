@@ -1,7 +1,7 @@
 // Everything that has pre-generated audio: each listening script of the exams and each static
 // story. `npm run content:audio` generates the files; the content tests check none is missing.
 import type { AssessmentQuestion, DialogueLine } from '../../lib/exam/types';
-import { dialogueKey, storyKey } from '../../lib/audioKey';
+import { audioKey, dialogueKey, storyKey } from '../../lib/audioKey';
 import { splitSentences } from '../../lib/assessmentSpeech';
 import { storySentences } from '../../lib/storySentences';
 import { SPEECH_RATE, listeningRate } from '../../lib/voices';
@@ -23,7 +23,13 @@ export interface AudioSegment {
 }
 
 export interface AudioJob {
+    /** What the app looks the recording up by: a hash of what is said, by whom and how fast. */
     key: string;
+    /**
+     * The file's name: the key plus the voices, pauses and generator. Changing a voice or the
+     * encoding gives a new name, so the file is regenerated and no browser keeps the old one.
+     */
+    file: string;
     kind: 'dialogue' | 'story';
     rate: number;
     segments: AudioSegment[];
@@ -37,8 +43,13 @@ const VOICES: Record<string, [string, string]> = {
     'UK|male': ['bm_george', 'bm_lewis'],
 };
 const STORY_VOICE = 'af_heart';
+// The model and encoding of scripts/audio/generate.py: change it when either changes
+const GENERATOR = 'kokoro-onnx model-files-v1.0, opus 24 kHz, compression 0.93';
 
-function dialogueJob(lines: DialogueLine[], rate: number): AudioJob {
+const withFile = (job: Omit<AudioJob, 'file'>): AudioJob =>
+    ({ ...job, file: audioKey([job.key, GENERATOR, ...job.segments.map(s => `${s.voice}|${s.lang}|${s.pause}|${s.text}`)]) });
+
+function dialogueJob(lines: DialogueLine[], rate: number): Omit<AudioJob, 'file'> {
     const voiceOf = new Map<string, string>();
     const used = new Set<string>();
     for (const l of lines) {
@@ -67,17 +78,17 @@ export function audioJobs(): AudioJob[] {
     const jobs = new Map<string, AudioJob>();
     for (const q of banks.flat()) {
         if (!q.dialogue?.length || q.audioSrc) continue;
-        const job = dialogueJob(q.dialogue, listeningRate(q.level));
+        const job = withFile(dialogueJob(q.dialogue, listeningRate(q.level)));
         jobs.set(job.key, job);
     }
     for (const story of allStories) {
         const rate = SPEECH_RATE[story.level];
         const sentences = storySentences(story.content);
         const key = storyKey(sentences, rate);
-        jobs.set(key, {
+        jobs.set(key, withFile({
             key, kind: 'story', rate,
             segments: sentences.map((text, i) => ({ voice: STORY_VOICE, lang: 'en-us', text, pause: i < sentences.length - 1 ? 0.35 : 0 })),
-        });
+        }));
     }
     return [...jobs.values()];
 }

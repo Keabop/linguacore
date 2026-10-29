@@ -5,18 +5,18 @@ const b = bankOf('B2');
 
 const transfer = [
     b.choice('b2-u1', "If we ______ the earlier train, we wouldn't have missed the start of the wedding.", ['had caught', 'caught', 'would catch', 'have caught']),
-    b.choice('b2-u2', "If she weren't so shy, she ______ to the party last night.", ['would have come', 'would come', 'will come', 'had come']),
+    b.choice('b2-u2', "If he weren't so stubborn, he ______ the job offer last year.", ['would have accepted', 'would accept', 'will accept', 'had accepted']),
     b.choice('b2-u3', 'I wish I ______ so much cake last night. I feel awful.', ["hadn't eaten", "didn't eat", "wouldn't eat", "haven't eaten"]),
     b.gap('b2-u3', 'If only I ___ speak Japanese; this trip would be so much easier. (can)', ['could']),
     b.order('b2-u4', 'The receptionist asked us: "Where are you staying?"', 'The receptionist asked us where we were staying.', ['where', 'were', 'The receptionist', 'staying.', 'asked us', 'we']),
     b.choice('b2-u5', "The results should ______ by the end of the week, so you'll know before Monday.", ['be announced', 'have announced', 'announce', 'be announcing']),
     b.choice('b2-u6', "I'm not going to fix the roof myself. I'm going to ______.", ['have it repaired', 'have repaired it', 'repair it had', 'get repairing it']),
-    b.choice('b2-u7', 'My brother, ______ lives in Berlin, is coming to visit next month.', ['who', 'that', 'which', 'whose']),
+    b.choice('b2-u7', 'The village ______ my grandparents grew up has hardly changed in fifty years.', ['where', 'which', 'that', 'when']),
     b.choice('b2-u8', '______ by the noise, the dog ran under the table.', ['Frightened', 'Frightening', 'Having frightened', 'To frighten']),
-    b.choice('b2-u9', "Don't call me at eight tomorrow: I ______ my driving test then.", ['will be taking', 'will have taken', 'take', 'would take']),
+    b.choice('b2-u9', "Don't call me at eight tomorrow: I ______ my driving test then.", ['will be taking', 'will have taken', 'have taken', 'would take']),
     b.gap('b2-u9', 'By the end of this year, I ___ here for a decade. (work)', ['will have worked', 'will have been working', "'ll have worked", "'ll have been working"], 4),
     b.choice('b2-u10', 'The meeting was ______ because the manager was ill.', ['called off', 'called up', 'called out', 'called back']),
-    b.choice('b2-u11', 'Not only ______ late, but he also forgot the tickets.', ['did he arrive', 'he arrived', 'he did arrive', 'arrived he']),
+    b.choice('b2-u11', 'Hardly ______ her presentation when the projector stopped working.', ['had she begun', 'she had begun', 'did she begin', 'she began']),
     b.choice('b2-u12', 'I ______ along the beach for an hour when I noticed that my phone was missing.', ['had been walking', 'have been walking', 'am walking', 'walk']),
     b.choice('b2-u13', 'The hotel was expensive. ______, it was worth every penny.', ['Nevertheless', 'Consequently', 'Moreover', 'Otherwise']),
 ];
@@ -30,10 +30,10 @@ Critics argue that the model cannot easily be copied. A software company, they p
 Other firms in the region are watching closely. Two banks and a marketing agency have recently started their own trials, although both banks have chosen a more cautious version in which employees work slightly longer hours on the remaining four days.`);
 
 const reading = [
+    r.judge('The company has stopped the scheme in its offices outside Mexico.', 'false', 'extended it to its offices in Bogotá and Lima'),
     r.choice('What was the main reason the company introduced the four-day week?', ['To stop experienced staff leaving', 'To attract new clients', 'To reduce office costs', 'To copy a scheme a competitor had launched'], 'It was that we kept losing good people.'),
     r.judge('Teams were free to decide which day they would not work.', 'true', 'Each team could choose which day to take off'),
     r.choice('What went wrong in the first months?', ['Some staff worked on their day off to keep up', 'Productivity fell by a third', 'Several developers resigned', 'The company lost its biggest client'], 'Some employees admitted that they had been working on their day off just to keep up.'),
-    r.judge('The company has stopped the scheme in its offices outside Mexico.', 'false', 'extended it to its offices in Bogotá and Lima'),
     r.choice("How are the banks' trials different?", ['Employees work longer hours on the other four days', 'Employees work three days a week', 'Only managers take part', 'Staff accept a lower salary'], 'employees work slightly longer hours on the remaining four days'),
 ];
 
@@ -52,7 +52,7 @@ const l = b.listening([
 
 const listening = [
     l.choice('What attracts the man to the job?', ['A more senior role and a higher salary', 'Being closer to his family', 'Working with Emma', 'Shorter working hours'], 'a better title, nearly double the salary'),
-    l.choice('Why is he less certain than he would have been two years ago?', ["His father's health has got worse", 'He has a new partner', 'His salary has increased', 'He has already lived abroad'], "My dad's been unwell"),
+    l.choice('Why is he less certain than he would have been two years ago?', ["His father hasn't been well", 'He has a new partner', 'His salary has increased', 'He has already lived abroad'], "My dad's been unwell"),
     l.judge('The company has offered to pay for some trips home.', 'true', "They said they'd pay for two trips home a year"),
     l.judge('Emma is reluctant to move to Singapore.', 'false', "She'd love to, funnily enough."),
     l.judge('The man has received a similar offer from another company.', 'not-given'),

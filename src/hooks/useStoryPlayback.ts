@@ -135,8 +135,16 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
         setCurrentIndex(from);
         wantsFileRef.current = true;
         el.play().catch((e: unknown) => {
+            const name = (e as { name?: string })?.name;
             // A pause before playback began is not a failure
-            if ((e as { name?: string })?.name === 'AbortError') return;
+            if (name === 'AbortError') return;
+            // Safari only plays after a tap (not when the accent changes): the file is fine, so it
+            // stops and waits for the play button instead of switching to the browser's voices
+            if (name === 'NotAllowedError') {
+                wantsFileRef.current = false;
+                setIsPlaying(false);
+                return;
+            }
             // No Ogg Opus or no network: the browser reads the story instead
             fallbackRef.current(from);
         });

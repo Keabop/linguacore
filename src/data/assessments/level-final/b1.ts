@@ -8,7 +8,7 @@ const transfer = [
     b.choice('b1-u2', 'I ______ my wallet yesterday, but luckily someone handed it in.', ['lost', 'have lost', 'had lost', 'was losing']),
     b.gap('b1-u3', "She's out of breath because she ___ for an hour. (run)", ['has been running', "'s been running"], 3),
     b.choice('b1-u4', 'By the time I arrived at the party, most of the guests ______ home.', ['had gone', 'have gone', 'are going', 'go']),
-    b.choice('b1-u5', 'When I was a child, I ______ walk to school with my grandfather every morning.', ['used to', 'use to', 'am used to', 'was used to']),
+    b.choice('b1-u5', 'My grandfather ______ smoke, but he stopped twenty years ago.', ['used to', 'use to', 'is used to', 'was used to']),
     b.gap('b1-u6', 'This bridge ___ in 1910. (build)', ['was built'], 2),
     b.choice('b1-u6', 'Millions of emails ______ every minute.', ['are sent', 'send', 'are sending', 'sending']),
     b.choice('b1-u7', 'If I ______ more free time, I would learn to play the guitar.', ['had', 'have', 'will have', 'would have']),

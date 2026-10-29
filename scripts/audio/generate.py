@@ -59,7 +59,7 @@ def main() -> None:
             chunks += [samples.astype(np.float32), silence]
             at += (len(samples) + len(silence)) / SAMPLE_RATE
         audio = np.concatenate(chunks)
-        sf.write(Path(out_dir) / f"{job['key']}.ogg", audio, SAMPLE_RATE, format='OGG', subtype='OPUS', compression_level=COMPRESSION)
+        sf.write(Path(out_dir) / f"{job['file']}.ogg", audio, SAMPLE_RATE, format='OGG', subtype='OPUS', compression_level=COMPRESSION)
         if job['kind'] == 'story':
             timings[job['key']] = starts
         print(f"[{n}/{len(jobs)}] {job['key']} {job['kind']} {at:.1f}s", flush=True)

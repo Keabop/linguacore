@@ -1,4 +1,5 @@
 import { isMultipleChoice, type AssessmentQuestion, type ExamResponse, type ExamSection } from './types';
+import { expandContractions } from '../normalizeAnswer';
 
 /** Lower-case, single spaces, straight apostrophes, no punctuation at the edges. */
 export function normalizeAnswer(text: string): string {
@@ -52,9 +53,10 @@ export function grade(q: AssessmentQuestion, response: ExamResponse | undefined)
             return response === q.answer ? marksOf(q) : 0;
         case 'gap': {
             if (typeof response !== 'string') return 0;
-            const given = normalizeAnswer(response);
-            if (q.maxWords && countWords(given, q.allowNumber) > q.maxWords) return 0;
-            return q.answers.some(a => normalizeAnswer(a) === given) ? marksOf(q) : 0;
+            // Only a key answer scores, and every key is within the word limit (validate.ts); "do not"
+            // and "don't" are the same answer, as they are in the unit exercises
+            const expanded = expandContractions(normalizeAnswer(response));
+            return q.answers.some(a => expandContractions(normalizeAnswer(a)) === expanded) ? marksOf(q) : 0;
         }
         case 'complete-words': {
             if (!Array.isArray(response)) return 0;

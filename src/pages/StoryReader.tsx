@@ -124,12 +124,13 @@ export default function StoryReader() {
     const selectedIsSaved = !!selectedWord && (savedStatuses?.get(selectedWord.id) ?? 'none') !== 'none';
 
     // --- Sentences: the same split the recording was cut with (src/lib/storySentences.ts) ---
+    // Keyed on the text too, so the sentences (and the shadowing effect below) don't change every render
     const { processedHTML, sentences } = useMemo(() => {
-        if (!story) return { processedHTML: '', sentences: [] as string[] };
-        const html = wrapStorySentences(story.content, (part, i) =>
+        if (!storyContent) return { processedHTML: '', sentences: [] as string[] };
+        const html = wrapStorySentences(storyContent, (part, i) =>
             `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${i}">${part}</span>`);
-        return { processedHTML: html, sentences: storySentences(story.content) };
-    }, [story]);
+        return { processedHTML: html, sentences: storySentences(storyContent) };
+    }, [storyContent]);
 
     // Static stories have a recording (npm run content:audio); AI stories use the browser's voices
     const recording = useMemo(
