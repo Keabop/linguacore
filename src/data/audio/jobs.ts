@@ -4,7 +4,7 @@ import type { AssessmentQuestion, DialogueLine } from '../../lib/exam/types';
 import { dialogueKey, storyKey } from '../../lib/audioKey';
 import { splitSentences } from '../../lib/assessmentSpeech';
 import { storySentences } from '../../lib/storySentences';
-import { SPEECH_RATE } from '../../lib/voices';
+import { SPEECH_RATE, listeningRate } from '../../lib/voices';
 import { allStories } from '../index';
 import { placementQuestions } from '../assessments/placement';
 import { cambridgeB1Questions } from '../assessments/cambridge/b1';
@@ -37,9 +37,6 @@ const VOICES: Record<string, [string, string]> = {
     'UK|male': ['bm_george', 'bm_lewis'],
 };
 const STORY_VOICE = 'af_heart';
-
-/** Speed of an exam item's recording: slower for A1 and A2 items, normal for the rest. */
-export const listeningRate = (level: string) => SPEECH_RATE[level as keyof typeof SPEECH_RATE] ?? 1;
 
 function dialogueJob(lines: DialogueLine[], rate: number): AudioJob {
     const voiceOf = new Map<string, string>();

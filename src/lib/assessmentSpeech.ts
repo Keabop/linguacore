@@ -1,5 +1,6 @@
 ﻿import type { DialogueLine } from './exam/types';
-import { rankVoice } from './voices';
+import { listeningRate, rankVoice } from './voices';
+import { audioFor, dialogueKey } from './audioKey';
 
 // Listening audio of the simulators. A question with `audioSrc` plays its pre-generated file;
 // otherwise the dialogue is read with the browser's voices, one distinct voice per speaker.
@@ -88,6 +89,7 @@ export function playDialogueSpeech(
     onLineStart: (index: number) => void,
     onComplete: () => void,
     onFail: () => void = onComplete,
+    rate = 0.95,
 ) {
     if (!window.speechSynthesis) {
         onFail();
@@ -117,7 +119,7 @@ export function playDialogueSpeech(
             if (voice) utterance.voice = voice;
             utterance.lang = line.accent === 'US' ? 'en-US' : 'en-GB';
             utterance.pitch = pitch;
-            utterance.rate = 0.95;
+            utterance.rate = rate;
 
             // Moves on once, whichever comes first: the end, an error or the time limit
             let settled = false;
@@ -151,4 +153,23 @@ export function playDialogueSpeech(
     const once = () => { if (!started) { started = true; start(); } };
     window.speechSynthesis.addEventListener('voiceschanged', once, { once: true });
     setTimeout(once, 500);
+}
+
+/**
+ * Plays a listening script: its recording (npm run content:audio) when there is one, else the
+ * browser's voices, which also take over when the file can't be played (no network, an old
+ * browser without Ogg Opus). Both go at the speed of the item's level.
+ */
+export function playListening(
+    lines: DialogueLine[],
+    level: string,
+    onLineStart: (index: number) => void,
+    onComplete: () => void,
+    onFail: () => void = onComplete,
+) {
+    const rate = listeningRate(level);
+    const speak = () => playDialogueSpeech(lines, onLineStart, onComplete, onFail, rate * 0.95);
+    const entry = audioFor(dialogueKey(lines, rate));
+    if (entry) playAudioFile(entry.src, onComplete, speak);
+    else speak();
 }
