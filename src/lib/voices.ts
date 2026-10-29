@@ -21,6 +21,9 @@ export const PREFERRED_VOICES: Record<Accent, string[]> = {
  */
 export const SPEECH_RATE: Record<CEFRLevel, number> = { A1: 0.8, A2: 0.9, B1: 1, B2: 1 };
 
+/** Speed of an exam item's recording: slower for A1 and A2 items, normal for the rest (C1 too). */
+export const listeningRate = (level: string) => SPEECH_RATE[level as CEFRLevel] ?? 1;
+
 const LANG: Record<Accent, string> = { US: 'en-US', UK: 'en-GB', AU: 'en-AU' };
 const FEMALE = /female|woman|zira|samantha|hazel|susan|libby|sonia|aria|jenny|ava|allison|karen|moira|tessa|serena|victoria|fiona|natasha|annette|catherine/i;
 const MALE = /\bmale\b|\bman\b|david|george|mark|ryan|guy|daniel|alex|fred|oliver|thomas|james|arthur|andrew|william/i;
