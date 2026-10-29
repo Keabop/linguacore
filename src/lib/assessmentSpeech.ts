@@ -1,4 +1,6 @@
 ﻿import type { DialogueLine } from './exam/types';
+import { listeningRate, rankVoice } from './voices';
+import { audioFor, dialogueKey, keepForOffline } from './audioKey';
 
 // Listening audio of the simulators. A question with `audioSrc` plays its pre-generated file;
 // otherwise the dialogue is read with the browser's voices, one distinct voice per speaker.
@@ -7,20 +9,6 @@ export interface SpeakerVoice {
     voice?: SpeechSynthesisVoice;
     /** Changes the pitch when both speakers had to share one voice. */
     pitch: number;
-}
-
-const FEMALE = /female|woman|zira|samantha|hazel|susan|libby|sonia|aria|jenny|ava|allison|karen|moira|tessa|serena|victoria|fiona/i;
-const MALE = /\bmale\b|\bman\b|david|george|mark|ryan|guy|daniel|alex|fred|oliver|thomas|james|arthur/i;
-
-function score(voice: SpeechSynthesisVoice, line: DialogueLine): number {
-    const lang = line.accent === 'US' ? 'en-US' : 'en-GB';
-    let s = 0;
-    if (voice.lang.replace('_', '-').startsWith(lang)) s += 4;
-    else if (voice.lang.startsWith('en')) s += 1;
-    else return -1;
-    if ((line.gender === 'female' ? FEMALE : MALE).test(voice.name)) s += 3;
-    if (voice.localService) s += 1;
-    return s;
 }
 
 /**
@@ -33,7 +21,7 @@ export function pickSpeakerVoices(lines: DialogueLine[], voices: SpeechSynthesis
     const speakers = [...new Map(lines.map(l => [l.speaker, l])).values()];
     for (const line of speakers) {
         const ranked = voices
-            .map(v => ({ v, s: score(v, line) }))
+            .map(v => ({ v, s: rankVoice(v, line.accent, line.gender) }))
             .filter(x => x.s >= 0)
             .sort((a, b) => b.s - a.s);
         const free = ranked.find(x => !taken.has(x.v));
@@ -78,6 +66,7 @@ export function playAudioFile(src: string, onComplete: () => void, onFail: () =>
     stopDialogueSpeech();
     const audio = new Audio(src);
     activeAudio = audio;
+    keepForOffline(src);
     let started = false;
     const finish = (ok: boolean) => {
         if (activeAudio !== audio) return;
@@ -101,6 +90,7 @@ export function playDialogueSpeech(
     onLineStart: (index: number) => void,
     onComplete: () => void,
     onFail: () => void = onComplete,
+    rate = 0.95,
 ) {
     if (!window.speechSynthesis) {
         onFail();
@@ -130,7 +120,7 @@ export function playDialogueSpeech(
             if (voice) utterance.voice = voice;
             utterance.lang = line.accent === 'US' ? 'en-US' : 'en-GB';
             utterance.pitch = pitch;
-            utterance.rate = 0.95;
+            utterance.rate = rate;
 
             // Moves on once, whichever comes first: the end, an error or the time limit
             let settled = false;
@@ -165,3 +155,25 @@ export function playDialogueSpeech(
     window.speechSynthesis.addEventListener('voiceschanged', once, { once: true });
     setTimeout(once, 500);
 }
+
+/**
+ * Plays a listening script: its recording (npm run content:audio) when there is one, else the
+ * browser's voices, which also take over when the file can't be played (no network, an old
+ * browser without Ogg Opus). Both go at the speed of the item's level.
+ */
+export function playListening(
+    lines: DialogueLine[],
+    level: string,
+    onLineStart: (index: number) => void,
+    onComplete: () => void,
+    onFail: () => void = onComplete,
+) {
+    const rate = listeningRate(level);
+    const speak = () => playDialogueSpeech(lines, onLineStart, onComplete, onFail, rate * 0.95);
+    const entry = audioFor(dialogueKey(lines, rate));
+    if (entry) playAudioFile(entry.src, onComplete, speak);
+    else speak();
+}
+
+/** Whether a listening script has a recording (so the browser's voices aren't needed). */
+export const hasRecording = (lines: DialogueLine[], level: string) => !!audioFor(dialogueKey(lines, listeningRate(level)));

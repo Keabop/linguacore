@@ -284,9 +284,36 @@
   "assessment": {
     "title": "Evaluación {{level}}",
     "pass": "¡Felicidades! Has aprobado",
-    "fail": "No has alcanzado el 80%. Repasa y vuelve a intentarlo.",
+    "fail": "No has alcanzado el {{pass}}%. Repasa y vuelve a intentarlo.",
     "retry": "Reintentar",
-    "score": "Tu puntuación: {{score}}%"
+    "score": "Tu puntuación: {{score}}%",
+    "intro": "Demuestra tu dominio del nivel {{level}}: gramática de todas sus unidades, más una lectura y una escucha nuevas.",
+    "partGrammar": "{{count}} preguntas de gramática",
+    "partGrammarBody": "Una de repaso por unidad y otras nuevas, en contextos que no viste",
+    "partSkills": "Una lectura y una escucha",
+    "partSkillsBody": "Cinco preguntas de cada una; la escucha se oye hasta dos veces",
+    "passMark": "{{pass}}% para aprobar",
+    "passMarkBody": "Necesitas al menos {{pass}}% de respuestas correctas",
+    "unlock": "Al aprobar, desbloquearás el nivel {{level}}",
+    "unlockLast": "Completa tu dominio del nivel",
+    "unlockTitle": "Desbloquea el siguiente nivel",
+    "start": "Comenzar",
+    "back": "Volver a la ruta",
+    "next": "Siguiente",
+    "finish": "Terminar",
+    "progress": "Pregunta {{n}} de {{total}}",
+    "sectionGrammar": "Gramática",
+    "sectionReading": "Lectura",
+    "sectionListening": "Escucha",
+    "play": "Escuchar",
+    "playing": "Reproduciendo…",
+    "noPlaysLeft": "Ya no quedan reproducciones",
+    "reviewTopics": "Temas a repasar:",
+    "noQuestions": "No se encontraron preguntas para esta evaluación.",
+    "saveFailed": "No se pudo guardar tu resultado. Revisa tu conexión e inténtalo de nuevo.",
+    "playsLeft_one": "Te queda {{count}} reproducción",
+    "playsLeft_other": "Te quedan {{count}} reproducciones",
+    "progressRange": "Preguntas {{from}} a {{to}} de {{total}}"
   },
   "account": {
     "title": "Mi cuenta",
@@ -531,5 +558,13 @@
     "cmudictTitle": "Pronunciación: CMU Pronouncing Dictionary",
     "cmudictBody": "La transcripción fonética de las palabras se obtiene del diccionario de pronunciación de Carnegie Mellon, convertida al IPA americano. Su licencia pide reproducir este aviso:",
     "newTab": "se abre en otra pestaña"
+  },
+  "voices": {
+    "missingTitle": "Tu navegador no tiene voces en inglés",
+    "missingBody": "Sin una voz en inglés no se puede leer en voz alta lo que no tiene audio grabado. Instala una y reinicia el navegador:",
+    "windows": "Windows: Configuración → Hora e idioma → Voz → Agregar voces → Inglés (Estados Unidos).",
+    "mac": "Mac: Ajustes del Sistema → Accesibilidad → Contenido leído → Voz del sistema → Gestionar voces → English.",
+    "android": "Android: Ajustes → Sistema → Idiomas → Salida de texto a voz → Motor de Google → Instalar datos de voz → English.",
+    "ios": "iPhone o iPad: Ajustes → Accesibilidad → Contenido leído → Voces → English."
   }
 }

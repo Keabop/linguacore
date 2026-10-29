@@ -6,7 +6,7 @@ import { ArrowLeft, Compass, Shield, Award, Sparkles, Play, Volume2, Edit3, Acti
 import { useAuth } from '../lib/AuthContext';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
-import { playAudioFile, playDialogueSpeech, stopDialogueSpeech } from '../lib/assessmentSpeech';
+import { playAudioFile, playListening, stopDialogueSpeech } from '../lib/assessmentSpeech';
 import { chooseStage, endsRouter, pageEnd, pageStart, visibleQuestions, type StageChoice } from '../lib/exam/adaptive';
 import { buildReport, type ExamReport } from '../lib/exam/report';
 import { PLACEMENT, answeredWhenTimeIsUp, nextPlacementBlock } from '../lib/exam/placement';
@@ -15,6 +15,7 @@ import QuestionView from '../components/exam/QuestionView';
 import TaskChoice from '../components/exam/TaskChoice';
 import TaskChart from '../components/exam/TaskChart';
 import PassageView from '../components/exam/PassageView';
+import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 import { shuffleQuestion } from '../lib/shuffle';
 import { placementBlocks } from '../data/assessments/placement';
 import type { AssessmentQuestion } from '../lib/exam/types';
@@ -353,7 +354,7 @@ export default function CEFRSimulator() {
     }, [transcript, isListening, state, activeSpeakingIdx, speakingPrompts]);
 
     // Play Dialogue Listening
-    const handlePlayAudio = (key: string, lines: any[], audioSrc?: string) => {
+    const handlePlayAudio = (key: string, question: AssessmentQuestion) => {
         const plays = audioPlayCount[key] || 0;
         if (plays >= maxPlays) return;
 
@@ -371,8 +372,8 @@ export default function CEFRSimulator() {
             setAudioFailed(prev => ({ ...prev, [key]: true }));
             toast.error({ title: t('simulator.audioFailedTitle'), description: t('simulator.audioFailedBody') });
         };
-        if (audioSrc) playAudioFile(audioSrc, done, failed);
-        else playDialogueSpeech(lines, (lineIdx) => setActiveDialogueLine(lineIdx), done, failed);
+        if (question.audioSrc) playAudioFile(question.audioSrc, done, failed);
+        else playListening(question.dialogue!, question.level, (lineIdx) => setActiveDialogueLine(lineIdx), done, failed);
     };
 
     // Stopping playback never calls its completion, so the play state is released here
@@ -723,7 +724,7 @@ export default function CEFRSimulator() {
                                     
                                     <div className="flex justify-center items-center gap-3">
                                         <button
-                                            onClick={() => handlePlayAudio(audioKey, current.dialogue!, current.audioSrc)}
+                                            onClick={() => handlePlayAudio(audioKey, current)}
                                             disabled={isPlayingAudio || (audioPlayCount[audioKey] || 0) >= maxPlays}
                                             aria-label={t('simulator.playAudio')}
                                             className="w-14 h-14 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95 transition-all shadow-md"
@@ -929,6 +930,8 @@ export default function CEFRSimulator() {
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
                             </span>
                         </div>
+
+                        <NoEnglishVoices />
 
                         {(() => {
                             const activePrompt = speakingPrompts[activeSpeakingIdx];

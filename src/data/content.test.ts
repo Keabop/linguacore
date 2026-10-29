@@ -1,13 +1,17 @@
 // Integrity of the teaching content: every item must be answerable as written.
 import { describe, expect, it } from 'vitest';
-import { allExercises, allGrammarSkills, allStories, allUnits } from './index';
+import { audioJobs } from './audio/jobs';
+import { audioFor } from '../lib/audioKey';
+import { allExercises, allGrammarCards, allGrammarSkills, allStories, allUnits } from './index';
 import { placementBlocks, placementQuestions } from './assessments/placement';
+import { levelFinalBanks, type LevelFinalBank } from './assessments/level-final';
 import { cambridgeB1Questions, cambridgeB1Speaking, cambridgeB1Writing } from './assessments/cambridge/b1';
 import { cambridgeB2Questions, cambridgeB2Speaking, cambridgeB2Writing } from './assessments/cambridge/b2';
 import { ieltsQuestions, ieltsSpeaking, ieltsWriting } from './assessments/ielts-questions';
 import { toeflQuestions, toeflSpeaking, toeflWriting } from './assessments/toefl-questions';
 import { marksOf, parseCompleteWords } from '../lib/exam/grading';
 import { validateExamStructure, validateQuestion } from '../lib/exam/validate';
+import { isMultipleChoice } from '../lib/exam/types';
 import reference from '../../content/reference/cefrj-vocabulary.json';
 import pronunciations from '../../content/reference/pronunciations.json';
 import { PRONUNCIATION_VARIANT, ipaOf } from './pronunciation';
@@ -450,6 +454,89 @@ describe('Cambridge simulators', () => {
                 expect(exam.writing[0].points?.length).toBeGreaterThanOrEqual(3);
                 expect(exam.writing[1].choices?.length).toBeGreaterThanOrEqual(2);
                 expect(exam.speaking.map(t => t.title.slice(0, 15))).toEqual(['Speaking Part 1', 'Speaking Part 2', 'Speaking Part 3', 'Speaking Part 4']);
+            });
+        });
+    }
+});
+
+describe('pre-generated audio', () => {
+    it('every listening script and static story has its audio, up to date (npm run content:audio)', () => {
+        // The files in public/audio, as "/audio/<key>.ogg"
+        const files = new Set(Object.keys(import.meta.glob('../../public/audio/*.ogg')).map(f => f.replace('../../public', '')));
+        const stale: string[] = [];
+        for (const job of audioJobs()) {
+            const entry = audioFor(job.key);
+            const ok = entry && files.has(entry.src) && (job.kind !== 'story' || entry.sentences?.length === job.segments.length);
+            if (!ok) stale.push(`${job.kind} ${job.key}: ${job.segments[0]?.text.slice(0, 40)}`);
+        }
+        expect(stale).toEqual([]);
+    });
+});
+
+describe('grammar cards', () => {
+    const plain = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const a2 = allGrammarCards.filter(c => c.unitId.startsWith('a2-'));
+    const a2Average = a2.reduce((sum, c) => sum + plain(c.explanation).length, 0) / a2.length;
+
+    it('A1 grammar cards reach the depth of A2, with typical errors of Spanish speakers', () => {
+        for (const card of allGrammarCards.filter(c => c.unitId.startsWith('a1-'))) {
+            expect(card.examples.length, card.id).toBeGreaterThanOrEqual(6);
+            expect(card.rules.length, card.id).toBeGreaterThanOrEqual(5);
+            expect(plain(card.explanation).length, card.id).toBeGreaterThanOrEqual(a2Average * 0.8);
+            const errors = card.explanation.split('<h3>Errores típicos</h3>')[1];
+            expect(errors, `${card.id}: sin sección de errores típicos`).toBeDefined();
+            expect(errors.split('<h3>')[0].match(/<li>/g)?.length ?? 0, card.id).toBeGreaterThanOrEqual(3);
+        }
+    });
+});
+
+describe('end-of-level exam', () => {
+    const flat = (s: string) => s.toLowerCase().replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim();
+    const seen = new Set([
+        ...allExercises.map(e => flat(e.question)),
+        ...allGrammarSkills.flatMap(s => s.exercises.map(e => flat(e.prompt))),
+        ...placementQuestions.map(q => flat(q.text)),
+    ]);
+    const READING_WORDS = { A1: 120, A2: 200, B1: 350, B2: 480 };
+
+    for (const [level, bank] of Object.entries(levelFinalBanks) as [keyof typeof levelFinalBanks, LevelFinalBank][]) {
+        describe(level, () => {
+            const all = [...bank.transfer, ...bank.reading, ...bank.listening];
+
+            it('has every item answerable as written, of its level', () => {
+                for (const q of all) {
+                    expect(validateQuestion(q), q.id).toEqual([]);
+                    expect(q.level, q.id).toBe(level);
+                    expect(isTemplated(q.text), q.id).toBe(false);
+                }
+                expect(new Set(all.map(q => q.id)).size).toBe(all.length);
+            });
+
+            it('tests every lesson unit with a transfer item its units do not already have', () => {
+                const units = allUnits.filter(u => u.level === level && !u.isAssessment).map(u => u.id);
+                for (const q of bank.transfer) {
+                    expect(units, q.id).toContain(q.unitId);
+                    expect(seen.has(flat(q.text)), `${q.id} repite un ítem: ${q.text}`).toBe(false);
+                }
+                for (const u of units) expect(bank.transfer.some(q => q.unitId === u), u).toBe(true);
+            });
+
+            it('has one new text and one new two-voice recording, each with five questions', () => {
+                expect(bank.reading).toHaveLength(5);
+                expect(bank.listening).toHaveLength(5);
+                const words = bank.reading[0].passage!.split(/\s+/).length;
+                expect(words).toBeGreaterThanOrEqual(READING_WORDS[level] * 0.8);
+                expect(words).toBeLessThanOrEqual(READING_WORDS[level] * 1.2);
+                expect(new Set(bank.listening[0].dialogue!.map(l => l.speaker)).size).toBe(2);
+                for (const q of [...bank.reading, ...bank.listening]) {
+                    if (!(q.kind === 'tfng' && q.answer === 'not-given')) expect(q.evidence, q.id).toBeTruthy();
+                }
+            });
+
+            it('does not give the answer away as the longest option', () => {
+                const mc = all.filter(isMultipleChoice);
+                const longest = mc.filter(q => q.options.every((o, i) => i === q.correctIndex || o.length < q.options[q.correctIndex].length));
+                expect(longest.length / mc.length, longest.map(q => q.id).join(', ')).toBeLessThanOrEqual(0.4);
             });
         });
     }
