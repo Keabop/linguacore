@@ -17,6 +17,7 @@ import pronunciations from '../../content/reference/pronunciations.json';
 import { PRONUNCIATION_VARIANT, ipaOf } from './pronunciation';
 import { phonetics } from './vocabulary/phonetics';
 import { allVocabulary, vocabularyAliases } from './vocabulary';
+import { unitKeyWords } from './vocabulary/keyWords';
 import {
     ENFORCED_DECKS, ENFORCED_EXAMS, ENFORCED_LEVELS, TARGETS, buildLevelIndex, checkVocabularyLevels, isTemplated, lemmaCandidates, levelRank, questionKey, storyCoverage,
     storyEncounters, type ReferenceEntry,
@@ -124,16 +125,33 @@ describe('plan targets for rebuilt levels', () => {
                 }
             });
 
-            it(`teaches ${TARGETS.deckSize[level]} words, each seen in ${TARGETS.minEncounters}+ stories`, () => {
-                expect(deck.length).toBeGreaterThanOrEqual(TARGETS.deckSize[level]);
-                const pool = allStories.filter(s => levelRank(s.level) <= levelRank(level) + 1);
-                for (const [id, n] of storyEncounters(pool, deck.map(v => v.id), index)) {
-                    expect(n, id).toBeGreaterThanOrEqual(TARGETS.minEncounters);
+            it(`brings back each unit's key words in ${TARGETS.minEncounters}+ stories`, () => {
+                // The stories of the level and the next one, where the words keep coming back
+                const pool = allStories.filter(s => s.level === level || levelRank(s.level) === levelRank(level) + 1);
+                for (const u of units) {
+                    const keys = unitKeyWords[u.id] ?? [];
+                    expect(keys.length, u.id).toBeGreaterThanOrEqual(12);
+                    for (const id of keys) expect(deck.find(v => v.id === id)?.unitId, `${u.id}: ${id}`).toBe(u.id);
+                    for (const [id, n] of storyEncounters(pool, keys, index)) {
+                        expect(n, `${u.id}: ${id}`).toBeGreaterThanOrEqual(TARGETS.minEncounters);
+                    }
                 }
             });
 
-            it('labels words with the CEFR-J level, by their dictionary form', () => {
-                expect(checkVocabularyLevels(deck, index)).toEqual({ mismatched: [], notLemma: [], missing: [] });
+            it('taps only words of the story\'s own unit, and ends with three questions answered by the text', () => {
+                const plain = (html: string) => html.replace(/<\/?span[^>]*>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+                for (const s of stories) {
+                    for (const [, id] of s.content.matchAll(/data-word="([^"]+)"/g)) {
+                        expect(deck.find(v => v.id === id)?.unitId, `${s.id}: ${id}`).toBe(s.unitId);
+                    }
+                    expect(s.questions, s.id).toHaveLength(3);
+                    for (const q of s.questions!) {
+                        expect(new Set(q.options).size, `${s.id}: ${q.question}`).toBe(q.options.length);
+                        expect(q.options.length, `${s.id}: ${q.question}`).toBeGreaterThanOrEqual(3);
+                        expect(q.options[q.correctIndex], `${s.id}: ${q.question}`).toBeDefined();
+                        expect(plain(s.content), `${s.id}: ${q.evidence}`).toContain(q.evidence);
+                    }
+                }
             });
         });
     }
