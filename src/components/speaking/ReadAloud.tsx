@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { MicOff, Volume2, RotateCcw } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
 import { MicIcon } from '../icons';
+import NoEnglishVoices from '../ui/NoEnglishVoices';
 
 interface Props {
     instruction: string;
@@ -68,6 +69,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
 
     return (
         <div className="space-y-6">
+            <NoEnglishVoices />
             <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-accent-blue text-sm font-semibold">
                     <Volume2 className="w-4 h-4" />

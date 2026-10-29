@@ -15,6 +15,7 @@ import QuestionView from '../components/exam/QuestionView';
 import TaskChoice from '../components/exam/TaskChoice';
 import TaskChart from '../components/exam/TaskChart';
 import PassageView from '../components/exam/PassageView';
+import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 import { shuffleQuestion } from '../lib/shuffle';
 import { placementBlocks } from '../data/assessments/placement';
 import type { AssessmentQuestion } from '../lib/exam/types';
@@ -929,6 +930,8 @@ export default function CEFRSimulator() {
                                 <Timer className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{formatTime(timeLeft)}
                             </span>
                         </div>
+
+                        <NoEnglishVoices />
 
                         {(() => {
                             const activePrompt = speakingPrompts[activeSpeakingIdx];

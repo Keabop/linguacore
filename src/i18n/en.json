@@ -531,5 +531,13 @@
     "cmudictTitle": "Pronunciation: CMU Pronouncing Dictionary",
     "cmudictBody": "The words' phonetic transcription comes from Carnegie Mellon's pronouncing dictionary, converted to American IPA. Its license asks for this notice:",
     "newTab": "opens in a new tab"
+  },
+  "voices": {
+    "missingTitle": "Your browser has no English voices",
+    "missingBody": "Without an English voice, anything without recorded audio can't be read aloud. Install one and restart the browser:",
+    "windows": "Windows: Settings → Time & language → Speech → Add voices → English (United States).",
+    "mac": "Mac: System Settings → Accessibility → Spoken Content → System voice → Manage Voices → English.",
+    "android": "Android: Settings → System → Languages → Text-to-speech output → Google engine → Install voice data → English.",
+    "ios": "iPhone or iPad: Settings → Accessibility → Spoken Content → Voices → English."
   }
 }
