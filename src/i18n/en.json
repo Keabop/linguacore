@@ -86,7 +86,13 @@
     "unlockMessage": "Complete level {{level}} to unlock",
     "keyVocabulary": "Key vocabulary",
     "inDeck": "In your deck",
-    "known": "Known"
+    "known": "Known",
+    "questionsTitle": "Did you understand the story?",
+    "questionsIntro": "Answer three questions. When you choose, you will see whether you were right and the sentence of the story that says so.",
+    "answerRight": "Right!",
+    "answerWrong": "Not that one.",
+    "answerEvidence": "The story says:",
+    "questionsScore": "You got {{right}} of {{total}} right."
   },
   "storyList": {
     "subtitle": "Explore stories by level",
@@ -261,7 +267,25 @@
     "canSpeakNow": "I can speak now",
     "storyRead": "Read",
     "continue": "Continue",
-    "readStory": "Read the story"
+    "storiesIntro_one": "This unit has one story. Read it to practice its grammar and vocabulary.",
+    "storiesIntro_other": "This unit has {{count}} stories. Read them to practice its grammar and vocabulary.",
+    "readNextStory": "Read “{{title}}”",
+    "deckDescription": "The {{count}} words this unit teaches.",
+    "deckKeyHint": "Start with the {{count}} key words: the stories use them the most. Tap a card to see its translation and an example.",
+    "deckAllHint": "All the words of the unit. Tap a card to see its translation and an example.",
+    "deckShowAll": "See all {{count}} words of the unit",
+    "inReview": "In your review",
+    "addWords_one": "Add {{count}} word to my review",
+    "addWords_other": "Add {{count}} words to my review",
+    "allWordsInReview": "All the words are in your review",
+    "wordsAdded_one": "You added {{count}} word to your review.",
+    "wordsAdded_other": "You added {{count}} words to your review.",
+    "wordsAddFailed": "The words could not be added. Try again.",
+    "skipForNow": "Skip for now",
+    "storyWordsDescription": "Key vocabulary of “{{title}}”.",
+    "reviewWordsDescription": "Review the vocabulary you learned.",
+    "tapCardHint": "Tap each card to see its translation and an example.",
+    "alreadyKnown": "You know it"
   },
   "exercises": {
     "title": "Exercises",

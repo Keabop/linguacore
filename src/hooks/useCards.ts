@@ -83,8 +83,10 @@ export function useCards() {
      * Saves the words of a finished story in one write per table: new cards for the words
      * added to the deck, and the words the learner already knew. A word already saved is
      * skipped by the database (unique on user and word), so a retry can't fail on it.
+     * `countLearned: false` adds the cards without counting them as learned: a unit's whole deck
+     * added at once isn't vocabulary the learner already met in a story.
      */
-    const saveStoryWords = useCallback(async (storyId: string, deckIds: string[], knownIds: string[]) => {
+    const saveStoryWords = useCallback(async (storyId: string, deckIds: string[], knownIds: string[], { countLearned = true } = {}) => {
         if (!userId) return 0;
         const now = new Date().toISOString();
         const cards = deckIds.map(wordId => {
@@ -111,6 +113,11 @@ export function useCards() {
         const skipSaved = { onConflict: 'user_id,word_id', ignoreDuplicates: true };
         if (cards.length) await offlineInsertMany('cards', cards, skipSaved);
         if (known.length) await offlineInsertMany('known_words', known, skipSaved);
+        qc.invalidateQueries({ queryKey: ['unitWordsSaved'] });
+        if (!countLearned) {
+            qc.invalidateQueries({ queryKey: ['cards'] });
+            return added;
+        }
 
         // Offline, the cached profile is the base, and the update waits in the queue
         const cached = qc.getQueryData<Pick<Profile, 'total_words_learned'>>(['profile', userId]);
