@@ -5,10 +5,11 @@ import { writeFileSync } from 'node:fs';
 import pronunciations from '../content/reference/pronunciations.json';
 import { a1Vocabulary } from '../src/data/vocabulary/a1';
 import { a2Vocabulary } from '../src/data/vocabulary/a2';
-import { upperVocabulary } from '../src/data/vocabulary/upper';
+import { b1Vocabulary } from '../src/data/vocabulary/b1';
+import { b2Vocabulary } from '../src/data/vocabulary/b2';
 import { ipaOf } from '../src/data/pronunciation';
 
-const ids = [...a1Vocabulary, ...a2Vocabulary, ...upperVocabulary].map(v => v.id);
+const ids = [...a1Vocabulary, ...a2Vocabulary, ...b1Vocabulary, ...b2Vocabulary].map(v => v.id);
 const entries: [string, string][] = [];
 const missing: string[] = [];
 for (const id of ids) {

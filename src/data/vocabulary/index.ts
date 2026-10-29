@@ -3,13 +3,14 @@
 import type { Vocabulary } from '../../lib/db';
 import { a1Vocabulary } from './a1';
 import { a2Vocabulary } from './a2';
-import { upperVocabulary } from './upper';
+import { b1Vocabulary } from './b1';
+import { b2Vocabulary } from './b2';
 import { phonetics } from './phonetics';
 import { vocabularyAliases } from './aliases';
 
 export { savedIdsOf, vocabularyAliases } from './aliases';
 
-export const allVocabulary: Vocabulary[] = [...a1Vocabulary, ...a2Vocabulary, ...upperVocabulary]
+export const allVocabulary: Vocabulary[] = [...a1Vocabulary, ...a2Vocabulary, ...b1Vocabulary, ...b2Vocabulary]
     .map(v => ({ ...v, phonetic: phonetics[v.id] }));
 
 const vocabById = new Map(allVocabulary.map(v => [v.id, v]));
