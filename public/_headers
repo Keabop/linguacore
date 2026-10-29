@@ -3,3 +3,7 @@
 
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
+
+/audio/*
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: audio/ogg

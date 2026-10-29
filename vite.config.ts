@@ -36,6 +36,18 @@ export default defineConfig({
                         },
                     },
                     {
+                        // Recordings (npm run content:audio): kept once heard, so they play offline.
+                        // Their names change with their content, so a cached file is never stale.
+                        urlPattern: /\/audio\/[0-9a-f]{8}\.ogg$/,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'audio-cache',
+                            expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 90 },
+                            cacheableResponse: { statuses: [0, 200] },
+                            rangeRequests: true,
+                        },
+                    },
+                    {
                         urlPattern: /\/assets\/.*\.js$/,
                         handler: 'CacheFirst',
                         options: {
