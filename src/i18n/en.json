@@ -565,6 +565,8 @@
     "windows": "Windows: Settings → Time & language → Speech → Add voices → English (United States).",
     "mac": "Mac: System Settings → Accessibility → Spoken Content → System voice → Manage Voices → English.",
     "android": "Android: Settings → System → Languages → Text-to-speech output → Google engine → Install voice data → English.",
-    "ios": "iPhone or iPad: Settings → Accessibility → Spoken Content → Voices → English."
+    "ios": "iPhone or iPad: Settings → Accessibility → Spoken Content → Voices → English.",
+    "unsupportedTitle": "Your browser can't read aloud",
+    "unsupportedBody": "Anything without recorded audio stays silent. Open Voxie in an up-to-date Chrome, Edge or Safari to hear it."
   }
 }

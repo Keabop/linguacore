@@ -29,6 +29,11 @@ describe('storySentences', () => {
         expect(storySentences(content)).toEqual(['I wake up.', 'Then I eat!', 'Tom & I walk.', 'Is it far?']);
         expect(storyParagraphs(content)[0][0].html).toBe('I <span data-word="wake">wake</span> up.');
     });
+
+    it('does not end a sentence after a title such as "Dr."', () => {
+        expect(storySentences('<p>Dr. Patel smiled. Ms. Kim and Mr. Ruiz came. They sold items. Then they left.</p>'))
+            .toEqual(['Dr. Patel smiled.', 'Ms. Kim and Mr. Ruiz came.', 'They sold items.', 'Then they left.']);
+    });
 });
 
 describe('wrapStorySentences', () => {

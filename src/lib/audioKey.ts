@@ -1,8 +1,9 @@
 import type { DialogueLine } from './exam/types';
 import { AUDIO_MANIFEST } from '../data/audio/manifest';
 
-// Names of the pre-generated audio files (npm run content:audio): a hash of what is said, by
-// whom and how fast, so a file is regenerated whenever its script or story changes.
+// Keys of the pre-generated audio (npm run content:audio): a hash of what is said, by whom and
+// how fast, so a recording is regenerated whenever its script or story changes. The manifest maps
+// each key to its file, whose name also carries the voices and the generator (data/audio/jobs.ts).
 
 export interface AudioEntry {
     src: string;
