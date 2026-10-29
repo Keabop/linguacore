@@ -36,8 +36,9 @@ export default defineConfig({
                         },
                     },
                     {
-                        // Recordings (npm run content:audio): kept once heard, so they play offline.
-                        // Their names change with their content, so a cached file is never stale.
+                        // Recordings (npm run content:audio). The app saves each whole file once heard
+                        // (keepForOffline); this answers the byte ranges <audio> asks for from it. Names
+                        // change with the content, so a cached file is never stale.
                         urlPattern: /\/audio\/[0-9a-f]{8}\.ogg$/,
                         handler: 'CacheFirst',
                         options: {

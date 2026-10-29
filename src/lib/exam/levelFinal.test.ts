@@ -24,7 +24,7 @@ function rightAnswer(q: AssessmentQuestion): ExamResponse {
         case 'tfng': return q.answer;
         case 'gap': return q.answers[0];
         case 'build-sentence': {
-            const words = q.answer.replace(/[.?!]+$/, '');
+            const words = q.answer;
             const used = new Set<number>();
             const order: number[] = [];
             let rest = words;

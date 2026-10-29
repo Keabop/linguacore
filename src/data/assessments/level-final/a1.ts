@@ -7,11 +7,11 @@ const transfer = [
     b.choice('a1-u1', 'My grandparents ______ from a small village near Oaxaca.', ['are', 'is', 'am', 'be']),
     b.gap('a1-u1', 'A: How old is your daughter? B: She ___ six.', ['is']),
     b.choice('a1-u2', 'I want to buy ______ umbrella. Mine is broken.', ['an', 'a', 'these', 'those']),
-    b.order('a1-u2', 'What is in the box?', 'These are old photos of my family.', ['old', 'These', 'of my family', 'are', 'photos']),
+    b.order('a1-u2', 'What is in the box?', 'These are old photos of my family.', ['old', 'These are', 'of my family.', 'photos']),
     b.choice('a1-u3', 'My uncle ______ a small restaurant in the city centre.', ['has', 'have', 'haves', 'is have']),
     b.gap('a1-u3', 'Lucía ___ (study) medicine at the university.', ['studies']),
     b.choice('a1-u4', '______ your sister like horror films?', ['Does', 'Do', 'Is', 'Are']),
-    b.order('a1-u4', 'Is your brother late for work?', 'No, he is never late.', ['never', 'he', 'late', 'No,', 'is']),
+    b.order('a1-u4', 'Is your brother late for work?', 'No, he is never late.', ['never', 'he', 'late.', 'No,', 'is']),
     b.choice('a1-u5', '______ any good cafés near your office?', ['Are there', 'Is there', 'There are', 'Have']),
     b.gap('a1-u5', 'The calendar is ___ the wall, next to the clock.', ['on']),
     b.choice('a1-u6', 'Excuse me, ______ I sit here?', ['can', 'do', 'am', 'does']),
@@ -30,7 +30,7 @@ const reading = [
     r.judge('The shop opens at ten on Saturday.', 'true', 'and at ten on Saturday'),
     r.judge('Sara can eat her lunch in the shop.', 'false', "you can't eat in the shop"),
     r.judge('Ben is from Spain.', 'not-given'),
-    r.choice('What must Sara bring?', ['Her ID card', 'Some coffee', 'Her lunch', 'A photo'], "Don't forget your ID card."),
+    r.choice('What must Sara bring?', ['Her ID card', 'Her passport', 'A uniform', 'Her lunch'], "Don't forget your ID card."),
 ];
 
 const l = b.listening([

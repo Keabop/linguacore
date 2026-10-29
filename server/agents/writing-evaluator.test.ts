@@ -45,6 +45,13 @@ describe('evaluateWriting against the CEFR', () => {
         expect(prompt).toContain(CEFR_DESCRIPTORS.A1.writing);
     });
 
+    it('ignores levels that are only names inherited by every object', async () => {
+        gemini.generateWithFallback.mockResolvedValueOnce(answer);
+        await evaluateWriting({ ...base, level: 'toString' });
+        const prompt = gemini.generateWithFallback.mock.calls.at(-1)![0] as string;
+        expect(prompt).toContain(CEFR_DESCRIPTORS.A1.writing);
+    });
+
     it("returns the exam's criteria the model reported", async () => {
         const criteria = [{ name: 'Content', band: 4, note: 'Bien' }];
         gemini.generateWithFallback.mockResolvedValueOnce(JSON.stringify({ score: 70, criteria }));

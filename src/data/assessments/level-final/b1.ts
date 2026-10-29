@@ -12,7 +12,7 @@ const transfer = [
     b.gap('b1-u6', 'This bridge ___ in 1910. (build)', ['was built'], 2),
     b.choice('b1-u6', 'Millions of emails ______ every minute.', ['are sent', 'send', 'are sending', 'sending']),
     b.choice('b1-u7', 'If I ______ more free time, I would learn to play the guitar.', ['had', 'have', 'will have', 'would have']),
-    b.order('b1-u8', 'Ana: "I\'m tired." What did Ana say?', 'Ana said that she was tired.', ['she', 'Ana said', 'tired', 'that', 'was']),
+    b.order('b1-u8', 'Ana: "I\'m tired." What did Ana say?', 'Ana said that she was tired.', ['she', 'Ana said', 'tired.', 'that', 'was']),
     b.choice('b1-u9', "That's the restaurant ______ we had our first date.", ['where', 'which', 'who', 'what']),
     b.choice('b1-u10', "I'm thinking of ______ a new job.", ['looking for', 'to look for', 'look for', 'looked for']),
     b.choice('b1-u11', "I can't reach the top shelf. I'm not tall ______.", ['enough', 'too', 'very', 'so']),

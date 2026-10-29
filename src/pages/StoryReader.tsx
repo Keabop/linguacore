@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { getStory } from '../data';
 import { getVocab, getVocabMap } from '../data/vocabulary';
@@ -19,7 +19,7 @@ import { useGardenPlant } from '../hooks/useGardenPlant';
 import type { ReadStoryRow } from '../lib/database.types';
 import { useDialogKeys } from '../hooks/useDialogKeys';
 import { useStoryPlayback } from '../hooks/useStoryPlayback';
-import { storyParagraphs } from '../lib/storySentences';
+import { storySentences, wrapStorySentences } from '../lib/storySentences';
 import { audioFor, storyKey } from '../lib/audioKey';
 import { SPEECH_RATE, type Accent } from '../lib/voices';
 import NoEnglishVoices from '../components/ui/NoEnglishVoices';
@@ -126,11 +126,9 @@ export default function StoryReader() {
     // --- Sentences: the same split the recording was cut with (src/lib/storySentences.ts) ---
     const { processedHTML, sentences } = useMemo(() => {
         if (!story) return { processedHTML: '', sentences: [] as string[] };
-        let counter = 0;
-        const paragraphs = storyParagraphs(story.content).map(parts => `<p>${parts.map(part =>
-            `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${counter++}">${part.html}</span>`,
-        ).join(' ')}</p>`);
-        return { processedHTML: paragraphs.join(''), sentences: storyParagraphs(story.content).flat().map(part => part.text) };
+        const html = wrapStorySentences(story.content, (part, i) =>
+            `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${i}">${part}</span>`);
+        return { processedHTML: html, sentences: storySentences(story.content) };
     }, [story]);
 
     // Static stories have a recording (npm run content:audio); AI stories use the browser's voices
@@ -139,7 +137,7 @@ export default function StoryReader() {
         [staticStory, sentences],
     );
     const playback = useStoryPlayback({ sentences, level: story?.level ?? 'A1', accent, audio: recording });
-    const { isPlaying, currentIndex: currentSentenceIdx, rate: playbackRate, setRate: setPlaybackRate } = playback;
+    const { isPlaying, currentIndex: currentSentenceIdx, rate: playbackRate, setRate: setPlaybackRate, seek: seekSentence } = playback;
 
     // --- Sentence Highlighting and Auto-Scroll ---
     useEffect(() => {
@@ -208,7 +206,7 @@ export default function StoryReader() {
         const sentenceElement = target.closest('.story-sentence');
         if (sentenceElement) {
             const sIdx = parseInt(sentenceElement.getAttribute('data-sentence-idx') || '-1', 10);
-            if (sIdx !== -1 && sIdx !== currentSentenceIdx) playback.seek(sIdx);
+            if (sIdx !== -1 && sIdx !== currentSentenceIdx) seekSentence(sIdx);
         }
 
         const wordId = target.getAttribute('data-word');
@@ -216,7 +214,7 @@ export default function StoryReader() {
 
         const vocab = (isAIStory ? vocabMap.get(wordId) : getVocab(wordId)) as Vocabulary | undefined;
         if (vocab) setSelectedWord(vocab);
-    }, [currentSentenceIdx, playback, vocabMap, isAIStory]);
+    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory]);
 
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);

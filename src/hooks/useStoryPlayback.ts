@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CEFRLevel } from '../lib/database.types';
-import type { AudioEntry } from '../lib/audioKey';
+import { keepForOffline, type AudioEntry } from '../lib/audioKey';
 import { sentenceTimeoutMs } from '../lib/assessmentSpeech';
 import { SPEECH_RATE, pickVoice, type Accent } from '../lib/voices';
 
@@ -82,6 +82,20 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
         window.speechSynthesis.speak(utterance);
     }, [sentences, level, rate, accent, stopSpeech]);
 
+    // The recording plays while this is true; a pause or leaving turns it off, so a late
+    // failure of play() (AbortError) is not taken for a broken file
+    const wantsFileRef = useRef(false);
+    const indexRef = useRef(-1);
+    // A file that fails, at the start or halfway (network gone), hands over to the browser
+    const fallbackRef = useRef<(from: number) => void>(() => {});
+    fallbackRef.current = (from: number) => {
+        if (!wantsFileRef.current) return;
+        wantsFileRef.current = false;
+        audioRef.current?.pause();
+        setAudioFailed(true);
+        speakFrom(Math.max(0, from));
+    };
+
     const getAudio = useCallback(() => {
         if (!audio) return null;
         if (audioRef.current?.dataset.src === audio.src) return audioRef.current;
@@ -93,13 +107,17 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
             const t = el.currentTime + 0.05;
             let i = 0;
             while (i + 1 < (starts?.length ?? 0) && starts![i + 1] <= t) i++;
+            indexRef.current = i;
             setCurrentIndex(i);
         });
         el.addEventListener('ended', () => {
+            wantsFileRef.current = false;
             setIsPlaying(false);
             setCurrentIndex(-1);
         });
+        el.addEventListener('error', () => fallbackRef.current(indexRef.current));
         audioRef.current = el;
+        keepForOffline(audio.src);
         return el;
     }, [audio, starts]);
 
@@ -113,15 +131,19 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
         const el = getAudio()!;
         el.playbackRate = rate;
         el.currentTime = starts![from] ?? 0;
+        indexRef.current = from;
         setCurrentIndex(from);
-        el.play().catch(() => {
+        wantsFileRef.current = true;
+        el.play().catch((e: unknown) => {
+            // A pause before playback began is not a failure
+            if ((e as { name?: string })?.name === 'AbortError') return;
             // No Ogg Opus or no network: the browser reads the story instead
-            setAudioFailed(true);
-            speakFrom(from);
+            fallbackRef.current(from);
         });
     }, [useFile, getAudio, rate, starts, speakFrom]);
 
     const pause = useCallback(() => {
+        wantsFileRef.current = false;
         setIsPlaying(false);
         audioRef.current?.pause();
         stopSpeech();
@@ -161,6 +183,7 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
 
     // Leaving the story stops it
     useEffect(() => () => {
+        wantsFileRef.current = false;
         audioRef.current?.pause();
         tokenRef.current++;
         clearTimers();

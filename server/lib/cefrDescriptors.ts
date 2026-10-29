@@ -30,7 +30,7 @@ export const CEFR_DESCRIPTORS: Record<CefrLevel, Record<CefrSkill, string>> = {
     },
 };
 
-export const toCefrLevel = (level: string): CefrLevel => (level in CEFR_DESCRIPTORS ? level as CefrLevel : 'A1');
+export const toCefrLevel = (level: string): CefrLevel => (Object.hasOwn(CEFR_DESCRIPTORS, level) ? level as CefrLevel : 'A1');
 
 /** Prompt lines: the level's descriptor, and the 0–100 scale measured against it. */
 export function descriptorRubric(level: string, skill: Exclude<CefrSkill, 'interaction'>): string {

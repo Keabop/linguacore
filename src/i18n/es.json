@@ -307,11 +307,13 @@
     "sectionListening": "Escucha",
     "play": "Escuchar",
     "playing": "Reproduciendo…",
-    "playsLeft": "Te quedan {{count}} reproducciones",
     "noPlaysLeft": "Ya no quedan reproducciones",
     "reviewTopics": "Temas a repasar:",
     "noQuestions": "No se encontraron preguntas para esta evaluación.",
-    "saveFailed": "No se pudo guardar tu resultado. Revisa tu conexión e inténtalo de nuevo."
+    "saveFailed": "No se pudo guardar tu resultado. Revisa tu conexión e inténtalo de nuevo.",
+    "playsLeft_one": "Te queda {{count}} reproducción",
+    "playsLeft_other": "Te quedan {{count}} reproducciones",
+    "progressRange": "Preguntas {{from}} a {{to}} de {{total}}"
   },
   "account": {
     "title": "Mi cuenta",

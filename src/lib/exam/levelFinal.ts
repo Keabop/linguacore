@@ -12,7 +12,7 @@ export const LEVEL_FINAL_PASS = 80;
 
 const levelOfUnit = (unitId: string) => unitId.slice(0, 2).toUpperCase() as ExamLevel;
 
-/** A unit exercise as an exam question; word-order pieces lose their final punctuation. */
+/** A unit exercise as an exam question. Word-order pieces keep their punctuation: a "?" tells a question. */
 export function exerciseToQuestion(ex: GrammarExercise): AssessmentQuestion {
     const base = { id: ex.id, section: 'use-of-english' as const, task: 'Grammar', level: levelOfUnit(ex.unitId), unitId: ex.unitId };
     switch (ex.type) {
@@ -23,7 +23,7 @@ export function exerciseToQuestion(ex: GrammarExercise): AssessmentQuestion {
         case 'fill-blank':
             return { ...base, kind: 'gap', text: ex.question, answers: [ex.correctAnswer] };
         case 'word-order':
-            return { ...base, kind: 'build-sentence', text: ex.question, answer: ex.correctAnswer, pieces: (ex.scrambledWords ?? []).map(p => p.replace(/[.?!]+$/, '')) };
+            return { ...base, kind: 'build-sentence', text: ex.question, answer: ex.correctAnswer, pieces: ex.scrambledWords ?? [] };
     }
 }
 
