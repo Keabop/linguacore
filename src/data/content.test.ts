@@ -461,12 +461,14 @@ describe('Cambridge simulators', () => {
 
 describe('pre-generated audio', () => {
     it('every listening script and static story has its audio, up to date (npm run content:audio)', () => {
-        // The files in public/audio, as "/audio/<key>.ogg"
+        // The files in public/audio, as "/audio/<file>.ogg"
         const files = new Set(Object.keys(import.meta.glob('../../public/audio/*.ogg')).map(f => f.replace('../../public', '')));
         const stale: string[] = [];
         for (const job of audioJobs()) {
             const entry = audioFor(job.key);
-            const ok = entry && files.has(entry.src) && (job.kind !== 'story' || entry.sentences?.length === job.segments.length);
+            // The file's name carries the voices and generator: a new voice means a new file
+            const src = `/audio/${job.file}.ogg`;
+            const ok = entry?.src === src && files.has(src) && (job.kind !== 'story' || entry.sentences?.length === job.segments.length);
             if (!ok) stale.push(`${job.kind} ${job.key}: ${job.segments[0]?.text.slice(0, 40)}`);
         }
         expect(stale).toEqual([]);
@@ -497,6 +499,9 @@ describe('end-of-level exam', () => {
         ...allGrammarSkills.flatMap(s => s.exercises.map(e => flat(e.prompt))),
         ...placementQuestions.map(q => flat(q.text)),
     ]);
+    // The first words of an item, so a near copy ("... is coming to visit us") is caught too
+    const opening = (s: string) => flat(s).split(' ').slice(0, 6).join(' ');
+    const seenOpenings = new Set([...seen].map(opening));
     const READING_WORDS = { A1: 120, A2: 200, B1: 350, B2: 480 };
 
     for (const [level, bank] of Object.entries(levelFinalBanks) as [keyof typeof levelFinalBanks, LevelFinalBank][]) {
@@ -516,7 +521,7 @@ describe('end-of-level exam', () => {
                 const units = allUnits.filter(u => u.level === level && !u.isAssessment).map(u => u.id);
                 for (const q of bank.transfer) {
                     expect(units, q.id).toContain(q.unitId);
-                    expect(seen.has(flat(q.text)), `${q.id} repite un ítem: ${q.text}`).toBe(false);
+                    expect(seen.has(flat(q.text)) || seenOpenings.has(opening(q.text)), `${q.id} repite un ítem: ${q.text}`).toBe(false);
                 }
                 for (const u of units) expect(bank.transfer.some(q => q.unitId === u), u).toBe(true);
             });
@@ -530,6 +535,15 @@ describe('end-of-level exam', () => {
                 expect(new Set(bank.listening[0].dialogue!.map(l => l.speaker)).size).toBe(2);
                 for (const q of [...bank.reading, ...bank.listening]) {
                     if (!(q.kind === 'tfng' && q.answer === 'not-given')) expect(q.evidence, q.id).toBeTruthy();
+                }
+            });
+
+            it('quotes the evidence in the order of the text and of the recording', () => {
+                const plain = (s: string) => s.toLowerCase().replace(/\s+/g, ' ');
+                for (const qs of [bank.reading, bank.listening]) {
+                    const source = plain(qs[0].passage ?? qs[0].dialogue!.map(l => l.text).join(' '));
+                    const positions = qs.filter(q => q.evidence).map(q => source.indexOf(plain(q.evidence!)));
+                    expect(positions, qs.map(q => q.id).join(', ')).toEqual([...positions].sort((a, b) => a - b));
                 }
             });
 

@@ -9,7 +9,7 @@ const transfer = [
     b.choice('a2-u2', '______ you see the football match on Sunday?', ['Did', 'Do', 'Were', 'Have']),
     b.order('a2-u2', 'Why are you so hungry?', "I didn't have breakfast this morning.", ['breakfast this morning.', "didn't", 'I', 'have']),
     b.choice('a2-u3', 'Shh! The baby ______, so please talk quietly.', ['is sleeping', 'sleeps', 'sleep', 'slept']),
-    b.choice('a2-u4', 'Look at those dark clouds. It ______ rain.', ['is going to', 'goes to', 'is going', 'going to']),
+    b.choice('a2-u4', 'Look at that man on the ladder! He ______ fall.', ['is going to', 'goes to', 'is going', 'going to']),
     b.gap('a2-u5', 'This is ___ (bad) restaurant in town. Never eat here!', ['the worst'], 2),
     b.choice('a2-u5', 'My new phone is ______ than my old one, but it was also more expensive.', ['faster', 'more fast', 'fastest', 'the fastest']),
     b.choice('a2-u6', 'You look very tired. You ______ go to bed early tonight.', ['should', 'must not', "don't have to", "can't"]),
@@ -44,8 +44,8 @@ const l = b.listening([
 
 const listening = [
     l.choice('What was Sam going to do on Saturday?', ['Clean his flat', 'Go to the cinema', 'Work', 'Visit his family'], 'I was going to clean my flat'),
-    l.choice('What time are they meeting?', ['At 10:30', 'At 11:00', 'At 10:00', 'At 11:30'], 'Half past ten is fine.'),
     l.judge('The woman has been to the food market before.', 'true', 'I went last year and it was brilliant.'),
+    l.choice('What time are they meeting?', ['At 10:30', 'At 11:00', 'At 10:00', 'At 11:30'], 'Half past ten is fine.'),
     l.choice('How much do most dishes cost?', ['About £5', 'About £15', 'About £10', 'Less than £2'], 'Most dishes cost about five pounds.'),
     l.choice('What will they do if it rains?', ['Go to the cinema', 'Stay at home', 'Eat at the station', 'Sit by the river'], "Then we'll go to the cinema instead."),
 ];
