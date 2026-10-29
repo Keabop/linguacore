@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import NoEnglishVoices from './NoEnglishVoices';
 import { VOICES_WAIT_MS } from '../../hooks/useEnglishVoices';
@@ -22,6 +22,26 @@ describe('NoEnglishVoices', () => {
         expect(screen.queryByRole('status')).toBeNull();
         act(() => { vi.advanceTimersByTime(VOICES_WAIT_MS); });
         expect(screen.getByRole('status')).toHaveTextContent('Windows');
+    });
+
+    it('closes when the learner asks', () => {
+        mockVoices([]);
+        render(<NoEnglishVoices />);
+        act(() => { vi.advanceTimersByTime(VOICES_WAIT_MS); });
+        fireEvent.click(screen.getByRole('button'));
+        expect(screen.queryByRole('status')).toBeNull();
+    });
+
+    it('says the browser cannot read aloud, instead of how to install a voice, when it has no speech synthesis', () => {
+        const saved = Object.getOwnPropertyDescriptor(window, 'speechSynthesis');
+        // @ts-expect-error: a browser without speech synthesis
+        delete window.speechSynthesis;
+        try {
+            render(<NoEnglishVoices />);
+            expect(screen.getByRole('status')).not.toHaveTextContent('Windows');
+        } finally {
+            if (saved) Object.defineProperty(window, 'speechSynthesis', saved);
+        }
     });
 
     it('stays hidden when there is an English voice', () => {

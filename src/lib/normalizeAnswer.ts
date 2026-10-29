@@ -53,7 +53,7 @@ const CONTRACTIONS: [RegExp, string][] = [
     [/\bhow's\b/g, 'how is'],
 ];
 
-function expandContractions(text: string): string {
+export function expandContractions(text: string): string {
     let result = text;
     for (const [pattern, replacement] of CONTRACTIONS) {
         result = result.replace(pattern, replacement);

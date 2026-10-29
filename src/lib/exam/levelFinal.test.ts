@@ -48,6 +48,14 @@ describe('exerciseToQuestion', () => {
             expect(grade(q, rightAnswer(q)), ex.id).toBe(marksOf(q));
         }
     });
+
+    it('accepts a contraction written out, as the unit does', () => {
+        const ex = allExercises.find(e => e.id === 'ex-a1-u4-1')!;
+        const q = exerciseToQuestion(ex);
+        expect(ex.correctAnswer).toBe("don't");
+        expect(grade(q, 'do not')).toBe(marksOf(q));
+        expect(grade(q, 'Don’t')).toBe(marksOf(q));
+    });
 });
 
 describe('buildLevelFinal', () => {
