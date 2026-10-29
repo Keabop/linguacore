@@ -565,6 +565,8 @@
     "windows": "Windows: Configuración → Hora e idioma → Voz → Agregar voces → Inglés (Estados Unidos).",
     "mac": "Mac: Ajustes del Sistema → Accesibilidad → Contenido leído → Voz del sistema → Gestionar voces → English.",
     "android": "Android: Ajustes → Sistema → Idiomas → Salida de texto a voz → Motor de Google → Instalar datos de voz → English.",
-    "ios": "iPhone o iPad: Ajustes → Accesibilidad → Contenido leído → Voces → English."
+    "ios": "iPhone o iPad: Ajustes → Accesibilidad → Contenido leído → Voces → English.",
+    "unsupportedTitle": "Tu navegador no puede leer en voz alta",
+    "unsupportedBody": "Lo que no tiene audio grabado se queda sin voz. Abre Voxie en Chrome, Edge o Safari actualizados para escucharlo."
   }
 }
