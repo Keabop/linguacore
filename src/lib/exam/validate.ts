@@ -37,7 +37,8 @@ export function validateQuestion(q: AssessmentQuestion): string[] {
             break;
         case 'build-sentence': {
             if (q.pieces.length < 2) problems.push('menos de 2 piezas');
-            const sorted = (s: string) => normalizeAnswer(s).split(' ').sort().join(' ');
+            // Each piece may carry its punctuation ("pizza?"): words are compared without it
+            const sorted = (s: string) => normalizeAnswer(s).split(' ').map(normalizeAnswer).sort().join(' ');
             if (sorted(q.pieces.join(' ')) !== sorted(q.answer)) problems.push('las piezas no forman la respuesta');
             break;
         }

@@ -26,3 +26,17 @@ export const dialogueKey = (lines: DialogueLine[], rate: number) =>
 export const storyKey = (sentences: string[], rate: number) => audioKey(['story', 'US', String(rate), ...sentences]);
 
 export const audioFor = (key: string): AudioEntry | undefined => AUDIO_MANIFEST[key];
+
+/** Name of the service worker's cache for recordings (vite.config.ts). */
+export const AUDIO_CACHE = 'audio-cache';
+
+/**
+ * Saves the whole file in the recordings' cache. <audio> asks for byte ranges (206), which the
+ * service worker can't store; with the full file there, it answers those ranges offline.
+ */
+export function keepForOffline(src: string) {
+    if (typeof caches === 'undefined') return;
+    caches.open(AUDIO_CACHE)
+        .then(cache => cache.match(src).then(hit => (hit ? undefined : cache.add(src))))
+        .catch(() => { /* no space or no network: it plays online only */ });
+}

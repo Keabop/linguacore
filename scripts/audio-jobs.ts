@@ -31,7 +31,8 @@ if (pending.length) {
 const keys = new Set(jobs.map(j => j.key));
 let removed = 0;
 for (const file of readdirSync(OUT)) {
-    if (!keys.has(file.replace(/\.ogg$/, ''))) {
+    // Only generated files (8 hex digits): a hand-made audioSrc may live here too
+    if (/^[0-9a-f]{8}\.ogg$/.test(file) && !keys.has(file.replace(/\.ogg$/, ''))) {
         rmSync(join(OUT, file));
         removed++;
     }

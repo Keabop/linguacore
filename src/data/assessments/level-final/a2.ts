@@ -1,4 +1,4 @@
-import { bankOf, line, ukMan, usWoman } from './build';
+import { bankOf, line, ukMan, ukWoman } from './build';
 import type { LevelFinalBank } from './index';
 
 const b = bankOf('A2');
@@ -7,7 +7,7 @@ const transfer = [
     b.gap('a2-u1', 'We ___ (travel) to Guadalajara by bus last month.', ['travelled', 'traveled']),
     b.choice('a2-u1', 'The film ______ at nine and finished at eleven.', ['started', 'starts', 'start', 'starting']),
     b.choice('a2-u2', '______ you see the football match on Sunday?', ['Did', 'Do', 'Were', 'Have']),
-    b.order('a2-u2', 'Why are you so hungry?', "I didn't have breakfast this morning.", ['breakfast', "didn't", 'this morning', 'I', 'have']),
+    b.order('a2-u2', 'Why are you so hungry?', "I didn't have breakfast this morning.", ['breakfast this morning.', "didn't", 'I', 'have']),
     b.choice('a2-u3', 'Shh! The baby ______, so please talk quietly.', ['is sleeping', 'sleeps', 'sleep', 'slept']),
     b.choice('a2-u4', 'Look at those dark clouds. It ______ rain.', ['is going to', 'goes to', 'is going', 'going to']),
     b.gap('a2-u5', 'This is ___ (bad) restaurant in town. Never eat here!', ['the worst'], 2),
@@ -31,15 +31,15 @@ const reading = [
 ];
 
 const l = b.listening([
-    line(usWoman, 'Hi Sam! Are you doing anything on Saturday?'),
+    line(ukWoman, 'Hi Sam! Are you doing anything on Saturday?'),
     line(ukMan, 'Not really. I was going to clean my flat, but that can wait. Why?'),
-    line(usWoman, "There's a food market in Riverside Park. I went last year and it was brilliant."),
+    line(ukWoman, "There's a food market in Riverside Park. I went last year and it was brilliant."),
     line(ukMan, 'Sounds good. What time does it open?'),
-    line(usWoman, 'At eleven, but it gets really busy, so I want to get there early. Shall we meet at the station at half past ten?'),
+    line(ukWoman, 'At eleven, but it gets really busy, so I want to get there early. Shall we meet at the station at half past ten?'),
     line(ukMan, 'Half past ten is fine. Is it expensive?'),
-    line(usWoman, "Not really. Most dishes cost about five pounds. And if it's sunny, we can sit by the river."),
+    line(ukWoman, "Not really. Most dishes cost about five pounds. And if it's sunny, we can sit by the river."),
     line(ukMan, 'And if it rains?'),
-    line(usWoman, "Then we'll go to the cinema instead. There's a new comedy on."),
+    line(ukWoman, "Then we'll go to the cinema instead. There's a new comedy on."),
 ]);
 
 const listening = [

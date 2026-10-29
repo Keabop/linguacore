@@ -17,7 +17,8 @@ class FakeAudio {
     listeners: Record<string, () => void> = {};
     constructor(public src: string) { FakeAudio.last = this; }
     addEventListener(type: string, fn: () => void) { this.listeners[type] = fn; }
-    play() { return Promise.resolve(); }
+    static playResult: () => Promise<void> = () => Promise.resolve();
+    play() { return FakeAudio.playResult(); }
     pause() {}
     at(seconds: number) {
         this.currentTime = seconds;
@@ -31,6 +32,7 @@ let spoken: FakeUtterance[];
 beforeEach(() => {
     vi.useFakeTimers();
     spoken = [];
+    FakeAudio.playResult = () => Promise.resolve();
     vi.stubGlobal('Audio', FakeAudio);
     vi.stubGlobal('SpeechSynthesisUtterance', class { text: string; constructor(t: string) { this.text = t; } });
     vi.stubGlobal('speechSynthesis', { getVoices: () => [voice], speak: (u: FakeUtterance) => spoken.push(u), cancel: vi.fn() });
@@ -61,6 +63,26 @@ describe('useStoryPlayback with a recording', () => {
         act(() => result.current.toggle());
         act(() => result.current.seek(2));
         expect(FakeAudio.last.currentTime).toBe(3.9);
+    });
+
+    it('stays quiet when paused before the recording starts (AbortError is not a failure)', async () => {
+        FakeAudio.playResult = () => Promise.reject(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US', audio }));
+        act(() => result.current.toggle());
+        act(() => result.current.pause());
+        await act(async () => { await Promise.resolve(); });
+        expect(spoken).toEqual([]);
+        expect(result.current.isPlaying).toBe(false);
+        expect(result.current.usingRecording).toBe(true);
+    });
+
+    it('hands over to the browser from the current sentence when the file fails halfway', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US', audio }));
+        act(() => result.current.toggle());
+        act(() => FakeAudio.last.at(2.1));
+        act(() => FakeAudio.last.listeners.error?.());
+        expect(result.current.usingRecording).toBe(false);
+        expect(spoken.map(u => u.text)).toEqual([sentences[1]]);
     });
 
     it('uses the browser for an accent the recording does not have', () => {

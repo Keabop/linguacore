@@ -92,7 +92,7 @@ export const a1GrammarCards: GrammarCard[] = [
 
 <h3>Errores típicos</h3>
 <ul>
-<li>"<s>She is teacher</s>" → <strong>She is a teacher</strong>. Con profesiones siempre va "a/an".</li>
+<li>"<s>She is teacher</s>" → <strong>She is a teacher</strong>. Una profesión en singular lleva "a/an" (en plural no: "They are teachers").</li>
 <li>"<s>The life is hard</s>" → <strong>Life is hard</strong>. En general, sin "the".</li>
 <li>"<s>This shoes are new</s>" → <strong>These shoes are new</strong>. El demostrativo también va en plural.</li>
 <li>"<s>a apple</s>" → <strong>an apple</strong>. Antes de sonido vocal, "an".</li>
@@ -108,7 +108,7 @@ export const a1GrammarCards: GrammarCard[] = [
     ],
     rules: [
       'Usa "a" antes de sonido consonante, "an" antes de sonido vocal',
-      'Las profesiones llevan "a/an": "She is a doctor"',
+      'Una profesión en singular lleva "a/an": "She is a doctor"',
       '"The" es para algo concreto que los dos conocemos',
       'Para hablar en general no uses "the": "Life is beautiful"',
       'this/these = cerca; that/those = lejos',

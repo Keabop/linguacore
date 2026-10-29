@@ -307,11 +307,13 @@
     "sectionListening": "Listening",
     "play": "Listen",
     "playing": "Playing…",
-    "playsLeft": "{{count}} plays left",
     "noPlaysLeft": "No plays left",
     "reviewTopics": "Topics to review:",
     "noQuestions": "No questions were found for this assessment.",
-    "saveFailed": "Your result could not be saved. Check your connection and try again."
+    "saveFailed": "Your result could not be saved. Check your connection and try again.",
+    "playsLeft_one": "{{count}} play left",
+    "playsLeft_other": "{{count}} plays left",
+    "progressRange": "Questions {{from}} to {{to}} of {{total}}"
   },
   "account": {
     "title": "My Account",

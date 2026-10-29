@@ -1,6 +1,6 @@
 ﻿import type { DialogueLine } from './exam/types';
 import { listeningRate, rankVoice } from './voices';
-import { audioFor, dialogueKey } from './audioKey';
+import { audioFor, dialogueKey, keepForOffline } from './audioKey';
 
 // Listening audio of the simulators. A question with `audioSrc` plays its pre-generated file;
 // otherwise the dialogue is read with the browser's voices, one distinct voice per speaker.
@@ -66,6 +66,7 @@ export function playAudioFile(src: string, onComplete: () => void, onFail: () =>
     stopDialogueSpeech();
     const audio = new Audio(src);
     activeAudio = audio;
+    keepForOffline(src);
     let started = false;
     const finish = (ok: boolean) => {
         if (activeAudio !== audio) return;
@@ -173,3 +174,6 @@ export function playListening(
     if (entry) playAudioFile(entry.src, onComplete, speak);
     else speak();
 }
+
+/** Whether a listening script has a recording (so the browser's voices aren't needed). */
+export const hasRecording = (lines: DialogueLine[], level: string) => !!audioFor(dialogueKey(lines, listeningRate(level)));

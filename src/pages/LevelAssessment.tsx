@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -17,7 +17,8 @@ import type { AssessmentQuestion, ExamResponse } from '../lib/exam/types';
 import { allExercises, getUnitsByLevel } from '../data';
 import { levelFinalBanks, type LessonLevel } from '../data/assessments/level-final';
 import { LEVEL_FINAL_PASS, buildLevelFinal, levelFinalResult } from '../lib/exam/levelFinal';
-import { playListening, stopDialogueSpeech } from '../lib/assessmentSpeech';
+import { hasRecording, playListening, stopDialogueSpeech } from '../lib/assessmentSpeech';
+import { offlineInsert } from '../lib/offlineMutation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -44,6 +45,20 @@ const nextLevelMap: Record<string, CEFRLevel> = {
     B1: 'B2',
 };
 
+/**
+ * Screens of the exam: a text or recording shares one screen with all its questions, as in the
+ * exam, so the learner reads every question before listening; grammar goes one per screen.
+ */
+function toPages(questions: AssessmentQuestion[]): AssessmentQuestion[][] {
+    const pages: AssessmentQuestion[][] = [];
+    for (const q of questions) {
+        const last = pages[pages.length - 1];
+        if (q.group && last?.[0].group === q.group) last.push(q);
+        else pages.push([q]);
+    }
+    return pages;
+}
+
 const SECTION_KEY = { 'use-of-english': 'sectionGrammar', reading: 'sectionReading', listening: 'sectionListening' } as const;
 
 export default function LevelAssessment({ level, unitId, onComplete }: LevelAssessmentProps) {
@@ -52,7 +67,9 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
     const qc = useQueryClient();
     const [state, setState] = useState<AssessmentState>('intro');
     const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
-    const [index, setIndex] = useState(0);
+    const [page, setPage] = useState(0);
+    const [saving, setSaving] = useState(false);
+    const savingRef = useRef(false);
     const [responses, setResponses] = useState<Record<string, ExamResponse>>({});
     const [plays, setPlays] = useState<Record<string, number>>({});
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -61,8 +78,13 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
     const [nextLevel, setNextLevel] = useState<CEFRLevel | null>(null);
 
     const bank = levelFinalBanks[level as LessonLevel];
-    const units = getUnitsByLevel(level).filter(u => !u.isAssessment);
-    const grammarCount = units.length + (bank?.transfer.length ?? 0);
+    const units = useMemo(() => getUnitsByLevel(level).filter(u => !u.isAssessment), [level]);
+    // What the exam will really have: a unit without a usable exercise gets no review item
+    const grammarCount = useMemo(
+        () => (bank ? buildLevelFinal({ units, exercises: allExercises, bank }).filter(q => q.section === 'use-of-english').length : 0),
+        [bank, units],
+    );
+    const pages = useMemo(() => toPages(questions), [questions]);
 
     // Leaving the exam stops its recording
     useEffect(() => () => stopDialogueSpeech(), []);
@@ -78,21 +100,26 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             return;
         }
         setQuestions(exam);
-        setIndex(0);
+        setPage(0);
         setResponses({});
         setPlays({});
         setState('testing');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [bank, level]);
+    }, [bank, units]);
 
     const finish = useCallback(async () => {
+        // A double tap on "Finish" must not save the attempt twice
+        if (savingRef.current) return;
+        savingRef.current = true;
+        setSaving(true);
         stopDialogueSpeech();
         setIsPlayingAudio(false);
         const result = levelFinalResult(questions, responses);
         setScore(result.score);
+        setNextLevel(null);
 
         try {
-            await supabase.from('level_assessments').insert({
+            // Queued when offline, like the rest of the progress
+            await offlineInsert('level_assessments', {
                 user_id: authUser!.id,
                 level,
                 score: result.score,
@@ -101,8 +128,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             });
 
             if (result.passed) {
-                // Mark assessment unit as completed
-                await supabase.from('unit_progress').insert({
+                // Mark assessment unit as completed (a retake of a passed exam updates the same row)
+                await offlineInsert('unit_progress', {
                     user_id: authUser!.id,
                     unit_id: unitId,
                     grammar_card_read: true,
@@ -112,27 +139,31 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     output_completed: true,
                     checkpoint_passed: true,
                     completed_at: new Date().toISOString(),
-                });
+                }, { onConflict: 'user_id,unit_id' });
 
-                // Unlock next level
+                // Unlock next level: it needs the profile, so only online
                 const nl = nextLevelMap[level] || null;
-                setNextLevel(nl);
                 if (nl) {
-                    const { data: profile } = await supabase.from('profiles').select('unlocked_levels').eq('id', authUser!.id).single() as { data: Pick<Profile, 'unlocked_levels'> | null };
-                    if (profile) {
-                        const unlockedLevels = [...(profile.unlocked_levels || ['A1'])];
-                        if (!unlockedLevels.includes(nl)) unlockedLevels.push(nl);
-                        await supabase.from('profiles').update({
-                            current_level: nl,
-                            unlocked_levels: unlockedLevels,
-                        }).eq('id', authUser!.id);
-                    }
+                    const { data: profile, error } = await supabase.from('profiles').select('unlocked_levels').eq('id', authUser!.id).single() as { data: Pick<Profile, 'unlocked_levels'> | null; error: unknown };
+                    if (error || !profile) throw error ?? new Error('profile not found');
+                    const unlockedLevels = [...(profile.unlocked_levels || ['A1'])];
+                    if (!unlockedLevels.includes(nl)) unlockedLevels.push(nl);
+                    const { error: updateError } = await supabase.from('profiles').update({
+                        current_level: nl,
+                        unlocked_levels: unlockedLevels,
+                    }).eq('id', authUser!.id);
+                    if (updateError) throw updateError;
+                    setNextLevel(nl);
                     qc.invalidateQueries({ queryKey: ['profile'] });
                     qc.invalidateQueries({ queryKey: ['levelProgression'] });
                 }
             }
         } catch {
+            // The result still shows; only what was saved is announced (no "level unlocked")
             toast.error({ title: t('assessment.saveFailed') });
+        } finally {
+            savingRef.current = false;
+            setSaving(false);
         }
 
         if (result.passed) {
@@ -142,10 +173,10 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             setWeakTopics(result.weakUnits.filter(u => topicOf.has(u)).map(u => ({ unitId: u, grammarTopic: topicOf.get(u)! })));
             setState('failed');
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [questions, responses, level, unitId, authUser, qc, t]);
+    }, [questions, responses, level, unitId, authUser, qc, t, units]);
 
-    const current = questions[index];
+    const onPage = pages[page] ?? [];
+    const current = onPage[0];
     const audioGroup = current?.group ?? current?.id;
     const playsUsed = audioGroup ? plays[audioGroup] ?? 0 : 0;
 
@@ -166,7 +197,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
     const handleNext = () => {
         stopDialogueSpeech();
         setIsPlayingAudio(false);
-        if (index + 1 < questions.length) setIndex(index + 1);
+        if (page + 1 < pages.length) setPage(page + 1);
         else finish();
     };
 
@@ -253,7 +284,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
     // -- Testing Screen --
     if (state === 'testing' && current) {
-        const progress = ((index + 1) / questions.length) * 100;
+        const first = questions.indexOf(current);
+        const progress = ((first + onPage.length) / questions.length) * 100;
+        const answered = onPage.every(q => responses[q.id] !== undefined);
+        const label = onPage.length > 1
+            ? t('assessment.progressRange', { from: first + 1, to: first + onPage.length, total: questions.length })
+            : t('assessment.progress', { n: first + 1, total: questions.length });
         return (
             <div className="space-y-6">
                 <div className="space-y-3">
@@ -267,10 +303,10 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             </h2>
                         </div>
                         <span className="text-xs font-bold text-[var(--color-on-surface-muted)]">
-                            {t(`assessment.${SECTION_KEY[current.section]}`)} · {t('assessment.progress', { n: index + 1, total: questions.length })}
+                            {t(`assessment.${SECTION_KEY[current.section]}`)} · {label}
                         </span>
                     </div>
-                    <div className="h-2 rounded-full bg-[var(--color-surface-container)] overflow-hidden" role="progressbar" aria-valuenow={index + 1} aria-valuemin={1} aria-valuemax={questions.length}>
+                    <div className="h-2 rounded-full bg-[var(--color-surface-container)] overflow-hidden" role="progressbar" aria-valuenow={first + onPage.length} aria-valuemin={1} aria-valuemax={questions.length}>
                         <div className="h-full bg-[var(--color-tertiary)] transition-all duration-300" style={{ width: `${progress}%` }} />
                     </div>
                 </div>
@@ -279,7 +315,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
                 {current.dialogue && (
                     <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 space-y-3 shadow-[var(--shadow-card)]">
-                        <NoEnglishVoices />
+                        {!hasRecording(current.dialogue, current.level) && <NoEnglishVoices />}
                         <button
                             onClick={handlePlay}
                             disabled={isPlayingAudio || playsUsed >= AUDIO_PLAYS}
@@ -294,21 +330,22 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     </div>
                 )}
 
-                <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
-                    <QuestionView
-                        key={current.id}
-                        question={current}
-                        response={responses[current.id]}
-                        onChange={r => setResponses(prev => ({ ...prev, [current.id]: r }))}
-                    />
-                </div>
+                {onPage.map(q => (
+                    <div key={q.id} className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
+                        <QuestionView
+                            question={q}
+                            response={responses[q.id]}
+                            onChange={r => setResponses(prev => ({ ...prev, [q.id]: r }))}
+                        />
+                    </div>
+                ))}
 
                 <button
                     onClick={handleNext}
-                    disabled={responses[current.id] === undefined}
+                    disabled={!answered || saving}
                     className="w-full bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-4 rounded-full font-black text-base transition-all duration-300 disabled:opacity-50 active:scale-[0.97]"
                 >
-                    {index + 1 < questions.length ? t('assessment.next') : t('assessment.finish')}
+                    {page + 1 < pages.length ? t('assessment.next') : t('assessment.finish')}
                 </button>
             </div>
         );

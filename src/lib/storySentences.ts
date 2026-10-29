@@ -9,17 +9,34 @@ export interface StorySentence {
 }
 
 const ENTITIES: Record<string, string> = { '&amp;': '&', '&quot;': '"', '&#39;': "'", '&apos;': "'", '&lt;': '<', '&gt;': '>', '&nbsp;': ' ' };
+const PARAGRAPH = /<p([^>]*)>([\s\S]*?)<\/p>/g;
 
 const plain = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[a-z#0-9]+;/gi, e => ENTITIES[e] ?? e).replace(/\s+/g, ' ').trim();
 
-/** Sentences of each paragraph (`<p>`), in reading order. */
+const sentencesOf = (inner: string): StorySentence[] =>
+    inner.split(/(?<=[.!?])\s+/)
+        .filter(part => part.trim())
+        .map(part => ({ html: part, text: plain(part) }))
+        .filter(s => s.text);
+
+/**
+ * Sentences of each paragraph (`<p>`), in reading order. A text without paragraphs (an AI story
+ * that ignored the format) counts as one paragraph.
+ */
 export function storyParagraphs(content: string): StorySentence[][] {
-    return [...content.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/g)].map(([, inner]) =>
-        inner.split(/(?<=[.!?])\s+/)
-            .filter(part => part.trim())
-            .map(part => ({ html: part, text: plain(part) }))
-            .filter(s => s.text),
-    );
+    const paragraphs = [...content.matchAll(PARAGRAPH)].map(([, , inner]) => sentencesOf(inner));
+    return paragraphs.length ? paragraphs : [sentencesOf(content)];
 }
 
 export const storySentences = (content: string): string[] => storyParagraphs(content).flat().map(s => s.text);
+
+/**
+ * The story's markup with each sentence passed through `wrap` (numbered in reading order, the
+ * same as `storySentences`). Everything outside the paragraphs, and their attributes, stays.
+ */
+export function wrapStorySentences(content: string, wrap: (html: string, index: number) => string): string {
+    let n = 0;
+    const join = (inner: string) => sentencesOf(inner).map(s => wrap(s.html, n++)).join(' ');
+    if (!content.match(PARAGRAPH)) return `<p>${join(content)}</p>`;
+    return content.replace(PARAGRAPH, (_, attrs: string, inner: string) => `<p${attrs}>${join(inner)}</p>`);
+}
