@@ -18,20 +18,20 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261027.1",
     "@tailwindcss/vite": "^4.1.18",
-    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.4",
+    "@vitejs/plugin-react": "^6.1.2",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^28.1.0",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
-    "vite": "^7.3.1",
-    "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^4.0.18",
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.5",
     "wrangler": "^4.153.0"
   },
   "dependencies": {
@@ -48,5 +48,8 @@
     "react-dom": "^19.2.4",
     "react-i18next": "^16.5.4",
     "react-router-dom": "^7.13.0"
+  },
+  "overrides": {
+    "@babel/plugin-transform-runtime": "^7.29.0"
   }
 }
