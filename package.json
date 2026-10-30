@@ -28,7 +28,7 @@
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^28.1.0",
     "tailwindcss": "^4.1.18",
-    "typescript": "~5.9.3",
+    "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.5",
@@ -41,12 +41,12 @@
     "@tanstack/react-query-persist-client": "^5.90.24",
     "dompurify": "^3.3.1",
     "framer-motion": "^12.34.0",
-    "i18next": "^25.8.4",
+    "i18next": "^26.5.12",
     "idb-keyval": "^6.2.2",
     "lucide-react": "^0.563.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-i18next": "^16.5.4",
+    "react-i18next": "^17.1.9",
     "react-router-dom": "^7.13.0"
   },
   "overrides": {
