@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { type Card, type Vocabulary } from '../lib/db';
 import { getStory } from '../data';
 import { Lightbulb, Check, X, ArrowRight } from 'lucide-react';
+import { answersMatch } from '../lib/normalizeAnswer';
 
 interface Props {
     card: Card;
@@ -65,10 +66,8 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
         e.preventDefault();
         if (!answer.trim() || status !== 'pending') return;
 
-        const normalized = answer.trim().toLowerCase();
-        const target = vocabulary.id.toLowerCase();
-
-        const isCorrect = normalized === target;
+        // Case, spaces and the phone's curly apostrophe ("o’clock") don't count
+        const isCorrect = answersMatch(answer, vocabulary.id);
 
         if (isCorrect && !usedHint) {
             setStatus('correct');

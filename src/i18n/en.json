@@ -295,7 +295,9 @@
     "score": "Score: {{score}}%",
     "checkAnswer": "Verify",
     "next": "Next",
-    "finish": "Finish"
+    "finish": "Finish",
+    "tryAgain": "Try again",
+    "zeroHint": "You need at least one right answer to move on to the next step. Review the grammar card if you need to."
   },
   "practice": {
     "saveToHistory": "Save to history",
