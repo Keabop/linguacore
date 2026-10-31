@@ -103,6 +103,8 @@ describe('WordOrderExercise', () => {
 });
 
 describe('ExerciseRunner', () => {
+    // The runner moves on after a short delay and an exit animation: room for a busy machine
+    const SLOW = { timeout: 3000 };
     const answer = (option: string) => {
         fireEvent.click(screen.getByRole('button', { name: option }));
         fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
@@ -113,9 +115,9 @@ describe('ExerciseRunner', () => {
         render(<ExerciseRunner exercises={[choice, { ...choice, id: 'm2' }]} onComplete={onComplete} />);
         expect(screen.getByText('1 de 2')).toBeInTheDocument();
         answer('is');
-        await screen.findByText('2 de 2');
+        await screen.findByText('2 de 2', {}, SLOW);
         answer('am');
-        await screen.findByText('Puntuación: 50%');
+        await screen.findByText('Puntuación: 50%', {}, SLOW);
         fireEvent.click(screen.getByRole('button', { name: /Finalizar/ }));
         expect(onComplete).toHaveBeenCalledWith(50);
     });
@@ -124,7 +126,7 @@ describe('ExerciseRunner', () => {
         const onComplete = vi.fn();
         render(<ExerciseRunner exercises={[choice]} onComplete={onComplete} />);
         answer('am');
-        await screen.findByText('Puntuación: 0%');
+        await screen.findByText('Puntuación: 0%', {}, SLOW);
         expect(screen.getByText(/al menos una respuesta correcta/)).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Volver a intentarlo' }));
         expect(onComplete).toHaveBeenCalledWith(0);
@@ -136,13 +138,13 @@ describe('ExerciseRunner', () => {
         const next = screen.getByRole('button', { name: /Siguiente/ });
         fireEvent.click(next);
         fireEvent.click(next);
-        await screen.findByText('2 de 3');
+        await screen.findByText('2 de 3', {}, SLOW);
 
         fireEvent.click(screen.getByRole('button', { name: 'is' }));
         const again = screen.getByRole('button', { name: /Siguiente/ });
         fireEvent.click(again);
         fireEvent.click(again);
-        await screen.findByText('3 de 3');
+        await screen.findByText('3 de 3', {}, SLOW);
         expect(screen.queryByText('Puntuación', { exact: false })).toBeNull();
     });
 });

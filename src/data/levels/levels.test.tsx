@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { render, renderHook, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 describe('useLevelContent', () => {
@@ -43,5 +43,26 @@ describe('loadLevel', () => {
         fail = false;
         await expect(loadLevel('A1')).resolves.toHaveProperty('exercises');
         vi.doUnmock('./a1');
+    });
+});
+
+describe('a level that fails to download', () => {
+    it("reaches the screen's error boundary instead of leaving an endless loader", async () => {
+        vi.resetModules();
+        vi.doMock('./b1', async () => { throw new TypeError('Failed to fetch dynamically imported module: /assets/level-b1-old.js'); });
+        const { useLevelContent } = await import('./index');
+        const { default: ErrorBoundary } = await import('../../components/ErrorBoundary');
+        function Lesson() {
+            return useLevelContent('B1') ? <p>Lesson</p> : <p>Loading</p>;
+        }
+        const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+        render(<ErrorBoundary><Lesson /></ErrorBoundary>);
+        expect(screen.getByText('Loading')).toBeInTheDocument();
+        // The boundary's error screen, which offers to reload (vitest wraps the mocked module's
+        // message, so it can't show its offline variant here)
+        expect(await screen.findByText('Algo salió mal')).toBeInTheDocument();
+        expect(screen.queryByText('Loading')).toBeNull();
+        errors.mockRestore();
+        vi.doUnmock('./b1');
     });
 });
