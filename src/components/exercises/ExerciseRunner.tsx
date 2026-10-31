@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
@@ -22,13 +22,19 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
     const total = exercises.length;
     const progress = total > 0 ? ((currentIndex + 1) / total) * 100 : 0;
 
+    // A double tap on "next" answers the same exercise twice: only the first counts, so no
+    // exercise is skipped and the index never goes past the last one
+    const answeredRef = useRef(-1);
+
     const handleAnswer = (correct: boolean) => {
+        if (answeredRef.current === currentIndex) return;
+        answeredRef.current = currentIndex;
+
         const newCorrectCount = correct ? correctCount + 1 : correctCount;
         if (correct) setCorrectCount(newCorrectCount);
 
         if (currentIndex + 1 >= total) {
             // All exercises done
-            const score = Math.round((newCorrectCount / total) * 100);
             setTimeout(() => {
                 setFinished(true);
             }, 300);
