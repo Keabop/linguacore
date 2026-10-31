@@ -832,7 +832,7 @@ function CheckpointStep({
                             className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
-                            Intentalo de nuevo
+                            Inténtalo de nuevo
                         </button>
                     </div>
                 </motion.div>
