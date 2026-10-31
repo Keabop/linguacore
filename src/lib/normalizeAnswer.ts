@@ -62,7 +62,8 @@ export function expandContractions(text: string): string {
 }
 
 export function normalizeAnswer(text: string): string {
-    let normalized = text.trim().toLowerCase();
+    // Phone keyboards type curly apostrophes ("don’t"); the contractions below use the straight one
+    let normalized = text.trim().toLowerCase().replace(/[’‘]/g, "'");
     // Strip trailing punctuation (., !, ?)
     normalized = normalized.replace(/[.!?]+$/, '');
     // Expand contractions
