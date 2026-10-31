@@ -10,7 +10,8 @@ import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, 
 import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db';
 import { allUnits } from '../data/curriculum/units';
 import { levelOfId, useLevelContent } from '../data/levels';
-import { allVocabulary, getVocabMap, savedIdsOf, vocabularyAliases } from '../data/vocabulary';
+import { savedIdsOf, vocabularyAliases } from '../data/vocabulary/aliases';
+import { useVocabulary } from '../data/vocabulary/load';
 import { unitKeyWords } from '../data/vocabulary/keyWords';
 import { useCards } from '../hooks/useCards';
 import { shuffle } from '../lib/shuffle';
@@ -610,14 +611,17 @@ function VocabStep({
     const { user } = useAuth();
     const { saveStoryWords } = useCards();
     const keyWords = useMemo(() => new Set(unitKeyWords[unitId] ?? []), [unitId]);
+    // The unit's deck, and the decks of its story's words for a unit without a deck of its own
+    const storyKeywords = useMemo(() => (unitStory ? extractKeywords(unitStory.content) : []), [unitStory]);
+    const unitLevel = levelOfId(unitId);
+    const vocabulary = useVocabulary(storyKeywords, unitLevel ? [unitLevel] : []);
     const vocabItems = useMemo(() => {
-        const deck = allVocabulary.filter(v => v.unitId === unitId);
+        if (!vocabulary) return [];
+        const deck = vocabulary.unitDeck(unitId);
         if (deck.length) return [...deck.filter(v => keyWords.has(v.id)), ...deck.filter(v => !keyWords.has(v.id))];
-        if (!unitStory) return [];
-        const keywords = extractKeywords(unitStory.content);
         // One card per word, even when the story links it by an old id too
-        return [...new Map([...getVocabMap(keywords).values()].map(v => [v.id, v])).values()];
-    }, [unitId, unitStory, keyWords]);
+        return [...new Map([...vocabulary.map(storyKeywords).values()].map(v => [v.id, v])).values()];
+    }, [unitId, storyKeywords, keyWords, vocabulary]);
     const isDeck = vocabItems.some(v => v.unitId === unitId);
 
     // Which of these words the learner already has in the review deck (or marked as known)
@@ -670,6 +674,10 @@ function VocabStep({
             return next;
         });
     };
+
+    if (!vocabulary) {
+        return <div className="flex items-center justify-center py-20 text-sm text-[var(--color-on-surface-muted)]">{t('common.loading')}</div>;
+    }
 
     return (
         <div className="space-y-6">

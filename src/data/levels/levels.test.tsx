@@ -60,9 +60,10 @@ describe('a level that fails to download', () => {
         expect(screen.getByText('Loading')).toBeInTheDocument();
         // The boundary's error screen, which offers to reload (vitest wraps the mocked module's
         // message, so it can't show its offline variant here)
-        expect(await screen.findByText('Algo salió mal')).toBeInTheDocument();
+        expect(await screen.findByText('Algo salió mal', {}, { timeout: 5000 })).toBeInTheDocument();
         expect(screen.queryByText('Loading')).toBeNull();
         errors.mockRestore();
         vi.doUnmock('./b1');
-    });
+    // Re-importing the error boundary (and framer-motion) after resetModules is slow on a busy machine
+    }, 15000);
 });

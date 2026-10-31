@@ -100,7 +100,8 @@ export default defineConfig({
                             // Only the level's own files: pulling in their imports would put shared data
                             // (the unit list) in level A1 and make every screen download it
                             includeDependenciesRecursively: false,
-                        }],
+                        },
+                        { name: vocabChunk, debugName: 'vocab', includeDependenciesRecursively: false },],
                 },
             },
         },
@@ -116,6 +117,12 @@ function levelChunk(id: string): string | null {
     const match = n.match(/\/src\/data\/(?:levels\/(a1|a2|b1|b2)\.ts|curriculum\/(a1|a2|b1|b2)\.ts|curriculum\/skills\/(a1|a2|b1|b2)\.ts|output\/(a1|a2|b1|b2)-output\.ts|stories-(a1|a2|b1|b2)\.ts|curriculum\/b2-(?:units|exercises-\d)\.ts)$/);
     if (!match) return null;
     return `level-${match.slice(1).find(Boolean) ?? 'b2'}`;
+}
+
+/** The vocabulary deck of one level with its IPA (src/data/vocabulary/load.ts), named "vocab-a1". */
+function vocabChunk(id: string): string | null {
+    const match = id.replace(/\\/g, '/').match(/\/src\/data\/vocabulary\/(?:decks\/|phonetics\/)?(a1|a2|b1|b2)\.ts$/);
+    return match ? `vocab-${match[1]}` : null;
 }
 
 /** The vendor chunk a module belongs to, or null to leave it where Rolldown puts it. */
