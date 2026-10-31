@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { levelOfId, useLevelContent } from '../data/levels';
 import PageLoader from '../components/PageLoader';
-import { getVocab, getVocabMap } from '../data/vocabulary';
+import { useVocabulary } from '../data/vocabulary/load';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -92,6 +92,8 @@ export default function StoryReader() {
     const storyContent = story?.content;
     const keywords = useMemo(() => (storyContent ? extractKeywords(storyContent) : []), [storyContent]);
 
+    // The decks of a static story's words (an AI story brings its own cards)
+    const vocabulary = useVocabulary(isAIStory ? [] : keywords);
     const vocabMap = useMemo(() => {
         if (!keywords.length) return new Map<string, Vocabulary>();
         if (isAIStory && aiStory?.vocabulary) {
@@ -101,8 +103,8 @@ export default function StoryReader() {
             }
             return map;
         }
-        return getVocabMap(keywords) as Map<string, Vocabulary>;
-    }, [keywords, isAIStory, aiStory]);
+        return vocabulary?.map(keywords) ?? new Map<string, Vocabulary>();
+    }, [keywords, isAIStory, aiStory, vocabulary]);
 
     // What the learner had saved before this reading, checked once per story
     useEffect(() => {
@@ -218,9 +220,9 @@ export default function StoryReader() {
         const wordId = target.getAttribute('data-word');
         if (!wordId) return;
 
-        const vocab = (isAIStory ? vocabMap.get(wordId) : getVocab(wordId)) as Vocabulary | undefined;
+        const vocab = (isAIStory ? vocabMap.get(wordId) : vocabulary?.get(wordId)) as Vocabulary | undefined;
         if (vocab) setSelectedWord(vocab);
-    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory]);
+    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory, vocabulary]);
 
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
@@ -279,7 +281,8 @@ export default function StoryReader() {
         });
     }, [wordStatuses, processedHTML]);
 
-    if (!story && storyLevel && !levelContent) return <PageLoader />;
+    // Waits for the story's level and its words' decks, so a tapped word always has its card
+    if ((!story && storyLevel && !levelContent) || (story && !isAIStory && !vocabulary)) return <PageLoader />;
 
     if (!story) {
         return (

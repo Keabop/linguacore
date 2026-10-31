@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { type Card, type Vocabulary } from '../lib/db';
 import { levelOfId, useLevelsContent, type ContentLevel } from '../data/levels';
 import PageLoader from '../components/PageLoader';
-import { getVocab } from '../data/vocabulary';
+import { useVocabulary } from '../data/vocabulary/load';
 import { useCards } from '../hooks/useCards';
 import { useSkillCards, getReviewDepth } from '../hooks/useSkillCards';
 import { useErrorCards } from '../hooks/useErrorCards';
@@ -55,8 +55,10 @@ export default function ReviewSession() {
     }
 
     const currentCard = dueCards[0] as Card | undefined;
-    const currentVocab = currentCard
-        ? (getVocab(currentCard.wordId) || ({
+    // The decks of every due word, downloaded once at the start: until then a word isn't "custom"
+    const vocabulary = useVocabulary(dueCards.map(c => c.wordId));
+    const currentVocab = currentCard && vocabulary
+        ? (vocabulary.get(currentCard.wordId) || ({
             id: currentCard.wordId,
             word: currentCard.wordId,
             translations: ['palabra personalizada'],
@@ -377,6 +379,7 @@ export default function ReviewSession() {
             </div>
 
             {/* Card */}
+            {currentCard && !vocabulary && <PageLoader />}
             {currentCard && currentVocab && (
                 <AnimatePresence mode="wait">
                     <motion.div
