@@ -5,6 +5,9 @@ import { audioFor } from '../lib/audioKey';
 import { allExercises, allGrammarCards, allGrammarSkills, allStories, allUnits } from './index';
 import { placementBlocks, placementQuestions } from './assessments/placement';
 import { levelFinalBanks, type LevelFinalBank } from './assessments/level-final';
+import { loadLevel } from './levels';
+import { storyIndex } from './storyIndex';
+import { storySummary } from './storySummary';
 import { cambridgeB1Questions, cambridgeB1Speaking, cambridgeB1Writing } from './assessments/cambridge/b1';
 import { cambridgeB2Questions, cambridgeB2Speaking, cambridgeB2Writing } from './assessments/cambridge/b2';
 import { ieltsQuestions, ieltsSpeaking, ieltsWriting } from './assessments/ielts-questions';
@@ -572,4 +575,34 @@ describe('end-of-level exam', () => {
             });
         });
     }
+});
+
+describe('content loaded by level', () => {
+    it('keeps the story index up to date (npm run content:index)', () => {
+        expect(storyIndex).toEqual(allStories.map(storySummary));
+    });
+
+    it('splits every level into its own module, with the same content as the whole set', async () => {
+        const levels = await Promise.all((['A1', 'A2', 'B1', 'B2'] as const).map(loadLevel));
+        expect(levels.flatMap(l => l.exercises)).toHaveLength(allExercises.length);
+        expect(levels.flatMap(l => l.grammarCards)).toHaveLength(allGrammarCards.length);
+        expect(levels.flatMap(l => l.skills)).toHaveLength(allGrammarSkills.length);
+        expect(levels.flatMap(l => l.stories)).toEqual(allStories);
+        for (const [i, l] of levels.entries()) {
+            const prefix = ['a1', 'a2', 'b1', 'b2'][i];
+            expect(l.exercises.every(e => e.unitId.startsWith(prefix)), prefix).toBe(true);
+            expect(l.skills.every(s => s.id.startsWith(prefix) && s.unitId.startsWith(prefix)), prefix).toBe(true);
+        }
+    });
+
+    it('never makes a screen download every level: app code does not import the whole set', () => {
+        const sources = import.meta.glob(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}', '!./**'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+        const whole = /from '[./]*\/data(?:\/index)?'|from '[./]*\/data\/(?:stories|stories-[ab][12]|curriculum(?:\/index)?|curriculum\/(?:a1|a2|b1|b2|skills)|output(?:\/index)?)'/;
+        expect(Object.keys(sources).length).toBeGreaterThan(80);
+        expect(whole.test("import { getStory } from '../data';")).toBe(true);
+        expect(whole.test("import { storiesData } from '../data/stories';")).toBe(true);
+        expect(whole.test("import { allUnits } from '../data/curriculum/units';")).toBe(false);
+        const offenders = Object.entries(sources).filter(([, code]) => whole.test(code)).map(([file]) => file);
+        expect(offenders).toEqual([]);
+    });
 });

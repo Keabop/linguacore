@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import type { CEFRLevel } from '../lib/db';
 import type { ReadStoryRow, KnownWordRow } from '../lib/database.types';
-import { storiesData as allStories } from '../data/stories';
+import { storyIndex as allStories } from '../data/storyIndex';
+import { storyDetails } from '../data/storyDetails';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -16,91 +17,6 @@ import { Lock, Check, Clock, Sparkles, Loader2, X, Search, Compass, Eye } from '
 import { StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
 
-export const storyDetails: Record<string, { spanishTitle: string; description: string }> = {
-    'a1-001': { spanishTitle: 'Mi Rutina Diaria', description: 'La mañana de una trabajadora, desde que se despierta hasta que vuelve a casa.' },
-    'a1-002': { spanishTitle: 'Mi Familia', description: 'Lucía presenta a su familia: quién es quién y a qué se dedica cada uno.' },
-    'a1-011': { spanishTitle: 'El Nuevo Vecino', description: 'Mei llega al edificio y se presenta a Tom, su nuevo vecino.' },
-    'a1-009': { spanishTitle: 'Mi Habitación', description: 'Un cuarto pequeño y lo que hay en él, cosa por cosa.' },
-    'a1-012': { spanishTitle: '¿De Quién Es Esta Bolsa?', description: 'Una bolsa olvidada en clase y las pistas para encontrar a su dueño.' },
-    'a1-010': { spanishTitle: 'La Hora de la Cena', description: 'Quién cocina, quién pone la mesa y de qué habla una familia cada noche.' },
-    'a1-003': { spanishTitle: 'Mi Mejor Amigo', description: 'Dos amigos muy distintos: los deportes, la música y el cine de los viernes.' },
-    'a1-006': { spanishTitle: 'Mis Mascotas', description: 'Un perro, una gata y un pájaro que canta cada mañana.' },
-    'a1-008': { spanishTitle: 'El Parque', description: 'Qué hay en el parque y dónde está cada cosa.' },
-    'a1-013': { spanishTitle: 'Una Casa junto al Mar', description: 'La casa de los abuelos, cuarto por cuarto, con el mar al fondo.' },
-    'a1-007': { spanishTitle: 'Aprender Inglés', description: 'Rosa cuenta lo que ya puede hacer en inglés y lo que todavía le cuesta.' },
-    'a1-004': { spanishTitle: 'Un Día Lluvioso', description: 'Un sábado de lluvia en casa: un pastel, un juego y un final al sol.' },
-    'a1-005': { spanishTitle: 'En la Tienda', description: 'Sam hace la compra con su lista y descubre que no trae dinero.' },
-    'a1-014': { spanishTitle: 'Un Pícnic en el Parque', description: 'Tres amigos, la comida que trae cada uno y un pastel para compartir.' },
-    // A2
-    'a2-002': { spanishTitle: 'Mi Primer Día de Trabajo', description: 'Nervios, un tren tarde y un compañero que ayuda en el primer día.' },
-    'a2-011': { spanishTitle: 'Un Fin de Semana Tranquilo', description: 'Sin fiesta: series, bici, una barbacoa y una novela nueva.' },
-    'a2-005': { spanishTitle: 'Un Fin de Semana en el Campo', description: 'Un pueblo junto al lago, un castillo y una tarde perdidos en el monte.' },
-    'a2-012': { spanishTitle: 'Perdida en Lisboa', description: 'Un primer viaje al extranjero, una bolsa olvidada en el tranvía y una nueva amiga.' },
-    'a2-004': { spanishTitle: 'La Nueva Alumna', description: 'El primer día de Sofia en clase, contado mientras sucede.' },
-    'a2-013': { spanishTitle: 'Un Sábado por la Mañana', description: 'Qué está haciendo cada miembro de la familia García ahora mismo.' },
-    'a2-009': { spanishTitle: 'El Festival de Música', description: 'Los planes para el primer festival sin padres: boletos, tienda de campaña y lluvia.' },
-    'a2-010': { spanishTitle: 'Mudarse a una Nueva Ciudad', description: 'Un trabajo nuevo en Monterrey y todo lo que hay que preparar antes de irse.' },
-    'a2-001': { spanishTitle: 'Un Viaje al Mercado', description: 'El mercado viejo frente al nuevo: precios, ambiente y el peor queso del año.' },
-    'a2-014': { spanishTitle: 'Dos Ciudades', description: 'Madrid contra Valencia: dos primos discuten cuál es mejor.' },
-    'a2-008': { spanishTitle: 'Mis Hábitos Saludables', description: 'Comida, ejercicio y sueño: los cambios que mejoraron una vida.' },
-    'a2-015': { spanishTitle: 'En el Médico', description: 'Un dolor de estómago, las reglas de la doctora y un partido el sábado.' },
-    'a2-003': { spanishTitle: 'Cocinando con la Abuela', description: 'Una receta de pastel de manzana que pasa de madre a hija y a nieta.' },
-    'a2-016': { spanishTitle: 'El Regalo de Cumpleaños', description: 'Un regalo sin dinero: un libro con la historia de una amistad.' },
-    'a2-006': { spanishTitle: 'Aprendiendo a Cocinar', description: 'Las reglas del chef y lo que pasará si la cena sale mal.' },
-    'a2-017': { spanishTitle: 'Si Llueve Mañana', description: 'Una feria escolar sobre el plástico y qué harán si hay tormenta.' },
-    'a2-007': { spanishTitle: 'El Perro Perdido', description: 'Una noche de lluvia, un perro mojado y la búsqueda de su familia.' },
-    'a2-018': { spanishTitle: 'La Noche del Apagón', description: 'Dos hermanos solos en casa, sin luz, y un vecino con historias.' },
-    // B1
-    'b1-001': { spanishTitle: 'Veintitrés Países', description: 'Una escritora de viajes cuenta lo que ha vivido desde su primer pasaporte.' },
-    'b1-002': { spanishTitle: 'Un Año de Primeras Veces', description: 'A los 72, un abuelo recién jubilado se atreve con todo lo que nunca hizo.' },
-    'b1-003': { spanishTitle: 'La Noche de la Tormenta', description: 'Una tormenta golpea Veracruz: rescates, daños y una investigación.' },
-    'b1-004': { spanishTitle: 'Buenas Noticias, por Fin', description: 'Una periodista busca historias felices: un niño valiente, una perra perdida y una bailarina.' },
-    'b1-005': { spanishTitle: 'De Vuelta al Gimnasio', description: 'El diario de seis semanas para vencer el estrés con ejercicio y descanso.' },
-    'b1-006': { spanishTitle: 'La Larga Recuperación', description: 'Un futbolista con la pierna rota y los meses que tarda en volver.' },
-    'b1-007': { spanishTitle: 'La Cabaña Vacía', description: 'Un café tibio, pasos arriba y una mochila ajena en una cabaña del bosque.' },
-    'b1-008': { spanishTitle: 'El Cuadro Desaparecido', description: 'Una detective investiga el robo de un retrato sin dejar rastro.' },
-    'b1-009': { spanishTitle: 'El Pueblo de mi Abuela', description: 'Velas, apodos y una escuela de un solo salón en la sierra de Oaxaca.' },
-    'b1-010': { spanishTitle: 'Cuando Papá Era Niño', description: 'Una caja de fotos viejas y cómo era la vida en los ochenta.' },
-    'b1-011': { spanishTitle: 'Del Campo a la Playera', description: 'Cómo se hace una playera de algodón, paso a paso, en una fábrica.' },
-    'b1-012': { spanishTitle: 'El Taller de Chocolate', description: 'La receta familiar de una tía de Oaxaca, del cacao a la tablilla.' },
-    'b1-013': { spanishTitle: '¿Qué Harías Tú?', description: 'Si ganaras la lotería: las respuestas de una clase de inglés.' },
-    'b1-014': { spanishTitle: 'La Cartera', description: 'Una cartera llena de dinero en el camión y una decisión difícil.' },
-    'b1-015': { spanishTitle: 'El Chat del Grupo', description: 'Un malentendido, mucho chisme y una amiga que guardaba un secreto.' },
-    'b1-016': { spanishTitle: 'La Queja del Cliente', description: 'Una llamada furiosa, un paquete perdido y la paciencia que lo arregla.' },
-    'b1-017': { spanishTitle: 'Un Pueblo junto al Mar', description: 'Puerto Escondido contado por quien vive ahí: olas, tortugas y cambios.' },
-    'b1-018': { spanishTitle: 'La Isla del Fin del Mundo', description: 'Un mes en Chiloé, entre lluvia, iglesias de madera y ballenas.' },
-    'b1-019': { spanishTitle: 'Elegir una Carrera', description: 'Un año sin rumbo, una conferencia sobre el mar y una beca.' },
-    'b1-020': { spanishTitle: 'Nunca Es Tarde para Aprender', description: 'Una madre de 55 años empieza la universidad para estudiar literatura.' },
-    'b1-021': { spanishTitle: 'Subir la Montaña', description: 'Permisos, guía y entrenamiento para intentar el Pico de Orizaba.' },
-    'b1-022': { spanishTitle: 'Las Reglas de la Casa', description: 'Cuatro compañeros de departamento y las reglas que los salvan.' },
-    // B2
-    'b2-001': { spanishTitle: 'El Vuelo Perdido', description: 'Un nado de más, un avión que falla y el encuentro que cambió una vida.' },
-    'b2-002': { spanishTitle: 'El Río', description: 'Un río que parecía tranquilo, un pescador y la lección de un verano.' },
-    'b2-003': { spanishTitle: 'El Trabajo que Rechacé', description: 'Londres o quedarse: lo que habría sido y lo que fue.' },
-    'b2-004': { spanishTitle: 'Empezar de Nuevo a los Cincuenta', description: 'Una despedida injusta y una panadería que nace de un pastel.' },
-    'b2-005': { spanishTitle: 'Cartas a mi Yo de Doce Años', description: 'Una tarea de psicología: lo que ojalá alguien nos hubiera dicho.' },
-    'b2-006': { spanishTitle: 'Ojalá Hubiera Dicho Algo', description: 'Una conversación en la cocina que un nieto lamenta no haber escuchado.' },
-    'b2-007': { spanishTitle: 'La Entrevista que Salió Mal', description: 'Una pregunta mal interpretada, un actor enojado y la verdad en la prensa.' },
-    'b2-008': { spanishTitle: 'Lo que Decían los Vecinos', description: 'Una familia nueva en un pueblo donde todos hablan de todos.' },
-    'b2-009': { spanishTitle: 'El Misterio del Pueblo Enfermo', description: 'Científicos investigan por qué medio pueblo se enfermó a la vez.' },
-    'b2-010': { spanishTitle: 'Cómo se Hace un Teléfono', description: 'Minas, fábricas y datos: el largo viaje del teléfono en tu bolsillo.' },
-    'b2-011': { spanishTitle: 'La Casa que Se Defendía', description: 'Una primera casa, una hipoteca y una avería tras otra.' },
-    'b2-012': { spanishTitle: 'Un Sábado Muy Ocupado', description: 'Mandados con una abuela de 84: farmacia, plomero y galletas.' },
-    'b2-013': { spanishTitle: 'La Pintora que No Fue Famosa', description: 'Trescientos cuadros escondidos y una exposición después de su muerte.' },
-    'b2-014': { spanishTitle: 'La Canción que No Muere', description: 'La historia de «Cielito Lindo» y de su autor olvidado.' },
-    'b2-015': { spanishTitle: 'Amanecer en la Montaña', description: 'Una subida a oscuras y una vista que valió madrugar.' },
-    'b2-016': { spanishTitle: 'La Librería Antigua', description: 'Una puerta verde en Puebla, un librero sabio y un gato llamado Borges.' },
-    'b2-017': { spanishTitle: 'Una Carta a 2045', description: 'Lo que una estudiante de 16 años imagina del mundo en veinte años.' },
-    'b2-018': { spanishTitle: 'La Ciudad en Diez Años', description: 'El plan «Ciudad 2035»: árboles, transporte limpio y un río vivo.' },
-    'b2-019': { spanishTitle: 'El Experimento del Departamento', description: 'Cuatro desconocidos, un apagón de dos días y una amistad inesperada.' },
-    'b2-020': { spanishTitle: 'Un Negocio con la Abuela', description: 'Salsas caseras, frascos de vidrio y lo que se aprende cocinando juntos.' },
-    'b2-021': { spanishTitle: 'La Elección Estudiantil', description: 'Dos candidatos, una encuesta sobre tareas y una escuela dividida.' },
-    'b2-022': { spanishTitle: '¿Prohibir los Coches en el Centro?', description: 'Un ensayo de opinión sobre el debate que divide a la ciudad.' },
-    'b2-023': { spanishTitle: 'La Casita junto al Lago', description: 'Dos hermanas heredan una casa abandonada y un secreto familiar.' },
-    'b2-024': { spanishTitle: 'El Turno de Noche', description: 'Un guardia, un hospital vacío y algo escondido en la sala de niños.' },
-    'b2-025': { spanishTitle: '¿Llegó el Trabajo en Casa para Quedarse?', description: 'Un ensayo sobre las ventajas y los costos del trabajo remoto.' },
-    'b2-026': { spanishTitle: 'Turismo: ¿Bendición o Maldición?', description: 'Un ensayo sobre lo que el turismo da y quita en lugares como Tulum.' },
-};
 
 export const CEFR_COLORS: Record<string, string> = {
     A1: 'var(--color-level-a1)',
