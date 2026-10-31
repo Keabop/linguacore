@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
 import { levelOfId, useLevelContent } from '../data/levels';
 import PageLoader from '../components/PageLoader';
-import { useVocabulary } from '../data/vocabulary/load';
+import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -84,6 +84,8 @@ export default function StoryReader() {
     // A static story's level is downloaded on its own; AI stories ("ai-…") come in the navigation state
     const storyLevel = levelOfId(storyId);
     const levelContent = useLevelContent(storyLevel);
+    // Most of a story's words are of its level: that deck downloads alongside the text
+    useEffect(() => prefetchVocabulary(storyLevel), [storyLevel]);
     const staticStory = levelContent?.stories.find(s => s.id === storyId);
     const story = staticStory ?? (aiStory ? { ...aiStory, level: aiStory.level as any } : undefined);
     const isAIStory = !staticStory && !!aiStory;
@@ -279,7 +281,8 @@ export default function StoryReader() {
         container?.querySelectorAll('span[data-word]').forEach(span => {
             span.classList.toggle('in-deck', wordStatuses.get(span.getAttribute('data-word') ?? '') === 'deck');
         });
-    }, [wordStatuses, processedHTML]);
+    // `vocabulary`: the text only appears once the decks are in, and must be marked then too
+    }, [wordStatuses, processedHTML, vocabulary]);
 
     // Waits for the story's level and its words' decks, so a tapped word always has its card
     if ((!story && storyLevel && !levelContent) || (story && !isAIStory && !vocabulary)) return <PageLoader />;

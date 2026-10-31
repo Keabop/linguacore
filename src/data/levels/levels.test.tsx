@@ -1,13 +1,16 @@
 import { render, renderHook, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+// Each test re-imports a whole level after resetModules: room for a busy machine
+const SLOW = { timeout: 5000 };
+
 describe('useLevelContent', () => {
     it('gives nothing while the level loads, then its content', async () => {
         vi.resetModules();
         const { useLevelContent } = await import('./index');
         const { result } = renderHook(() => useLevelContent('A2'));
         expect(result.current).toBeNull();
-        await waitFor(() => expect(result.current).not.toBeNull());
+        await waitFor(() => expect(result.current).not.toBeNull(), SLOW);
         expect(result.current!.exercises.every(e => e.unitId.startsWith('a2-'))).toBe(true);
     });
 
@@ -15,11 +18,11 @@ describe('useLevelContent', () => {
         vi.resetModules();
         const { useLevelContent } = await import('./index');
         const { result, rerender } = renderHook(({ level }) => useLevelContent(level), { initialProps: { level: 'A1' as 'A1' | 'B2' } });
-        await waitFor(() => expect(result.current).not.toBeNull());
+        await waitFor(() => expect(result.current).not.toBeNull(), SLOW);
         rerender({ level: 'B2' });
         // Either nothing yet or B2: never A1 content under the B2 level
         expect(result.current === null || result.current.exercises[0].unitId.startsWith('b2-')).toBe(true);
-        await waitFor(() => expect(result.current?.exercises[0].unitId.startsWith('b2-')).toBe(true));
+        await waitFor(() => expect(result.current?.exercises[0].unitId.startsWith('b2-')).toBe(true), SLOW);
     });
 
     it('gives nothing without a level, and reads the level of any content id', async () => {

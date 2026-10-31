@@ -1,6 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+// Each test re-imports a whole level after resetModules: room for a busy machine
+const SLOW = { timeout: 5000 };
+
 describe('levelOfWord', () => {
     it('finds the level of a card, of its old id, and nothing for a custom word', async () => {
         const { levelOfWord } = await import('./load');
@@ -18,7 +21,7 @@ describe('useVocabulary', () => {
         const b2Word = WORD_IDS.B2.split('|')[0];
         const { result } = renderHook(() => useVocabulary(['hello', b2Word, 'teeth']));
         expect(result.current).toBeNull();
-        await waitFor(() => expect(result.current).not.toBeNull());
+        await waitFor(() => expect(result.current).not.toBeNull(), SLOW);
         expect(result.current!.get('hello')?.cefrLevel).toBe('A1');
         expect(result.current!.get(b2Word)?.id).toBe(b2Word);
         expect(result.current!.map(['teeth']).get('teeth')?.id).toBe('tooth');
@@ -47,7 +50,7 @@ describe('useVocabulary', () => {
         const { result } = renderHook(() => {
             try { return useVocabulary([WORD_IDS.B1.split('|')[0]]); } catch (e) { return e as Error; }
         });
-        await waitFor(() => expect(result.current).toBeInstanceOf(Error));
+        await waitFor(() => expect(result.current).toBeInstanceOf(Error), SLOW);
         errors.mockRestore();
         vi.doUnmock('./decks/b1');
     });

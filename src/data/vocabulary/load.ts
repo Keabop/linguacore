@@ -68,6 +68,14 @@ const lookup: VocabularyLookup = {
 const levelsOf = (ids: string[], extra: ContentLevel[]) =>
     [...new Set([...ids.map(levelOfWord).filter((l): l is ContentLevel => !!l), ...extra])].sort();
 
+/**
+ * Starts downloading a level's deck before a screen needs it (a unit, a story of that level), so
+ * it isn't fetched only after the text. A failure is ignored here: the hook that needs it retries.
+ */
+export function prefetchVocabulary(level: ContentLevel | null) {
+    if (level) loadDeck(level).catch(() => {});
+}
+
 /** Loads the decks of these words (and of any extra levels), then answers lookups. */
 export async function loadVocabulary(ids: string[], extra: ContentLevel[] = []): Promise<VocabularyLookup> {
     await Promise.all(levelsOf(ids, extra).map(loadDeck));
