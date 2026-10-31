@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
@@ -22,13 +22,19 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
     const total = exercises.length;
     const progress = total > 0 ? ((currentIndex + 1) / total) * 100 : 0;
 
+    // A double tap on "next" answers the same exercise twice: only the first counts, so no
+    // exercise is skipped and the index never goes past the last one
+    const answeredRef = useRef(-1);
+
     const handleAnswer = (correct: boolean) => {
+        if (answeredRef.current === currentIndex) return;
+        answeredRef.current = currentIndex;
+
         const newCorrectCount = correct ? correctCount + 1 : correctCount;
         if (correct) setCorrectCount(newCorrectCount);
 
         if (currentIndex + 1 >= total) {
             // All exercises done
-            const score = Math.round((newCorrectCount / total) * 100);
             setTimeout(() => {
                 setFinished(true);
             }, 300);
@@ -106,11 +112,16 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                         </div>
                     </div>
 
+                    {/* With no right answer the unit stays here and the exercises start over: say so */}
+                    {score === 0 && (
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{t('exercises.zeroHint')}</p>
+                    )}
+
                     <button
                         onClick={() => onComplete(score)}
                         className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
                     >
-                        {t('exercises.finish')}
+                        {score === 0 ? t('exercises.tryAgain') : t('exercises.finish')}
                     </button>
                 </div>
             </motion.div>

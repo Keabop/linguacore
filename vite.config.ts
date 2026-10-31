@@ -90,41 +90,48 @@ export default defineConfig({
     build: {
         target: 'es2020',
         cssMinify: 'lightningcss',
-        rollupOptions: {
+        rolldownOptions: {
             output: {
-                manualChunks(id) {
-                    if (!id.includes('node_modules')) return;
-
-                    // Normalise separators for reliable matching
-                    const n = id.replace(/\\/g, '/');
-
-                    // Core React runtime + router (includes scheduler,
-                    // use-sync-external-store, and other React internals)
-                    if (
-                        /\/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler|use-sync-external-store)\//.test(n)
-                    ) {
-                        return 'vendor-react';
-                    }
-                    // Animation
-                    if (n.includes('/framer-motion/')) return 'vendor-motion';
-                    // Supabase client (auth, postgrest, realtime, storage...)
-                    if (n.includes('/@supabase/') || n.includes('/iceberg-js/')) return 'vendor-supabase';
-                    // Persistence & server-state
-                    if (n.includes('/@tanstack/react-query/') ||
-                        n.includes('/@tanstack/react-query-persist-client/') ||
-                        n.includes('/idb-keyval/')) {
-                        return 'vendor-data';
-                    }
-                    // i18n
-                    if (n.includes('/i18next/') || n.includes('/react-i18next/')) {
-                        return 'vendor-i18n';
-                    }
-                    // Icons
-                    if (n.includes('/lucide-react/')) return 'vendor-icons';
-                    // HTML sanitiser -- only used by StoryReader (lazy)
-                    if (n.includes('/dompurify/')) return 'vendor-dompurify';
+                // One chunk per vendor, cached apart between deploys (`manualChunks` is deprecated in Rolldown)
+                codeSplitting: {
+                    groups: [{ name: vendorChunk, debugName: 'vendor' }],
                 },
             },
         },
     },
 });
+
+/** The vendor chunk a module belongs to, or null to leave it where Rolldown puts it. */
+function vendorChunk(id: string): string | null {
+    if (!id.includes('node_modules')) return null;
+
+    // Normalise separators for reliable matching
+    const n = id.replace(/\\/g, '/');
+
+    // Core React runtime + router (includes scheduler,
+    // use-sync-external-store, and other React internals)
+    if (
+        /\/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler|use-sync-external-store)\//.test(n)
+    ) {
+        return 'vendor-react';
+    }
+    // Animation
+    if (n.includes('/framer-motion/')) return 'vendor-motion';
+    // Supabase client (auth, postgrest, realtime, storage...)
+    if (n.includes('/@supabase/') || n.includes('/iceberg-js/')) return 'vendor-supabase';
+    // Persistence & server-state
+    if (n.includes('/@tanstack/react-query/') ||
+        n.includes('/@tanstack/react-query-persist-client/') ||
+        n.includes('/idb-keyval/')) {
+        return 'vendor-data';
+    }
+    // i18n
+    if (n.includes('/i18next/') || n.includes('/react-i18next/')) {
+        return 'vendor-i18n';
+    }
+    // Icons
+    if (n.includes('/lucide-react/')) return 'vendor-icons';
+    // HTML sanitiser -- only used by StoryReader (lazy)
+    if (n.includes('/dompurify/')) return 'vendor-dompurify';
+    return null;
+}

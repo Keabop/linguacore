@@ -14,7 +14,8 @@ export interface UseUnitProgressReturn {
     markStepComplete: (step: UnitStep) => Promise<void>;
 }
 
-function determineStep(progress: UnitProgressRow | null): UnitStep {
+/** The first step of the unit the learner hasn't done yet. */
+export function determineStep(progress: UnitProgressRow | null): UnitStep {
     if (!progress) return 'grammar';
     if (!progress.grammar_card_read) return 'grammar';
     if (!progress.story_completed) return 'story';

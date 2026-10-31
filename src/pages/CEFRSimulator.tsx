@@ -1048,7 +1048,7 @@ export default function CEFRSimulator() {
                                         <button
                                             onClick={() => {
                                                 cancelSpeech();
-                                                setActiveSpeakingIdx(prev => Math.max(0, prev - 1));
+                                                setActiveSpeakingIdx(Math.max(0, activeSpeakingIdx - 1));
                                             }}
                                             disabled={activeSpeakingIdx === 0}
                                             className="px-5 py-3 rounded-full text-sm font-bold bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
@@ -1060,7 +1060,8 @@ export default function CEFRSimulator() {
                                             <button
                                                 onClick={() => {
                                                     cancelSpeech();
-                                                    setActiveSpeakingIdx(prev => prev + 1);
+                                                    // From the prompt on screen: a double tap must not skip one
+                                                    setActiveSpeakingIdx(activeSpeakingIdx + 1);
                                                 }}
                                                 className="px-8 py-3.5 rounded-full text-sm font-black text-[var(--color-on-tertiary)] bg-[var(--color-tertiary)] active:scale-95 transition-all"
                                             >

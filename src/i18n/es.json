@@ -295,7 +295,9 @@
     "score": "Puntuación: {{score}}%",
     "checkAnswer": "Comprobar",
     "next": "Siguiente",
-    "finish": "Finalizar"
+    "finish": "Finalizar",
+    "tryAgain": "Volver a intentarlo",
+    "zeroHint": "Necesitas al menos una respuesta correcta para pasar al siguiente paso. Repasa la tarjeta de gramática si lo necesitas."
   },
   "practice": {
     "saveToHistory": "Guardar en historial",
