@@ -36,7 +36,7 @@ const STEPS: { key: UnitStep; icon: typeof BookOpen }[] = [
 ];
 
 const STEP_LABELS: Record<string, string> = {
-    grammar: 'Gramatica',
+    grammar: 'Gramática',
     story: 'Historia',
     vocab: 'Vocabulario',
     exercises: 'Ejercicios',
@@ -115,11 +115,13 @@ export default function UnitFlow() {
     const unit = unitId ? getUnit(unitId) ?? null : null;
     const unitStories = unitId ? getStoriesByUnit(unitId) : [];
     const unitStory = unitStories[0] ?? null;
-    const unitExercises = unitId ? getExercisesByUnit(unitId) : ([] as GrammarExercise[]);
+    // One array per unit: a new one on every render would reshuffle the checkpoint below
+    const unitExercises = useMemo(() => (unitId ? getExercisesByUnit(unitId) : ([] as GrammarExercise[])), [unitId]);
 
     // Track animation direction
     const [direction, setDirection] = useState(1);
     const [checkpointKey, setCheckpointKey] = useState(0);
+    const [exerciseAttempt, setExerciseAttempt] = useState(0);
 
     // Checkpoint exercise subset — must be above early returns to satisfy Rules of Hooks
     // The checkpoint checks the unit with items the learner has not just answered: the unit's
@@ -174,6 +176,9 @@ export default function UnitFlow() {
     const handleExercisesComplete = async (score: number) => {
         await updateProgress({ exercises_score: score });
         await markStepComplete('exercises');
+        // A score of 0 keeps the unit on this step: the exercises start over instead of
+        // leaving the learner on the score screen
+        if (score === 0) setExerciseAttempt(n => n + 1);
         handleStepAdvance();
     };
 
@@ -264,6 +269,7 @@ export default function UnitFlow() {
                                 description="Pon a prueba lo que aprendiste en esta unidad."
                             />
                             <ExerciseRunner
+                                key={exerciseAttempt}
                                 exercises={unitExercises}
                                 onComplete={handleExercisesComplete}
                             />
@@ -274,7 +280,7 @@ export default function UnitFlow() {
                         <EmptyStepCard
                             icon={PenLine}
                             title={t('exercises.title')}
-                            description="No hay ejercicios disponibles para esta unidad todavia."
+                            description="No hay ejercicios disponibles para esta unidad todavía."
                             actionLabel="Saltar"
                             onAction={async () => {
                                 await updateProgress({ exercises_score: 100 });
@@ -503,7 +509,7 @@ function StoryStep({
             <StepHeader
                 icon={BookOpen}
                 label="Historia"
-                description="Lee una historia para practicar la gramatica de esta unidad."
+                description="Lee una historia para practicar la gramática de esta unidad."
             />
 
             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 space-y-7 shadow-[var(--shadow-card)]">
@@ -827,7 +833,7 @@ function CheckpointStep({
                             className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
-                            Intentalo de nuevo
+                            Inténtalo de nuevo
                         </button>
                     </div>
                 </motion.div>
