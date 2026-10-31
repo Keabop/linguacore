@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import type { SkillCard } from '../lib/db';
 import { CardState } from '../lib/db';
-import { getSkillsByUnit } from '../data';
+import { levelOfId, useLevelContent } from '../data/levels';
 import { useSkillCards } from '../hooks/useSkillCards';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function SkillBreakdown({ unitId }: Props) {
-    const skills = getSkillsByUnit(unitId);
+    const skills = useLevelContent(levelOfId(unitId))?.skills.filter(s => s.unitId === unitId) ?? [];
     const { getSkillCardsByUnit } = useSkillCards();
     const [cards, setCards] = useState<SkillCard[]>([]);
 

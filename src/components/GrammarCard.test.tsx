@@ -1,11 +1,15 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const progress = vi.hoisted(() => ({ markStepComplete: vi.fn(async () => {}) }));
 vi.mock('../hooks/useUnitProgress', () => ({ useUnitProgress: () => progress }));
 
 import GrammarCard from './GrammarCard';
 import { getGrammarCardByUnit } from '../data';
+import { loadLevel } from '../data/levels';
+
+// The levels already in memory, as after the first visit: the screens render without waiting
+beforeAll(() => Promise.all((['A1', 'A2', 'B1', 'B2'] as const).map(loadLevel)));
 
 describe('GrammarCard', () => {
     const card = getGrammarCardByUnit('a1-u1')!;

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { type Card, type Vocabulary } from '../lib/db';
-import { getStory } from '../data';
+import { levelOfId, useLevelContent } from '../data/levels';
 import { Lightbulb, Check, X, ArrowRight } from 'lucide-react';
 import { answersMatch } from '../lib/normalizeAnswer';
 
@@ -43,7 +43,10 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
     const [showHint, setShowHint] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const story = getStory(card.storyId);
+    // The sentence comes from the story the word was saved from: wait for its level to load
+    const storyLevel = levelOfId(card.storyId);
+    const levelContent = useLevelContent(storyLevel);
+    const story = levelContent?.stories.find(s => s.id === card.storyId);
 
     const clozeData = useMemo(() => {
         if (story) {
@@ -88,6 +91,8 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
     const handleContinue = () => {
         onResult(false);
     };
+
+    if (storyLevel && !levelContent) return null;
 
     return (
         <div className="space-y-8">

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import DOMPurify from 'dompurify';
 import { BookOpen, CheckCircle2, Lightbulb } from 'lucide-react';
-import { getGrammarCardByUnit } from '../data';
+import { levelOfId, useLevelContent } from '../data/levels';
 import { useUnitProgress } from '../hooks/useUnitProgress';
 
 interface GrammarCardProps {
@@ -16,7 +16,9 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
     const [saving, setSaving] = useState(false);
     const { markStepComplete } = useUnitProgress(unitId);
 
-    const card = getGrammarCardByUnit(unitId) ?? null;
+    // undefined while the level loads, null for a unit without a card (the level assessment)
+    const level = useLevelContent(levelOfId(unitId));
+    const card = level ? level.grammarCards.find(gc => gc.unitId === unitId) ?? null : undefined;
 
     const handleUnderstood = async () => {
         if (saving) return;

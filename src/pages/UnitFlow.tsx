@@ -7,8 +7,9 @@ import type { ReadStoryRow } from '../lib/database.types';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
-import type { GrammarExercise, Story, Vocabulary } from '../lib/db';
-import { getUnit, getStoriesByUnit, getExercisesByUnit, getSkillsByUnit } from '../data';
+import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db';
+import { allUnits } from '../data/curriculum/units';
+import { levelOfId, useLevelContent } from '../data/levels';
 import { allVocabulary, getVocabMap, savedIdsOf, vocabularyAliases } from '../data/vocabulary';
 import { unitKeyWords } from '../data/vocabulary/keyWords';
 import { useCards } from '../hooks/useCards';
@@ -112,11 +113,13 @@ export default function UnitFlow() {
         useUnitProgress(unitId ?? '');
     const { addSkillCards } = useSkillCards();
 
-    const unit = unitId ? getUnit(unitId) ?? null : null;
-    const unitStories = unitId ? getStoriesByUnit(unitId) : [];
+    const unit = allUnits.find(u => u.id === unitId) ?? null;
+    // Only this unit's level is downloaded (src/data/levels)
+    const content = useLevelContent(levelOfId(unitId));
+    const unitStories = useMemo(() => content?.stories.filter(s => s.unitId === unitId) ?? [], [content, unitId]);
     const unitStory = unitStories[0] ?? null;
     // One array per unit: a new one on every render would reshuffle the checkpoint below
-    const unitExercises = useMemo(() => (unitId ? getExercisesByUnit(unitId) : ([] as GrammarExercise[])), [unitId]);
+    const unitExercises = useMemo(() => content?.exercises.filter(e => e.unitId === unitId) ?? ([] as GrammarExercise[]), [content, unitId]);
 
     // Track animation direction
     const [direction, setDirection] = useState(1);
@@ -127,13 +130,13 @@ export default function UnitFlow() {
     // The checkpoint checks the unit with items the learner has not just answered: the unit's
     // review-skill exercises. Units without skills fall back to their own exercises.
     const checkpointExercises = useMemo(() => {
-        const fresh = unitId ? skillCheckpointExercises(unitId) : [];
+        const fresh = unitId && content ? skillCheckpointExercises(unitId, content.skills) : [];
         const pool = fresh.length >= 5 ? fresh : unitExercises ?? [];
         return shuffle(pool).slice(0, Math.min(5, pool.length));
-    }, [unitId, unitExercises, checkpointKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [unitId, unitExercises, content, checkpointKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Loading state
-    if (isLoading) {
+    // Loading state: the progress, or the content of a lesson unit's level
+    if (isLoading || (unit && !unit.isAssessment && !content)) {
         return (
             <div className="flex items-center justify-center py-20">
                 <div className="text-[var(--color-on-surface-muted)] text-sm">{t('common.loading')}</div>
@@ -436,8 +439,8 @@ export default function UnitFlow() {
 /* ===== Checkpoint items ===== */
 
 /** The unit's review-skill exercises in the shape the exercise runner expects. */
-function skillCheckpointExercises(unitId: string): GrammarExercise[] {
-    return getSkillsByUnit(unitId).flatMap(skill => skill.exercises.map((e, i): GrammarExercise => {
+function skillCheckpointExercises(unitId: string, skills: GrammarSkill[]): GrammarExercise[] {
+    return skills.filter(s => s.unitId === unitId).flatMap(skill => skill.exercises.map((e, i): GrammarExercise => {
         const id = `${skill.id}-cp-${i}`;
         if (e.type === 'word-order') {
             return { id, unitId, type: 'word-order', question: 'Ordena para formar una oración:', correctAnswer: e.answer, scrambledWords: shuffle(e.answer.split(' ')), explanation: e.explanation };
