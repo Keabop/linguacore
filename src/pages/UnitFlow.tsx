@@ -36,7 +36,7 @@ const STEPS: { key: UnitStep; icon: typeof BookOpen }[] = [
 ];
 
 const STEP_LABELS: Record<string, string> = {
-    grammar: 'Gramatica',
+    grammar: 'Gramática',
     story: 'Historia',
     vocab: 'Vocabulario',
     exercises: 'Ejercicios',
@@ -115,7 +115,8 @@ export default function UnitFlow() {
     const unit = unitId ? getUnit(unitId) ?? null : null;
     const unitStories = unitId ? getStoriesByUnit(unitId) : [];
     const unitStory = unitStories[0] ?? null;
-    const unitExercises = unitId ? getExercisesByUnit(unitId) : ([] as GrammarExercise[]);
+    // One array per unit: a new one on every render would reshuffle the checkpoint below
+    const unitExercises = useMemo(() => (unitId ? getExercisesByUnit(unitId) : ([] as GrammarExercise[])), [unitId]);
 
     // Track animation direction
     const [direction, setDirection] = useState(1);
@@ -279,7 +280,7 @@ export default function UnitFlow() {
                         <EmptyStepCard
                             icon={PenLine}
                             title={t('exercises.title')}
-                            description="No hay ejercicios disponibles para esta unidad todavia."
+                            description="No hay ejercicios disponibles para esta unidad todavía."
                             actionLabel="Saltar"
                             onAction={async () => {
                                 await updateProgress({ exercises_score: 100 });
@@ -508,7 +509,7 @@ function StoryStep({
             <StepHeader
                 icon={BookOpen}
                 label="Historia"
-                description="Lee una historia para practicar la gramatica de esta unidad."
+                description="Lee una historia para practicar la gramática de esta unidad."
             />
 
             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 space-y-7 shadow-[var(--shadow-card)]">
