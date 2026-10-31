@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SkillCard, GrammarSkill } from '../lib/db';
 import { Rating } from '../lib/fsrs';
 import { type ReviewDepth } from '../hooks/useSkillCards';
 import { CheckCircle2, XCircle, Lightbulb, ArrowRight } from 'lucide-react';
+import { answersMatch } from '../lib/normalizeAnswer';
 
 interface Props {
     skillCard: SkillCard;
@@ -41,19 +42,23 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
         if (answered) return;
         setAnswered(true);
         setSelectedAnswer(answer);
-        const isCorrect = answer.trim().toLowerCase() === currentExercise.answer.trim().toLowerCase();
-        if (isCorrect) setCorrectCount(c => c + 1);
+        if (answersMatch(answer, currentExercise.answer)) setCorrectCount(c => c + 1);
     }, [answered, currentExercise]);
 
+    // The leaving question keeps its "next" button during the exit animation: a double tap
+    // reaches here twice for the same question, and only the first one moves on
+    const advancedFrom = useRef(-1);
     const handleNext = useCallback(() => {
+        if (advancedFrom.current === currentIndex) return;
+        advancedFrom.current = currentIndex;
         if (isLastExercise) {
             setShowAssessment(true);
         } else {
-            setCurrentIndex(i => i + 1);
+            setCurrentIndex(currentIndex + 1);
             setAnswered(false);
             setSelectedAnswer(null);
         }
-    }, [isLastExercise]);
+    }, [isLastExercise, currentIndex]);
 
     // Self-assessment screen
     if (showAssessment) {
@@ -129,7 +134,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
     }
 
     // Exercise screen
-    const isCorrect = selectedAnswer?.trim().toLowerCase() === currentExercise.answer.trim().toLowerCase();
+    const isCorrect = selectedAnswer !== null && answersMatch(selectedAnswer, currentExercise.answer);
 
     return (
         <div className="space-y-8">
