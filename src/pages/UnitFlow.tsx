@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -11,7 +11,7 @@ import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db
 import { allUnits } from '../data/curriculum/units';
 import { levelOfId, useLevelContent } from '../data/levels';
 import { savedIdsOf, vocabularyAliases } from '../data/vocabulary/aliases';
-import { useVocabulary } from '../data/vocabulary/load';
+import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import { unitKeyWords } from '../data/vocabulary/keyWords';
 import { useCards } from '../hooks/useCards';
 import { shuffle } from '../lib/shuffle';
@@ -115,8 +115,9 @@ export default function UnitFlow() {
     const { addSkillCards } = useSkillCards();
 
     const unit = allUnits.find(u => u.id === unitId) ?? null;
-    // Only this unit's level is downloaded (src/data/levels)
+    // Only this unit's level is downloaded (src/data/levels), with its deck from the start
     const content = useLevelContent(levelOfId(unitId));
+    useEffect(() => prefetchVocabulary(levelOfId(unitId)), [unitId]);
     const unitStories = useMemo(() => content?.stories.filter(s => s.unitId === unitId) ?? [], [content, unitId]);
     const unitStory = unitStories[0] ?? null;
     // One array per unit: a new one on every render would reshuffle the checkpoint below

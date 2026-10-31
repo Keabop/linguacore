@@ -36,13 +36,15 @@ export default function ReviewSession() {
     const cardLimit = isFree ? limits.fsrsCardsPerDay : Infinity;
     const dueCards = isFree ? allDueCards.slice(0, cardLimit) : allDueCards;
     const dueSkillCards = isFree ? allDueSkillCards.slice(0, cardLimit) : allDueSkillCards;
-    // The levels of the due skills, downloaded once at the start (src/data/levels): no loader
-    // between two cards of different levels
-    const skillLevels = dueSkillCards.map(c => levelOfId(c.skillId)).filter((l): l is ContentLevel => !!l);
+    const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
+    // What each kind of review needs, downloaded once at the start for every due card (not only
+    // those within today's limit: the next one moves up after each review), so no loader appears
+    // between cards. A review that doesn't need it doesn't load it, so its failure can't stop it.
+    const skillLevels = reviewType === 'vocab' || reviewType === 'errors' ? []
+        : allDueSkillCards.map(c => levelOfId(c.skillId)).filter((l): l is ContentLevel => !!l);
     const skillContents = useLevelsContent(skillLevels);
     const dueErrorCards = isFree ? allDueErrorCards.slice(0, cardLimit) : allDueErrorCards;
     const totalTruncated = (allDueCards.length - dueCards.length) + (allDueSkillCards.length - dueSkillCards.length) + (allDueErrorCards.length - dueErrorCards.length);
-    const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
     const [mode, setMode] = useState<ReviewMode | null>(null);
     const [sessionDone, setSessionDone] = useState(false);
     const [correctCount, setCorrectCount] = useState(0);
@@ -55,8 +57,8 @@ export default function ReviewSession() {
     }
 
     const currentCard = dueCards[0] as Card | undefined;
-    // The decks of every due word, downloaded once at the start: until then a word isn't "custom"
-    const vocabulary = useVocabulary(dueCards.map(c => c.wordId));
+    // The decks of every due word (until they load, a word isn't "custom")
+    const vocabulary = useVocabulary(reviewType === 'grammar' || reviewType === 'errors' ? [] : allDueCards.map(c => c.wordId));
     const currentVocab = currentCard && vocabulary
         ? (vocabulary.get(currentCard.wordId) || ({
             id: currentCard.wordId,
