@@ -61,9 +61,11 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
         return { before: 'The _________ is ', after: 'important.' };
     }, [story, vocabulary]);
 
+    // Focus the input once it is on screen (after the story's level has loaded)
+    const ready = !storyLevel || !!levelContent;
     useEffect(() => {
-        setTimeout(() => inputRef.current?.focus(), 100);
-    }, []);
+        if (ready) setTimeout(() => inputRef.current?.focus(), 100);
+    }, [ready]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -92,7 +94,9 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
         onResult(false);
     };
 
-    if (storyLevel && !levelContent) return null;
+    if (!ready) {
+        return <p className="py-16 text-center text-sm text-[var(--color-on-surface-muted)]">{t('common.loading')}</p>;
+    }
 
     return (
         <div className="space-y-8">

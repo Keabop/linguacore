@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Card, type Vocabulary } from '../lib/db';
-import { levelOfId, useLevelContent } from '../data/levels';
+import { levelOfId, useLevelsContent, type ContentLevel } from '../data/levels';
 import PageLoader from '../components/PageLoader';
 import { getVocab } from '../data/vocabulary';
 import { useCards } from '../hooks/useCards';
@@ -36,9 +36,10 @@ export default function ReviewSession() {
     const cardLimit = isFree ? limits.fsrsCardsPerDay : Infinity;
     const dueCards = isFree ? allDueCards.slice(0, cardLimit) : allDueCards;
     const dueSkillCards = isFree ? allDueSkillCards.slice(0, cardLimit) : allDueSkillCards;
-    // Only the level of the skill on screen is downloaded (src/data/levels)
-    const skillLevel = levelOfId(dueSkillCards[0]?.skillId);
-    const skillLevelContent = useLevelContent(skillLevel);
+    // The levels of the due skills, downloaded once at the start (src/data/levels): no loader
+    // between two cards of different levels
+    const skillLevels = dueSkillCards.map(c => levelOfId(c.skillId)).filter((l): l is ContentLevel => !!l);
+    const skillContents = useLevelsContent(skillLevels);
     const dueErrorCards = isFree ? allDueErrorCards.slice(0, cardLimit) : allDueErrorCards;
     const totalTruncated = (allDueCards.length - dueCards.length) + (allDueSkillCards.length - dueSkillCards.length) + (allDueErrorCards.length - dueErrorCards.length);
     const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
@@ -207,8 +208,8 @@ export default function ReviewSession() {
 
         const currentSkillCard = dueSkillCards[0];
         // While its level loads, the skill isn't missing: the session must not end
-        if (currentSkillCard && skillLevel && !skillLevelContent) return <PageLoader />;
-        const currentSkill = currentSkillCard ? skillLevelContent?.skills.find(s => s.id === currentSkillCard.skillId) : undefined;
+        if (currentSkillCard && !skillContents) return <PageLoader />;
+        const currentSkill = currentSkillCard ? skillContents?.flatMap(c => c.skills).find(s => s.id === currentSkillCard.skillId) : undefined;
 
         if (!currentSkillCard || !currentSkill) {
             setSessionDone(true);

@@ -48,29 +48,31 @@ export function loadLevel(level: ContentLevel): Promise<LevelContent> {
     return promise;
 }
 
-/** The content of a level once loaded (null while it loads, or with no level). */
+/**
+ * The content of a level once loaded (null while it loads, or with no level). A failed download
+ * is thrown, so the screen's error boundary offers to reload (or says it's offline) instead of
+ * a loader that never ends; the next attempt downloads it again.
+ */
 export function useLevelContent(level: ContentLevel | null): LevelContent | null {
-    const [state, setState] = useState<{ level: ContentLevel; content: LevelContent } | null>(null);
-    useEffect(() => {
-        if (!level || loaded.has(level)) return;
-        let alive = true;
-        loadLevel(level).then(content => { if (alive) setState({ level, content }); }, () => {});
-        return () => { alive = false; };
-    }, [level]);
-    if (!level) return null;
-    return loaded.get(level) ?? (state?.level === level ? state.content : null);
+    const all = useLevelsContent(level ? [level] : []);
+    return level && all ? all[0] : null;
 }
 
-/** The content of several levels, once all of them are loaded (null until then). */
+/** The content of several levels, once all of them are loaded (null until then); failures are thrown. */
 export function useLevelsContent(levels: ContentLevel[]): LevelContent[] | null {
     const key = [...new Set(levels)].sort().join(',');
+    const [failure, setFailure] = useState<{ key: string; error: unknown } | null>(null);
     const [, setTick] = useState(0);
     useEffect(() => {
-        if (!key) return;
+        if (!key || key.split(',').every(l => loaded.has(l as ContentLevel))) return;
         let alive = true;
-        Promise.all(key.split(',').map(l => loadLevel(l as ContentLevel))).then(() => { if (alive) setTick(t => t + 1); }, () => {});
+        Promise.all(key.split(',').map(l => loadLevel(l as ContentLevel))).then(
+            () => { if (alive) setTick(t => t + 1); },
+            error => { if (alive) setFailure({ key, error }); },
+        );
         return () => { alive = false; };
     }, [key]);
+    if (failure?.key === key) throw failure.error;
     if (!key) return [];
     const all = key.split(',').map(l => loaded.get(l as ContentLevel));
     return all.every(Boolean) ? all as LevelContent[] : null;

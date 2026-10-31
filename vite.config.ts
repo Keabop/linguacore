@@ -94,7 +94,13 @@ export default defineConfig({
             output: {
                 // One chunk per vendor, cached apart between deploys (`manualChunks` is deprecated in Rolldown)
                 codeSplitting: {
-                    groups: [{ name: vendorChunk, debugName: 'vendor' }, { name: levelChunk, debugName: 'level' }],
+                    groups: [{ name: vendorChunk, debugName: 'vendor' }, {
+                            name: levelChunk,
+                            debugName: 'level',
+                            // Only the level's own files: pulling in their imports would put shared data
+                            // (the unit list) in level A1 and make every screen download it
+                            includeDependenciesRecursively: false,
+                        }],
                 },
             },
         },
