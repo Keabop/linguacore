@@ -120,6 +120,7 @@ export default function UnitFlow() {
     // Track animation direction
     const [direction, setDirection] = useState(1);
     const [checkpointKey, setCheckpointKey] = useState(0);
+    const [exerciseAttempt, setExerciseAttempt] = useState(0);
 
     // Checkpoint exercise subset — must be above early returns to satisfy Rules of Hooks
     // The checkpoint checks the unit with items the learner has not just answered: the unit's
@@ -174,6 +175,9 @@ export default function UnitFlow() {
     const handleExercisesComplete = async (score: number) => {
         await updateProgress({ exercises_score: score });
         await markStepComplete('exercises');
+        // A score of 0 keeps the unit on this step: the exercises start over instead of
+        // leaving the learner on the score screen
+        if (score === 0) setExerciseAttempt(n => n + 1);
         handleStepAdvance();
     };
 
@@ -264,6 +268,7 @@ export default function UnitFlow() {
                                 description="Pon a prueba lo que aprendiste en esta unidad."
                             />
                             <ExerciseRunner
+                                key={exerciseAttempt}
                                 exercises={unitExercises}
                                 onComplete={handleExercisesComplete}
                             />
