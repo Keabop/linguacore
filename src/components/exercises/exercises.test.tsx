@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MotionGlobalConfig } from 'framer-motion';
 import type { GrammarExercise } from '../../lib/db';
@@ -12,8 +12,9 @@ const choice: GrammarExercise = { id: 'm1', unitId: 'a1-u1', type: 'multiple-cho
 const order: GrammarExercise = { id: 'w1', unitId: 'a1-u1', type: 'word-order', question: 'Ordena:', correctAnswer: 'They are my friends.', scrambledWords: ['friends.', 'are', 'They', 'my'], explanation: 'Sujeto + verbo.' };
 
 // jsdom never finishes exit animations: without this, the leaving element stays in the page
-beforeAll(() => { MotionGlobalConfig.skipAnimations = true; });
-afterAll(() => { MotionGlobalConfig.skipAnimations = false; });
+let skippedBefore: boolean | undefined;
+beforeAll(() => { skippedBefore = MotionGlobalConfig.skipAnimations; MotionGlobalConfig.skipAnimations = true; });
+afterAll(() => { MotionGlobalConfig.skipAnimations = skippedBefore; });
 
 const typeAndCheck = (text: string) => {
     fireEvent.change(screen.getByRole('textbox'), { target: { value: text } });
@@ -41,7 +42,8 @@ describe('FillBlankExercise', () => {
         render(<FillBlankExercise exercise={fill} onAnswer={onAnswer} />);
         typeAndCheck('doesn’t');
         expect(screen.getByText(/Incorrecto/)).toBeInTheDocument();
-        expect(screen.getAllByText("don't").length).toBeGreaterThan(0);
+        // The sentence now reads with the answer in its blank
+        expect(screen.getByText((_, el) => el?.tagName === 'P' && el.textContent === "I don't like coffee.")).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
         expect(onAnswer).toHaveBeenCalledWith(false);
     });
@@ -73,12 +75,11 @@ describe('MultipleChoiceExercise', () => {
 });
 
 describe('WordOrderExercise', () => {
-    // A tapped word leaves its row with an exit animation, which ends on the next frame
-    const frame = () => act(() => new Promise(r => setTimeout(r, 30)));
+    // A tapped word moves rows; the copy leaving its old row is gone once its exit animation ends
     const place = async (...words: string[]) => {
         for (const w of words) {
-            fireEvent.click(screen.getByRole('button', { name: w }));
-            await frame();
+            fireEvent.click(screen.getAllByRole('button', { name: w }).at(-1)!);
+            await waitFor(() => expect(screen.getAllByRole('button', { name: w })).toHaveLength(1));
         }
     };
 
@@ -102,23 +103,31 @@ describe('WordOrderExercise', () => {
 });
 
 describe('ExerciseRunner', () => {
-    const wait = (ms: number) => act(() => new Promise(r => setTimeout(r, ms)));
-    const answer = async (option: string) => {
+    const answer = (option: string) => {
         fireEvent.click(screen.getByRole('button', { name: option }));
         fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
-        await wait(400);
     };
 
     it('goes through every exercise and gives the score of the right answers', async () => {
         const onComplete = vi.fn();
         render(<ExerciseRunner exercises={[choice, { ...choice, id: 'm2' }]} onComplete={onComplete} />);
         expect(screen.getByText('1 de 2')).toBeInTheDocument();
-        await answer('is');
-        expect(screen.getByText('2 de 2')).toBeInTheDocument();
-        await answer('am');
-        expect(screen.getByText('Puntuación: 50%')).toBeInTheDocument();
+        answer('is');
+        await screen.findByText('2 de 2');
+        answer('am');
+        await screen.findByText('Puntuación: 50%');
         fireEvent.click(screen.getByRole('button', { name: /Finalizar/ }));
         expect(onComplete).toHaveBeenCalledWith(50);
+    });
+
+    it('says to try again when no answer was right', async () => {
+        const onComplete = vi.fn();
+        render(<ExerciseRunner exercises={[choice]} onComplete={onComplete} />);
+        answer('am');
+        await screen.findByText('Puntuación: 0%');
+        expect(screen.getByText(/al menos una respuesta correcta/)).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Volver a intentarlo' }));
+        expect(onComplete).toHaveBeenCalledWith(0);
     });
 
     it('counts a double tap on "next" once, without skipping an exercise or going past the last', async () => {
@@ -127,14 +136,13 @@ describe('ExerciseRunner', () => {
         const next = screen.getByRole('button', { name: /Siguiente/ });
         fireEvent.click(next);
         fireEvent.click(next);
-        await wait(400);
-        expect(screen.getByText('2 de 3')).toBeInTheDocument();
+        await screen.findByText('2 de 3');
 
         fireEvent.click(screen.getByRole('button', { name: 'is' }));
         const again = screen.getByRole('button', { name: /Siguiente/ });
         fireEvent.click(again);
         fireEvent.click(again);
-        await wait(400);
-        expect(screen.getByText('3 de 3')).toBeInTheDocument();
+        await screen.findByText('3 de 3');
+        expect(screen.queryByText('Puntuación', { exact: false })).toBeNull();
     });
 });

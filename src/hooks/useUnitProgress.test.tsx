@@ -74,6 +74,15 @@ describe('useUnitProgress', () => {
         expect(writes.offlineUpdate).toHaveBeenCalledWith('unit_progress', { story_completed: true }, { id: 7 });
     });
 
+    it('saves the exercise score and moves on to the output step', async () => {
+        db.row = row({ grammar_card_read: true, story_completed: true, vocab_reviewed: true });
+        const { result } = renderHook(() => useUnitProgress('a1-u1'), { wrapper });
+        await waitFor(() => expect(result.current.currentStep).toBe('exercises'));
+        await act(() => result.current.updateProgress({ exercises_score: 80 }));
+        expect(writes.offlineUpdate).toHaveBeenCalledWith('unit_progress', { exercises_score: 80 }, { id: 7 });
+        await waitFor(() => expect(result.current.currentStep).toBe('output'));
+    });
+
     it('stamps the date when the checkpoint is passed', async () => {
         db.row = row({ grammar_card_read: true, story_completed: true, vocab_reviewed: true, exercises_score: 80, output_completed: true });
         const { result } = renderHook(() => useUnitProgress('a1-u1'), { wrapper });
