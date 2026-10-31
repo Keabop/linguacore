@@ -94,12 +94,23 @@ export default defineConfig({
             output: {
                 // One chunk per vendor, cached apart between deploys (`manualChunks` is deprecated in Rolldown)
                 codeSplitting: {
-                    groups: [{ name: vendorChunk, debugName: 'vendor' }],
+                    groups: [{ name: vendorChunk, debugName: 'vendor' }, { name: levelChunk, debugName: 'level' }],
                 },
             },
         },
     },
 });
+
+/**
+ * The lesson content of one level (src/data/levels), named after it ("level-a1"). Only the
+ * level modules and the per-level data files go in; shared data (units, vocabulary) stays out.
+ */
+function levelChunk(id: string): string | null {
+    const n = id.replace(/\\/g, '/');
+    const match = n.match(/\/src\/data\/(?:levels\/(a1|a2|b1|b2)\.ts|curriculum\/(a1|a2|b1|b2)\.ts|curriculum\/skills\/(a1|a2|b1|b2)\.ts|output\/(a1|a2|b1|b2)-output\.ts|stories-(a1|a2|b1|b2)\.ts|curriculum\/b2-(?:units|exercises-\d)\.ts)$/);
+    if (!match) return null;
+    return `level-${match.slice(1).find(Boolean) ?? 'b2'}`;
+}
 
 /** The vendor chunk a module belongs to, or null to leave it where Rolldown puts it. */
 function vendorChunk(id: string): string | null {

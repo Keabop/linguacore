@@ -40,6 +40,10 @@ vi.mock('../lib/supabase', () => ({
 import UnitFlow from './UnitFlow';
 import { getExercisesByUnit, getGrammarCardByUnit, getStoriesByUnit } from '../data';
 import { allVocabulary } from '../data/vocabulary';
+import { loadLevel } from '../data/levels';
+
+// The levels already in memory, as after the first visit: the screens render without waiting
+beforeAll(() => Promise.all((['A1', 'A2', 'B1', 'B2'] as const).map(loadLevel)));
 
 const renderUnit = (unitId: string) => render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>

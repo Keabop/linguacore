@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
-import { getStory } from '../data';
+import { levelOfId, useLevelContent } from '../data/levels';
+import PageLoader from '../components/PageLoader';
 import { getVocab, getVocabMap } from '../data/vocabulary';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
@@ -80,7 +81,10 @@ export default function StoryReader() {
 
     // Check static data first, then fallback to AI story from navigation state
     const aiStory = (location.state as any)?.aiStory;
-    const staticStory = storyId ? getStory(storyId) : undefined;
+    // A static story's level is downloaded on its own; AI stories ("ai-…") come in the navigation state
+    const storyLevel = levelOfId(storyId);
+    const levelContent = useLevelContent(storyLevel);
+    const staticStory = levelContent?.stories.find(s => s.id === storyId);
     const story = staticStory ?? (aiStory ? { ...aiStory, level: aiStory.level as any } : undefined);
     const isAIStory = !staticStory && !!aiStory;
 
@@ -274,6 +278,8 @@ export default function StoryReader() {
             span.classList.toggle('in-deck', wordStatuses.get(span.getAttribute('data-word') ?? '') === 'deck');
         });
     }, [wordStatuses, processedHTML]);
+
+    if (!story && storyLevel && !levelContent) return <PageLoader />;
 
     if (!story) {
         return (
