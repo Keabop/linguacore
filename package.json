@@ -13,7 +13,8 @@
     "content:phonetics": "esbuild scripts/build-phonetics.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/build-phonetics.mjs --log-level=warning && node node_modules/.cache/build-phonetics.mjs",
     "content:audit": "esbuild scripts/content-audit.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/content-audit.mjs --log-level=warning && node node_modules/.cache/content-audit.mjs",
     "content:audio": "esbuild scripts/audio-jobs.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/audio-jobs.mjs --log-level=warning && node node_modules/.cache/audio-jobs.mjs",
-    "eval:check": "esbuild scripts/eval-check.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/eval-check.mjs --log-level=warning && node node_modules/.cache/eval-check.mjs"
+    "eval:check": "esbuild scripts/eval-check.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/eval-check.mjs --log-level=warning && node node_modules/.cache/eval-check.mjs",
+    "content:index": "esbuild scripts/build-story-index.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/build-story-index.mjs --log-level=warning && node node_modules/.cache/build-story-index.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261027.1",
