@@ -51,6 +51,21 @@ export async function offlineInsertMany(
 }
 
 /**
+ * Call a Postgres function. If offline, queue the call for later sync, for `userId` only: a
+ * function acts on whoever is signed in, so it is dropped if someone else is by then.
+ * @returns the function's result if executed immediately, null if queued.
+ */
+export async function offlineRpc<T>(fn: string, args: Record<string, unknown>, userId: string): Promise<T | null> {
+    if (navigator.onLine) {
+        const { data, error } = await (supabase.rpc as any)(fn, args);
+        if (error) throw error;
+        return data as T;
+    }
+    await enqueue({ table: fn, operation: 'rpc', data: args, userId });
+    return null;
+}
+
+/**
  * Execute a Supabase UPDATE with .eq() filters. If offline, queue it.
  * @returns true if executed immediately, false if queued.
  */
