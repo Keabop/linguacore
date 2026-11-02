@@ -13,7 +13,7 @@ interface UsageLimitsData {
   limits: {
     'conversation-tutor': UsageLimit;
     'story-generator': UsageLimit;
-    'fsrs-reviews': UsageLimit;
+    'evaluations': UsageLimit;
   };
 }
 

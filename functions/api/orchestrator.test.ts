@@ -37,6 +37,8 @@ vi.mock('../../server/lib/aiCache.js', () => cache);
 
 const { onRequestPost } = await import('./orchestrator');
 
+/** The counters are written after the response, through waitUntil. */
+const waitUntil = vi.fn((work: Promise<unknown>) => work);
 const BINDINGS = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'service' };
 let ipCounter = 0;
 
@@ -50,7 +52,7 @@ async function call(body: unknown, { token = 'valid', ip }: { token?: string | n
         body: typeof body === 'string' ? body : JSON.stringify(body),
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = await onRequestPost({ request, env: BINDINGS } as any);
+    const res = await onRequestPost({ request, env: BINDINGS, waitUntil } as any);
     return { status: res.status, body: await res.json() as Record<string, any> };
 }
 
@@ -78,7 +80,7 @@ describe('orchestrator', () => {
             body: JSON.stringify({ agent: 'vocab-enricher', params: {} }),
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await onRequestPost({ request, env: {} } as any);
+        const res = await onRequestPost({ request, env: {}, waitUntil } as any);
         expect(res.status).toBe(500);
         expect(getUser).not.toHaveBeenCalled();
     });
@@ -145,6 +147,28 @@ describe('orchestrator', () => {
         usage.checkWeeklyLimit.mockResolvedValueOnce({ allowed: false, remaining: 0, limit: 1 });
         const res = await call({ agent: 'story-generator', params: { topic: 'cats' } });
         expect(res).toMatchObject({ status: 429, body: { error: 'weekly_limit_reached' } });
+    });
+
+    it('stops a free user at the daily evaluation limit, shared by writing and speaking', async () => {
+        usage.checkUsageLimit.mockResolvedValueOnce({ allowed: false, remaining: 0, limit: 8 });
+        const res = await call({ agent: 'writing-evaluator', params: { text: 'I like dogs.', prompt: 'Write about pets.', level: 'A1', type: 'free-writing' } });
+        expect(res).toMatchObject({ status: 429, body: { error: 'daily_limit_reached' } });
+        expect(usage.checkUsageLimit).toHaveBeenCalledWith('user-1', 'evaluations', 'free');
+        expect(agents.evaluateWriting).not.toHaveBeenCalled();
+    });
+
+    it('counts a speaking evaluation against the evaluation limit, after the response', async () => {
+        agents.evaluateSpeaking.mockResolvedValueOnce({ score: 70 });
+        await call({ agent: 'speaking-evaluator', params: { transcripts: ['a'], prompts: ['b'], level: 'A1' } });
+        expect(usage.incrementUsage).toHaveBeenCalledWith('user-1', 'evaluations');
+        expect(waitUntil).toHaveBeenCalled();
+    });
+
+    it('caps the agents the app does not call', async () => {
+        usage.checkUsageLimit.mockResolvedValueOnce({ allowed: false, remaining: 0, limit: 10 });
+        const res = await call({ agent: 'career-deck', params: { profession: 'nurse' } });
+        expect(res).toMatchObject({ status: 429, body: { error: 'daily_limit_reached' } });
+        expect(usage.checkUsageLimit).toHaveBeenCalledWith('user-1', 'other-ai', 'free');
     });
 
     it('gives the admin Pro limits without a paid tier', async () => {

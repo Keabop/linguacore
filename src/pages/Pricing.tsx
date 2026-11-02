@@ -6,26 +6,27 @@ import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 
+// Each line must hold in the code: the fixed content is all free, only the AI is limited
 const FREE_FEATURES = [
-    'Nivel A1 completo (gramática, vocabulario, ejercicios)',
-    '1 historia interactiva por semana',
-    '10 repasos FSRS por día',
+    'Niveles A1 a B2 completos (gramática, vocabulario, ejercicios)',
+    '80 historias con audio',
+    'Repasos FSRS ilimitados',
     '5 mensajes con el tutor IA por día',
+    '8 evaluaciones de escritura y habla con IA por día',
+    '1 historia generada con IA por semana',
     'Práctica de pronunciación',
-    'Streak informativo',
 ];
 
 const PRO_FEATURES = [
     'Todo lo de la versión gratuita',
-    'Niveles A2, B1 y B2 desbloqueados',
-    'Historias ilimitadas',
-    'Repasos FSRS ilimitados',
     'Chat con tutor IA ilimitado',
+    'Evaluaciones de escritura y habla ilimitadas',
+    'Historias generadas con IA ilimitadas',
+    'Simulacros TOEFL, IELTS y Cambridge',
     'Historial completo de conversaciones',
     'Tarjetas de error personalizadas',
     'Análisis de errores y patrones',
     'Estadísticas detalladas de progreso',
-    'Evaluaciones de escritura completas',
     'Plantas extra para tu jardín (rosa, lavanda, bonsái y orquídea)',
 ];
 
