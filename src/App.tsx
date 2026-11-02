@@ -7,6 +7,9 @@ import PageLoader, { afterSproutGrows } from './components/PageLoader';
 import { useAuth } from './lib/AuthContext';
 import { useAdmin } from './hooks/useAdmin';
 import type { ReactNode, ComponentType } from 'react';
+import TrialShell from './components/TrialShell';
+import GuestImporter from './components/GuestImporter';
+import { TRIAL_STORY_ID } from './lib/guestTrial';
 
 /**
  * Lazy import with retry — handles transient network failures and
@@ -73,6 +76,14 @@ function RequireAdmin({ children }: { children: ReactNode }) {
     return <>{children}</>;
 }
 
+/** A trial page for visitors; a signed-in learner gets the same page inside the app. */
+function TrialRoute({ inApp, children }: { inApp: string; children: ReactNode }) {
+    const { user, loading } = useAuth();
+    if (loading) return <PageLoader />;
+    if (user) return <Navigate to={inApp} replace />;
+    return <TrialShell><SafeRoute>{children}</SafeRoute></TrialShell>;
+}
+
 /** Show Landing for guests, redirect authenticated users to /dashboard */
 function SmartHome() {
     const { user, loading } = useAuth();
@@ -84,11 +95,14 @@ function SmartHome() {
 export default function App() {
     return (
         <BrowserRouter>
+            <GuestImporter />
             <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<SmartHome />} />
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><div className="page-enter"><Auth /></div></Suspense>} />
                 <Route path="/credits" element={<SafeRoute><Credits /></SafeRoute>} />
+                <Route path="/probar" element={<TrialRoute inApp={`/learn/${TRIAL_STORY_ID}`}><StoryReader trialStoryId={TRIAL_STORY_ID} /></TrialRoute>} />
+                <Route path="/probar/nivel" element={<TrialRoute inApp="/review/simulator"><CEFRSimulator guest /></TrialRoute>} />
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>

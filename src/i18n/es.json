@@ -594,5 +594,18 @@
     "ios": "iPhone o iPad: Ajustes → Accesibilidad → Contenido leído → Voces → English.",
     "unsupportedTitle": "Tu navegador no puede leer en voz alta",
     "unsupportedBody": "Lo que no tiene audio grabado se queda sin voz. Abre Voxie en Chrome, Edge o Safari actualizados para escucharlo."
+  },
+  "trial": {
+    "home": "Voxie, inicio",
+    "createAccountShort": "Crear cuenta",
+    "createAccount": "Crear cuenta y guardar",
+    "saveWords_one": "Crea tu cuenta para guardar la palabra que marcaste. Te esperan en tu repaso.",
+    "saveWords_other": "Crea tu cuenta para guardar las {{count}} palabras que marcaste. Te esperan en tu repaso.",
+    "tryPlacement": "Hacer la prueba de nivel",
+    "startAtLevel": "Crea tu cuenta y empieza en {{level}}",
+    "pending": "Al crear tu cuenta guardamos lo que hiciste en la prueba.",
+    "imported_one": "Guardamos tu prueba y la palabra que marcaste.",
+    "imported_other": "Guardamos tu prueba y las {{count}} palabras que marcaste.",
+    "importedPlacement": "Guardamos el nivel de tu prueba."
   }
 }

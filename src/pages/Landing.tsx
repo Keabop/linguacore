@@ -274,7 +274,7 @@ export default function Landing() {
                                 <Link to="/auth" className="btn-primary px-6 py-3.5 text-base inline-flex items-center gap-2">
                                     Empezar gratis <ArrowRight className="w-4 h-4" aria-hidden="true" />
                                 </Link>
-                                <a href="#como-crece" className="btn-secondary px-6 py-3.5 text-base">Ver cómo funciona</a>
+                                <Link to="/probar" className="btn-secondary px-6 py-3.5 text-base">Prueba una historia sin cuenta</Link>
                             </div>
                             <p className="text-sm text-[var(--color-on-surface-variant)]">El nivel A1 es gratis para siempre. Sin tarjeta.</p>
                         </div>
