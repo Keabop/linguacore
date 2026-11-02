@@ -32,6 +32,19 @@ function isRateLimited(ip: string): boolean {
 // ---------------------------------------------------------------------------
 // Input Size Validator (from security patch)
 // ---------------------------------------------------------------------------
+/**
+ * Daily limits of the free plan for the agents without one of their own (the tutor counts
+ * messages, the story generator stories a week): writing and speaking evaluations share one,
+ * and the agents the app doesn't call share another, so none can be called without a cap.
+ */
+const DAILY_AGENT_LIMITS: Record<string, string> = {
+    'writing-evaluator': 'evaluations',
+    'speaking-evaluator': 'evaluations',
+    'vocab-enricher': 'other-ai',
+    'exercise-creator': 'other-ai',
+    'career-deck': 'other-ai',
+};
+
 /** The evaluators take an exam id (its criteria are chosen on the server), or none. */
 const validExam = (exam: unknown) => exam === undefined || isCriteriaExam(exam);
 
@@ -201,6 +214,21 @@ export const onRequestPost: PagesFunction = async (context) => {
             }
         }
 
+        const dailyFeature = DAILY_AGENT_LIMITS[agent];
+        if (dailyFeature) {
+            const usage = await checkUsageLimit(userId, dailyFeature, userTier);
+            if (!usage.allowed) {
+                return new Response(JSON.stringify({
+                    error: 'daily_limit_reached',
+                    message: 'Ya usaste lo que tienes de IA hoy para esto. Mañana tienes más, o actualiza a Pro para uso ilimitado.',
+                    remaining: 0,
+                }), {
+                    status: 429,
+                    headers: corsHeaders,
+                });
+            }
+        }
+
         if (agent === 'story-generator') {
             const usage = await checkWeeklyLimit(userId, 'story-generator', userTier);
             if (!usage.allowed) {
@@ -264,9 +292,9 @@ export const onRequestPost: PagesFunction = async (context) => {
         }
 
         // --- Increment usage ---
-        if (agent === 'conversation-tutor' || agent === 'story-generator') {
-            incrementUsage(userId, agent).catch(() => {});
-        }
+        // waitUntil: a Worker may stop work left running after the response
+        const counted = agent === 'conversation-tutor' || agent === 'story-generator' ? agent : dailyFeature;
+        if (counted) context.waitUntil(incrementUsage(userId, counted).catch(() => {}));
 
         return new Response(JSON.stringify(result), {
             status: 200,

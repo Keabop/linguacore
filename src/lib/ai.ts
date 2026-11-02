@@ -3,6 +3,12 @@ import { apiFetch } from './apiFetch';
 
 const API_BASE = '/api/orchestrator';
 
+/** A free plan limit answered by the orchestrator (`daily_limit_reached`, `weekly_limit_reached`). */
+export function isLimitReached(error: unknown): boolean {
+    const code = (error as { code?: unknown } | null)?.code;
+    return typeof code === 'string' && code.endsWith('_limit_reached');
+}
+
 async function retry<T>(
     fn: () => Promise<T>,
     maxAttempts = 3,
@@ -14,7 +20,8 @@ async function retry<T>(
         } catch (error: any) {
             const isLast = attempt === maxAttempts - 1;
             const status = error.status as number | undefined;
-            const isRetryable = !status || status >= 500 || status === 429;
+            // A free plan limit stays reached until tomorrow: asking again only wastes the wait
+            const isRetryable = (!status || status >= 500 || status === 429) && !isLimitReached(error);
             if (isLast || !isRetryable) throw error;
             await new Promise(r => setTimeout(r, baseDelay * Math.pow(2, attempt)));
         }
@@ -34,6 +41,7 @@ async function callAgent<T>(agent: string, params: Record<string, any>): Promise
             const data = await response.json().catch(() => ({ message: 'Unknown error' }));
             const err = new Error(data.message || `Agent ${agent} failed: ${response.status}`);
             (err as any).status = response.status;
+            (err as any).code = data.error;
             throw err;
         }
 

@@ -8,18 +8,19 @@ import OralResponse from './OralResponse';
 interface Props {
     prompts: SpeakingPrompt[];
     level: CEFRLevel;
-    onComplete: (avgScore: number) => void;
+    /** Average of the evaluated answers; null when none could be evaluated (free plan limit). */
+    onComplete: (avgScore: number | null) => void;
     onFirstAttempt?: () => void;
 }
 
 export default function SpeakingRunner({ prompts, level, onComplete, onFirstAttempt }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [scores, setScores] = useState<number[]>([]);
+    const [scores, setScores] = useState<(number | null)[]>([]);
 
     const current = prompts[currentIndex];
     const isLast = currentIndex === prompts.length - 1;
 
-    const handleExerciseComplete = (score: number) => {
+    const handleExerciseComplete = (score: number | null) => {
         const newScores = [...scores, score];
         setScores(newScores);
         // Notify parent on first completed attempt (hide defer button)
@@ -27,8 +28,8 @@ export default function SpeakingRunner({ prompts, level, onComplete, onFirstAtte
             onFirstAttempt();
         }
         if (isLast) {
-            const avg = Math.round(newScores.reduce((a, b) => a + b, 0) / newScores.length);
-            onComplete(avg);
+            const evaluated = newScores.filter((s): s is number => s !== null);
+            onComplete(evaluated.length ? Math.round(evaluated.reduce((a, b) => a + b, 0) / evaluated.length) : null);
         } else {
             setCurrentIndex(prev => prev + 1);
         }

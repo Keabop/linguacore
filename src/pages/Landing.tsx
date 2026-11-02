@@ -20,25 +20,25 @@ const STAGES: {
     plant: { stage: 'seed' | 'sprout' | 'grown'; height: number; noBloom?: boolean };
 }[] = [
     {
-        level: 'A1', name: 'Semilla', units: 8, stories: 10,
+        level: 'A1', name: 'Semilla', units: 8, stories: 14,
         canDo: 'Te presentas, hablas de tu día y de lo que te gusta.',
         sample: ['Introducing Yourself', 'My Daily Life', 'At the Market'],
         plant: { stage: 'seed', height: 30 },
     },
     {
-        level: 'A2', name: 'Brote', units: 10, stories: 10,
+        level: 'A2', name: 'Brote', units: 10, stories: 18,
         canDo: 'Cuentas lo que hiciste, haces planes y comparas.',
         sample: ['What Did You Do Yesterday?', 'Travel Stories', 'My Plans for the Future'],
         plant: { stage: 'sprout', height: 38 },
     },
     {
-        level: 'B1', name: 'Hoja', units: 12, stories: 11,
+        level: 'B1', name: 'Hoja', units: 12, stories: 22,
         canDo: 'Hablas de experiencias y cuentas lo que otros dijeron.',
         sample: ['Life Experiences', 'Back in the Day', 'What Did They Say?'],
         plant: { stage: 'grown', height: 42, noBloom: true },
     },
     {
-        level: 'B2', name: 'Flor', units: 14, stories: 13,
+        level: 'B2', name: 'Flor', units: 14, stories: 26,
         canDo: 'Imaginas escenarios, matizas y escribes con detalle.',
         sample: ['What If Things Had Been Different?', 'I Wish I Could...', 'Painting with Words'],
         plant: { stage: 'grown', height: 48 },
@@ -46,24 +46,24 @@ const STAGES: {
 ];
 
 const SESSION = [
-    { icon: BookOpen, title: 'Lees', desc: '44 historias de tu nivel. Toca cualquier palabra para ver su traducción y guardarla en tu mazo.' },
+    { icon: BookOpen, title: 'Lees', desc: '80 historias con audio, de A1 a B2. Toca cualquier palabra para ver su traducción y guardarla en tu mazo.' },
     { icon: MessageCircle, title: 'Practicas', desc: 'Gramática, escritura y speaking en cada unidad, y un tutor con IA para conversar de lo que quieras.' },
     { icon: Brain, title: 'Repasas', desc: 'Tus tarjetas vuelven con repetición espaciada (FSRS), justo antes de que las olvides.' },
     { icon: Activity, title: 'Corriges', desc: 'Los errores que detecta el tutor se vuelven minijuegos en tu laboratorio de errores.' },
 ];
 
 const FREE_ITEMS = [
-    'Nivel A1 completo, para siempre',
+    'Niveles A1 a B2 con ruta guiada, para siempre',
+    'Historias con audio y repasos ilimitados',
     'Test de nivelación',
     'Laboratorio de errores',
     'Importar y exportar tu vocabulario',
 ];
 
 const PRO_ITEMS = [
-    'Niveles A1 a B2 con ruta guiada',
-    'Tutor conversacional y repasos ilimitados',
+    'Tutor conversacional ilimitado',
+    'Evaluación de escritura y speaking con IA sin límite',
     'Simulacros TOEFL, IELTS y Cambridge',
-    'Evaluación de escritura y speaking con IA',
     'Plantas extra para tu jardín',
 ];
 
@@ -276,7 +276,7 @@ export default function Landing() {
                                 </Link>
                                 <a href="#como-crece" className="btn-secondary px-6 py-3.5 text-base">Ver cómo funciona</a>
                             </div>
-                            <p className="text-sm text-[var(--color-on-surface-variant)]">El nivel A1 es gratis para siempre. Sin tarjeta.</p>
+                            <p className="text-sm text-[var(--color-on-surface-variant)]">De A1 a B2, gratis para siempre. Sin tarjeta.</p>
                         </div>
                         <TryIt />
                     </section>

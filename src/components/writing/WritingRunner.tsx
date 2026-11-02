@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PenLine, Loader2 } from 'lucide-react';
 import type { WritingPrompt, CEFRLevel } from '../../lib/db';
-import { evaluateWriting } from '../../lib/ai';
+import { evaluateWriting, isLimitReached } from '../../lib/ai';
 import type { WritingEvaluationResponse } from '../../lib/ai';
 import SentenceConstruction from './SentenceConstruction';
 import ErrorCorrection from './ErrorCorrection';
@@ -10,14 +10,16 @@ import FreeWriting from './FreeWriting';
 import ParagraphCompletion from './ParagraphCompletion';
 import WritingFeedback from './WritingFeedback';
 import AIErrorCard from '../AIErrorCard';
+import EvaluationLimitCard from '../EvaluationLimitCard';
 
 interface Props {
     prompts: WritingPrompt[];
     level: CEFRLevel;
-    onComplete: (avgScore: number) => void;
+    /** Average of the evaluated answers; null when none could be evaluated (free plan limit). */
+    onComplete: (avgScore: number | null) => void;
 }
 
-type Phase = 'writing' | 'evaluating' | 'feedback';
+type Phase = 'writing' | 'evaluating' | 'feedback' | 'limit';
 
 export default function WritingRunner({ prompts, level, onComplete }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -46,6 +48,10 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
             setScores(prev => [...prev, result.score]);
             setPhase('feedback');
         } catch (err: any) {
+            if (isLimitReached(err)) {
+                setPhase('limit');
+                return;
+            }
             setError(err.message || 'Error al evaluar. Intenta de nuevo.');
             setPhase('writing');
         }
@@ -53,8 +59,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
 
     const handleNext = () => {
         if (isLast) {
-            const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-            onComplete(avg);
+            onComplete(scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null);
         } else {
             setCurrentIndex(prev => prev + 1);
             setPhase('writing');
@@ -128,6 +133,8 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                     transition={{ duration: 0.3 }}
                 />
             </div>
+
+            {phase === 'limit' && <EvaluationLimitCard referenceAnswer={current.referenceAnswer} onContinue={handleNext} />}
 
             {/* Error message */}
             {error && (
