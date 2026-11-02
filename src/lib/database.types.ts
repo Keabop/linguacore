@@ -13,6 +13,17 @@ export type Profile = {
     total_words_learned: number;
     streak: number;
     last_study_date: string | null;
+    /** IANA zone the streak is counted in; set by `record_activity`. */
+    timezone: string | null;
+    /** Streak freezes left (0–2); each covers one missed day. */
+    streak_freezes: number;
+    /** Activities a day the learner aims for (1–3). */
+    daily_goal: number;
+    /** Day of `goal_progress`, `goal_reviews` and `goal_messages`; on another day they count as 0. */
+    goal_date: string | null;
+    goal_progress: number;
+    goal_reviews: number;
+    goal_messages: number;
     level_progress: LevelProgress;
     tier: 'free' | 'pro';
     trial_started_at: string | null;

@@ -6,7 +6,8 @@ import { env } from './config.js';
 // ---------------------------------------------------------------------------
 const FREE_DAILY_LIMITS: Record<string, number> = {
     'conversation-tutor': 5,   // 5 messages/day
-    'fsrs-reviews': 10,        // 10 cards/day
+    'evaluations': 8,          // writing and speaking evaluations/day (a unit's output step has 4)
+    'other-ai': 10,            // agents the app doesn't call (vocab-enricher, exercise-creator, career-deck)
 };
 
 const FREE_WEEKLY_LIMITS: Record<string, number> = {
@@ -174,15 +175,15 @@ export async function getAllLimitsForUser(
     userId: string,
     tier: string,
 ): Promise<Record<string, UsageCheckResult>> {
-    const [conversationTutor, storyGenerator, fsrsReviews] = await Promise.all([
+    const [conversationTutor, storyGenerator, evaluations] = await Promise.all([
         checkUsageLimit(userId, 'conversation-tutor', tier),
         checkWeeklyLimit(userId, 'story-generator', tier),
-        checkUsageLimit(userId, 'fsrs-reviews', tier),
+        checkUsageLimit(userId, 'evaluations', tier),
     ]);
 
     return {
         'conversation-tutor': conversationTutor,
         'story-generator': storyGenerator,
-        'fsrs-reviews': fsrsReviews,
+        'evaluations': evaluations,
     };
 }

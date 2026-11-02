@@ -3,6 +3,11 @@ import { useAuth } from '../lib/AuthContext';
 import { offlineInsert, offlineUpdate } from '../lib/offlineMutation';
 import type { UnitProgressRow } from '../lib/database.types';
 import { supabase } from '../lib/supabase';
+import { useRecordActivity } from './useRecordActivity';
+import { localDate } from '../lib/studyActivity';
+
+/** Unit steps already counted as study activity, for this tab. */
+const countedSteps = new Set<string>();
 
 export type UnitStep = 'grammar' | 'story' | 'vocab' | 'exercises' | 'output' | 'checkpoint' | 'completed';
 
@@ -30,6 +35,7 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
     const { user } = useAuth();
     const qc = useQueryClient();
     const userId = user?.id;
+    const recordActivity = useRecordActivity();
 
     const { data: progress, isLoading } = useQuery({
         queryKey: ['unit-progress', unitId, userId],
@@ -104,6 +110,13 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
     };
 
     const markStepComplete = async (step: UnitStep) => {
+        // A step counts once a day: some are marked from two places, and the story step
+        // was already counted by the story itself
+        const counted = `${localDate()}:${unitId}:${step}`;
+        if (step !== 'story' && !countedSteps.has(counted)) {
+            countedSteps.add(counted);
+            void recordActivity('unit_step');
+        }
         switch (step) {
             case 'grammar':
                 await updateProgress({ grammar_card_read: true });

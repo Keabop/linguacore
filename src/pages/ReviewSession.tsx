@@ -14,11 +14,9 @@ import ClozeReview from '../components/ClozeReview';
 import TranslationReview from '../components/TranslationReview';
 import GrammarReview from '../components/GrammarReview';
 import ErrorReview from '../components/ErrorReview';
-import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Trophy, RefreshCw, BookOpen, AlertTriangle, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, Trophy, RefreshCw, BookOpen, AlertTriangle } from 'lucide-react';
 import { toast } from '../lib/toast';
-import { useTier } from '../hooks/useTier';
-import { UsageBadge } from '../components/UsageBadge';
 import CountUp from '../components/reactbits/CountUp';
 import BackButton from '../components/ui/BackButton';
 import PlantCircle from '../components/garden/PlantCircle';
@@ -28,23 +26,16 @@ export default function ReviewSession() {
     const { t } = useTranslation();
     const { species } = useGardenPlant();
     const navigate = useNavigate();
-    const { isFree, limits } = useTier();
-    const { dueCards: allDueCards, reviewCard } = useCards();
-    const { dueSkillCards: allDueSkillCards, reviewSkillCard } = useSkillCards();
-    const { dueErrorCards: allDueErrorCards, reviewErrorCard } = useErrorCards();
+    const { dueCards, reviewCard } = useCards();
+    const { dueSkillCards, reviewSkillCard } = useSkillCards();
+    const { dueErrorCards, reviewErrorCard } = useErrorCards();
 
-    const cardLimit = isFree ? limits.fsrsCardsPerDay : Infinity;
-    const dueCards = isFree ? allDueCards.slice(0, cardLimit) : allDueCards;
-    const dueSkillCards = isFree ? allDueSkillCards.slice(0, cardLimit) : allDueSkillCards;
     const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
-    // What each kind of review needs, downloaded once at the start for every due card (not only
-    // those within today's limit: the next one moves up after each review), so no loader appears
-    // between cards. A review that doesn't need it doesn't load it, so its failure can't stop it.
+    // What each kind of review needs, downloaded once at the start for every due card, so no
+    // loader appears between cards. A review that doesn't need it doesn't load it, so its failure can't stop it.
     const skillLevels = reviewType === 'vocab' || reviewType === 'errors' ? []
-        : allDueSkillCards.map(c => levelOfId(c.skillId)).filter((l): l is ContentLevel => !!l);
+        : dueSkillCards.map(c => levelOfId(c.skillId)).filter((l): l is ContentLevel => !!l);
     const skillContents = useLevelsContent(skillLevels);
-    const dueErrorCards = isFree ? allDueErrorCards.slice(0, cardLimit) : allDueErrorCards;
-    const totalTruncated = (allDueCards.length - dueCards.length) + (allDueSkillCards.length - dueSkillCards.length) + (allDueErrorCards.length - dueErrorCards.length);
     const [mode, setMode] = useState<ReviewMode | null>(null);
     const [sessionDone, setSessionDone] = useState(false);
     const [correctCount, setCorrectCount] = useState(0);
@@ -58,7 +49,7 @@ export default function ReviewSession() {
 
     const currentCard = dueCards[0] as Card | undefined;
     // The decks of every due word (until they load, a word isn't "custom")
-    const vocabulary = useVocabulary(reviewType === 'grammar' || reviewType === 'errors' ? [] : allDueCards.map(c => c.wordId));
+    const vocabulary = useVocabulary(reviewType === 'grammar' || reviewType === 'errors' ? [] : dueCards.map(c => c.wordId));
     const currentVocab = currentCard && vocabulary
         ? (vocabulary.get(currentCard.wordId) || ({
             id: currentCard.wordId,
@@ -122,11 +113,6 @@ export default function ReviewSession() {
             return (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 py-4">
                     <h2 className="text-xl font-black tracking-tight text-center">{t('review.chooseType', '¿Qué quieres repasar?')}</h2>
-                    {isFree && (
-                        <div className="flex justify-center">
-                            <UsageBadge remaining={dueCards.length + dueSkillCards.length + dueErrorCards.length} limit={cardLimit} label="repasos hoy" />
-                        </div>
-                    )}
                     <div className="space-y-4">
                         {dueCards.length > 0 && (
                             <button onClick={() => setReviewType('vocab')} className="w-full bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-left space-y-1">
@@ -160,17 +146,6 @@ export default function ReviewSession() {
                                     </div>
                                 </div>
                             </button>
-                        )}
-                        {isFree && totalTruncated > 0 && (
-                            <div className="text-center py-4 space-y-2 mt-2 pt-4">
-                                <p className="text-sm text-[var(--color-on-surface-muted)]">
-                                    <Lock className="w-3.5 h-3.5 inline mr-1" />
-                                    Tienes {totalTruncated} tarjetas mas. Desbloquea repasos ilimitados con Plan Pro
-                                </p>
-                                <Link to="/pricing" className="text-xs text-[var(--color-primary)] font-semibold hover:underline">
-                                    Ver Plan Pro
-                                </Link>
-                            </div>
                         )}
                     </div>
                 </motion.div>
@@ -329,17 +304,6 @@ export default function ReviewSession() {
                         <p className="text-[10px] text-[var(--color-on-surface-muted)]">{t('review.accuracy')}</p>
                     </div>
                 </div>
-                {isFree && totalTruncated > 0 && (
-                    <div className="space-y-2 pt-2">
-                        <p className="text-sm text-[var(--color-on-surface-muted)]">
-                            <Lock className="w-3.5 h-3.5 inline mr-1" />
-                            Tienes {totalTruncated} tarjetas mas. Desbloquea repasos ilimitados con Plan Pro
-                        </p>
-                        <Link to="/pricing" className="text-sm text-[var(--color-primary)] font-semibold hover:underline">
-                            Ver Plan Pro
-                        </Link>
-                    </div>
-                )}
                 <button
                     onClick={() => navigate('/dashboard')}
                     className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3 rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
