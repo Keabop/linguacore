@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Compass, Shield, Award, Sparkles, Play, Volume2, Edit3, Activity, ChevronRight, CheckCircle, Crown, Calendar, AlertCircle, Timer, Check } from 'lucide-react';
+import { ArrowLeft, Compass, Shield, Award, Sparkles, Play, Volume2, Edit3, Activity, ChevronRight, CheckCircle, Crown, AlertCircle, Timer, Check } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { saveGuestPlacement, teachableLevel } from '../lib/guestTrial';
 import { useTier } from '../hooks/useTier';
@@ -136,7 +136,6 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
     // The trial goes straight to the placement test; its level waits for the account
     const [state, setState] = useState<PageState>(guest ? 'instructions' : 'selection');
     const [selectedPreset, setSelectedPreset] = useState<TestPreset | null>(guest ? presets.find(p => p.id === 'placement') ?? null : null);
-    const [lastAttemptDate, setLastAttemptDate] = useState<string | null>(null);
 
     // Test execution states
     const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
@@ -173,8 +172,6 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
 
     // Modal state variables
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const [showLimitModal, setShowLimitModal] = useState(false);
-    const [limitDaysRemaining, setLimitDaysRemaining] = useState(0);
 
     // Dialogue listening states
     const [audioPlayCount, setAudioPlayCount] = useState<Record<string, number>>({});
@@ -192,23 +189,6 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
     } | null>(null);
 
     const timerRef = useRef<any>(null);
-
-    // Check weekly limit for free users
-    useEffect(() => {
-        if (!user) return;
-        const fetchLimits = async () => {
-            const { data } = await supabase
-                .from('cefr_simulations' as any)
-                .select('attempted_at')
-                .eq('user_id', user.id)
-                .order('attempted_at', { ascending: false })
-                .limit(1) as any;
-            if (data && data.length > 0) {
-                setLastAttemptDate(data[0].attempted_at);
-            }
-        };
-        fetchLimits();
-    }, [user, state]);
 
     // Timer: the interval only counts down. Running out is handled below with the latest
     // state (answers, stages, writing), not the values captured when the interval started.
@@ -243,19 +223,6 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
         if (preset.isPro && isFree) {
             setShowUpgradeModal(true);
             return;
-        }
-
-        // Free tier weekly placement check
-        if (isFree && preset.id === 'placement' && lastAttemptDate) {
-            const lastDate = new Date(lastAttemptDate);
-            const oneWeekLater = new Date(lastDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-            if (new Date() < oneWeekLater) {
-                const diffTime = Math.abs(oneWeekLater.getTime() - new Date().getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                setLimitDaysRemaining(diffDays);
-                setShowLimitModal(true);
-                return;
-            }
         }
 
         setSelectedPreset(preset);
@@ -1480,50 +1447,6 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                 )}
             </AnimatePresence>
 
-            {/* Cooldown Limit Modal */}
-            <AnimatePresence>
-                {showLimitModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[color-mix(in_oklch,var(--color-level-ink)_60%,transparent)] ">
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl relative border border-[var(--color-surface-container)] text-left"
-                        >
-                            <div className="w-16 h-16 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto text-[var(--color-primary)]">
-                                <Calendar className="w-8 h-8" />
-                            </div>
-                            <div className="space-y-2 text-center">
-                                <h3 className="text-2xl font-black text-[var(--color-on-surface)]">{t('simulator.weeklyWait')}</h3>
-                                <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">{t('simulator.weeklyInProgress')}</p>
-                                <p className="text-xs leading-relaxed text-[var(--color-on-surface-muted)] pt-1">
-                                    {t('simulator.weeklyLimitBody')}
-                                </p>
-                            </div>
-                            <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-[11px] text-[var(--color-on-surface-muted)] font-bold text-center">
-                                {t('simulator.nextTestIn', { count: limitDaysRemaining })}
-                            </div>
-                            <div className="flex flex-col gap-3 pt-2">
-                                <button
-                                    onClick={() => {
-                                        setShowLimitModal(false);
-                                        navigate('/pricing');
-                                    }}
-                                    className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3.5 rounded-full font-black text-sm active:scale-97 shadow-md transition-all"
-                                >
-                                    {t('simulator.getUnlimited')}
-                                </button>
-                                <button
-                                    onClick={() => setShowLimitModal(false)}
-                                    className="w-full text-xs font-bold text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] py-1 transition-all"
-                                >
-                                    {t('simulator.keepPracticing')}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

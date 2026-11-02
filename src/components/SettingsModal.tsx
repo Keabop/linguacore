@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User, BookOpen } from 'lucide-react';
+import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User, BookOpen, Droplet } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../lib/ThemeContext';
 import { useAuth } from '../lib/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTier } from '../hooks/useTier';
+import { useLevelProgression } from '../hooks/useLevelProgression';
 import { supabase } from '../lib/supabase';
+import { offlineUpdate } from '../lib/offlineMutation';
 import PlantPicker from './garden/PlantPicker';
+import type { Profile } from '../lib/database.types';
 
 interface SettingsModalProps {
     open: boolean;
@@ -43,6 +47,21 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
             console.error('Failed to update username:', err);
         } finally {
             setUpdatingUsername(false);
+        }
+    };
+
+    const qc = useQueryClient();
+    const { user: progress } = useLevelProgression();
+
+    // Saved silently: the drops on the home screen show the new goal
+    const handleGoalChange = async (goal: number) => {
+        if (!user) return;
+        const key = ['profile', user.id];
+        qc.setQueryData<Profile | null>(key, prev => prev && { ...prev, daily_goal: goal });
+        try {
+            await offlineUpdate('profiles', { daily_goal: goal }, { id: user.id });
+        } catch {
+            qc.invalidateQueries({ queryKey: ['profile'] });
         }
     };
 
@@ -198,6 +217,27 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <option value="bilingual">Bilingüe (EN + ES)</option>
                                     </select>
                                 </div>
+
+                                {/* Daily goal */}
+                                {progress && (
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Droplet className="w-5 h-5 text-[var(--color-on-surface-muted)]" />
+                                                <label htmlFor="daily-goal" className="text-sm font-medium text-[var(--color-on-surface)]">{t('settings.dailyGoal')}</label>
+                                            </div>
+                                            <select
+                                                id="daily-goal"
+                                                value={progress.dailyGoal}
+                                                onChange={(e) => handleGoalChange(Number(e.target.value))}
+                                                className="text-xs text-[var(--color-on-surface)] font-bold px-3 py-1.5 rounded-lg bg-[var(--color-background)] border border-[var(--color-outline-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 cursor-pointer"
+                                            >
+                                                {[1, 2, 3].map(n => <option key={n} value={n}>{t('settings.dailyGoalOption', { count: n })}</option>)}
+                                            </select>
+                                        </div>
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] pl-8">{t('settings.dailyGoalHint')}</p>
+                                    </div>
+                                )}
 
                                 {/* Divider */}
                                 <div className="border-t border-[var(--color-outline-subtle)]" />

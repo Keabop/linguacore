@@ -378,7 +378,11 @@
     "adminAccess": "Admin Pro access",
     "adminAccessHint": "No subscription: it comes from your role, not a payment.",
     "logout": "Log out",
-    "credits": "Credits and licenses"
+    "credits": "Credits and licenses",
+    "dailyGoal": "Daily goal",
+    "dailyGoalHint": "A story or a unit step is one watering; so are 10 reviews or 5 messages to the tutor.",
+    "dailyGoalOption_one": "{{count}} watering",
+    "dailyGoalOption_other": "{{count}} waterings"
   },
   "garden": {
     "stage": {
@@ -478,10 +482,6 @@
     "proUnlimited": "Unlimited mock exam attempts",
     "seePlans": "See the plans",
     "maybeLater": "Maybe later",
-    "weeklyWait": "Placement test cooldown",
-    "weeklyInProgress": "Weekly test",
-    "getUnlimited": "Get unlimited access with Pro",
-    "keepPracticing": "Keep practising",
     "start": "Start",
     "minutes": "{{count}} minutes",
     "listeningPlays_one": "In Listening, each recording can be played <strong>only once</strong>, as in the real exam. Headphones help.",
@@ -496,9 +496,6 @@
     "characters": "Characters: {{count}} / 3000",
     "taskOf": "Task {{n}} of {{total}}",
     "suggestedTime": "Suggested time: {{seconds}}s",
-    "nextTestIn_one": "You can take your next test in: {{count}} day",
-    "nextTestIn_other": "You can take your next test in: {{count}} days",
-    "weeklyLimitBody": "To give your brain time to take in what you learn, you can take the placement test once a week.",
     "aiGrading": "AI assessment",
     "notAssessed": "not assessed",
     "presets": {
@@ -607,5 +604,21 @@
     "imported_one": "We saved your trial and the word you marked.",
     "imported_other": "We saved your trial and the {{count}} words you marked.",
     "importedPlacement": "We saved the level of your test."
+  },
+  "evaluationLimit": {
+    "title": "You've used today's AI evaluations",
+    "body": "Compare your answer with the model one and go on: your progress is saved all the same. You get more tomorrow.",
+    "modelAnswer": "Model answer",
+    "continue": "Continue",
+    "pro": "Unlimited evaluations with Pro"
+  },
+  "streak": {
+    "goalLabel_one": "Today's goal: {{done}} of {{goal}} watering",
+    "goalLabel_other": "Today's goal: {{done}} of {{goal}} waterings",
+    "freezesLabel_one": "{{count}} streak freeze",
+    "freezesLabel_other": "{{count}} streak freezes",
+    "freezesHint": "Each freeze covers one day without study. You earn one every 7 days of streak (2 at most).",
+    "freezeUsed_one": "Your streak lives on: you used a freeze.",
+    "freezeUsed_other": "Your streak lives on: you used {{count}} freezes."
   }
 }

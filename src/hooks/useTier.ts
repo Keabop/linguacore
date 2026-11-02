@@ -7,30 +7,25 @@ import type { Profile } from '../lib/database.types';
 
 export type Tier = 'free' | 'pro';
 
+/**
+ * Only the AI is limited on the free plan: the fixed content (levels, stories, decks, reviews)
+ * is all free. The AI limits themselves are counted on the server (server/lib/usageLimits).
+ */
 interface TierLimits {
-  maxLevel: string;
   tutorMessagesPerDay: number;
   conversationHistoryVisible: number;
-  storiesPerWeek: number;
-  fsrsCardsPerDay: number;
   autoErrorCards: boolean;
 }
 
 const TIER_LIMITS: Record<Tier, TierLimits> = {
   free: {
-    maxLevel: 'A1',
     tutorMessagesPerDay: 5,
     conversationHistoryVisible: 2,
-    storiesPerWeek: 1,
-    fsrsCardsPerDay: 10,
     autoErrorCards: false,
   },
   pro: {
-    maxLevel: 'B2',
     tutorMessagesPerDay: Infinity,
     conversationHistoryVisible: Infinity,
-    storiesPerWeek: Infinity,
-    fsrsCardsPerDay: Infinity,
     autoErrorCards: true,
   },
 };
