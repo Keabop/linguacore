@@ -7,6 +7,7 @@ import { CardState } from '../lib/db';
 import type { CardRow, Profile } from '../lib/database.types';
 import { offlineInsertMany, offlineUpdate } from '../lib/offlineMutation';
 import { savedIdsOf } from '../data/vocabulary/aliases';
+import { useRecordActivity } from './useRecordActivity';
 
 // Convert Supabase row to the shape FSRS expects
 function rowToCard(row: CardRow) {
@@ -30,6 +31,7 @@ export function useCards() {
     const { user } = useAuth();
     const qc = useQueryClient();
     const userId = user?.id;
+    const recordActivity = useRecordActivity();
 
     const { data: dueCardsRaw } = useQuery({
         queryKey: ['cards', 'due', userId],
@@ -149,21 +151,7 @@ export function useCards() {
             },
         );
 
-        // 2. Optimistically update profile streak
-        const today = new Date().toISOString().split('T')[0];
-        const cachedProfile = qc.getQueryData<any>(['profile', userId]);
-        if (cachedProfile && cachedProfile.last_study_date !== today) {
-            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-            const newStreak = cachedProfile.last_study_date === yesterday
-                ? cachedProfile.streak + 1 : 1;
-            qc.setQueryData(['profile', userId], {
-                ...cachedProfile,
-                streak: newStreak,
-                last_study_date: today,
-            });
-        }
-
-        // 3. Execute or queue the Supabase mutations
+        // 2. Execute or queue the Supabase mutations
         try {
             await offlineUpdate('cards', {
                 state: updates.state,
@@ -177,16 +165,8 @@ export function useCards() {
                 last_review: updates.lastReview?.toISOString(),
             }, { id: Number(card.id) });
 
-            // Streak update
-            if (cachedProfile && cachedProfile.last_study_date !== today) {
-                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-                const newStreak = cachedProfile.last_study_date === yesterday
-                    ? cachedProfile.streak + 1 : 1;
-                await offlineUpdate('profiles', {
-                    streak: newStreak,
-                    last_study_date: today,
-                }, { id: userId });
-            }
+            // Any review counts for the day's streak; the next card doesn't wait for it
+            void recordActivity('review');
         } catch {
             // Revert optimistic updates on error
             qc.invalidateQueries({ queryKey: ['cards'] });
@@ -194,7 +174,7 @@ export function useCards() {
         }
 
         return updates;
-    }, [userId, qc]);
+    }, [userId, qc, recordActivity]);
 
     return {
         dueCards: dueCardsRaw ?? [],
