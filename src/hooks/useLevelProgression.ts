@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import type { CEFRLevel, Profile, UnitProgressRow } from '../lib/database.types';
-import { displayStreak } from '../lib/studyActivity';
+import { displayStreak, goalProgressToday } from '../lib/studyActivity';
 
 // Unit metadata only: the full curriculum would land in the entry bundle via Layout
 import { getUnitsByLevel } from '../data/curriculum/units';
@@ -139,12 +139,15 @@ export function useLevelProgression() {
         qc.invalidateQueries({ queryKey: ['unit-progress-level'] });
     };
 
-    // Adapt profile to the shape Layout/Dashboard expect; a streak last studied before yesterday is broken
+    // Adapt profile to the shape Layout/Dashboard expect; a streak with missed days no freeze covers is broken
     const userCompat = profile ? {
         currentLevel: profile.current_level,
         unlockedLevels: profile.unlocked_levels,
         totalWordsLearned: profile.total_words_learned,
-        streak: displayStreak(profile.streak, profile.last_study_date),
+        streak: displayStreak(profile.streak, profile.last_study_date, profile.streak_freezes),
+        streakFreezes: profile.streak_freezes ?? 0,
+        dailyGoal: profile.daily_goal ?? 1,
+        goalProgress: goalProgressToday(profile),
         lastStudyDate: profile.last_study_date,
         levelProgress: profile.level_progress,
     } : undefined;

@@ -378,7 +378,11 @@
     "adminAccess": "Acceso Pro de administrador",
     "adminAccessHint": "Sin suscripción: viene de tu rol, no de un pago.",
     "logout": "Cerrar sesión",
-    "credits": "Créditos y licencias"
+    "credits": "Créditos y licencias",
+    "dailyGoal": "Meta diaria",
+    "dailyGoalHint": "Una historia o un paso de unidad es un riego; también 10 repasos o 5 mensajes al tutor.",
+    "dailyGoalOption_one": "{{count}} riego",
+    "dailyGoalOption_other": "{{count}} riegos"
   },
   "garden": {
     "stage": {
@@ -594,5 +598,14 @@
     "ios": "iPhone o iPad: Ajustes → Accesibilidad → Contenido leído → Voces → English.",
     "unsupportedTitle": "Tu navegador no puede leer en voz alta",
     "unsupportedBody": "Lo que no tiene audio grabado se queda sin voz. Abre Voxie en Chrome, Edge o Safari actualizados para escucharlo."
+  },
+  "streak": {
+    "goalLabel_one": "Meta de hoy: {{done}} de {{goal}} riego",
+    "goalLabel_other": "Meta de hoy: {{done}} de {{goal}} riegos",
+    "freezesLabel_one": "{{count}} congelador de racha",
+    "freezesLabel_other": "{{count}} congeladores de racha",
+    "freezesHint": "Cada congelador cubre un día sin estudiar. Ganas uno cada 7 días de racha (máximo 2).",
+    "freezeUsed_one": "Tu racha sigue: usaste un congelador.",
+    "freezeUsed_other": "Tu racha sigue: usaste {{count}} congeladores."
   }
 }
