@@ -21,6 +21,7 @@ import { storyDetails } from '../data/storyDetails';
 import DBErrorCard from '../components/DBErrorCard';
 import Garden from '../components/garden/Garden';
 import StreakChip from '../components/ui/StreakChip';
+import GoalDrops from '../components/ui/GoalDrops';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 
 const LEVEL_ORDER: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
@@ -209,6 +210,7 @@ export default function Dashboard() {
                         <StreakChip count={user.streak} className="text-xl" />
                         <span className="text-sm text-[var(--color-on-surface-muted)]">{t('dashboard.streakDays')}</span>
                     </div>
+                    <GoalDrops done={user.goalProgress} goal={user.dailyGoal} freezes={user.streakFreezes} />
                     <p className="text-xs text-[var(--color-on-surface-variant)]">
                         {user.streak > 0 ? t('dashboard.deckSize', { count: totalCards }) : t('dashboard.streakStart')}
                     </p>
