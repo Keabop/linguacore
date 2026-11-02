@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -9,6 +9,10 @@ vi.mock('../lib/AuthContext', () => ({ useAuth: () => ({ user: { id: 'user-1' } 
 import LevelAssessment from './LevelAssessment';
 import { getUnitsByLevel } from '../data';
 import { levelFinalBanks } from '../data/assessments/level-final';
+import { loadLevel } from '../data/levels';
+
+// The levels already in memory, as after the first visit: the screens render without waiting
+beforeAll(() => Promise.all((['A1', 'A2', 'B1', 'B2'] as const).map(loadLevel)));
 
 const renderExam = () => render(
     <MemoryRouter>

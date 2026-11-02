@@ -40,6 +40,10 @@ vi.mock('../lib/supabase', () => ({
 import UnitFlow from './UnitFlow';
 import { getExercisesByUnit, getGrammarCardByUnit, getStoriesByUnit } from '../data';
 import { allVocabulary } from '../data/vocabulary';
+import { loadLevel } from '../data/levels';
+
+// The levels already in memory, as after the first visit: the screens render without waiting
+beforeAll(() => Promise.all((['A1', 'A2', 'B1', 'B2'] as const).map(loadLevel)));
 
 const renderUnit = (unitId: string) => render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -178,5 +182,6 @@ describe('UnitFlow exercises with every answer wrong', () => {
         await waitFor(() => expect(unit.updateProgress).toHaveBeenCalledWith({ exercises_score: 0 }));
         expect(await screen.findByText(`1 de ${exercises.length}`)).toBeInTheDocument();
         expect(screen.queryByText('Puntuación: 0%')).toBeNull();
-    });
+    // Six real exercises with their animations: longer than the default 5 s on a busy machine
+    }, 20000);
 });

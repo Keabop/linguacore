@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Vocabulary } from '../lib/db';
-import { getStory } from '../data';
-import { getVocab, getVocabMap } from '../data/vocabulary';
+import { levelOfId, useLevelContent } from '../data/levels';
+import PageLoader from '../components/PageLoader';
+import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -80,7 +81,12 @@ export default function StoryReader() {
 
     // Check static data first, then fallback to AI story from navigation state
     const aiStory = (location.state as any)?.aiStory;
-    const staticStory = storyId ? getStory(storyId) : undefined;
+    // A static story's level is downloaded on its own; AI stories ("ai-…") come in the navigation state
+    const storyLevel = levelOfId(storyId);
+    const levelContent = useLevelContent(storyLevel);
+    // Most of a story's words are of its level: that deck downloads alongside the text
+    useEffect(() => prefetchVocabulary(storyLevel), [storyLevel]);
+    const staticStory = levelContent?.stories.find(s => s.id === storyId);
     const story = staticStory ?? (aiStory ? { ...aiStory, level: aiStory.level as any } : undefined);
     const isAIStory = !staticStory && !!aiStory;
 
@@ -88,6 +94,8 @@ export default function StoryReader() {
     const storyContent = story?.content;
     const keywords = useMemo(() => (storyContent ? extractKeywords(storyContent) : []), [storyContent]);
 
+    // The decks of a static story's words (an AI story brings its own cards)
+    const vocabulary = useVocabulary(isAIStory ? [] : keywords);
     const vocabMap = useMemo(() => {
         if (!keywords.length) return new Map<string, Vocabulary>();
         if (isAIStory && aiStory?.vocabulary) {
@@ -97,8 +105,8 @@ export default function StoryReader() {
             }
             return map;
         }
-        return getVocabMap(keywords) as Map<string, Vocabulary>;
-    }, [keywords, isAIStory, aiStory]);
+        return vocabulary?.map(keywords) ?? new Map<string, Vocabulary>();
+    }, [keywords, isAIStory, aiStory, vocabulary]);
 
     // What the learner had saved before this reading, checked once per story
     useEffect(() => {
@@ -214,9 +222,9 @@ export default function StoryReader() {
         const wordId = target.getAttribute('data-word');
         if (!wordId) return;
 
-        const vocab = (isAIStory ? vocabMap.get(wordId) : getVocab(wordId)) as Vocabulary | undefined;
+        const vocab = (isAIStory ? vocabMap.get(wordId) : vocabulary?.get(wordId)) as Vocabulary | undefined;
         if (vocab) setSelectedWord(vocab);
-    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory]);
+    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory, vocabulary]);
 
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
@@ -273,7 +281,11 @@ export default function StoryReader() {
         container?.querySelectorAll('span[data-word]').forEach(span => {
             span.classList.toggle('in-deck', wordStatuses.get(span.getAttribute('data-word') ?? '') === 'deck');
         });
-    }, [wordStatuses, processedHTML]);
+    // `vocabulary`: the text only appears once the decks are in, and must be marked then too
+    }, [wordStatuses, processedHTML, vocabulary]);
+
+    // Waits for the story's level and its words' decks, so a tapped word always has its card
+    if ((!story && storyLevel && !levelContent) || (story && !isAIStory && !vocabulary)) return <PageLoader />;
 
     if (!story) {
         return (

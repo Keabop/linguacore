@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { type Card, type Vocabulary } from '../lib/db';
-import { getStory } from '../data';
+import { levelOfId, useLevelContent } from '../data/levels';
 import { Lightbulb, Check, X, ArrowRight } from 'lucide-react';
 import { answersMatch } from '../lib/normalizeAnswer';
 
@@ -43,7 +43,10 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
     const [showHint, setShowHint] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const story = getStory(card.storyId);
+    // The sentence comes from the story the word was saved from: wait for its level to load
+    const storyLevel = levelOfId(card.storyId);
+    const levelContent = useLevelContent(storyLevel);
+    const story = levelContent?.stories.find(s => s.id === card.storyId);
 
     const clozeData = useMemo(() => {
         if (story) {
@@ -58,9 +61,11 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
         return { before: 'The _________ is ', after: 'important.' };
     }, [story, vocabulary]);
 
+    // Focus the input once it is on screen (after the story's level has loaded)
+    const ready = !storyLevel || !!levelContent;
     useEffect(() => {
-        setTimeout(() => inputRef.current?.focus(), 100);
-    }, []);
+        if (ready) setTimeout(() => inputRef.current?.focus(), 100);
+    }, [ready]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,6 +93,10 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
     const handleContinue = () => {
         onResult(false);
     };
+
+    if (!ready) {
+        return <p className="py-16 text-center text-sm text-[var(--color-on-surface-muted)]">{t('common.loading')}</p>;
+    }
 
     return (
         <div className="space-y-8">

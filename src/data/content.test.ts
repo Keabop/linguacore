@@ -5,6 +5,10 @@ import { audioFor } from '../lib/audioKey';
 import { allExercises, allGrammarCards, allGrammarSkills, allStories, allUnits } from './index';
 import { placementBlocks, placementQuestions } from './assessments/placement';
 import { levelFinalBanks, type LevelFinalBank } from './assessments/level-final';
+import { loadLevel } from './levels';
+import { storyIndex } from './storyIndex';
+import { WORD_IDS } from './vocabulary/wordLevels';
+import { storySummary } from './storySummary';
 import { cambridgeB1Questions, cambridgeB1Speaking, cambridgeB1Writing } from './assessments/cambridge/b1';
 import { cambridgeB2Questions, cambridgeB2Speaking, cambridgeB2Writing } from './assessments/cambridge/b2';
 import { ieltsQuestions, ieltsSpeaking, ieltsWriting } from './assessments/ielts-questions';
@@ -572,4 +576,51 @@ describe('end-of-level exam', () => {
             });
         });
     }
+});
+
+describe('content loaded by level', () => {
+    it('keeps the story index up to date (npm run content:index)', () => {
+        expect(storyIndex).toEqual(allStories.map(storySummary));
+    });
+
+    it('splits every level into its own module, with the same content as the whole set', async () => {
+        const levels = await Promise.all((['A1', 'A2', 'B1', 'B2'] as const).map(loadLevel));
+        expect(levels.flatMap(l => l.exercises)).toHaveLength(allExercises.length);
+        expect(levels.flatMap(l => l.grammarCards)).toHaveLength(allGrammarCards.length);
+        expect(levels.flatMap(l => l.skills)).toHaveLength(allGrammarSkills.length);
+        expect(levels.flatMap(l => l.stories)).toEqual(allStories);
+        for (const [i, l] of levels.entries()) {
+            const prefix = ['a1', 'a2', 'b1', 'b2'][i];
+            expect(l.exercises.every(e => e.unitId.startsWith(prefix)), prefix).toBe(true);
+            expect(l.skills.every(s => s.id.startsWith(prefix) && s.unitId.startsWith(prefix)), prefix).toBe(true);
+        }
+    });
+
+    it('keeps the word index up to date (npm run content:phonetics), and every deck the same as the whole set', async () => {
+        const fromIndex = Object.values(WORD_IDS).flatMap(ids => ids.split('|'));
+        expect(fromIndex.sort()).toEqual(allVocabulary.map(v => v.id).sort());
+        const decks = await Promise.all(['a1', 'a2', 'b1', 'b2'].map(l => import(`./vocabulary/decks/${l}.ts`)));
+        expect(decks.flatMap(d => d.default)).toEqual(allVocabulary);
+    });
+
+    it('never makes a screen download every level: app code does not import the whole set', () => {
+        const sources = import.meta.glob(['/src/**/*.{ts,tsx}', '!/src/**/*.test.{ts,tsx}', '!/src/test/**'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+        // Modules that build the whole set or one level, or that only tests and scripts use
+        const allowed = /^\/src\/data\/(?:index\.ts|levels\/|curriculum\/|output\/|stories(?:-[ab][12])?\.ts|audio\/jobs\.ts|evals\/|vocabulary\/(?:index\.ts|decks\/|phonetics(?:\.ts|\/)|[ab][12]\.ts))/;
+        // Every module specifier: static, dynamic and re-exports, either quote, with or without ".ts"
+        const specifiers = (code: string) => [...code.matchAll(/(?:\bfrom|\bimport)\s*\(?\s*['"]([^'"]+)['"]/g)].map(m => m[1].replace(/\.tsx?$/, '').replace(/\/index$/, ''));
+        const whole = (spec: string) => /(?:^|\/)data$/.test(spec)
+            || /\/data\/(?:stories(?:-[ab][12])?|curriculum(?:\/(?:a1|a2|b1|b2|skills|b2-units|b2-exercises-\d))?|output(?:\/[ab][12]-output)?)$/.test(spec)
+            || /\/data\/vocabulary(?:\/(?:a1|a2|b1|b2|phonetics))?$/.test(spec);
+
+        expect(Object.keys(sources).length).toBeGreaterThan(80);
+        expect(["import { getStory } from '../data';", 'const m = await import("../../data/index.ts");', "export * from '../data/stories';", "import '../data/curriculum';", "import { getVocab } from '../data/vocabulary';"]
+            .every(code => specifiers(code).some(whole))).toBe(true);
+        expect(specifiers("import { allUnits } from '../data/curriculum/units';").some(whole)).toBe(false);
+
+        const offenders = Object.entries(sources)
+            .filter(([file, code]) => !allowed.test(file) && specifiers(code).some(whole))
+            .map(([file]) => file);
+        expect(offenders).toEqual([]);
+    });
 });

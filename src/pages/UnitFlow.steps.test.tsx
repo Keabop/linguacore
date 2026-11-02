@@ -45,6 +45,10 @@ vi.mock('../lib/AuthContext', () => ({ useAuth: () => ({ user: { id: 'user-1' } 
 vi.mock('../lib/supabase', () => ({ supabase: { from: () => ({ select: () => Promise.resolve({ data: [], error: null }), insert: async () => ({ error: null }) }) } }));
 
 import UnitFlow from './UnitFlow';
+import { loadLevel } from '../data/levels';
+
+// The levels already in memory, as after the first visit: the screens render without waiting
+beforeAll(() => Promise.all((['A1', 'A2', 'B1', 'B2'] as const).map(loadLevel)));
 
 // jsdom never finishes exit animations: without this, the leaving step stays in the page
 let skippedBefore: boolean | undefined;
