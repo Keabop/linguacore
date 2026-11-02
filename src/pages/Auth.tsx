@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Mail, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import PageLoader from '../components/PageLoader';
+import { loadGuest } from '../lib/guestTrial';
 import AuthBackdrop from '../components/ui/AuthBackdrop';
 import Wordmark, { LeafMark } from '../components/ui/Wordmark';
 
@@ -37,7 +38,10 @@ function AuthShell({ children }: { children: ReactNode }) {
 
 export default function Auth() {
     const { user, loading, signIn, signUp, signInWithGoogle } = useAuth();
-    const [mode, setMode] = useState<Mode>('login');
+    const { t } = useTranslation();
+    // A visitor coming from the trial (/probar) is most likely here to sign up
+    const [fromTrial] = useState(() => loadGuest() !== null);
+    const [mode, setMode] = useState<Mode>(fromTrial ? 'register' : 'login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -114,6 +118,7 @@ export default function Auth() {
                     <p className="text-sm text-[var(--color-on-surface-muted)] font-body">
                         {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
                     </p>
+                    {fromTrial && <p className="mt-2 text-xs text-[var(--color-primary)] font-semibold">{t('trial.pending')}</p>}
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">

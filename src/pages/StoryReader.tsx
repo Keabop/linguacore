@@ -26,6 +26,7 @@ import { storySentences, wrapStorySentences } from '../lib/storySentences';
 import { audioFor, storyKey } from '../lib/audioKey';
 import { SPEECH_RATE, type Accent } from '../lib/voices';
 import NoEnglishVoices from '../components/ui/NoEnglishVoices';
+import { saveGuestStory } from '../lib/guestTrial';
 
 type WordStatus = 'deck' | 'known' | 'none';
 
@@ -40,13 +41,21 @@ function extractKeywords(html: string): string[] {
     return Array.from(seen);
 }
 
-export default function StoryReader() {
+interface StoryReaderProps {
+    /** The trial story a visitor reads without an account (`/probar`). */
+    trialStoryId?: string;
+}
+
+export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
     const { species } = useGardenPlant();
-    const { storyId } = useParams<{ storyId: string }>();
+    const params = useParams<{ storyId: string }>();
+    const storyId = trialStoryId ?? params.storyId;
     const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const { user: authUser } = useAuth();
+    // A visitor's marks stay in this browser until they create an account (lib/guestTrial)
+    const guest = !authUser;
     const qc = useQueryClient();
     const recordActivity = useRecordActivity();
     const { isWordInDeck, isWordKnown, saveStoryWords } = useCards();
@@ -113,6 +122,10 @@ export default function StoryReader() {
     // What the learner had saved before this reading, checked once per story
     useEffect(() => {
         if (!keywords.length) return;
+        if (guest) {
+            setSavedStatuses(new Map(keywords.map(id => [id, 'none'])));
+            return;
+        }
         let cancelled = false;
         Promise.all(keywords.map(async (wordId): Promise<[string, WordStatus]> => {
             if (await isWordInDeck(wordId)) return [wordId, 'deck'];
@@ -120,7 +133,7 @@ export default function StoryReader() {
             return [wordId, 'none'];
         })).then(entries => { if (!cancelled) setSavedStatuses(new Map(entries)); });
         return () => { cancelled = true; };
-    }, [keywords, isWordInDeck, isWordKnown]);
+    }, [keywords, isWordInDeck, isWordKnown, guest]);
 
     // Saved status, or the choice made in this reading
     const wordStatuses = useMemo(() => {
@@ -246,9 +259,14 @@ export default function StoryReader() {
     const unmarkedWords = keywords.filter(id => vocabMap.has(id) && wordStatuses.get(id) === 'none');
 
     const handleComplete = async () => {
-        if (!storyId || !savedStatuses || !authUser) return;
+        if (!storyId || !savedStatuses) return;
         if (unmarkedWords.length) {
             setMissingWords(unmarkedWords);
+            return;
+        }
+        if (!authUser) {
+            saveGuestStory(storyId, [...addedWords], [...knownWords]);
+            setCompleted(true);
             return;
         }
         // Only the words chosen in this reading, never ones that were already saved
@@ -305,6 +323,31 @@ export default function StoryReader() {
         );
     }
 
+    if (completed && guest) {
+        return (
+            <LazyMotion features={domAnimation}>
+                <m.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16 space-y-6">
+                    <PlantCircle species={species} size="lg" height={44} />
+                    <h2 className="text-3xl font-black tracking-tight">{t('reader.storyCompleted')}</h2>
+                    <p className="text-[var(--color-on-surface-muted)] text-base max-w-md mx-auto">
+                        {t('trial.saveWords', { count: addedWords.size })}
+                    </p>
+                    <div className="flex flex-wrap gap-4 justify-center pt-6">
+                        <button onClick={() => navigate('/auth')} className="btn-primary px-7 py-3.5 text-sm">
+                            {t('trial.createAccount')}
+                        </button>
+                        <button
+                            onClick={() => navigate('/probar/nivel')}
+                            className="rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)] px-7 py-3.5 font-bold transition-colors duration-300"
+                        >
+                            {t('trial.tryPlacement')}
+                        </button>
+                    </div>
+                </m.div>
+            </LazyMotion>
+        );
+    }
+
     if (completed) {
         return (
             <LazyMotion features={domAnimation}>
@@ -352,7 +395,7 @@ export default function StoryReader() {
         <div className="space-y-8">
             {/* Story header */}
             <div className="flex items-center gap-4">
-                <BackButton to={returnTo ?? '/learn'} />
+                <BackButton to={guest ? '/' : returnTo ?? '/learn'} />
                 <div className="flex-1">
                     <h2 className="text-2xl font-black tracking-tight">{story.title}</h2>
                     <div className="flex items-center gap-2 mt-1.5">
