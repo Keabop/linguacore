@@ -2,20 +2,22 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MicOff, Loader2, RotateCcw, MessageCircle } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
-import { evaluateWriting } from '../../lib/ai';
+import { evaluateWriting, isLimitReached } from '../../lib/ai';
 import type { CEFRLevel } from '../../lib/db';
 import { MicIcon } from '../icons';
+import EvaluationLimitCard from '../EvaluationLimitCard';
 
 interface Props {
     instruction: string;
     targetGrammar: string[];
     level: CEFRLevel;
-    onComplete: (score: number) => void;
+    /** The evaluated score; null when it could not be evaluated (free plan limit). */
+    onComplete: (score: number | null) => void;
 }
 
 export default function OralResponse({ instruction, targetGrammar, level, onComplete }: Props) {
     const { isListening, transcript, interimTranscript, startListening, stopListening, resetTranscript, recognitionSupported } = useSpeech();
-    const [phase, setPhase] = useState<'recording' | 'evaluating' | 'result'>('recording');
+    const [phase, setPhase] = useState<'recording' | 'evaluating' | 'result' | 'limit'>('recording');
     const [score, setScore] = useState(0);
     const [feedbackText, setFeedbackText] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,10 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
             setFeedbackText(result.encouragement);
             setPhase('result');
         } catch (err: any) {
+            if (isLimitReached(err)) {
+                setPhase('limit');
+                return;
+            }
             setError(err.message || 'Error al evaluar.');
             setPhase('recording');
         }
@@ -100,6 +106,8 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                     </div>
                 </motion.div>
             )}
+
+            {phase === 'limit' && <EvaluationLimitCard onContinue={() => onComplete(null)} />}
 
             {error && (
                 <div className="bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 text-sm text-accent-red">{error}</div>

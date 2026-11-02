@@ -482,10 +482,6 @@
     "proUnlimited": "Intentos ilimitados en simuladores",
     "seePlans": "Ver Planes Premium",
     "maybeLater": "Quizás más tarde",
-    "weeklyWait": "Espera de Nivelación",
-    "weeklyInProgress": "Test semanal en curso",
-    "getUnlimited": "Obtener Acceso Ilimitado con Pro",
-    "keepPracticing": "Continuar practicando",
     "start": "Comenzar",
     "minutes": "{{count}} minutos",
     "listeningPlays_one": "En el Listening, cada audio se puede reproducir <strong>una sola vez</strong>, como en el examen real. Usa audífonos para mejor nitidez.",
@@ -500,9 +496,6 @@
     "characters": "Caracteres: {{count}} / 3000",
     "taskOf": "Tarea {{n}} de {{total}}",
     "suggestedTime": "Duración sugerida: {{seconds}}s",
-    "nextTestIn_one": "Podrás tomar tu siguiente test en: {{count}} día",
-    "nextTestIn_other": "Podrás tomar tu siguiente test en: {{count}} días",
-    "weeklyLimitBody": "Para asegurar un aprendizaje óptimo y dar tiempo a tu cerebro para asimilar los conocimientos, puedes tomar el Test de Nivelación una vez a la semana.",
     "aiGrading": "Evaluación con IA",
     "notAssessed": "sin evaluar",
     "presets": {
@@ -598,6 +591,13 @@
     "ios": "iPhone o iPad: Ajustes → Accesibilidad → Contenido leído → Voces → English.",
     "unsupportedTitle": "Tu navegador no puede leer en voz alta",
     "unsupportedBody": "Lo que no tiene audio grabado se queda sin voz. Abre Voxie en Chrome, Edge o Safari actualizados para escucharlo."
+  },
+  "evaluationLimit": {
+    "title": "Ya usaste las evaluaciones con IA de hoy",
+    "body": "Compara tu respuesta con la del modelo y sigue: tu avance se guarda igual. Mañana tienes más evaluaciones.",
+    "modelAnswer": "Respuesta modelo",
+    "continue": "Continuar",
+    "pro": "Evaluaciones ilimitadas con Pro"
   },
   "streak": {
     "goalLabel_one": "Meta de hoy: {{done}} de {{goal}} riego",
