@@ -354,7 +354,7 @@ export default function UnitFlow() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1 sm:gap-2"
                 >
                     {STEPS.map((step, i) => {
                         const Icon = step.icon;
@@ -363,11 +363,11 @@ export default function UnitFlow() {
                         const isUpcoming = i > activeStepIdx;
 
                         return (
-                            <div key={step.key} className="flex items-center gap-2">
+                            <div key={step.key} className={`flex items-center gap-1 sm:gap-2 ${i < STEPS.length - 1 ? 'flex-1 sm:flex-none' : ''}`}>
                                 {/* Step dot/icon */}
                                 <div
                                     className={`
-                                        flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300
+                                        flex shrink-0 items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-full transition-all duration-300
                                         ${isCompleted
                                             ? 'bg-[var(--color-success)]/20 text-[var(--color-success)] shadow-[0_2px_8px_color-mix(in_oklch,var(--color-success)_15%,transparent)]'
                                             : isCurrent
@@ -384,11 +384,11 @@ export default function UnitFlow() {
                                     )}
                                 </div>
 
-                                {/* Connector line */}
+                                {/* Connector line: on phones it takes the free width, so every step fits from 320 px */}
                                 {i < STEPS.length - 1 && (
                                     <div
                                         className={`
-                                            h-[2px] w-5 sm:w-7 md:w-9 rounded-full transition-colors duration-300
+                                            h-[2px] flex-1 min-w-1 sm:flex-none sm:w-7 md:w-9 rounded-full transition-colors duration-300
                                             ${isCompleted ? 'bg-[var(--color-success)]/40' : 'bg-[var(--color-surface-container-highest)]'}
                                         `}
                                     />
