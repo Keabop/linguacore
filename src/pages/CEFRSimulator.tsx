@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Compass, Shield, Award, Sparkles, Play, Volume2, Edit3, Activity, ChevronRight, CheckCircle, Crown, AlertCircle, Timer, Check } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
+import { saveGuestPlacement, teachableLevel } from '../lib/guestTrial';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { playAudioFile, playListening, stopDialogueSpeech } from '../lib/assessmentSpeech';
@@ -124,15 +125,17 @@ const LEVEL_COLOR: Record<ExamReport['level'], string> = {
 };
 
 
-export default function CEFRSimulator() {
+/** `guest`: the placement test of the trial (`/probar/nivel`), without an account. */
+export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {}) {
     const { t } = useTranslation();
     const presetTitle = (preset: TestPreset) => t(`simulator.presets.${preset.id}.title`);
     const navigate = useNavigate();
     const { user } = useAuth();
     const { isPro, isFree } = useTier();
 
-    const [state, setState] = useState<PageState>('selection');
-    const [selectedPreset, setSelectedPreset] = useState<TestPreset | null>(null);
+    // The trial goes straight to the placement test; its level waits for the account
+    const [state, setState] = useState<PageState>(guest ? 'instructions' : 'selection');
+    const [selectedPreset, setSelectedPreset] = useState<TestPreset | null>(guest ? presets.find(p => p.id === 'placement') ?? null : null);
 
     // Test execution states
     const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
@@ -509,6 +512,8 @@ export default function CEFRSimulator() {
                     report: { headline: report.headline, breakdown: report.breakdown, stages: stageChoice, confidence: report.confidence }
                 });
                 if (dbErr) console.error('Saving the simulation failed:', dbErr);
+            } else if (selectedPreset!.id === 'placement') {
+                saveGuestPlacement(report.level);
             }
 
             setResults({
@@ -639,7 +644,7 @@ export default function CEFRSimulator() {
 
                         <div className="flex gap-4">
                             <button
-                                onClick={() => setState('selection')}
+                                onClick={() => (guest ? navigate('/') : setState('selection'))}
                                 className="flex-1 bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] py-3.5 rounded-full font-bold text-sm active:scale-97"
                             >
                                 {t('simulator.back')}
@@ -1088,12 +1093,18 @@ export default function CEFRSimulator() {
                                 <h1 className="text-3xl font-black tracking-tight text-[var(--color-success)]">{t('simulator.completed')}</h1>
                                 <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-widest font-black mt-1">{t('simulator.performanceReport')}</p>
                             </div>
-                            <button
-                                onClick={() => setState('selection')}
-                                className="bg-[var(--color-surface-container)] text-[var(--color-on-surface)] py-2 px-5 rounded-full text-xs font-bold hover:bg-[var(--color-surface-container-highest)] transition-colors active:scale-95"
-                            >
-                                {t('simulator.exitToPanel')}
-                            </button>
+                            {guest ? (
+                                <button onClick={() => navigate('/auth')} className="btn-primary py-2 px-5 text-xs">
+                                    {t('trial.startAtLevel', { level: teachableLevel(results.report.level) })}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setState('selection')}
+                                    className="bg-[var(--color-surface-container)] text-[var(--color-on-surface)] py-2 px-5 rounded-full text-xs font-bold hover:bg-[var(--color-surface-container-highest)] transition-colors active:scale-95"
+                                >
+                                    {t('simulator.exitToPanel')}
+                                </button>
+                            )}
                         </div>
 
                         {/* Summary Widget */}

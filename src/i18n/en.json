@@ -592,6 +592,19 @@
     "unsupportedTitle": "Your browser can't read aloud",
     "unsupportedBody": "Anything without recorded audio stays silent. Open Voxie in an up-to-date Chrome, Edge or Safari to hear it."
   },
+  "trial": {
+    "home": "Voxie, home",
+    "createAccountShort": "Sign up",
+    "createAccount": "Sign up and save",
+    "saveWords_one": "Sign up to save the word you marked. It will be waiting in your review.",
+    "saveWords_other": "Sign up to save the {{count}} words you marked. They will be waiting in your review.",
+    "tryPlacement": "Take the placement test",
+    "startAtLevel": "Sign up and start at {{level}}",
+    "pending": "When you sign up, we save what you did in the trial.",
+    "imported_one": "We saved your trial and the word you marked.",
+    "imported_other": "We saved your trial and the {{count}} words you marked.",
+    "importedPlacement": "We saved the level of your test."
+  },
   "evaluationLimit": {
     "title": "You've used today's AI evaluations",
     "body": "Compare your answer with the model one and go on: your progress is saved all the same. You get more tomorrow.",
