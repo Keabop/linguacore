@@ -9,6 +9,7 @@ import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRecordActivity } from '../hooks/useRecordActivity';
 import { useCards } from '../hooks/useCards';
 import { toast } from '../lib/toast';
 import DOMPurify from 'dompurify';
@@ -47,6 +48,7 @@ export default function StoryReader() {
     const location = useLocation();
     const { user: authUser } = useAuth();
     const qc = useQueryClient();
+    const recordActivity = useRecordActivity();
     const { isWordInDeck, isWordKnown, saveStoryWords } = useCards();
 
     const [selectedWord, setSelectedWord] = useState<Vocabulary | null>(null);
@@ -261,12 +263,14 @@ export default function StoryReader() {
                 completed_at: new Date().toISOString(),
                 words_added: addedWords.size,
             };
-            // Read once per story: a story read before keeps its first record
+            // Read once per story: a story read before keeps its first record, and only the first reading counts as study
+            const firstReading = !qc.getQueryData<ReadStoryRow[]>(['readStories', authUser.id])?.some(r => r.story_id === storyId);
             await offlineInsert('read_stories', read, { onConflict: 'user_id,story_id', ignoreDuplicates: true });
             // Shown as read right away, offline too, so the lesson that sent here can go on
             qc.setQueryData<ReadStoryRow[]>(['readStories', authUser.id], prev =>
                 prev?.some(r => r.story_id === storyId) ? prev : [...(prev ?? []), { id: -1, ...read } as ReadStoryRow]);
             qc.invalidateQueries({ queryKey: ['readStories'] });
+            if (firstReading) void recordActivity('story');
             setCompleted(true);
         } catch {
             toast.error({ title: t('reader.saveFailed') });
