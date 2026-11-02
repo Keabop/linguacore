@@ -14,7 +14,9 @@ import {
 import type { CEFRLevel } from '../lib/db';
 import type { Profile } from '../lib/database.types';
 import type { AssessmentQuestion, ExamResponse } from '../lib/exam/types';
-import { allExercises, getUnitsByLevel } from '../data';
+import { getUnitsByLevel } from '../data/curriculum/units';
+import { useLevelContent, type ContentLevel } from '../data/levels';
+import PageLoader from '../components/PageLoader';
 import { levelFinalBanks, type LessonLevel } from '../data/assessments/level-final';
 import { LEVEL_FINAL_PASS, buildLevelFinal, levelFinalResult } from '../lib/exam/levelFinal';
 import { hasRecording, playListening, stopDialogueSpeech } from '../lib/assessmentSpeech';
@@ -79,10 +81,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
 
     const bank = levelFinalBanks[level as LessonLevel];
     const units = useMemo(() => getUnitsByLevel(level).filter(u => !u.isAssessment), [level]);
+    // The review items come from this level's exercises, downloaded on their own
+    const exercises = useLevelContent(level as ContentLevel)?.exercises ?? null;
     // What the exam will really have: a unit without a usable exercise gets no review item
     const grammarCount = useMemo(
-        () => (bank ? buildLevelFinal({ units, exercises: allExercises, bank }).filter(q => q.section === 'use-of-english').length : 0),
-        [bank, units],
+        () => (bank && exercises ? buildLevelFinal({ units, exercises, bank }).filter(q => q.section === 'use-of-english').length : 0),
+        [bank, units, exercises],
     );
     const pages = useMemo(() => toPages(questions), [questions]);
 
@@ -94,7 +98,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             setState('error');
             return;
         }
-        const exam = buildLevelFinal({ units, exercises: allExercises, bank });
+        const exam = buildLevelFinal({ units, exercises: exercises ?? [], bank });
         if (exam.length === 0) {
             setState('error');
             return;
@@ -104,7 +108,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
         setResponses({});
         setPlays({});
         setState('testing');
-    }, [bank, units]);
+    }, [bank, units, exercises]);
 
     const finish = useCallback(async () => {
         // A double tap on "Finish" must not save the attempt twice
@@ -207,6 +211,8 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
         if (page + 1 < pages.length) setPage(page + 1);
         else finish();
     };
+
+    if (bank && !exercises) return <PageLoader />;
 
     // -- Render states --
 

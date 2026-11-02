@@ -2,8 +2,9 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Card, type Vocabulary } from '../lib/db';
-import { getSkill } from '../data';
-import { getVocab } from '../data/vocabulary';
+import { levelOfId, useLevelsContent, type ContentLevel } from '../data/levels';
+import PageLoader from '../components/PageLoader';
+import { useVocabulary } from '../data/vocabulary/load';
 import { useCards } from '../hooks/useCards';
 import { useSkillCards, getReviewDepth } from '../hooks/useSkillCards';
 import { useErrorCards } from '../hooks/useErrorCards';
@@ -35,9 +36,15 @@ export default function ReviewSession() {
     const cardLimit = isFree ? limits.fsrsCardsPerDay : Infinity;
     const dueCards = isFree ? allDueCards.slice(0, cardLimit) : allDueCards;
     const dueSkillCards = isFree ? allDueSkillCards.slice(0, cardLimit) : allDueSkillCards;
+    const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
+    // What each kind of review needs, downloaded once at the start for every due card (not only
+    // those within today's limit: the next one moves up after each review), so no loader appears
+    // between cards. A review that doesn't need it doesn't load it, so its failure can't stop it.
+    const skillLevels = reviewType === 'vocab' || reviewType === 'errors' ? []
+        : allDueSkillCards.map(c => levelOfId(c.skillId)).filter((l): l is ContentLevel => !!l);
+    const skillContents = useLevelsContent(skillLevels);
     const dueErrorCards = isFree ? allDueErrorCards.slice(0, cardLimit) : allDueErrorCards;
     const totalTruncated = (allDueCards.length - dueCards.length) + (allDueSkillCards.length - dueSkillCards.length) + (allDueErrorCards.length - dueErrorCards.length);
-    const [reviewType, setReviewType] = useState<'vocab' | 'grammar' | 'errors' | null>(null);
     const [mode, setMode] = useState<ReviewMode | null>(null);
     const [sessionDone, setSessionDone] = useState(false);
     const [correctCount, setCorrectCount] = useState(0);
@@ -50,8 +57,10 @@ export default function ReviewSession() {
     }
 
     const currentCard = dueCards[0] as Card | undefined;
-    const currentVocab = currentCard
-        ? (getVocab(currentCard.wordId) || ({
+    // The decks of every due word (until they load, a word isn't "custom")
+    const vocabulary = useVocabulary(reviewType === 'grammar' || reviewType === 'errors' ? [] : allDueCards.map(c => c.wordId));
+    const currentVocab = currentCard && vocabulary
+        ? (vocabulary.get(currentCard.wordId) || ({
             id: currentCard.wordId,
             word: currentCard.wordId,
             translations: ['palabra personalizada'],
@@ -202,7 +211,9 @@ export default function ReviewSession() {
         }
 
         const currentSkillCard = dueSkillCards[0];
-        const currentSkill = currentSkillCard ? getSkill(currentSkillCard.skillId) : undefined;
+        // While its level loads, the skill isn't missing: the session must not end
+        if (currentSkillCard && !skillContents) return <PageLoader />;
+        const currentSkill = currentSkillCard ? skillContents?.flatMap(c => c.skills).find(s => s.id === currentSkillCard.skillId) : undefined;
 
         if (!currentSkillCard || !currentSkill) {
             setSessionDone(true);
@@ -370,6 +381,7 @@ export default function ReviewSession() {
             </div>
 
             {/* Card */}
+            {currentCard && !vocabulary && <PageLoader />}
             {currentCard && currentVocab && (
                 <AnimatePresence mode="wait">
                     <motion.div

@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PenLine, Mic, CheckCircle2, Clock, MicOff, WifiOff, BookOpen } from 'lucide-react';
-import type { CEFRLevel } from '../lib/db';
-import { getWritingPromptsByUnit, getSpeakingPromptsByUnit } from '../data';
+import type { CEFRLevel, SpeakingPrompt, WritingPrompt } from '../lib/db';
+import PageLoader from './PageLoader';
+import { levelOfId, useLevelContent } from '../data/levels';
 import WritingRunner from './writing/WritingRunner';
 import SpeakingRunner from './speaking/SpeakingRunner';
 
@@ -38,10 +39,21 @@ interface Props {
 
 type Tab = 'writing' | 'speaking';
 
-export default function OutputStep({ unitId, level, onComplete }: Props) {
+/** Waits for the level's prompts: without them the step would look like it had nothing to do. */
+export default function OutputStep(props: Props) {
+    const content = useLevelContent(levelOfId(props.unitId));
+    if (!content) return <PageLoader />;
+    return (
+        <OutputStepBody
+            {...props}
+            writingPrompts={content.writingPrompts.filter(p => p.unitId === props.unitId)}
+            speakingPrompts={content.speakingPrompts.filter(p => p.unitId === props.unitId)}
+        />
+    );
+}
+
+function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPrompts }: Props & { writingPrompts: WritingPrompt[]; speakingPrompts: SpeakingPrompt[] }) {
     const navigate = useNavigate();
-    const writingPrompts = getWritingPromptsByUnit(unitId);
-    const speakingPrompts = getSpeakingPromptsByUnit(unitId);
     const hasWriting = writingPrompts && writingPrompts.length > 0;
     const hasSpeaking = speakingPrompts && speakingPrompts.length > 0;
 
