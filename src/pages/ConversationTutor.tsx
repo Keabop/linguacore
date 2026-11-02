@@ -7,6 +7,7 @@ import { chatWithTutor, type ConversationMessage, type ConversationResponse } fr
 import { Sparkles, MessageCircle, AlertCircle, History, Plus, Lock, X, Lightbulb, UtensilsCrossed, Briefcase, Trash2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRecordActivity } from '../hooks/useRecordActivity';
 import AIErrorCard from '../components/AIErrorCard';
 import { useErrorCards } from '../hooks/useErrorCards';
 import { useTier } from '../hooks/useTier';
@@ -28,6 +29,7 @@ export default function ConversationTutor() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const recordActivity = useRecordActivity();
     const { user } = useLevelProgression();
     const { sessions, saveSession, deleteSession } = useConversationHistory();
     const { addErrorCard } = useErrorCards();
@@ -121,6 +123,8 @@ export default function ConversationTutor() {
                     }, 'tutor', c.example_variants || []);
                 }
             }
+            // The opening greeting is sent by the app, not the learner
+            if (!isInitial) void recordActivity('tutor');
             // Invalidate usage limits so the badge updates
             queryClient.invalidateQueries({ queryKey: ['usage-limits'] });
         } catch (err: any) {
@@ -129,7 +133,7 @@ export default function ConversationTutor() {
             setIsLoading(false);
             setTimeout(() => inputRef.current?.focus(), 100);
         }
-    }, [apiMessages, isLoading, level, t]);
+    }, [apiMessages, isLoading, level, t, recordActivity]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

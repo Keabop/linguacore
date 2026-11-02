@@ -6,14 +6,17 @@ const QUEUE_KEY = 'VOXIE_MUTATION_QUEUE';
 export interface QueuedMutation {
     id: string;
     timestamp: number;
+    /** The table, or the Postgres function of an rpc. */
     table: string;
-    operation: 'insert' | 'update';
+    operation: 'insert' | 'update' | 'rpc';
     data: Record<string, unknown>;
     match?: Record<string, unknown>;   // .eq() filters for updates
     /** Unique columns of an insert: the row is upserted on them instead of inserted. */
     onConflict?: string;
     /** With onConflict: keep the existing row instead of updating it. */
     ignoreDuplicates?: boolean;
+    /** Of an rpc: the learner it was queued for (the function acts on the signed-in user). */
+    userId?: string;
 }
 
 let memoryQueue: QueuedMutation[] = [];
@@ -117,6 +120,15 @@ export async function processQueue(
                 }
                 const { error } = await query;
                 if (error) throw error;
+            } else if (mutation.operation === 'rpc') {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user.id === mutation.userId) {
+                    const { error } = await (supabase.rpc as any)(mutation.table, mutation.data);
+                    if (error) throw error;
+                } else {
+                    // Queued by someone who has signed out on this device: it is not this user's
+                    console.info('[OfflineQueue] Dropping a call queued for another user:', mutation.table);
+                }
             }
             success++;
         } catch (err) {
