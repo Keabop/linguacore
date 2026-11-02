@@ -13,6 +13,8 @@ export type Profile = {
     total_words_learned: number;
     streak: number;
     last_study_date: string | null;
+    /** IANA zone the streak is counted in; set by `record_activity`. */
+    timezone: string | null;
     level_progress: LevelProgress;
     tier: 'free' | 'pro';
     trial_started_at: string | null;
