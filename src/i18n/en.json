@@ -378,7 +378,11 @@
     "adminAccess": "Admin Pro access",
     "adminAccessHint": "No subscription: it comes from your role, not a payment.",
     "logout": "Log out",
-    "credits": "Credits and licenses"
+    "credits": "Credits and licenses",
+    "dailyGoal": "Daily goal",
+    "dailyGoalHint": "A story or a unit step is one watering; so are 10 reviews or 5 messages to the tutor.",
+    "dailyGoalOption_one": "{{count}} watering",
+    "dailyGoalOption_other": "{{count}} waterings"
   },
   "garden": {
     "stage": {
@@ -594,5 +598,14 @@
     "ios": "iPhone or iPad: Settings → Accessibility → Spoken Content → Voices → English.",
     "unsupportedTitle": "Your browser can't read aloud",
     "unsupportedBody": "Anything without recorded audio stays silent. Open Voxie in an up-to-date Chrome, Edge or Safari to hear it."
+  },
+  "streak": {
+    "goalLabel_one": "Today's goal: {{done}} of {{goal}} watering",
+    "goalLabel_other": "Today's goal: {{done}} of {{goal}} waterings",
+    "freezesLabel_one": "{{count}} streak freeze",
+    "freezesLabel_other": "{{count}} streak freezes",
+    "freezesHint": "Each freeze covers one day without study. You earn one every 7 days of streak (2 at most).",
+    "freezeUsed_one": "Your streak lives on: you used a freeze.",
+    "freezeUsed_other": "Your streak lives on: you used {{count}} freezes."
   }
 }
