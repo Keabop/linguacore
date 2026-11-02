@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -10,7 +10,8 @@ import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, 
 import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db';
 import { allUnits } from '../data/curriculum/units';
 import { levelOfId, useLevelContent } from '../data/levels';
-import { allVocabulary, getVocabMap, savedIdsOf, vocabularyAliases } from '../data/vocabulary';
+import { savedIdsOf, vocabularyAliases } from '../data/vocabulary/aliases';
+import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import { unitKeyWords } from '../data/vocabulary/keyWords';
 import { useCards } from '../hooks/useCards';
 import { shuffle } from '../lib/shuffle';
@@ -114,8 +115,9 @@ export default function UnitFlow() {
     const { addSkillCards } = useSkillCards();
 
     const unit = allUnits.find(u => u.id === unitId) ?? null;
-    // Only this unit's level is downloaded (src/data/levels)
+    // Only this unit's level is downloaded (src/data/levels), with its deck from the start
     const content = useLevelContent(levelOfId(unitId));
+    useEffect(() => prefetchVocabulary(levelOfId(unitId)), [unitId]);
     const unitStories = useMemo(() => content?.stories.filter(s => s.unitId === unitId) ?? [], [content, unitId]);
     const unitStory = unitStories[0] ?? null;
     // One array per unit: a new one on every render would reshuffle the checkpoint below
@@ -610,14 +612,17 @@ function VocabStep({
     const { user } = useAuth();
     const { saveStoryWords } = useCards();
     const keyWords = useMemo(() => new Set(unitKeyWords[unitId] ?? []), [unitId]);
+    // The unit's deck, and the decks of its story's words for a unit without a deck of its own
+    const storyKeywords = useMemo(() => (unitStory ? extractKeywords(unitStory.content) : []), [unitStory]);
+    const unitLevel = levelOfId(unitId);
+    const vocabulary = useVocabulary(storyKeywords, unitLevel ? [unitLevel] : []);
     const vocabItems = useMemo(() => {
-        const deck = allVocabulary.filter(v => v.unitId === unitId);
+        if (!vocabulary) return [];
+        const deck = vocabulary.unitDeck(unitId);
         if (deck.length) return [...deck.filter(v => keyWords.has(v.id)), ...deck.filter(v => !keyWords.has(v.id))];
-        if (!unitStory) return [];
-        const keywords = extractKeywords(unitStory.content);
         // One card per word, even when the story links it by an old id too
-        return [...new Map([...getVocabMap(keywords).values()].map(v => [v.id, v])).values()];
-    }, [unitId, unitStory, keyWords]);
+        return [...new Map([...vocabulary.map(storyKeywords).values()].map(v => [v.id, v])).values()];
+    }, [unitId, storyKeywords, keyWords, vocabulary]);
     const isDeck = vocabItems.some(v => v.unitId === unitId);
 
     // Which of these words the learner already has in the review deck (or marked as known)
@@ -670,6 +675,10 @@ function VocabStep({
             return next;
         });
     };
+
+    if (!vocabulary) {
+        return <div className="flex items-center justify-center py-20 text-sm text-[var(--color-on-surface-muted)]">{t('common.loading')}</div>;
+    }
 
     return (
         <div className="space-y-6">

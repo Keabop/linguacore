@@ -13,7 +13,7 @@ import LevelBadge from '../components/ui/LevelBadge';
 import SettingsModal from '../components/SettingsModal';
 import type { ReadStoryRow, CardRow } from '../lib/database.types';
 import { generateCareerDeck } from '../lib/ai';
-import { getVocab } from '../data/vocabulary';
+import { loadVocabulary } from '../data/vocabulary/load';
 import { toast } from '../lib/toast';
 
 /** A skill the simulator didn't assess is shown as a dash, not as 0%. */
@@ -45,9 +45,11 @@ export default function Account() {
             csvContent += 'Word,Translation,CEFR Level,State,Reps,Last Review\n';
             
             const typedCards = (cardsData || []) as CardRow[];
+            // Only the decks of the saved words are downloaded
+            const vocabulary = await loadVocabulary(typedCards.map(c => c.word_id));
             
             for (const card of typedCards) {
-                const vocab = getVocab(card.word_id);
+                const vocab = vocabulary.get(card.word_id);
                 const word = card.word_id;
                 const translation = vocab?.translations ? vocab.translations.join('; ') : 'Palabra personalizada';
                 const level = vocab?.cefrLevel || 'B2';

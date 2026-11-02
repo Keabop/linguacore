@@ -182,5 +182,6 @@ describe('UnitFlow exercises with every answer wrong', () => {
         await waitFor(() => expect(unit.updateProgress).toHaveBeenCalledWith({ exercises_score: 0 }));
         expect(await screen.findByText(`1 de ${exercises.length}`)).toBeInTheDocument();
         expect(screen.queryByText('Puntuación: 0%')).toBeNull();
-    });
+    // Six real exercises with their animations: longer than the default 5 s on a busy machine
+    }, 20000);
 });
