@@ -62,15 +62,16 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
         try {
             const raw = localStorage.getItem(`${WRITING_DONE_KEY}:${unitId}`);
             if (!raw) return null;
-            return JSON.parse(raw) as { score: number };
+            return JSON.parse(raw) as { score: number | null };
         } catch { return null; }
     })();
 
     const [activeTab, setActiveTab] = useState<Tab>(savedWriting && hasSpeaking ? 'speaking' : 'writing');
     const [writingDone, setWritingDone] = useState(!!savedWriting);
     const [speakingDone, setSpeakingDone] = useState(false);
-    const [writingScore, setWritingScore] = useState(savedWriting?.score ?? 0);
-    const [speakingScore, setSpeakingScore] = useState(0);
+    // null: done without an AI evaluation (free plan limit), so no score is shown
+    const [writingScore, setWritingScore] = useState<number | null>(savedWriting?.score ?? null);
+    const [speakingScore, setSpeakingScore] = useState<number | null>(null);
     const [speakingDeferred, setSpeakingDeferred] = useState<Date | null>(null);
     const [minutesLeft, setMinutesLeft] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -116,7 +117,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
         navigate('/path');
     }, [unitId, navigate]);
 
-    const handleWritingComplete = (score: number) => {
+    const handleWritingComplete = (score: number | null) => {
         setWritingScore(score);
         setWritingDone(true);
         localStorage.setItem(`${WRITING_DONE_KEY}:${unitId}`, JSON.stringify({ score }));
@@ -125,7 +126,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
         }
     };
 
-    const handleSpeakingComplete = (score: number) => {
+    const handleSpeakingComplete = (score: number | null) => {
         setSpeakingScore(score);
         setSpeakingDone(true);
         clearDeferred(unitId);
@@ -177,7 +178,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                     >
                         {writingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : <PenLine className="w-4 h-4" />}
                         Escritura
-                        {writingDone && <span className="text-xs opacity-70">({writingScore}%)</span>}
+                        {writingDone && writingScore !== null && <span className="text-xs opacity-70">({writingScore}%)</span>}
                     </button>
                 )}
                 {hasSpeaking && (
@@ -191,7 +192,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                     >
                         {speakingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : <Mic className="w-4 h-4" />}
                         Habla
-                        {speakingDone && <span className="text-xs opacity-70">({speakingScore}%)</span>}
+                        {speakingDone && speakingScore !== null && <span className="text-xs opacity-70">({speakingScore}%)</span>}
                     </button>
                 )}
             </div>
@@ -229,7 +230,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                 {activeTab === 'writing' && writingDone && (
                     <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
                         <CheckCircle2 className="w-8 h-8 text-[var(--color-success)] mx-auto" />
-                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Escritura completada — {writingScore}%</p>
+                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Escritura completada{writingScore !== null && ` — ${writingScore}%`}</p>
                     </div>
                 )}
                 {activeTab === 'speaking' && hasSpeaking && !speakingDone && !speakingDeferred && (
@@ -282,7 +283,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                 {activeTab === 'speaking' && speakingDone && (
                     <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
                         <CheckCircle2 className="w-8 h-8 text-[var(--color-success)] mx-auto" />
-                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Habla completada — {speakingScore}%</p>
+                        <p className="text-sm text-[var(--color-on-surface)] font-semibold">Habla completada{speakingScore !== null && ` — ${speakingScore}%`}</p>
                     </div>
                 )}
             </motion.div>
