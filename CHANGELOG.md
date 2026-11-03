@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/Keabop/linguacore/compare/v1.0.0...v1.1.0) (2026-11-03)
+
+
+### Novedades
+
+* add legal pages, consent, account deletion and paid-period Pro ([b505bb7](https://github.com/Keabop/linguacore/commit/b505bb736586d0de1832f7ee3bd69a6758fa2383))
+* páginas legales, consentimiento, eliminar cuenta y precios nuevos ([7ebbc3d](https://github.com/Keabop/linguacore/commit/7ebbc3d1ec23a6ddf527b87cb4911946cee27db2))
+
 ## 1.0.0 (2026-11-03)
 
 Primera versión numerada: es la app que estaba en producción el 3 de noviembre de 2026.
