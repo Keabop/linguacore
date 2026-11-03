@@ -92,7 +92,9 @@
     "answerRight": "Right!",
     "answerWrong": "Not that one.",
     "answerEvidence": "The story says:",
-    "questionsScore": "You got {{right}} of {{total}} right."
+    "questionsScore": "You got {{right}} of {{total}} right.",
+    "addedFeedback": "Added to your deck",
+    "knownFeedback": "Marked as known"
   },
   "storyList": {
     "subtitle": "Explore stories by level",
@@ -639,8 +641,8 @@
     "spanishOnly": "This document is available in Spanish only.",
     "otherDocs": "Other legal documents",
     "consent": "I am 18 or older and I accept the <terms>Terms</terms> and the <privacy>Privacy notice</privacy>, including that Google processes what I send to the AI.",
-    "shortNotice": "{{name}} ({{city}}) processes your e-mail, your progress and what you write or say in the exercises to provide Voxie. What you send to the AI is processed by Google. You can limit it by not using the AI features or by deleting your account.",
-    "fullNotice": "Full privacy notice",
+    "shortNotice": "Voxie uses your e-mail, your progress and what you write or say in the exercises to provide the service. What you send to the AI is processed by Google. You can limit it by not using the AI features or by deleting your account.",
+    "fullNotice": "Privacy notice",
     "consentTitle": "Before you go on",
     "consentBody": "We published the terms and the privacy notice of Voxie. To use the app, please accept them.",
     "consentAccept": "Accept and continue",

@@ -92,7 +92,9 @@
     "answerRight": "¡Correcto!",
     "answerWrong": "No es esa.",
     "answerEvidence": "La historia dice:",
-    "questionsScore": "Acertaste {{right}} de {{total}}."
+    "questionsScore": "Acertaste {{right}} de {{total}}.",
+    "addedFeedback": "Añadida a tu mazo",
+    "knownFeedback": "Marcada como conocida"
   },
   "storyList": {
     "subtitle": "Explora historias por nivel",
@@ -639,8 +641,8 @@
     "spanishOnly": "Este documento solo está en español.",
     "otherDocs": "Otros documentos legales",
     "consent": "Tengo 18 años o más y acepto los <terms>Términos</terms> y el <privacy>Aviso de privacidad</privacy>, incluido que Google procese lo que mando a la IA.",
-    "shortNotice": "{{name}} ({{city}}) trata tu correo, tu progreso y lo que escribes o dices en los ejercicios para darte el servicio de Voxie. Lo que mandas a la IA lo procesa Google. Puedes limitarlo sin usar las funciones de IA o eliminando tu cuenta.",
-    "fullNotice": "Aviso de privacidad integral",
+    "shortNotice": "Voxie usa tu correo, tu progreso y lo que escribes o dices en los ejercicios para darte el servicio. Lo que mandas a la IA lo procesa Google. Puedes limitarlo sin usar las funciones de IA o eliminando tu cuenta.",
+    "fullNotice": "Aviso de privacidad",
     "consentTitle": "Antes de seguir",
     "consentBody": "Publicamos los términos y el aviso de privacidad de Voxie. Para usar la app necesitamos que los aceptes.",
     "consentAccept": "Aceptar y continuar",

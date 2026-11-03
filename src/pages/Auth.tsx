@@ -8,7 +8,6 @@ import PageLoader from '../components/PageLoader';
 import { loadGuest } from '../lib/guestTrial';
 import AuthBackdrop from '../components/ui/AuthBackdrop';
 import Wordmark, { LeafMark } from '../components/ui/Wordmark';
-import { LEGAL_OWNER } from '../data/legalOwner';
 import { LegalCheckbox } from '../components/LegalConsent';
 
 type Mode = 'login' | 'register';
@@ -216,7 +215,7 @@ export default function Auth() {
 
                 {/* Simplified privacy notice: the law asks for it where the data is collected */}
                 <p className="mt-6 text-[11px] leading-relaxed text-[var(--color-on-surface-muted)] font-body">
-                    {t('legal.shortNotice', { name: LEGAL_OWNER.name, city: LEGAL_OWNER.city })}{' '}
+                    {t('legal.shortNotice')}{' '}
                     <Link to="/privacidad" target="_blank" rel="noreferrer" className={legalLink}>{t('legal.fullNotice')}</Link>
                 </p>
             </motion.div>
