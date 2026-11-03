@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase';
 import { offlineUpdate } from '../lib/offlineMutation';
 import PlantPicker from './garden/PlantPicker';
 import type { Profile } from '../lib/database.types';
+import { version } from '../../package.json';
 
 interface SettingsModalProps {
     open: boolean;
@@ -341,6 +342,10 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                     <LogOut className="w-5 h-5" />
                                     {t('settings.logout')}
                                 </button>
+
+                                <p className="text-xs text-center text-[var(--color-on-surface-muted)]">
+                                    {t('settings.version', { version })}
+                                </p>
                             </div>
                         </div>
                     </motion.div>
