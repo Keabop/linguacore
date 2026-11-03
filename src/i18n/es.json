@@ -1,11 +1,11 @@
 {
   "nav": {
     "home": "Inicio",
+    "path": "Ruta de Aprendizaje",
     "learn": "Aprender",
     "chat": "Tutor IA",
     "review": "Repasar",
     "stats": "Estadísticas",
-    "path": "Ruta de Aprendizaje",
     "practice": "Práctica",
     "profile": "Perfil",
     "main": "Navegación principal",
@@ -258,7 +258,8 @@
     "continueUnit": "Continuar",
     "comingSoon": "Esta página se está construyendo. ¡Pronto podrás ver tu ruta de aprendizaje!",
     "bannerTitle": "¡Sigue así, {{name}}!",
-    "bannerSubtitle": "Completa el Checkpoint final esta semana para seguir avanzando en tu ruta de aprendizaje."
+    "bannerSubtitle": "Completa el Checkpoint final esta semana para seguir avanzando en tu ruta de aprendizaje.",
+    "speakingPending": "Falta: Habla"
   },
   "grammar": {
     "understood": "Entendido",
@@ -288,7 +289,12 @@
     "storyWordsDescription": "Vocabulario clave de «{{title}}».",
     "reviewWordsDescription": "Repasa el vocabulario que aprendiste.",
     "tapCardHint": "Toca cada tarjeta para ver la traducción y un ejemplo.",
-    "alreadyKnown": "Ya la conoces"
+    "alreadyKnown": "Ya la conoces",
+    "pendingTitle_one": "Te falta 1 parte de habla",
+    "pendingTitle_other": "Te faltan {{count}} partes de habla",
+    "pendingBody": "Antes del examen de fin de nivel, completa la habla de las unidades que dejaste para después.",
+    "progressError": "No se pudo revisar tu progreso del nivel. Revisa tu conexión e inténtalo de nuevo.",
+    "speakingStillPending": "Te falta la habla de esta unidad: complétala desde la ruta antes del examen de fin de nivel."
   },
   "exercises": {
     "title": "Ejercicios",
@@ -649,5 +655,55 @@
     "consentDecline": "No acepto, cerrar sesión",
     "consentError": "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.",
     "regionUnavailable": "Las funciones de IA de Voxie no están disponibles en tu región."
+  },
+  "output": {
+    "pendingTitle": "Habla pendiente",
+    "pendingIntro": "Completa la parte de habla que dejaste para después.",
+    "pendingBody": "Puedes terminar la unidad y seguir avanzando. Para presentar el examen de fin de nivel tendrás que completar la habla de esta unidad: la encuentras en la ruta.",
+    "pendingTag": "pendiente",
+    "evaluationsLeft": "Te quedan {{remaining}} de {{limit}} evaluaciones con IA hoy.",
+    "evaluationsUsed": "Ya usaste tus evaluaciones con IA de hoy: verás la respuesta modelo.",
+    "deferError": "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.",
+    "notNow": "Ahora no, volver a la ruta",
+    "backToPath": "Volver a la ruta",
+    "continuePending": "Continuar al checkpoint (habla pendiente)"
+  },
+  "writing": {
+    "perfect": "¡Perfecto! Tu respuesta coincide con la respuesta modelo.",
+    "noCorrections": "Sin correcciones: tu respuesta está bien escrita.",
+    "unchanged": "Todavía es el texto con errores: corrige las partes que están mal."
+  },
+  "garden3d": {
+    "unit": "Unidad {{n}}",
+    "final": "Final del nivel",
+    "examTitle": "Examen de fin de nivel",
+    "done": "Completada",
+    "pending": "Falta: Habla",
+    "locked": "Se abre al terminar la anterior",
+    "examDone": "Aprobado",
+    "examLocked": "Se abre al terminar las unidades",
+    "examPending": "Completa la habla de la unidad {{n}}",
+    "takeExam": "Presentar examen",
+    "continueUnit": "Continuar: Unidad {{n}}",
+    "openUnit": "Abrir {{title}}",
+    "listView": "Ver como lista",
+    "title": {
+      "A1": "Tu jardín está echando raíces",
+      "A2": "Tus brotes están creciendo",
+      "B1": "Tu jardín se llena de hojas",
+      "B2": "Tu jardín está en flor"
+    },
+    "stage": {
+      "A1": "semilla",
+      "A2": "brote",
+      "B1": "hoja",
+      "B2": "flor"
+    },
+    "sub_one": "{{grown}} de {{total}} plantas crecieron. Te falta {{count}} unidad para el examen de {{level}}.",
+    "sub_other": "{{grown}} de {{total}} plantas crecieron. Te faltan {{count}} unidades para el examen de {{level}}.",
+    "subExam": "Todas tus plantas crecieron: ya puedes presentar el examen de {{level}}.",
+    "subPending_one": "Solo te falta la habla de {{count}} unidad para el examen.",
+    "subPending_other": "Solo te falta la habla de {{count}} unidades para el examen.",
+    "subDone": "Aprobaste el nivel: tu {{stage}} floreció."
   }
 }

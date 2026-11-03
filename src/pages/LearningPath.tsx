@@ -1,14 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Unit, UnitProgress } from '../lib/db';
 import type { UnitProgressRow } from '../lib/database.types';
 import { getUnitsByLevel } from '../data/curriculum/units';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
-import { useTier } from '../hooks/useTier';
 import LevelBadge from '../components/ui/LevelBadge';
 import PageLoader from '../components/PageLoader';
 import SkillBreakdown from '../components/SkillBreakdown';
@@ -22,7 +21,7 @@ import {
     BookOpen,
     Play,
     Trophy,
-    Crown,
+    Mic,
 } from 'lucide-react';
 
 type UnitState = 'locked' | 'current' | 'completed';
@@ -72,7 +71,6 @@ export default function LearningPath() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { progressInfo } = useLevelProgression();
-    const { isPro, isFree } = useTier();
 
     const { user: authUser } = useAuth();
     const currentLevel = progressInfo?.currentLevel ?? 'A1';
@@ -85,8 +83,6 @@ export default function LearningPath() {
         ? t('path.bannerSubtitle')
         : 'Completa el Checkpoint final esta semana para seguir avanzando en tu ruta de aprendizaje.';
 
-    const isLevelAccessible = (level: string) => isPro || level === 'A1';
-
     const units = getUnitsByLevel(currentLevel);
 
     const { data: unitProgress } = useQuery({
@@ -94,7 +90,9 @@ export default function LearningPath() {
         queryFn: async () => {
             if (!units || units.length === 0) return [];
             const ids = units.map(u => u.id);
-            const { data } = await supabase.from('unit_progress').select('*').in('unit_id', ids);
+            const { data, error } = await supabase.from('unit_progress').select('*').in('unit_id', ids);
+            // Same query as the end-of-level exam (useLevelUnitProgress): a failed read is an error, not "no progress"
+            if (error) throw error;
             return (data ?? []) as UnitProgressRow[];
         },
         enabled: !!authUser?.id && units.length > 0,
@@ -117,11 +115,8 @@ export default function LearningPath() {
 
     const handleUnitClick = (item: UnitWithState) => {
         if (item.state === 'locked') return;
-        if (!isLevelAccessible(item.unit.level)) return;
         navigate(`/path/${item.unit.id}`);
     };
-
-    const levelGated = isFree && !isLevelAccessible(currentLevel);
 
     return (
         <div className="space-y-14">
@@ -134,11 +129,6 @@ export default function LearningPath() {
             >
                 <h1 className="text-3xl font-extrabold tracking-tight">{t('path.title')}</h1>
                 <LevelBadge level={currentLevel} withStage />
-                {levelGated && (
-                    <Link to="/pricing" className="btn-primary inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5">
-                        <Crown className="w-3.5 h-3.5" aria-hidden="true" /> Plan Pro
-                    </Link>
-                )}
             </motion.header>
 
             {/* The level as a garden: one plant per unit */}
@@ -187,7 +177,6 @@ export default function LearningPath() {
                             total={totalCount}
                             onClick={() => handleUnitClick(item)}
                             t={t}
-                            tierGated={levelGated}
                         />
                     ))}
                 </motion.div>
@@ -219,10 +208,9 @@ interface UnitCardProps {
     total: number;
     onClick: () => void;
     t: (key: string) => string;
-    tierGated?: boolean;
 }
 
-function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) {
+function UnitCard({ item, index, total, onClick, t }: UnitCardProps) {
     const { unit, state, progress } = item;
     const isAssessment = unit.isAssessment;
     const isLocked = state === 'locked';
@@ -248,7 +236,7 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
             ? 'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)]'
             : 'shadow-[var(--shadow-card)]';
 
-    const effectivelyLocked = isLocked || tierGated;
+    const effectivelyLocked = isLocked;
     const cardBg = effectivelyLocked ? 'bg-[var(--color-surface-container)]' : 'bg-[var(--color-card)]';
 
     return (
@@ -281,15 +269,6 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                     ${!effectivelyLocked ? 'cursor-pointer hover:-translate-y-1' : 'cursor-not-allowed'}
                 `}
             >
-                {/* Tier gate overlay */}
-                {tierGated && (
-                    <Link to="/pricing" className="absolute inset-0 z-10 bg-[color-mix(in_oklch,var(--color-level-ink)_45%,transparent)] flex flex-col items-center justify-center gap-3 rounded-2xl">
-                        <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
-                            <Lock className="w-5 h-5 text-[var(--color-on-primary)]" />
-                        </div>
-                        <span className="rounded-full bg-[var(--color-card)] px-3 py-1 text-xs font-black text-[var(--color-on-surface)] tracking-wide">Plan Pro</span>
-                    </Link>
-                )}
                 <div className="flex items-start justify-between gap-4">
                     {/* Left: content */}
                     <div className="flex-1 min-w-0 space-y-4">
@@ -306,7 +285,13 @@ function UnitCard({ item, index, total, onClick, t, tierGated }: UnitCardProps) 
                             </span>
 
                             {/* State pill */}
-                            {isCompleted && (
+                            {isCompleted && progress?.speaking_pending && (
+                                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-tertiary-ink)] bg-[var(--color-tertiary-container)] px-3 py-1 rounded-full">
+                                    <Mic className="w-3 h-3" />
+                                    {t('path.speakingPending')}
+                                </span>
+                            )}
+                            {isCompleted && !progress?.speaking_pending && (
                                 <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-success)] bg-[var(--color-success)]/10 px-3 py-1 rounded-full">
                                     <CheckCircle2 className="w-3 h-3" />
                                     {t('path.completed')}

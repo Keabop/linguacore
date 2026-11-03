@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 
@@ -89,6 +90,7 @@ function CategoryBar({ label, score, note }: { label: string; score: number; not
 }
 
 export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' }: Props) {
+    const { t } = useTranslation();
     const [showImproved, setShowImproved] = useState(false);
 
     return (
@@ -135,7 +137,16 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                 </div>
             )}
 
-            {/* Improved version (expandable) */}
+            {/* Nothing to correct: no improved version to show */}
+            {data.corrections.length === 0 && (
+                <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-4 flex items-center gap-2 text-sm font-semibold text-[var(--color-on-surface)]">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--color-success)] shrink-0" />
+                    {t('writing.noCorrections')}
+                </div>
+            )}
+
+            {/* Improved version (expandable), only when there was something to correct */}
+            {data.corrections.length > 0 && data.improvedVersion && (
             <button
                 onClick={() => setShowImproved(!showImproved)}
                 className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between text-sm text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
@@ -146,6 +157,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                 </span>
                 {showImproved ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
+            )}
             <AnimatePresence>
                 {showImproved && (
                     <motion.div

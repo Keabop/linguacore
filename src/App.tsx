@@ -35,7 +35,7 @@ function lazyRetry<T extends ComponentType<any>>(
 }
 
 const Landing = lazyRetry(() => import('./pages/Landing'));
-const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
+const GardenHome = lazyRetry(() => import('./pages/GardenHome'));
 const StoryList = lazyRetry(() => import('./pages/StoryList'));
 const ReviewSession = lazyRetry(() => import('./pages/ReviewSession'));
 const Account = lazyRetry(() => import('./pages/Account'));
@@ -111,7 +111,7 @@ export default function App() {
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>
-                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/dashboard" element={<GardenHome />} />
                     <Route path="/learn" element={<StoryList />} />
                     <Route path="/learn/:storyId" element={<SafeRoute><StoryReader /></SafeRoute>} />
                     <Route path="/review" element={<ReviewSession />} />

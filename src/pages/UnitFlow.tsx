@@ -17,6 +17,7 @@ import { useCards } from '../hooks/useCards';
 import { shuffle } from '../lib/shuffle';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
+import { useLevelUnitProgress } from '../hooks/useLevelUnitProgress';
 import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
 import { toast } from '../lib/toast';
@@ -72,7 +73,7 @@ const slideVariants = {
 
 /* ===== Celebration ===== */
 
-function CelebrationCard({ onBack }: { onBack: () => void }) {
+function CelebrationCard({ onBack, note }: { onBack: () => void; note?: string }) {
     const { species } = useGardenPlant();
 
     // Unit complete is one of the three achievement moments: the unit's plant grows
@@ -93,6 +94,7 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
                     <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                         Tu planta creció. Sigue avanzando en tu ruta para llenar el jardín de este nivel.
                     </p>
+                    {note && <p className="text-xs font-semibold text-[var(--color-tertiary-ink)]">{note}</p>}
                 </div>
 
                 <button onClick={onBack} className="btn-primary w-full py-4 text-base">
@@ -118,6 +120,11 @@ export default function UnitFlow() {
     // Only this unit's level is downloaded (src/data/levels), with its deck from the start
     const content = useLevelContent(levelOfId(unitId));
     useEffect(() => prefetchVocabulary(levelOfId(unitId)), [unitId]);
+    // The end-of-level exam waits for the speaking parts left for later in this level
+    const level = useLevelUnitProgress(unit?.level ?? levelOfId(unitId) ?? 'A1');
+    const { pendingSpeaking } = level;
+    // Just finished here: the celebration comes before the speaking left for later
+    const [justFinished, setJustFinished] = useState(false);
     const unitStories = useMemo(() => content?.stories.filter(s => s.unitId === unitId) ?? [], [content, unitId]);
     const unitStory = unitStories[0] ?? null;
     // One array per unit: a new one on every render would reshuffle the checkpoint below
@@ -152,6 +159,51 @@ export default function UnitFlow() {
             <div className="space-y-6">
                 <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
                 <p className="text-[var(--color-on-surface-muted)]">Unidad no encontrada.</p>
+            </div>
+        );
+    }
+
+    // The exam waits until the level's progress is known: a failed read never opens it
+    if (unit.isAssessment && (level.isLoading || level.isError)) {
+        return (
+            <div className="space-y-6">
+                <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
+                {level.isError
+                    ? <p className="text-sm text-[var(--color-on-surface-muted)]">{t('unitFlow.progressError')}</p>
+                    : <div className="text-[var(--color-on-surface-muted)] text-sm">{t('common.loading')}</div>}
+            </div>
+        );
+    }
+
+    // Assessment unit with speaking still pending in the level: those units first
+    if (unit.isAssessment && pendingSpeaking.length > 0) {
+        return (
+            <div className="space-y-6">
+                <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
+                <div className="bg-[var(--color-card)] rounded-2xl p-6 md:p-8 shadow-[var(--shadow-card)] space-y-5">
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-black tracking-tight">{t('unitFlow.pendingTitle', { count: pendingSpeaking.length })}</h2>
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{t('unitFlow.pendingBody')}</p>
+                    </div>
+                    <ul className="space-y-3">
+                        {pendingSpeaking.map(u => (
+                            <li key={u.id}>
+                                <button
+                                    onClick={() => navigate(`/path/${u.id}`)}
+                                    className="w-full flex items-center justify-between gap-3 rounded-xl bg-[var(--color-surface-container-low)] px-4 py-3 text-left hover:bg-[var(--color-surface-container)] transition-colors"
+                                >
+                                    <span className="min-w-0">
+                                        <span className="block text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('path.unit')} {u.unitNumber}</span>
+                                        <span className="block text-sm font-bold truncate">{u.title}</span>
+                                    </span>
+                                    <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-tertiary-ink)]">
+                                        <Mic className="w-4 h-4" aria-hidden="true" />{t('path.speakingPending')}
+                                    </span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         );
     }
@@ -194,6 +246,7 @@ export default function UnitFlow() {
 
     const handleCheckpointComplete = async (score: number) => {
         if (score >= 80) {
+            setJustFinished(true);
             await updateProgress({
                 checkpoint_passed: true,
                 completed_at: new Date().toISOString(),
@@ -219,8 +272,24 @@ export default function UnitFlow() {
     /* -- Render current step content -- */
 
     const renderStepContent = () => {
+        // A finished unit with its speaking left for later opens on that speaking
+        if (currentStep === 'completed' && progress?.speaking_pending && !justFinished) {
+            return (
+                <OutputStep
+                    unitId={unitId!}
+                    level={unit.level}
+                    speakingOnly
+                    speakingPending
+                    onSpeakingDone={() => updateProgress({ speaking_pending: false })}
+                    onComplete={() => navigate('/path')}
+                />
+            );
+        }
+        if (currentStep === 'completed' && progress?.speaking_pending) {
+            return <CelebrationCard onBack={() => navigate('/dashboard', { state: { grew: unitId } })} note={t('unitFlow.speakingStillPending')} />;
+        }
         if (currentStep === 'completed') {
-            return <CelebrationCard onBack={() => navigate('/path')} />;
+            return <CelebrationCard onBack={() => navigate('/dashboard', { state: { grew: unitId } })} />;
         }
 
         return (
@@ -288,6 +357,7 @@ export default function UnitFlow() {
                             description="No hay ejercicios disponibles para esta unidad todavía."
                             actionLabel="Saltar"
                             onAction={async () => {
+                                setJustFinished(true);
                                 await updateProgress({ exercises_score: 100 });
                                 await markStepComplete('exercises');
                                 handleStepAdvance();
@@ -299,6 +369,9 @@ export default function UnitFlow() {
                         <OutputStep
                             unitId={unitId!}
                             level={unit.level}
+                            speakingPending={!!progress?.speaking_pending}
+                            onSpeakingPending={() => updateProgress({ speaking_pending: true })}
+                            onSpeakingDone={() => updateProgress({ speaking_pending: false })}
                             onComplete={handleOutputComplete}
                         />
                     )}

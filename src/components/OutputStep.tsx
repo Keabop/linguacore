@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PenLine, Mic, CheckCircle2, Clock, MicOff, WifiOff, BookOpen } from 'lucide-react';
@@ -8,33 +9,22 @@ import { levelOfId, useLevelContent } from '../data/levels';
 import WritingRunner from './writing/WritingRunner';
 import SpeakingRunner from './speaking/SpeakingRunner';
 
-const DEFER_MINUTES = 15;
-const DEFER_KEY = 'speaking-deferred-until';
+import { useUsageLimits } from '../hooks/useUsageLimits';
+
 const WRITING_DONE_KEY = 'output-writing-done';
-
-function getDeferredUntil(unitId: string): Date | null {
-    try {
-        const raw = localStorage.getItem(`${DEFER_KEY}:${unitId}`);
-        if (!raw) return null;
-        const d = new Date(raw);
-        return d > new Date() ? d : null;
-    } catch { return null; }
-}
-
-function setDeferredUntil(unitId: string): Date {
-    const until = new Date(Date.now() + DEFER_MINUTES * 60 * 1000);
-    localStorage.setItem(`${DEFER_KEY}:${unitId}`, until.toISOString());
-    return until;
-}
-
-function clearDeferred(unitId: string) {
-    localStorage.removeItem(`${DEFER_KEY}:${unitId}`);
-}
 
 interface Props {
     unitId: string;
     level: CEFRLevel;
     onComplete: () => void;
+    /** The unit already has its speaking left for later. */
+    speakingPending?: boolean;
+    /** "No puedo hablar ahora": the unit goes on, partially done, and the level exam waits for it. False if not saved. */
+    onSpeakingPending?: () => Promise<boolean>;
+    /** The pending speaking was done. */
+    onSpeakingDone?: () => unknown;
+    /** Coming back to a finished unit only to do its pending speaking. */
+    speakingOnly?: boolean;
 }
 
 type Tab = 'writing' | 'speaking';
@@ -52,9 +42,12 @@ export default function OutputStep(props: Props) {
     );
 }
 
-function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPrompts }: Props & { writingPrompts: WritingPrompt[]; speakingPrompts: SpeakingPrompt[] }) {
+function OutputStepBody({ unitId, level, onComplete, speakingPending = false, onSpeakingPending, onSpeakingDone, speakingOnly = false, writingPrompts, speakingPrompts }: Props & { writingPrompts: WritingPrompt[]; speakingPrompts: SpeakingPrompt[] }) {
     const navigate = useNavigate();
-    const hasWriting = writingPrompts && writingPrompts.length > 0;
+    const { t } = useTranslation();
+    const { data: usage } = useUsageLimits();
+    const evaluationsLeft = usage?.limits.evaluations;
+    const hasWriting = !speakingOnly && writingPrompts && writingPrompts.length > 0;
     const hasSpeaking = speakingPrompts && speakingPrompts.length > 0;
 
     // Restore persisted writing completion
@@ -66,18 +59,22 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
         } catch { return null; }
     })();
 
-    const [activeTab, setActiveTab] = useState<Tab>(savedWriting && hasSpeaking ? 'speaking' : 'writing');
+    // Speaking first when there is no writing left to do (none in the unit, already done, or only the pending speaking)
+    const [activeTab, setActiveTab] = useState<Tab>(hasSpeaking && (!hasWriting || savedWriting) ? 'speaking' : 'writing');
     const [writingDone, setWritingDone] = useState(!!savedWriting);
     const [speakingDone, setSpeakingDone] = useState(false);
     // null: done without an AI evaluation (free plan limit), so no score is shown
     const [writingScore, setWritingScore] = useState<number | null>(savedWriting?.score ?? null);
     const [speakingScore, setSpeakingScore] = useState<number | null>(null);
-    const [speakingDeferred, setSpeakingDeferred] = useState<Date | null>(null);
-    const [minutesLeft, setMinutesLeft] = useState(0);
+    // Left for later: shown as pending until the learner says they can speak again
+    const [pending, setPending] = useState(speakingPending && !speakingOnly);
+    const [deferError, setDeferError] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [speakingAttempted, setSpeakingAttempted] = useState(false);
 
-    const bothDone = (writingDone || !hasWriting) && (speakingDone || !hasSpeaking);
+    const bothDone = speakingOnly
+        ? speakingDone
+        : (writingDone || !hasWriting) && (speakingDone || pending || !hasSpeaking);
 
     // Track online/offline status
     useEffect(() => {
@@ -91,31 +88,16 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
         };
     }, []);
 
-    // Check if speaking is currently deferred
-    useEffect(() => {
-        const deferred = getDeferredUntil(unitId);
-        setSpeakingDeferred(deferred);
-        if (deferred) {
-            const updateTimer = () => {
-                const diff = Math.max(0, Math.ceil((deferred.getTime() - Date.now()) / 60000));
-                setMinutesLeft(diff);
-                if (diff <= 0) {
-                    setSpeakingDeferred(null);
-                    clearDeferred(unitId);
-                }
-            };
-            updateTimer();
-            const interval = setInterval(updateTimer, 30000);
-            return () => clearInterval(interval);
+    // Pending only once saved: otherwise the unit would finish without asking for the speaking later
+    const handleDeferSpeaking = async () => {
+        setDeferError(false);
+        if (onSpeakingPending && !(await onSpeakingPending())) {
+            setDeferError(true);
+            return;
         }
-    }, [unitId]);
-
-    const handleDeferSpeaking = useCallback(() => {
-        const until = setDeferredUntil(unitId);
-        setSpeakingDeferred(until);
-        setMinutesLeft(DEFER_MINUTES);
-        navigate('/path');
-    }, [unitId, navigate]);
+        setPending(true);
+        if (hasWriting && !writingDone) setActiveTab('writing');
+    };
 
     const handleWritingComplete = (score: number | null) => {
         setWritingScore(score);
@@ -129,7 +111,8 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
     const handleSpeakingComplete = (score: number | null) => {
         setSpeakingScore(score);
         setSpeakingDone(true);
-        clearDeferred(unitId);
+        setPending(false);
+        if (speakingPending) onSpeakingDone?.();
         // Clean up persisted writing state since output step is completing
         localStorage.removeItem(`${WRITING_DONE_KEY}:${unitId}`);
         if (hasWriting && !writingDone) {
@@ -146,7 +129,8 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                     No hay ejercicios de producción para esta unidad todavía.
                 </p>
                 <button
-                    onClick={onComplete}
+                    // Nothing left to speak: a speaking left pending here is done too
+                    onClick={() => { if (speakingPending) onSpeakingDone?.(); onComplete(); }}
                     className="bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
                     Saltar
@@ -161,8 +145,17 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
         <div className="space-y-7">
             {/* Section header */}
             <div className="space-y-1">
-                <h3 className="text-lg font-bold text-[var(--color-on-surface)]">Producción</h3>
-                <p className="text-sm text-[var(--color-on-surface-muted)]">Practica tu escritura y habla en inglés.</p>
+                <h3 className="text-lg font-bold text-[var(--color-on-surface)]">{speakingOnly ? t('output.pendingTitle') : 'Producción'}</h3>
+                <p className="text-sm text-[var(--color-on-surface-muted)]">
+                    {speakingOnly ? t('output.pendingIntro') : 'Practica tu escritura y habla en inglés.'}
+                </p>
+                {evaluationsLeft && !bothDone && (
+                    <p className="text-xs text-[var(--color-on-surface-muted)]">
+                        {evaluationsLeft.remaining > 0
+                            ? t('output.evaluationsLeft', { remaining: evaluationsLeft.remaining, limit: evaluationsLeft.limit })
+                            : t('output.evaluationsUsed')}
+                    </p>
+                )}
             </div>
 
             {/* Tabs */}
@@ -190,8 +183,9 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                                 : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-primary)]'
                         }`}
                     >
-                        {speakingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : <Mic className="w-4 h-4" />}
+                        {speakingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : pending ? <Clock className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                         Habla
+                        {pending && !speakingDone && <span className="text-xs opacity-70">({t('output.pendingTag')})</span>}
                         {speakingDone && speakingScore !== null && <span className="text-xs opacity-70">({speakingScore}%)</span>}
                     </button>
                 )}
@@ -233,10 +227,19 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                         <p className="text-sm text-[var(--color-on-surface)] font-semibold">Escritura completada{writingScore !== null && ` — ${writingScore}%`}</p>
                     </div>
                 )}
-                {activeTab === 'speaking' && hasSpeaking && !speakingDone && !speakingDeferred && (
+                {activeTab === 'speaking' && hasSpeaking && !speakingDone && !pending && (
                     <div className="space-y-6">
                         <SpeakingRunner prompts={speakingPrompts} level={level} onComplete={handleSpeakingComplete} onFirstAttempt={() => setSpeakingAttempted(true)} />
-                        {!speakingAttempted && (
+                        {deferError && <p className="text-xs text-center text-[var(--color-error)]">{t('output.deferError')}</p>}
+                        {speakingOnly && !speakingAttempted && (
+                            <button
+                                onClick={onComplete}
+                                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] py-3 rounded-xl text-sm transition-all"
+                            >
+                                {t('output.notNow')}
+                            </button>
+                        )}
+                        {!speakingAttempted && !speakingOnly && (
                             <button
                                 onClick={handleDeferSpeaking}
                                 className="w-full flex items-center justify-center gap-2 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface-muted)] py-3 rounded-xl text-sm transition-all"
@@ -247,7 +250,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                         )}
                     </div>
                 )}
-                {activeTab === 'speaking' && hasSpeaking && !speakingDone && speakingDeferred && (
+                {activeTab === 'speaking' && hasSpeaking && !speakingDone && pending && (
                     <motion.div
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -255,29 +258,15 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                     >
                         <Clock className="w-10 h-10 text-[var(--color-tertiary-ink)] mx-auto" />
                         <div className="space-y-2">
-                            <p className="text-sm font-bold text-[var(--color-on-surface)]">Ejercicios de habla pospuestos</p>
-                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">
-                                Estarán disponibles en <span className="text-[var(--color-tertiary-ink)] font-bold">{minutesLeft} minutos</span>.
-                                Hablar es parte esencial del aprendizaje — ¡vuelve cuando puedas!
-                            </p>
+                            <p className="text-sm font-bold text-[var(--color-on-surface)]">{t('output.pendingTitle')}</p>
+                            <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed">{t('output.pendingBody')}</p>
                         </div>
-                        <div className="flex flex-col gap-3">
-                            <button
-                                onClick={() => {
-                                    clearDeferred(unitId);
-                                    setSpeakingDeferred(null);
-                                }}
-                                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                            >
-                                <Mic className="w-4 h-4" /> Ya puedo hablar
-                            </button>
-                            <button
-                                onClick={() => navigate('/path')}
-                                className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface-muted)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
-                            >
-                                Volver a la ruta
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setPending(false)}
+                            className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        >
+                            <Mic className="w-4 h-4" /> Ya puedo hablar
+                        </button>
                     </motion.div>
                 )}
                 {activeTab === 'speaking' && speakingDone && (
@@ -296,7 +285,7 @@ function OutputStepBody({ unitId, level, onComplete, writingPrompts, speakingPro
                     onClick={onComplete}
                     className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
-                    Continuar al checkpoint
+                    {speakingOnly ? t('output.backToPath') : pending ? t('output.continuePending') : 'Continuar al checkpoint'}
                 </motion.button>
             )}
         </div>

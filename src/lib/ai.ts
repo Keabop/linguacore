@@ -204,9 +204,15 @@ export async function evaluateWriting(
     referenceAnswer?: string,
     exam?: string,
 ): Promise<WritingEvaluationResponse> {
-    return callAgent<WritingEvaluationResponse>('writing-evaluator', {
+    return spendsEvaluation(callAgent<WritingEvaluationResponse>('writing-evaluator', {
         text, prompt, level, type, targetGrammar, referenceAnswer, exam,
-    });
+    }));
+}
+
+/** An evaluation changes the free plan's remaining count, wherever it is shown. */
+export const USAGE_CHANGED = 'voxie-usage-changed';
+function spendsEvaluation<T>(call: Promise<T>): Promise<T> {
+    return call.finally(() => window.dispatchEvent(new Event(USAGE_CHANGED)));
 }
 
 export interface CareerWord {
@@ -242,6 +248,6 @@ export async function evaluateSpeaking(
     level: string,
     exam?: string,
 ): Promise<SpeakingEvaluationResponse> {
-    return callAgent<SpeakingEvaluationResponse>('speaking-evaluator', { transcripts, prompts, level, exam });
+    return spendsEvaluation(callAgent<SpeakingEvaluationResponse>('speaking-evaluator', { transcripts, prompts, level, exam }));
 }
 

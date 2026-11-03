@@ -1101,3 +1101,35 @@ span[data-word].in-deck {
   .auth-leaf { animation: none; }
 }
 @keyframes loader-breathe { 50% { opacity: 0.55; } }
+
+/* === 3D garden home (design.md «Jardín 3D») === */
+.garden3d-canvas { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; z-index: 1; touch-action: pan-y; }
+.garden3d-labels { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+.garden3d-tag {
+  position: absolute; left: 0; top: 0; display: grid; gap: 2px; justify-items: center; text-align: center; min-width: 8rem; max-width: 13rem;
+  padding: 0.5rem 0.75rem; border-radius: 0.875rem; background: var(--color-card); box-shadow: var(--shadow-card);
+  pointer-events: auto; transition: opacity var(--dur-short) var(--ease-out); will-change: transform;
+}
+.garden3d-tag::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; background: var(--color-card); transform: translateX(-50%) rotate(45deg); border-radius: 0 0 3px 0; }
+.garden3d-tag small { font: 700 10px var(--font-body, Geist); letter-spacing: .08em; text-transform: uppercase; color: var(--color-on-surface-variant); }
+.garden3d-tag b { font-family: var(--font-display, 'Bricolage Grotesque'); font-weight: 800; font-size: 14px; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-on-surface); }
+.garden3d-tag span { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; }
+.garden3d-tag .ok { color: var(--color-primary); }
+.garden3d-tag .pending { color: var(--color-tertiary-ink); }
+.garden3d-tag .muted { color: var(--color-on-surface-variant); }
+.garden3d-tag.is-current { outline: 3px solid color-mix(in oklch, var(--color-level-a2) 70%, transparent); outline-offset: 2px; }
+.garden3d-tag-link { position: absolute; inset: 0; border-radius: inherit; background: transparent; cursor: pointer; }
+.garden3d-tag-link:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.garden3d-hero {
+  position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 4; width: min(calc(100vw - 2rem), 36rem);
+  display: grid; gap: 0.5rem; padding: 1rem 1.125rem; border-radius: var(--radius-lg);
+  background: color-mix(in oklch, var(--color-card) 94%, transparent); box-shadow: var(--shadow-float);
+  transition: padding var(--dur-short) var(--ease-out);
+}
+.garden3d-hero.is-compact { padding: 0.625rem 1rem; }
+.garden3d-hero.is-compact .garden3d-hero-more { display: none; }
+@media (max-width: 1024px) { .garden3d-hero { top: 0.75rem; } .garden3d-hero.beside-admin { top: 4rem; } }
+@media (min-width: 1025px) { .garden3d-hero.below-rail { top: 6.5rem; } }
+/* The layout's content sits above the garden (it is transparent), so banners and prompts stay usable */
+body.has-garden3d .main-content { position: relative; z-index: 2; pointer-events: none; }
+body.has-garden3d .main-content-inner > * { pointer-events: auto; }

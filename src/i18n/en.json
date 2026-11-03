@@ -1,11 +1,11 @@
 {
   "nav": {
     "home": "Home",
+    "path": "Learning Path",
     "learn": "Learn",
     "chat": "AI Tutor",
     "review": "Review",
     "stats": "Stats",
-    "path": "Learning Path",
     "practice": "Practice",
     "profile": "Profile",
     "main": "Main navigation",
@@ -258,7 +258,8 @@
     "continueUnit": "Continue",
     "comingSoon": "This page is being built. Soon you will see your learning path!",
     "bannerTitle": "Keep it up, {{name}}!",
-    "bannerSubtitle": "Complete the final Checkpoint this week to keep moving forward on your learning path."
+    "bannerSubtitle": "Complete the final Checkpoint this week to keep moving forward on your learning path.",
+    "speakingPending": "Left: Speaking"
   },
   "grammar": {
     "understood": "Understood",
@@ -288,7 +289,12 @@
     "storyWordsDescription": "Key vocabulary of “{{title}}”.",
     "reviewWordsDescription": "Review the vocabulary you learned.",
     "tapCardHint": "Tap each card to see its translation and an example.",
-    "alreadyKnown": "You know it"
+    "alreadyKnown": "You know it",
+    "pendingTitle_one": "1 speaking part left",
+    "pendingTitle_other": "{{count}} speaking parts left",
+    "pendingBody": "Before the end-of-level exam, finish the speaking of the units you left for later.",
+    "progressError": "Your level progress could not be checked. Check your connection and try again.",
+    "speakingStillPending": "The speaking of this unit is still left: finish it from the path before the end-of-level exam."
   },
   "exercises": {
     "title": "Exercises",
@@ -649,5 +655,55 @@
     "consentDecline": "I do not accept, sign out",
     "consentError": "It could not be saved. Check your connection and try again.",
     "regionUnavailable": "Voxie's AI features are not available in your region."
+  },
+  "output": {
+    "pendingTitle": "Speaking left for later",
+    "pendingIntro": "Finish the speaking part you left for later.",
+    "pendingBody": "You can finish the unit and keep going. To take the end-of-level exam you will need to finish the speaking of this unit: you will find it on the path.",
+    "pendingTag": "pending",
+    "evaluationsLeft": "You have {{remaining}} of {{limit}} AI evaluations left today.",
+    "evaluationsUsed": "You used your AI evaluations for today: you will see the model answer.",
+    "deferError": "It could not be saved. Check your connection and try again.",
+    "notNow": "Not now, back to the path",
+    "backToPath": "Back to the path",
+    "continuePending": "Go on to the checkpoint (speaking pending)"
+  },
+  "writing": {
+    "perfect": "Perfect! Your answer matches the model answer.",
+    "noCorrections": "No corrections: your answer is well written.",
+    "unchanged": "It is still the text with errors: fix the parts that are wrong."
+  },
+  "garden3d": {
+    "unit": "Unit {{n}}",
+    "final": "End of level",
+    "examTitle": "End-of-level exam",
+    "done": "Completed",
+    "pending": "Left: Speaking",
+    "locked": "Opens after the previous one",
+    "examDone": "Passed",
+    "examLocked": "Opens after the units",
+    "examPending": "Finish the speaking of unit {{n}}",
+    "takeExam": "Take the exam",
+    "continueUnit": "Continue: Unit {{n}}",
+    "openUnit": "Open {{title}}",
+    "listView": "See as a list",
+    "title": {
+      "A1": "Your garden is taking root",
+      "A2": "Your sprouts are growing",
+      "B1": "Your garden is filling with leaves",
+      "B2": "Your garden is in bloom"
+    },
+    "stage": {
+      "A1": "seed",
+      "A2": "sprout",
+      "B1": "leaf",
+      "B2": "flower"
+    },
+    "sub_one": "{{grown}} of {{total}} plants grew. {{count}} unit left before the {{level}} exam.",
+    "sub_other": "{{grown}} of {{total}} plants grew. {{count}} units left before the {{level}} exam.",
+    "subExam": "All your plants grew: you can take the {{level}} exam now.",
+    "subPending_one": "Only the speaking of {{count}} unit is left before the exam.",
+    "subPending_other": "Only the speaking of {{count}} units is left before the exam.",
+    "subDone": "You passed the level: your {{stage}} bloomed."
   }
 }

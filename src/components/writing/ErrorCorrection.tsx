@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { sameText } from '../../lib/sameText';
 
 interface Props {
     instruction: string;
@@ -11,11 +13,14 @@ interface Props {
 }
 
 export default function ErrorCorrection({ instruction, errorText, targetGrammar, onSubmit, disabled }: Props) {
+    const { t } = useTranslation();
     const [text, setText] = useState('');
+    // The text with errors sent back as is would spend an AI evaluation on nothing
+    const unchanged = sameText(text, errorText);
 
     const handleSubmit = () => {
         const trimmed = text.trim();
-        if (trimmed && !disabled) onSubmit(trimmed);
+        if (trimmed && !unchanged && !disabled) onSubmit(trimmed);
     };
 
     return (
@@ -66,11 +71,14 @@ export default function ErrorCorrection({ instruction, errorText, targetGrammar,
                 <p className="text-xs text-[var(--color-on-surface-muted)] text-right">
                     {text.trim().split(/\s+/).filter(Boolean).length} palabras
                 </p>
+                {text.trim() && unchanged && (
+                    <p className="text-xs font-semibold text-accent-orange">{t('writing.unchanged')}</p>
+                )}
             </div>
 
             <button
                 onClick={handleSubmit}
-                disabled={disabled || !text.trim()}
+                disabled={disabled || !text.trim() || unchanged}
                 className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar corrección

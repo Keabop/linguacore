@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
@@ -23,8 +23,7 @@ import Garden from '../components/garden/Garden';
 import StreakChip from '../components/ui/StreakChip';
 import GoalDrops from '../components/ui/GoalDrops';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
-
-const LEVEL_ORDER: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2'];
+import { useLevelUpNotice } from '../hooks/useLevelUpNotice';
 
 // Loaded only the first time a level-up happens
 const LevelUpModal = lazy(() => import('../components/ui/LevelUpModal'));
@@ -46,28 +45,7 @@ export default function Dashboard() {
     const { dueSkillCards } = useSkillCards();
     const { dueErrorCards, totalErrorCards } = useErrorCards();
     const { user: authUser } = useAuth();
-    const [showLevelUp, setShowLevelUp] = useState(false);
-    const [newLevel, setNewLevel] = useState<CEFRLevel>('A2');
-    // Stays mounted after the first open so the modal can play its exit animation
-    const [levelUpMounted, setLevelUpMounted] = useState(false);
-    if (showLevelUp && !levelUpMounted) setLevelUpMounted(true);
-
-    const profileLevel = user?.currentLevel;
-    useEffect(() => {
-        if (!profileLevel || !authUser?.id) return;
-        const key = `voxie:seen-level:${authUser.id}`;
-        let seen: string | null = null;
-        try {
-            seen = localStorage.getItem(key);
-            localStorage.setItem(key, profileLevel);
-        } catch {
-            return;
-        }
-        if (seen && LEVEL_ORDER.indexOf(profileLevel) > LEVEL_ORDER.indexOf(seen as CEFRLevel)) {
-            setNewLevel(profileLevel);
-            setShowLevelUp(true);
-        }
-    }, [profileLevel, authUser?.id]);
+    const levelUp = useLevelUpNotice(user?.currentLevel);
 
     const { data: readStories } = useQuery({
         queryKey: ['readStories', authUser?.id],
@@ -321,9 +299,9 @@ export default function Dashboard() {
                 </motion.section>
             )}
 
-            {levelUpMounted && (
+            {levelUp.mounted && (
                 <Suspense fallback={null}>
-                    <LevelUpModal level={newLevel} isOpen={showLevelUp} onClose={() => setShowLevelUp(false)} />
+                    <LevelUpModal level={levelUp.newLevel} isOpen={levelUp.open} onClose={levelUp.close} />
                 </Suspense>
             )}
         </div>

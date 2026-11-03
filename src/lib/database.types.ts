@@ -85,6 +85,8 @@ export type UnitProgressRow = {
     output_completed: boolean;
     checkpoint_passed: boolean;
     completed_at: string | null;
+    /** Speaking left for later ("No puedo hablar ahora"); the end-of-level exam waits for it. */
+    speaking_pending?: boolean;
 };
 
 export type SkillCardRow = {
