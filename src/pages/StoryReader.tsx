@@ -1,7 +1,8 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { Vocabulary } from '../lib/db';
 import { levelOfId, useLevelContent } from '../data/levels';
 import PageLoader from '../components/PageLoader';
@@ -27,6 +28,9 @@ import { audioFor, storyKey } from '../lib/audioKey';
 import { SPEECH_RATE, type Accent } from '../lib/voices';
 import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 import { saveGuestStory } from '../lib/guestTrial';
+
+/** How long the word card shows the choice before closing: enough to see it was taken. */
+const WORD_CARD_CLOSE_MS = 1100;
 
 type WordStatus = 'deck' | 'known' | 'none';
 
@@ -246,6 +250,14 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         if (vocab) setSelectedWord(vocab);
     }, [vocabMap]);
 
+    // The card confirms the choice for a moment and then closes by itself
+    const [justChose, setJustChose] = useState<'deck' | 'known' | null>(null);
+    const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+    useEffect(() => {
+        setJustChose(null);
+        return () => clearTimeout(closeTimer.current);
+    }, [selectedWord]);
+
     // Marking only records the choice; it can be changed until the story is completed
     const chooseForWord = (choice: 'deck' | 'known') => {
         if (!selectedWord) return;
@@ -253,6 +265,9 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         const without = (set: Set<string>) => { const next = new Set(set); next.delete(id); return next; };
         setAddedWords(prev => (choice === 'deck' ? new Set(prev).add(id) : without(prev)));
         setKnownWords(prev => (choice === 'known' ? new Set(prev).add(id) : without(prev)));
+        setJustChose(choice);
+        clearTimeout(closeTimer.current);
+        closeTimer.current = setTimeout(() => setSelectedWord(null), WORD_CARD_CLOSE_MS);
     };
 
     // Every key word must be marked first: the ones left are listed so the learner can finish
@@ -392,7 +407,8 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
 
     return (
         <LazyMotion features={domAnimation}>
-        <div className="space-y-8">
+        {/* The bottom room keeps the last button above the floating player */}
+        <div className="space-y-8 pb-44">
             {/* Story header */}
             <div className="flex items-center gap-4">
                 <BackButton to={guest ? '/' : returnTo ?? '/learn'} />
@@ -587,8 +603,8 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 </button>
             </div>
 
-            {/* Words still to mark: tapping one opens its card */}
-            <AnimatePresence>
+            {/* Words still to mark: tapping one opens its card. On the body, so the backdrop covers the sidebar too */}
+            {createPortal(<AnimatePresence>
                 {missingWords && (
                     <>
                         <m.div
@@ -596,7 +612,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setMissingWords(null)}
-                            className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)] z-[55]"
+                            className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)] z-[70]"
                         />
                         <m.div
                             ref={missingDialogRef}
@@ -607,7 +623,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 30 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="fixed bottom-4 left-4 right-4 z-[60]"
+                            className="fixed bottom-4 left-4 right-4 z-[75]"
                         >
                             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[60vh] overflow-y-auto">
                                 <h3 id="missing-words-title" className="text-lg font-black tracking-tight">{t('reader.missingTitle', { count: missingWords.length })}</h3>
@@ -635,7 +651,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         </m.div>
                     </>
                 )}
-            </AnimatePresence>
+            </AnimatePresence>, document.body)}
 
             {/* Floating Audiobook Player Bar */}
             <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
@@ -713,8 +729,8 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 </div>
             </div>
 
-            {/* Word popup */}
-            <AnimatePresence>
+            {/* Word popup, on the body like the list above */}
+            {createPortal(<AnimatePresence>
                 {selectedWord && (
                     <>
                         {/* Backdrop */}
@@ -723,14 +739,14 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setSelectedWord(null)}
-                            className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)] z-[55]"
+                            className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)] z-[70]"
                         />
                         <m.div
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 30 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="fixed bottom-4 left-4 right-4 z-[60]"
+                            className="fixed bottom-4 left-4 right-4 z-[75]"
                         >
                             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
                                 <div className="flex justify-between items-start">
@@ -782,7 +798,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                                                         : 'rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)]'
                                                 }`}
                                             >
-                                                {wordStatus === 'deck' ? <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" /> : '+ '}{t('reader.addToDeck')}
+                                                {wordStatus === 'deck' ? <ChoiceCheck pop={justChose === 'deck'} /> : '+ '}{t('reader.addToDeck')}
                                             </button>
                                             <button
                                                 onClick={() => chooseForWord('known')}
@@ -794,20 +810,44 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                                                         : 'rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)]'
                                                 }`}
                                             >
-                                                <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.alreadyKnown')}
+                                                {wordStatus === 'known' ? <ChoiceCheck pop={justChose === 'known'} /> : <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />}{t('reader.alreadyKnown')}
                                             </button>
                                         </>
                                     )}
                                 </div>
-                                {!selectedIsSaved && wordStatus !== 'none' && (
+                                {justChose ? (
+                                    <m.p
+                                        role="status"
+                                        initial={{ opacity: 0, y: 4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="text-center text-sm font-bold text-[var(--color-primary)]"
+                                    >
+                                        <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />
+                                        {t(justChose === 'deck' ? 'reader.addedFeedback' : 'reader.knownFeedback')}
+                                    </m.p>
+                                ) : !selectedIsSaved && wordStatus !== 'none' && (
                                     <p className="text-center text-xs text-[var(--color-on-surface-muted)]">{t('reader.savedOnComplete')}</p>
                                 )}
                             </div>
                         </m.div>
                     </>
                 )}
-            </AnimatePresence>
+            </AnimatePresence>, document.body)}
         </div>
         </LazyMotion>
+    );
+}
+
+/** The check of the option just chosen grows in, so the tap reads as taken. */
+function ChoiceCheck({ pop }: { pop: boolean }) {
+    return (
+        <m.span
+            className="inline-block -mt-0.5 mr-1 align-middle"
+            initial={pop ? { scale: 0 } : false}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 18 }}
+        >
+            <Check className="w-4 h-4" aria-hidden="true" />
+        </m.span>
     );
 }
