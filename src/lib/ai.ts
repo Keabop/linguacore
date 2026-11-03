@@ -1,5 +1,6 @@
 import type { CEFRLevel, Story, Vocabulary } from './db';
 import { apiFetch } from './apiFetch';
+import i18n from '../i18n/config';
 
 const API_BASE = '/api/orchestrator';
 
@@ -39,7 +40,9 @@ async function callAgent<T>(agent: string, params: Record<string, any>): Promise
 
         if (!response.ok) {
             const data = await response.json().catch(() => ({ message: 'Unknown error' }));
-            const err = new Error(data.message || `Agent ${agent} failed: ${response.status}`);
+            // The AI can't serve some regions (see the terms): say so instead of a bare status
+            const message = data.error === 'region_unavailable' ? i18n.t('legal.regionUnavailable') : data.message;
+            const err = new Error(message || `Agent ${agent} failed: ${response.status}`);
             (err as any).status = response.status;
             (err as any).code = data.error;
             throw err;

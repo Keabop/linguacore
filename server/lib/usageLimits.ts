@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { env } from './config.js';
+import { currentTier } from './mercadopago.js';
 
 // ---------------------------------------------------------------------------
 // Daily limits for free tier (pro = unlimited)
@@ -157,12 +158,12 @@ export async function getUserTier(userId: string): Promise<string> {
 
         const { data, error } = await sb
             .from('profiles')
-            .select('tier')
+            .select('tier, subscription_status, pro_until')
             .eq('id', userId)
             .maybeSingle();
 
         if (error || !data) return 'free';
-        return data.tier ?? 'free';
+        return currentTier(data);
     } catch {
         return 'free';
     }

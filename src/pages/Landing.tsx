@@ -10,6 +10,7 @@ import PlayOnMount from '../components/icons/PlayOnMount';
 import { CheckIcon } from '../components/icons';
 import { celebrateCorrect, nudgeWrong } from '../lib/celebrate';
 import type { CEFRLevel } from '../lib/db';
+import { LEGAL_OWNER } from '../data/legalOwner';
 
 /* ------------------------------------------------------------------ */
 /*  Content (counts come from src/data: units.ts and stories.ts)       */
@@ -407,8 +408,8 @@ export default function Landing() {
                                 <motion.div {...reveal} className="card p-7 flex flex-col gap-5 text-left border-2 border-[var(--color-primary)]">
                                     <div>
                                         <h3 className="text-lg font-extrabold">Pro</h3>
-                                        <p className="mt-1"><span className="font-display text-4xl font-extrabold">$129</span> <span className="text-sm text-[var(--color-on-surface-muted)]">al mes</span></p>
-                                        <p className="text-xs text-[var(--color-on-surface-variant)]">o $1,299 al año (unos $108 al mes)</p>
+                                        <p className="mt-1"><span className="font-display text-4xl font-extrabold">$115</span> <span className="text-sm text-[var(--color-on-surface-muted)]">al mes</span></p>
+                                        <p className="text-xs text-[var(--color-on-surface-variant)]">o $1,199 al año (unos $100 al mes)</p>
                                     </div>
                                     <ul className="space-y-2.5 text-sm">
                                         {PRO_ITEMS.map(item => (
@@ -434,7 +435,13 @@ export default function Landing() {
                     </div>
                     <div className="flex flex-col gap-3 border-t border-[var(--color-outline-variant)] pt-6 text-sm text-[var(--color-on-surface-variant)] sm:flex-row sm:items-center sm:justify-between">
                         <Wordmark className="text-lg" markClassName="w-5 h-5" />
-                        <p>© {new Date().getFullYear()} Voxie · <Link to="/credits" className="underline underline-offset-2 hover:text-[var(--color-on-surface)]">Créditos</Link></p>
+                        <nav aria-label="Información legal" className="flex flex-wrap gap-x-4 gap-y-2">
+                            <span>© {new Date().getFullYear()} Voxie</span>
+                            {[['/privacidad', 'Privacidad'], ['/terminos', 'Términos'], ['/cookies', 'Cookies'], ['/credits', 'Créditos']].map(([to, label]) => (
+                                <Link key={to} to={to} className="underline underline-offset-2 hover:text-[var(--color-on-surface)]">{label}</Link>
+                            ))}
+                            <a href={`mailto:${LEGAL_OWNER.email}`} className="underline underline-offset-2 hover:text-[var(--color-on-surface)]">Contacto</a>
+                        </nav>
                     </div>
                 </footer>
             </div>

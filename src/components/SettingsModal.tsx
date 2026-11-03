@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User, BookOpen, Droplet } from 'lucide-react';
+import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User, BookOpen, Droplet, Scale, Trash2 } from 'lucide-react';
+import { clear as clearIdb } from 'idb-keyval';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../lib/ThemeContext';
 import { useAuth } from '../lib/AuthContext';
@@ -11,6 +12,8 @@ import { useTier } from '../hooks/useTier';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { supabase } from '../lib/supabase';
 import { offlineUpdate } from '../lib/offlineMutation';
+import { apiFetch } from '../lib/apiFetch';
+import { LEGAL_OWNER } from '../data/legalOwner';
 import PlantPicker from './garden/PlantPicker';
 import type { Profile } from '../lib/database.types';
 import { version } from '../../package.json';
@@ -91,6 +94,35 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
             onClose();
         } catch {
             setActionError(t('account.cancelError'));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+
+    // The server cancels Pro and deletes every row; this device then forgets the account too
+    const handleDeleteAccount = async () => {
+        setActionLoading(true);
+        setDeleteError(null);
+        try {
+            const res = await apiFetch('/api/account/delete', { method: 'POST' });
+            if (!res.ok) {
+                const { error } = await res.json().catch(() => ({ error: '' }));
+                throw new Error(error);
+            }
+            // Sign out first, then forget the account's data; the reload drops what is left in
+            // memory (the offline queue, the query cache and its persister). Theme and language stay.
+            await signOut();
+            await clearIdb().catch(() => {});
+            await caches?.delete('api-cache').catch(() => false);
+            for (const key of Object.keys(localStorage)) {
+                if (key !== 'theme-mode' && key !== 'voxie-display-language') localStorage.removeItem(key);
+            }
+            window.location.replace('/');
+        } catch (err) {
+            setDeleteError(t((err as Error).message === 'subscription_cancel_failed' ? 'settings.deleteSubscriptionError' : 'settings.deleteError', { email: LEGAL_OWNER.email }));
         } finally {
             setActionLoading(false);
         }
@@ -334,6 +366,18 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                     {t('settings.credits')}
                                 </button>
 
+                                {/* Privacy notice, terms and cookie policy */}
+                                <div className="flex items-start gap-3 text-sm text-[var(--color-on-surface-muted)]">
+                                    <Scale className="w-5 h-5 shrink-0" />
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                        {([['/privacidad', 'settings.privacy'], ['/terminos', 'settings.terms'], ['/cookies', 'settings.cookies']] as const).map(([to, key]) => (
+                                            <button key={to} onClick={() => { onClose(); navigate(to); }} className="hover:text-[var(--color-on-surface)] transition-colors">
+                                                {t(key)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 {/* Logout */}
                                 <button
                                     onClick={handleLogout}
@@ -341,6 +385,14 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                 >
                                     <LogOut className="w-5 h-5" />
                                     {t('settings.logout')}
+                                </button>
+
+                                <button
+                                    onClick={() => { setDeleteError(null); setShowDeleteConfirm(true); }}
+                                    className="flex items-center gap-3 text-sm text-[var(--color-on-surface-muted)] hover:text-[var(--color-error)] transition-colors w-full"
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                    {t('settings.deleteAccount')}
                                 </button>
 
                                 <p className="text-xs text-center text-[var(--color-on-surface-muted)]">
@@ -414,6 +466,65 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                             >
                                                 {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                                                 {t('account.cancelConfirm')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Delete Account Confirmation Dialog */}
+                    <AnimatePresence>
+                        {showDeleteConfirm && (
+                            <>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="fixed inset-0 z-[60] bg-[color-mix(in_oklch,var(--color-level-ink)_40%,transparent)]"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                >
+                                    <div
+                                        role="alertdialog"
+                                        aria-labelledby="delete-account-title"
+                                        className="w-full max-w-sm bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-6 space-y-4"
+                                        onClick={e => e.stopPropagation()}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-error)]/10 flex items-center justify-center">
+                                                <AlertTriangle className="w-5 h-5 text-[var(--color-error)]" />
+                                            </div>
+                                            <h3 id="delete-account-title" className="text-base font-bold text-[var(--color-on-surface)]">{t('settings.deleteConfirmTitle')}</h3>
+                                        </div>
+
+                                        <p className="text-sm text-[var(--color-on-surface-muted)]">{t('settings.deleteConfirmBody')}</p>
+                                        {tier === 'pro' && subscription?.subscriptionStatus !== 'cancelled' && (
+                                            <p className="text-xs text-[var(--color-on-surface-muted)] bg-[var(--color-background)] rounded-lg p-3">{t('settings.deleteConfirmPro')}</p>
+                                        )}
+                                        {deleteError && <p className="text-xs text-[var(--color-error)]">{deleteError}</p>}
+
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => setShowDeleteConfirm(false)}
+                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90 transition-colors"
+                                            >
+                                                {t('settings.deleteKeep')}
+                                            </button>
+                                            <button
+                                                onClick={handleDeleteAccount}
+                                                disabled={actionLoading}
+                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl border border-[var(--color-error)]/30 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors flex items-center justify-center gap-1"
+                                            >
+                                                {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                                {t('settings.deleteConfirm')}
                                             </button>
                                         </div>
                                     </div>
