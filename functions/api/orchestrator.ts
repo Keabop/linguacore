@@ -145,6 +145,16 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
     return { valid: true };
 }
 
+/**
+ * The EU (with its outermost regions, which Cloudflare reports with their own codes), Iceland,
+ * Liechtenstein, Norway, Switzerland and the UK.
+ */
+const UNSERVED_COUNTRIES = new Set([
+    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU',
+    'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GF', 'GP', 'MQ', 'RE', 'YT', 'MF', 'AX',
+    'IS', 'LI', 'NO', 'CH', 'GB',
+]);
+
 // ---------------------------------------------------------------------------
 // Cloudflare Pages Function Entry Point
 // ---------------------------------------------------------------------------
@@ -153,6 +163,11 @@ export const onRequestPost: PagesFunction = async (context) => {
     setEnv(bindings); // Inyectar las variables de entorno de Cloudflare
 
     const corsHeaders = getCorsHeaders(request, 'POST, OPTIONS');
+
+    // Gemini's unpaid quota can't serve the EEA, Switzerland or the UK (see the terms of service)
+    if (UNSERVED_COUNTRIES.has(request.headers.get('CF-IPCountry') ?? '')) {
+        return new Response(JSON.stringify({ error: 'region_unavailable' }), { status: 451, headers: corsHeaders });
+    }
 
     // Rate limit by IP
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';

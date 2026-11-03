@@ -180,9 +180,9 @@ export default function Pricing() {
 
                     <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Plan Pro</h2>
                     <p className="mt-2 text-2xl font-black tracking-tight">
-                        $129 <span className="text-base font-normal text-[var(--color-on-surface-muted)]">MXN/mes</span>
+                        $115 <span className="text-base font-normal text-[var(--color-on-surface-muted)]">MXN/mes</span>
                     </p>
-                    <p className="text-sm text-[var(--color-on-surface-muted)]">o $1,299 MXN/año</p>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">o $1,199 MXN/año</p>
 
                     <ul className="mt-6 space-y-3">
                         {PRO_FEATURES.map((f, i) => (
@@ -216,7 +216,7 @@ export default function Pricing() {
                                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {loading === 'monthly' && <Loader2 className="size-4 animate-spin" />}
-                                    Mensual — $129/mes
+                                    Mensual — $115/mes
                                 </button>
                                 <button
                                     onClick={() => handleSubscribe('annual')}
@@ -224,7 +224,7 @@ export default function Pricing() {
                                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-[var(--color-surface-container)] text-[var(--color-on-surface)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {loading === 'annual' && <Loader2 className="size-4 animate-spin" />}
-                                    Anual — $1,299/año (~$108/mes)
+                                    Anual — $1,199/año (~$100/mes)
                                 </button>
 
                                 {error && (

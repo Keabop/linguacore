@@ -526,7 +526,7 @@ export default function ConversationTutor() {
                     </Link>
                 </div>
             ) : (
-                <form onSubmit={handleSubmit} className="flex gap-3 pt-5 shrink-0">
+                <form onSubmit={handleSubmit} className="flex flex-wrap gap-x-3 gap-y-2 pt-5 shrink-0">
                     <input
                         ref={inputRef}
                         type="text"
@@ -545,6 +545,7 @@ export default function ConversationTutor() {
                     >
                         <SendIcon size={16} aria-hidden="true" />
                     </button>
+                    <p className="basis-full px-5 text-[11px] text-[var(--color-on-surface-muted)]">{t('chat.aiNotice')}</p>
                 </form>
             )}
         </div>

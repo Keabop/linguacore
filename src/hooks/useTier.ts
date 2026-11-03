@@ -61,7 +61,11 @@ export function useTier(): TierInfo {
   });
 
   return useMemo(() => {
-    const tier: Tier = (profile?.tier as Tier) ?? 'free';
+    // A cancelled Pro lasts until the end of the period already paid (same rule as the server)
+    const paidUp = !!profile?.pro_until && new Date(profile.pro_until) > new Date();
+    const tier: Tier = profile?.tier === 'pro' && profile.subscription_status === 'cancelled' && !paidUp
+      ? 'free'
+      : (profile?.tier as Tier) ?? 'free';
     const trialEndsAt = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
     const isTrial = trialEndsAt !== null && trialEndsAt > new Date() && tier === 'pro';
     // isPro, isFree and limits describe access: the admin gets Pro without touching billing
@@ -77,5 +81,5 @@ export function useTier(): TierInfo {
       limits: TIER_LIMITS[access],
       loading: isLoading,
     };
-  }, [profile?.tier, profile?.trial_ends_at, isLoading, isAdmin]);
+  }, [profile?.tier, profile?.subscription_status, profile?.pro_until, profile?.trial_ends_at, isLoading, isAdmin]);
 }

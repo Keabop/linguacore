@@ -43,8 +43,8 @@ const BINDINGS = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_SERVICE
 let ipCounter = 0;
 
 /** Each call gets its own IP so the in-memory rate limiter never interferes. */
-async function call(body: unknown, { token = 'valid', ip }: { token?: string | null; ip?: string } = {}) {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip ?? `10.0.0.${++ipCounter}` };
+async function call(body: unknown, { token = 'valid', ip, country = 'MX' }: { token?: string | null; ip?: string; country?: string } = {}) {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip ?? `10.0.0.${++ipCounter}`, 'CF-IPCountry': country };
     if (token) headers.Authorization = `Bearer ${token}`;
     const request = new Request('https://voxie.pages.dev/api/orchestrator', {
         method: 'POST',
@@ -71,6 +71,14 @@ describe('orchestrator', () => {
     it('asks for a session', async () => {
         const res = await call({ agent: 'vocab-enricher', params: {} }, { token: null });
         expect(res.status).toBe(401);
+    });
+
+    it('does not serve the EEA, Switzerland or the UK (Gemini unpaid quota)', async () => {
+        for (const country of ['ES', 'CH', 'GB']) {
+            const res = await call({ agent: 'vocab-enricher', params: {} }, { country });
+            expect(res).toEqual({ status: 451, body: { error: 'region_unavailable' } });
+        }
+        expect(getUser).not.toHaveBeenCalled();
     });
 
     it('answers 500, not 401, when the server lacks its Supabase keys (the app must not sign users out)', async () => {

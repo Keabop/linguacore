@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
@@ -8,8 +8,12 @@ import PageLoader from '../components/PageLoader';
 import { loadGuest } from '../lib/guestTrial';
 import AuthBackdrop from '../components/ui/AuthBackdrop';
 import Wordmark, { LeafMark } from '../components/ui/Wordmark';
+import { LEGAL_OWNER } from '../data/legalOwner';
+import { LegalCheckbox } from '../components/LegalConsent';
 
 type Mode = 'login' | 'register';
+
+const legalLink = 'font-semibold text-[var(--color-primary)] underline underline-offset-2';
 
 /**
  * The auth screens' frame. On a phone the landscape covers the whole screen behind the card;
@@ -47,6 +51,9 @@ export default function Auth() {
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [registered, setRegistered] = useState(false);
+    const [accepted, setAccepted] = useState(false);
+    // Signing up waits for the terms and the age; a Google account accepts them on its first visit
+    const blocked = mode === 'register' && !accepted;
 
     // Already logged in → go to dashboard
     if (!loading && user) return <Navigate to="/dashboard" replace />;
@@ -151,13 +158,15 @@ export default function Auth() {
                         />
                     </div>
 
+                    {mode === 'register' && <LegalCheckbox checked={accepted} onChange={setAccepted} />}
+
                     {error && (
                         <p className="text-xs text-[var(--color-error)] bg-[var(--color-error)]/8 rounded-2xl px-5 py-3 font-body">{error}</p>
                     )}
 
                     <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitting || blocked}
                         className="w-full py-4 text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
                     >
                         {submitting ? (
@@ -181,7 +190,8 @@ export default function Auth() {
                 {/* Google OAuth */}
                 <button
                     onClick={signInWithGoogle}
-                    className="w-full py-4 text-sm flex items-center justify-center gap-3 bg-[var(--color-surface-container-low)] rounded-full font-semibold text-[var(--color-on-surface)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 shadow-[var(--shadow-card)]"
+                    disabled={blocked}
+                    className="w-full py-4 text-sm flex items-center justify-center gap-3 bg-[var(--color-surface-container-low)] rounded-full font-semibold text-[var(--color-on-surface)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 shadow-[var(--shadow-card)] disabled:opacity-50 disabled:pointer-events-none"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -202,6 +212,12 @@ export default function Auth() {
                     >
                         {mode === 'login' ? 'Regístrate' : 'Inicia sesión'}
                     </button>
+                </p>
+
+                {/* Simplified privacy notice: the law asks for it where the data is collected */}
+                <p className="mt-6 text-[11px] leading-relaxed text-[var(--color-on-surface-muted)] font-body">
+                    {t('legal.shortNotice', { name: LEGAL_OWNER.name, city: LEGAL_OWNER.city })}{' '}
+                    <Link to="/privacidad" target="_blank" rel="noreferrer" className={legalLink}>{t('legal.fullNotice')}</Link>
                 </p>
             </motion.div>
         </AuthShell>

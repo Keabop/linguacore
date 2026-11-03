@@ -2,7 +2,7 @@ import { env, setEnv } from '../../../server/lib/config.js';
 import { authenticateRequest } from '../../../server/lib/auth.js';
 import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders } from '../../../server/lib/cors.js';
-import { createPreapproval, findLatestPreapproval, mapSubscriptionStatus, updatePreapproval } from '../../../server/lib/mercadopago.js';
+import { createPreapproval, findLatestPreapproval, getPreapproval, mapSubscriptionStatus, updatePreapproval } from '../../../server/lib/mercadopago.js';
 
 // ---------------------------------------------------------------------------
 // Plan config
@@ -12,13 +12,13 @@ const PLANS = {
         reason: 'Voxie Plan Pro - Mensual',
         frequency: 1,
         frequency_type: 'months' as const,
-        transaction_amount: 129,
+        transaction_amount: 115,
     },
     annual: {
         reason: 'Voxie Plan Pro - Anual',
         frequency: 12,
         frequency_type: 'months' as const,
-        transaction_amount: 1200,
+        transaction_amount: 1199,
     },
 };
 
@@ -73,7 +73,7 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
-            const { tier: mappedTier, subscription_status: subStatus } = mapSubscriptionStatus(subscription.status ?? '');
+            const { tier: mappedTier, subscription_status: subStatus, pro_until } = mapSubscriptionStatus(subscription.status ?? '', subscription.next_payment_date);
 
             const supabaseUrl = env.SUPABASE_URL;
             const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -88,7 +88,7 @@ export const onRequestPost: PagesFunction = async (context) => {
             const { data: updated, error: dbError } = await supabase
                 .from('profiles')
                 .update({
-                    ...(mappedTier ? { tier: mappedTier } : {}),
+                    ...(mappedTier ? { tier: mappedTier, pro_until } : {}),
                     subscription_id: subscription.id?.toString() ?? null,
                     subscription_status: subStatus,
                 })
@@ -146,13 +146,19 @@ export const onRequestPost: PagesFunction = async (context) => {
                 });
             }
 
+            // Cancelling keeps Pro until the next charge would have happened: the period already paid
+            const paidUntil = action === 'cancel'
+                ? (await getPreapproval(accessToken, profile.subscription_id)).next_payment_date ?? null
+                : null;
+
             await updatePreapproval(accessToken, profile.subscription_id, {
                 status: action === 'cancel' ? 'cancelled' : 'authorized',
             });
 
+            const { tier, subscription_status, pro_until } = mapSubscriptionStatus(action === 'cancel' ? 'cancelled' : 'authorized', paidUntil);
             await supabase
                 .from('profiles')
-                .update({ subscription_status: action === 'cancel' ? 'cancelled' : 'active' })
+                .update({ tier, subscription_status, pro_until })
                 .eq('id', user.id);
 
             const resultAction = action === 'cancel' ? 'cancelled' : 'reactivated';
