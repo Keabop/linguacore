@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/Keabop/linguacore/compare/v1.1.0...v1.1.1) (2026-11-03)
+
+
+### Correcciones
+
+* lector y aviso del registro ([#36](https://github.com/Keabop/linguacore/issues/36)) ([64fcf6a](https://github.com/Keabop/linguacore/commit/64fcf6a2d6bcaca17a508939f17c5f0f9cee3622))
+
 ## [1.1.0](https://github.com/Keabop/linguacore/compare/v1.0.0...v1.1.0) (2026-11-03)
 
 
