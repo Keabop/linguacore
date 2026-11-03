@@ -1,0 +1,22 @@
+# Each push to master updates a release PR built from the Conventional Commits since the last
+# version (feat bumps the minor, fix the patch). Merging that PR tags the version and publishes
+# the GitHub release.
+name: release-please
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v5.0.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "2897a5140b5648bc4c45c607ba7f93dd54edc7df",
+  "pull-request-title-pattern": "chore: release ${version}",
+  "pull-request-header": "Versión nueva de Voxie. Al mergear este PR se crean el tag y la release en GitHub.",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "voxie",
+      "include-component-in-tag": false,
+      "changelog-sections": [
+        { "type": "feat", "section": "Novedades" },
+        { "type": "fix", "section": "Correcciones" },
+        { "type": "perf", "section": "Rendimiento" },
+        { "type": "revert", "section": "Reversiones" },
+        { "type": "refactor", "section": "Cambios internos", "hidden": true },
+        { "type": "docs", "section": "Documentación", "hidden": true },
+        { "type": "test", "section": "Tests", "hidden": true },
+        { "type": "build", "section": "Build", "hidden": true },
+        { "type": "ci", "section": "CI", "hidden": true },
+        { "type": "chore", "section": "Mantenimiento", "hidden": true }
+      ]
+    }
+  }
+}

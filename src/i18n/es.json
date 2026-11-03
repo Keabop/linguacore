@@ -378,6 +378,7 @@
     "adminAccess": "Acceso Pro de administrador",
     "adminAccessHint": "Sin suscripción: viene de tu rol, no de un pago.",
     "logout": "Cerrar sesión",
+    "version": "Voxie {{version}}",
     "credits": "Créditos y licencias",
     "dailyGoal": "Meta diaria",
     "dailyGoalHint": "Una historia o un paso de unidad es un riego; también 10 repasos o 5 mensajes al tutor.",
