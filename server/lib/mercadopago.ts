@@ -8,6 +8,8 @@ export interface Preapproval {
     status?: string;
     external_reference?: string;
     init_point?: string;
+    /** Date of the next charge: while authorized, the end of the period already paid. */
+    next_payment_date?: string;
 }
 
 async function request<T>(accessToken: string, path: string, init: RequestInit = {}): Promise<T> {
@@ -58,17 +60,41 @@ export async function findLatestPreapproval(accessToken: string, userId: string)
     return data.results?.[0] ?? null;
 }
 
-/** Maps a Mercado Pago preapproval status to profile fields. `tier: null` keeps the current tier. */
-export function mapSubscriptionStatus(mpStatus: string): { tier: 'free' | 'pro' | null; subscription_status: string } {
+/** Every subscription a user ever started, newest first (the first page is plenty for one person). */
+export async function findPreapprovals(accessToken: string, userId: string): Promise<Preapproval[]> {
+    const params = new URLSearchParams({ external_reference: userId, sort: 'date_created', criteria: 'desc', limit: '100' });
+    const data = await request<{ results?: Preapproval[] }>(accessToken, `/search?${params}`);
+    return data.results ?? [];
+}
+
+/**
+ * Maps a Mercado Pago preapproval status to profile fields. `tier: null` keeps the current tier.
+ * A cancelled subscription keeps Pro until `paidUntil`, the end of the period already paid,
+ * when that date is still ahead; the app reads the tier as free once `pro_until` passes.
+ */
+export function mapSubscriptionStatus(
+    mpStatus: string,
+    paidUntil?: string | null,
+    now = new Date(),
+): { tier: 'free' | 'pro' | null; subscription_status: string; pro_until: string | null } {
     switch (mpStatus) {
         case 'authorized':
-            return { tier: 'pro', subscription_status: 'active' };
+            return { tier: 'pro', subscription_status: 'active', pro_until: null };
         case 'paused':
-            return { tier: 'pro', subscription_status: 'past_due' };
-        case 'cancelled':
-            return { tier: 'free', subscription_status: 'cancelled' };
+            return { tier: 'pro', subscription_status: 'past_due', pro_until: null };
+        case 'cancelled': {
+            const keepsPro = !!paidUntil && new Date(paidUntil) > now;
+            return { tier: keepsPro ? 'pro' : 'free', subscription_status: 'cancelled', pro_until: keepsPro ? paidUntil! : null };
+        }
         default:
             // pending, etc. — not paid yet: keep the current tier
-            return { tier: null, subscription_status: 'pending' };
+            return { tier: null, subscription_status: 'pending', pro_until: null };
     }
+}
+
+/** The tier a profile gives today: a cancelled Pro lasts until `pro_until`. */
+export function currentTier(profile: { tier?: string | null; subscription_status?: string | null; pro_until?: string | null }, now = new Date()): string {
+    const tier = profile.tier ?? 'free';
+    if (tier === 'pro' && profile.subscription_status === 'cancelled' && !(profile.pro_until && new Date(profile.pro_until) > now)) return 'free';
+    return tier;
 }

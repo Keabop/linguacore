@@ -9,6 +9,7 @@ import { useAdmin } from './hooks/useAdmin';
 import type { ReactNode, ComponentType } from 'react';
 import TrialShell from './components/TrialShell';
 import GuestImporter from './components/GuestImporter';
+import LegalConsent from './components/LegalConsent';
 import { TRIAL_STORY_ID } from './lib/guestTrial';
 
 /**
@@ -49,6 +50,7 @@ const ErrorLab = lazyRetry(() => import('./pages/ErrorLab'));
 const CEFRSimulator = lazyRetry(() => import('./pages/CEFRSimulator'));
 const AdminDashboard = lazyRetry(() => import('./pages/AdminDashboard'));
 const Credits = lazyRetry(() => import('./pages/Credits'));
+const Legal = lazyRetry(() => import('./pages/Legal'));
 
 function SafeRoute({ children }: { children: ReactNode }) {
     const location = useLocation();
@@ -65,7 +67,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <PageLoader />;
     if (!user) return <Navigate to="/" replace />;
-    return <>{children}</>;
+    return <LegalConsent>{children}</LegalConsent>;
 }
 
 function RequireAdmin({ children }: { children: ReactNode }) {
@@ -101,6 +103,9 @@ export default function App() {
                 <Route path="/" element={<SmartHome />} />
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><div className="page-enter"><Auth /></div></Suspense>} />
                 <Route path="/credits" element={<SafeRoute><Credits /></SafeRoute>} />
+                <Route path="/privacidad" element={<SafeRoute><Legal doc="privacidad" /></SafeRoute>} />
+                <Route path="/terminos" element={<SafeRoute><Legal doc="terminos" /></SafeRoute>} />
+                <Route path="/cookies" element={<SafeRoute><Legal doc="cookies" /></SafeRoute>} />
                 <Route path="/probar" element={<TrialRoute inApp={`/learn/${TRIAL_STORY_ID}`}><StoryReader trialStoryId={TRIAL_STORY_ID} /></TrialRoute>} />
                 <Route path="/probar/nivel" element={<TrialRoute inApp="/review/simulator"><CEFRSimulator guest /></TrialRoute>} />
 

@@ -28,6 +28,8 @@ export type Profile = {
     tier: 'free' | 'pro';
     trial_started_at: string | null;
     trial_ends_at: string | null;
+    /** End of the paid period of a cancelled Pro subscription; Pro lasts until then. */
+    pro_until?: string | null;
     subscription_id: string | null;
     subscription_status: 'inactive' | 'active' | 'cancelled' | 'past_due';
     created_at: string;
