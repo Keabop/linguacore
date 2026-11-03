@@ -378,6 +378,7 @@
     "adminAccess": "Admin Pro access",
     "adminAccessHint": "No subscription: it comes from your role, not a payment.",
     "logout": "Log out",
+    "version": "Voxie {{version}}",
     "credits": "Credits and licenses",
     "dailyGoal": "Daily goal",
     "dailyGoalHint": "A story or a unit step is one watering; so are 10 reviews or 5 messages to the tutor.",
