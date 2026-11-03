@@ -85,10 +85,7 @@ export const onRequestPost: PagesFunction = async (context) => {
             });
         }
 
-        // 5. Mapear estado
-        const { tier, subscription_status } = mapSubscriptionStatus(subscription.status ?? '');
-
-        // 6. Conectar a Supabase usando Service Role Key (evita RLS) y actualizar
+        // 5. Conectar a Supabase usando Service Role Key (evita RLS) y actualizar
         const supabaseUrl = env.SUPABASE_URL;
         const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
         if (!supabaseUrl || !serviceRoleKey) {
@@ -100,10 +97,19 @@ export const onRequestPost: PagesFunction = async (context) => {
         }
 
         const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+        // 6. Mapear estado. Al cancelar se conserva Pro hasta el fin del periodo pagado: la fecha
+        //    la da Mercado Pago o la guardó Voxie al cancelar desde la app
+        const { data: current } = await supabase.from('profiles').select('pro_until').eq('id', userId).maybeSingle();
+        const { tier, subscription_status, pro_until } = mapSubscriptionStatus(
+            subscription.status ?? '',
+            subscription.next_payment_date ?? current?.pro_until,
+        );
+
         const { error } = await supabase
             .from('profiles')
             .update({
-                ...(tier ? { tier } : {}),
+                ...(tier ? { tier, pro_until } : {}),
                 subscription_id: subscription.id?.toString() ?? null,
                 subscription_status,
             })

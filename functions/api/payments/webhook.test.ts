@@ -4,8 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const update = vi.fn();
 const eq = vi.fn();
+const stored = vi.fn();
 vi.mock('@supabase/supabase-js', () => ({
-    createClient: () => ({ from: () => ({ update: (fields: unknown) => { update(fields); return { eq }; } }) }),
+    createClient: () => ({
+        from: () => ({
+            update: (fields: unknown) => { update(fields); return { eq }; },
+            select: () => ({ eq: () => ({ maybeSingle: stored }) }),
+        }),
+    }),
 }));
 
 const getPreapproval = vi.fn();
@@ -39,6 +45,7 @@ function notify({ id = 'sub-1', bodyId = id, secret, signWith }: { id?: string; 
 beforeEach(() => {
     vi.clearAllMocks();
     eq.mockResolvedValue({ error: null });
+    stored.mockResolvedValue({ data: { pro_until: null }, error: null });
     getPreapproval.mockResolvedValue({ id: 'sub-1', status: 'authorized', external_reference: 'user-1' });
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -48,7 +55,7 @@ describe('Mercado Pago webhook', () => {
     it('upgrades the user when the signature is valid', async () => {
         const res = await notify({ secret: SECRET, signWith: SECRET });
         expect(res.status).toBe(200);
-        expect(update).toHaveBeenCalledWith({ tier: 'pro', subscription_id: 'sub-1', subscription_status: 'active' });
+        expect(update).toHaveBeenCalledWith({ tier: 'pro', pro_until: null, subscription_id: 'sub-1', subscription_status: 'active' });
         expect(eq).toHaveBeenCalledWith('id', 'user-1');
     });
 
@@ -74,6 +81,27 @@ describe('Mercado Pago webhook', () => {
         const res = await notify();
         expect(res.status).toBe(200);
         expect(getPreapproval).toHaveBeenCalledWith('mp', 'sub-1');
+    });
+
+    it('keeps Pro until the paid period ends when the subscription is cancelled', async () => {
+        const end = new Date(Date.now() + 10 * 86_400_000).toISOString();
+        getPreapproval.mockResolvedValue({ id: 'sub-1', status: 'cancelled', external_reference: 'user-1', next_payment_date: end });
+        await notify();
+        expect(update).toHaveBeenCalledWith({ tier: 'pro', pro_until: end, subscription_id: 'sub-1', subscription_status: 'cancelled' });
+    });
+
+    it('keeps the end of the period Voxie saved when Mercado Pago no longer sends it', async () => {
+        const end = new Date(Date.now() + 10 * 86_400_000).toISOString();
+        stored.mockResolvedValue({ data: { pro_until: end }, error: null });
+        getPreapproval.mockResolvedValue({ id: 'sub-1', status: 'cancelled', external_reference: 'user-1' });
+        await notify();
+        expect(update).toHaveBeenCalledWith(expect.objectContaining({ tier: 'pro', pro_until: end }));
+    });
+
+    it('drops to free when the cancelled period is already over', async () => {
+        getPreapproval.mockResolvedValue({ id: 'sub-1', status: 'cancelled', external_reference: 'user-1', next_payment_date: '2020-01-01T00:00:00Z' });
+        await notify();
+        expect(update).toHaveBeenCalledWith(expect.objectContaining({ tier: 'free', pro_until: null }));
     });
 
     it('ignores events that are not subscriptions', async () => {

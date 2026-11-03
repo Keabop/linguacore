@@ -242,7 +242,8 @@
     "viewSession": "View conversation",
     "sessionDate": "Session on {{date}}",
     "messagesCount": "{{count}} messages",
-    "readOnly": "Read only"
+    "readOnly": "Read only",
+    "aiNotice": "Do not write personal data: what you send to the AI is processed by Google."
   },
   "path": {
     "title": "Learning Path",
@@ -355,10 +356,10 @@
     "upgradeToPro": "Upgrade to Pro",
     "cancelConfirmTitle": "Are you sure you want to cancel?",
     "cancelConfirmLose": "You will lose access to:",
-    "cancelLoseLevel": "A2, B1, and B2 levels",
+    "cancelLoseLevel": "TOEFL, IELTS and Cambridge mock exams",
     "cancelLoseTutor": "Unlimited AI Tutor",
     "cancelLoseWriting": "Unlimited writing practice",
-    "cancelLoseStories": "Story generation",
+    "cancelLoseStories": "Unlimited AI stories",
     "cancelAccessUntil": "Your Pro access continues until {{date}}",
     "cancelKeep": "Keep Pro",
     "cancelConfirm": "Yes, cancel",
@@ -383,7 +384,18 @@
     "dailyGoal": "Daily goal",
     "dailyGoalHint": "A story or a unit step is one watering; so are 10 reviews or 5 messages to the tutor.",
     "dailyGoalOption_one": "{{count}} watering",
-    "dailyGoalOption_other": "{{count}} waterings"
+    "dailyGoalOption_other": "{{count}} waterings",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies",
+    "deleteAccount": "Delete account",
+    "deleteConfirmTitle": "Delete your account for good?",
+    "deleteConfirmBody": "Your progress, cards, texts and conversations are erased. This cannot be undone.",
+    "deleteConfirmPro": "Your Pro subscription is cancelled right away and you are not charged again. The period already paid is not refunded.",
+    "deleteKeep": "Keep my account",
+    "deleteConfirm": "Yes, delete",
+    "deleteError": "The account could not be deleted. Try again or write to {{email}}.",
+    "deleteSubscriptionError": "Your subscription could not be cancelled, so the account was not deleted. Try again in a moment."
   },
   "garden": {
     "stage": {
@@ -621,5 +633,19 @@
     "freezesHint": "Each freeze covers one day without study. You earn one every 7 days of streak (2 at most).",
     "freezeUsed_one": "Your streak lives on: you used a freeze.",
     "freezeUsed_other": "Your streak lives on: you used {{count}} freezes."
+  },
+  "legal": {
+    "updated": "In force since {{date}}",
+    "spanishOnly": "This document is available in Spanish only.",
+    "otherDocs": "Other legal documents",
+    "consent": "I am 18 or older and I accept the <terms>Terms</terms> and the <privacy>Privacy notice</privacy>, including that Google processes what I send to the AI.",
+    "shortNotice": "{{name}} ({{city}}) processes your e-mail, your progress and what you write or say in the exercises to provide Voxie. What you send to the AI is processed by Google. You can limit it by not using the AI features or by deleting your account.",
+    "fullNotice": "Full privacy notice",
+    "consentTitle": "Before you go on",
+    "consentBody": "We published the terms and the privacy notice of Voxie. To use the app, please accept them.",
+    "consentAccept": "Accept and continue",
+    "consentDecline": "I do not accept, sign out",
+    "consentError": "It could not be saved. Check your connection and try again.",
+    "regionUnavailable": "Voxie's AI features are not available in your region."
   }
 }

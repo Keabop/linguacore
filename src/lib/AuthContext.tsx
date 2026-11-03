@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
+import { LEGAL_VERSION } from '../data/legalOwner';
 
 interface AuthState {
     user: User | null;
@@ -40,7 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const signUp = async (email: string, password: string) => {
-        const { error } = await supabase.auth.signUp({ email, password });
+        // The sign-up form asks to accept the terms and confirm the age first; the account keeps which version
+        const { error } = await supabase.auth.signUp({ email, password, options: { data: { accepted_legal: LEGAL_VERSION } } });
         return { error: error?.message ?? null };
     };
 
