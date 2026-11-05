@@ -8,7 +8,9 @@ export default defineConfig({
         react(),
         tailwindcss(),
         VitePWA({
-            registerType: 'autoUpdate',
+            // A new version waits until the app applies it (UpdatePrompt): never swapped under an open lesson
+            registerType: 'prompt',
+            injectRegister: false,
             devOptions: {
                 enabled: true,
             },

@@ -11,6 +11,7 @@ import TrialShell from './components/TrialShell';
 import GuestImporter from './components/GuestImporter';
 import LegalConsent from './components/LegalConsent';
 import { TRIAL_STORY_ID } from './lib/guestTrial';
+import UpdatePrompt from './components/UpdatePrompt';
 
 /**
  * Lazy import with retry — handles transient network failures and
@@ -130,6 +131,7 @@ export default function App() {
                 </Route>
             </Routes>
             <Toaster />
+            <UpdatePrompt />
         </BrowserRouter>
     );
 }
