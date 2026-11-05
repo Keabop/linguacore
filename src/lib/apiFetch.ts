@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { toast } from './toast';
+import { notice } from './notice';
 import i18n from '../i18n/config';
 
 /** The session no longer exists on the server; the user was signed out on this device. */
@@ -30,6 +30,6 @@ export async function apiFetch(input: string, init: RequestInit = {}): Promise<R
     }
 
     await supabase.auth.signOut({ scope: 'local' });
-    toast.error({ title: i18n.t('auth.sessionEndedTitle'), description: i18n.t('auth.sessionEndedBody') });
+    notice.error({ title: i18n.t('auth.sessionEndedTitle'), description: i18n.t('auth.sessionEndedBody'), persist: true });
     throw new SessionEndedError('Session ended');
 }

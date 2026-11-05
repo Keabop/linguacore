@@ -20,7 +20,7 @@ import { useSkillCards } from '../hooks/useSkillCards';
 import { useLevelUnitProgress } from '../hooks/useLevelUnitProgress';
 import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 import GrammarCard from '../components/GrammarCard';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
 import OutputStep from '../components/OutputStep';
@@ -246,16 +246,7 @@ export default function UnitFlow() {
             });
 
             // Create grammar skill cards for spaced repetition
-            const skillCount = await addSkillCards(unitId!);
-            if (skillCount > 0) {
-                toast.success({
-                    title: t('unitFlow.skillsAdded', '¡Habilidades de gramática añadidas!'),
-                    description: t('unitFlow.skillsAddedDesc', {
-                        count: skillCount,
-                        defaultValue: `${skillCount} habilidades añadidas a tu repaso`,
-                    }),
-                });
-            }
+            await addSkillCards(unitId!);
 
             handleStepAdvance();
         }
@@ -661,9 +652,8 @@ function VocabStep({
             await saveStoryWords(unitId, ids, [], { countLearned: false });
             // Shown as added at once: offline the refetch fails and would keep offering them again
             qc.setQueryData<typeof saved>(['unitWordsSaved', unitId, user?.id], prev => prev && { ...prev, inDeck: new Set([...prev.inDeck, ...ids]) });
-            toast.success({ title: t('unitFlow.wordsAdded', { count: unsaved.length }) });
         } catch {
-            toast.error({ title: t('unitFlow.wordsAddFailed') });
+            notice.error({ title: t('unitFlow.wordsAddFailed') });
         } finally {
             setAdding(false);
         }

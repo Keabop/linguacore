@@ -17,7 +17,7 @@ import { SendIcon } from '../components/icons';
 import BackButton from '../components/ui/BackButton';
 import PageHead from '../components/ui/PageHead';
 import { useDialogKeys } from '../hooks/useDialogKeys';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 
 interface ChatBubble {
     role: 'user' | 'assistant';
@@ -66,7 +66,7 @@ export default function ConversationTutor() {
             setConfirmDeleteId(null);
             requestAnimationFrame(() => newConversationRef.current?.focus());
         } catch {
-            toast.error({ title: t('chat.deleteFailed') });
+            notice.error({ title: t('chat.deleteFailed') });
         } finally {
             setDeletingId(null);
         }

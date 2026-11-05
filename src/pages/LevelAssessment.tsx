@@ -24,7 +24,7 @@ import { offlineInsert, offlineUpdate } from '../lib/offlineMutation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 import QuestionView from '../components/exam/QuestionView';
 import PassageView from '../components/exam/PassageView';
 import BackButton from '../components/ui/BackButton';
@@ -171,7 +171,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
             }
         } catch {
             // The result still shows; only what was saved is announced (no "level unlocked")
-            toast.error({ title: t('assessment.saveFailed') });
+            notice.error({ title: t('assessment.saveFailed') });
         } finally {
             savingRef.current = false;
             setSaving(false);

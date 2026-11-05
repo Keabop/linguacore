@@ -1,9 +1,7 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/AuthContext';
 import { offlineRpc } from '../lib/offlineMutation';
-import { toast } from '../lib/toast';
 import { applyActivity, localDate, type ActivityKind, type ActivityResult } from '../lib/studyActivity';
 import type { Profile } from '../lib/database.types';
 
@@ -19,7 +17,6 @@ function timeZone(): string | null {
 export function useRecordActivity() {
     const { user } = useAuth();
     const qc = useQueryClient();
-    const { t } = useTranslation();
     const userId = user?.id;
 
     return useCallback(async (kind: ActivityKind) => {
@@ -33,7 +30,6 @@ export function useRecordActivity() {
             const { freezes_used: _used, ...fields } = optimistic;
             qc.setQueryData<Profile>(key, { ...cached, ...fields });
         }
-        let freezesUsed = optimistic?.freezes_used ?? 0;
         try {
             const result = await offlineRpc<ActivityResult>('record_activity', {
                 p_kind: kind,
@@ -41,16 +37,12 @@ export function useRecordActivity() {
                 p_day: today,
             }, userId);
             if (result) {
-                const { freezes_used, ...fields } = result;
-                freezesUsed = freezes_used;
+                const { freezes_used: _freezes, ...fields } = result;
                 qc.setQueryData<Profile | null>(key, prev => prev && { ...prev, ...fields });
             }
         } catch {
             qc.invalidateQueries({ queryKey: ['profile'] });
             return;
         }
-        if (freezesUsed > 0) {
-            toast.info({ title: t('streak.freezeUsed', { count: freezesUsed }) });
-        }
-    }, [userId, qc, t]);
+    }, [userId, qc]);
 }

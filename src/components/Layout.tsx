@@ -17,6 +17,7 @@ import { useSyncManager } from '../hooks/useSyncManager';
 import { useAuth } from '../lib/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
 import { useSidebarPreferences, type SidebarPosition } from '../hooks/useSidebarPreferences';
+import { PageNotice } from '../lib/notice';
 
 // Rail geometry in px. The rail is placed with left/top/width/height only, so it can animate
 // between any two of these boxes, including the one that follows the pointer while dragging.
@@ -472,6 +473,7 @@ export default function Layout() {
                         then fade in instead of appearing at once */}
                     <Suspense fallback={<PageLoader />}>
                         <div key={location.pathname} className="page-enter">
+                            <PageNotice className="mb-6" />
                             <Outlet />
                         </div>
                     </Suspense>

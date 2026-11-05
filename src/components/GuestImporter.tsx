@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/AuthContext';
-import { toast } from '../lib/toast';
 import { clearGuest, loadGuest } from '../lib/guestTrial';
 
 /** An account this recent is the one the visitor just created. */
@@ -15,7 +13,6 @@ const NEW_ACCOUNT_MS = 24 * 60 * 60 * 1000;
 export default function GuestImporter() {
     const { user } = useAuth();
     const qc = useQueryClient();
-    const { t } = useTranslation();
     const running = useRef(false);
 
     useEffect(() => {
@@ -33,13 +30,11 @@ export default function GuestImporter() {
                 qc.invalidateQueries({ queryKey: ['cards'] });
                 qc.invalidateQueries({ queryKey: ['readStories'] });
                 qc.invalidateQueries({ queryKey: ['profile'] });
-                const words = guest.story?.deck.length ?? 0;
-                toast.success({ title: guest.story ? t('trial.imported', { count: words }) : t('trial.importedPlacement') });
             })
             // Kept for the next sign-in
             .catch(err => console.error('[guestTrial] import failed:', err))
             .finally(() => { running.current = false; });
-    }, [user, qc, t]);
+    }, [user, qc]);
 
     return null;
 }

@@ -114,7 +114,7 @@ export default function GardenPath() {
             <div className="space-y-6">
                 {bar}
                 {!viewingCurrent && grown === lessons && <p className="text-sm text-[var(--color-on-surface-muted)]">{t('pathView.pastLevel')}</p>}
-                <PathList key={level} level={level} units={units} states={states} progress={progress} species={species} openAt={start} onOpen={enter} />
+                <PathList key={level} level={level} units={units} states={states} progress={progress} species={species} openAt={start} thenOpen={grew >= 0 && next >= 0 && next !== grew ? next : undefined} onOpen={enter} />
             </div>
         );
     }

@@ -14,7 +14,7 @@ import SettingsModal from '../components/SettingsModal';
 import type { ReadStoryRow, CardRow } from '../lib/database.types';
 import { generateCareerDeck } from '../lib/ai';
 import { loadVocabulary } from '../data/vocabulary/load';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 
 /** A skill the simulator didn't assess is shown as a dash, not as 0%. */
 const pctOrDash = (v: number | null | undefined) => (v === null || v === undefined ? '—' : `${v}%`);
@@ -69,13 +69,9 @@ export default function Account() {
             link.click();
             document.body.removeChild(link);
             
-            toast.success({
-                title: 'Exportación completada',
-                description: 'El mazo FSRS se ha descargado correctamente en formato CSV.'
-            });
         } catch (err: any) {
             console.error('Failed to export CSV:', err);
-            toast.error({
+            notice.error({
                 title: 'Error de exportación',
                 description: err.message || 'No se pudo exportar el mazo en CSV.'
             });
@@ -234,7 +230,7 @@ export default function Account() {
             if (isCSV) {
                 const parsedRecords = parseCSV(text);
                 if (parsedRecords.length === 0) {
-                    toast.error({
+                    notice.error({
                         title: 'Error de formato',
                         description: 'No se encontraron registros válidos en el CSV.'
                     });
@@ -331,10 +327,6 @@ export default function Account() {
                 }
             }
             
-            toast.success({
-                title: 'Importación exitosa',
-                description: `Se han agregado e inicializado en FSRS ${importedCount} palabras.`
-            });
             
             setImportText('');
             setShowImportArea(false);
@@ -347,7 +339,7 @@ export default function Account() {
             }, 1000);
         } catch (err: any) {
             console.error('Import failed:', err);
-            toast.error({
+            notice.error({
                 title: 'Error de importación',
                 description: err.message || 'Ocurrió un error inesperado al importar las palabras.'
             });
@@ -362,7 +354,7 @@ export default function Account() {
         const cleanProf = prof.trim();
         const hasLetter = /\p{L}/u.test(cleanProf);
         if (cleanProf.length < 3 || !hasLetter) {
-            toast.warning({
+            notice.warning({
                 title: 'Entrada no válida',
                 description: 'Por favor, introduce una profesión válida de al menos 3 caracteres.'
             });
@@ -422,10 +414,6 @@ export default function Account() {
                 addedCount++;
             }
             
-            toast.success({
-                title: `Mazo de ${cleanProf} listo`,
-                description: `Se han generado e importado ${addedCount} palabras profesionales nivel ${level}.`
-            });
             
             setProfession('');
             
@@ -437,7 +425,7 @@ export default function Account() {
             }, 1000);
         } catch (err: any) {
             console.error('Failed to generate career deck:', err);
-            toast.error({
+            notice.error({
                 title: 'Error de generación',
                 description: err.message || 'No se pudo contactar con el servicio de IA o la clave de API no está configurada.'
             });
