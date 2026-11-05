@@ -6,6 +6,7 @@ import type { CEFRLevel, Unit } from '../../lib/db';
 import type { SpeciesId } from '../garden/species';
 import type { GardenUnitState } from './states';
 import { createGarden, type Anchor, type GardenHandle } from './scene';
+import { useGardenStyle } from '../../hooks/useGardenPlant';
 
 interface Garden3DProps {
     units: Unit[];
@@ -36,6 +37,7 @@ const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(pre
 export default function Garden3D({ units, states, level, species, night, startAt, grow, onSelect, selected, diveRef, onFail }: Garden3DProps) {
     const { t } = useTranslation();
     const stageRef = useRef<HTMLDivElement>(null);
+    const { style } = useGardenStyle();
     const labelsRef = useRef<(HTMLDivElement | null)[]>([]);
     const handleRef = useRef<GardenHandle | null>(null);
     const statesKey = states.join(',');
@@ -64,7 +66,7 @@ export default function Garden3D({ units, states, level, species, night, startAt
         };
         let handle: GardenHandle;
         try {
-            handle = createGarden(canvas, { states, level, species, night, reducedMotion: reducedMotion(), grow }, place);
+            handle = createGarden(canvas, { states, level, species, night, reducedMotion: reducedMotion(), grow, pixel: style === 'pixel' }, place);
         } catch {
             canvas.remove();
             onFail();
@@ -81,7 +83,7 @@ export default function Garden3D({ units, states, level, species, night, startAt
         addEventListener('scroll', onScroll, { passive: true });
         onScroll();
         return () => { removeEventListener('scroll', onScroll); canvas.removeEventListener('webglcontextlost', lost); handle.dispose(); canvas.remove(); handleRef.current = null; if (diveRef) diveRef.current = null; };
-    }, [statesKey, level, species, night, grow]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [statesKey, level, species, night, grow, style]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Open on the unit in progress (or the one that just grew)
     useLayoutEffect(() => {

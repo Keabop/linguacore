@@ -6,6 +6,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { CEFRLevel } from '../../lib/db';
 import type { SpeciesId } from '../garden/species';
 import type { GardenUnitState } from './states';
+import { createPixelPass } from './pixelPass';
+import { createSpriteKit, spriteInks } from './sprites';
 
 export interface GardenOptions {
     states: GardenUnitState[];
@@ -15,6 +17,8 @@ export interface GardenOptions {
     reducedMotion: boolean;
     /** Index of a unit just completed: its plant grows when the garden opens. */
     grow?: number;
+    /** Pixel art (hand-drawn sprites and a pixel pass) or the classic low-poly garden */
+    pixel: boolean;
 }
 
 /** Where each unit's label goes on screen, every frame. */
@@ -77,6 +81,8 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
     const units = opts.states;
     const N = units.length;
     const motion = !opts.reducedMotion;
+    // Pixel art: plants, trees, bushes, flowers, grass, stones and signs are hand-drawn sprites
+    const kit = opts.pixel ? createSpriteKit(spriteInks(opts.night, bloom), opts.species, P.flowers) : null;
 
     // Dense screens get resolution, not MSAA: both at once is the costliest pair on a laptop GPU
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: devicePixelRatio < 1.5, powerPreference: 'high-performance' });
@@ -90,6 +96,8 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
     renderer.shadowMap.type = THREE.PCFShadowMap;
     // Shadows are redrawn only when the view moves enough, not every frame
     renderer.shadowMap.autoUpdate = false;
+    // The last step turns the scene into pixel art: drawn small, a short palette, crisp pixels
+    const print = kit ? createPixelPass(renderer, opts.night, kit.colors) : null;
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(P.fog, 38, 95);
@@ -186,8 +194,19 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
         stones.receiveShadow = true; scene.add(stones);
     }
 
-    /* ---------- Grass with wind, in strips so off-screen ones are culled ---------- */
-    {
+    /* ---------- Grass: pixel tufts, or blades with wind in strips so off-screen ones are culled ---------- */
+    if (opts.pixel) {
+        // Pixel tufts scattered over the meadow
+        const zLen = Z_START - Z_END, count = Math.round(1500 * CORE);
+        for (const [x0, x1, share] of [[-22, 22, 1], [-X_HALF, -22, 0.25], [22, X_HALF, 0.25]]) {
+            for (let placed = 0, n = Math.round(count * share); placed < n;) {
+                const x = x0 + rand() * (x1 - x0), z = Z_START - rand() * zLen;
+                if (distToPath(x, z) < 1.7 || wet(x, z) || plots.some(p => Math.hypot(p.x - x, p.z - z) < 2.1)) continue;
+                kit!.add(rand() < 0.5 ? 'tuftA' : 'tuftB', x, heightAt(x, z), z, 1.4 + rand() * 0.8);
+                placed++;
+            }
+        }
+    } else {
         const blade = new THREE.BufferGeometry();
         blade.setAttribute('position', new THREE.Float32BufferAttribute([-0.045, 0, 0, 0.045, 0, 0, -0.025, 0.2, 0, 0.025, 0.2, 0, 0, 0.42, 0], 3));
         blade.setIndex([0, 1, 2, 1, 3, 2, 2, 3, 4]); blade.computeVertexNormals();
@@ -215,6 +234,7 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
     /* ---------- Wildflowers, rocks, trees and bushes ---------- */
     const tree = (x: number, z: number, scale = 1, pine = false) => {
         if (wet(x, z)) return;
+        if (kit) { kit.add(pine ? 'pine' : 'tree', x, heightAt(x, z), z, scale * 2.3); return; }
         const g = new THREE.Group();
         g.add(shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 1.6, 6), mat(P.trunk)).translateY(0.8)));
         if (pine) [0, 1, 2].forEach(k => g.add(shadowed(new THREE.Mesh(new THREE.ConeGeometry(1.25 - k * 0.3, 1.5, 7), mat(P.canopy[2])).translateY(1.8 + k * 0.85))));
@@ -222,23 +242,38 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
         g.position.set(x, heightAt(x, z), z); g.scale.setScalar(scale); g.rotation.y = rand() * 6; scene.add(g);
     };
     {
-        const head = new THREE.OctahedronGeometry(0.12, 0), m = new THREE.Matrix4(), c = new THREE.Color();
-        for (const [x0, x1, count] of [[-20, 20, Math.round(1600 * CORE)], [-X_HALF, -20, 450], [20, X_HALF, 450]]) {
-            const fl = new THREE.InstancedMesh(head, mat(0xffffff), count);
-            for (let i = 0; i < count; i++) {
-                let x: number, z: number; do { x = x0 + rand() * (x1 - x0); z = Z_START - rand() * (Z_START - Z_END); } while (distToPath(x, z) < 2 || plots.some(p => Math.hypot(p.x - x, p.z - z) < 2.4));
-                if (noise(x * 0.25, z * 0.25) < 0.45) { i--; continue; } // wildflowers grow in patches
-                m.compose(new THREE.Vector3(x, heightAt(x, z) + 0.35 + rand() * 0.2, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 3, 0)), new THREE.Vector3(1, 0.6, 1));
-                fl.setMatrixAt(i, m); fl.setColorAt(i, c.setHex(P.flowers[Math.floor(rand() * P.flowers.length)]));
+        if (kit) {
+            for (const [x0, x1, count] of [[-20, 20, Math.round(520 * CORE)], [-X_HALF, -20, 150], [20, X_HALF, 150]]) {
+                for (let i = 0; i < count; i++) {
+                    let x: number, z: number; do { x = x0 + rand() * (x1 - x0); z = Z_START - rand() * (Z_START - Z_END); } while (distToPath(x, z) < 2 || plots.some(p => Math.hypot(p.x - x, p.z - z) < 2.4));
+                    if (noise(x * 0.25, z * 0.25) < 0.45) { i--; continue; } // wildflowers grow in patches
+                    kit.add(`flower${Math.floor(rand() * P.flowers.length)}`, x, heightAt(x, z), z, 1.5);
+                }
             }
-            fl.computeBoundingSphere(); scene.add(fl);
+            const ROCKS = Math.round(70 * CORE) + 50;
+            for (let i = 0; i < ROCKS; i++) {
+                let x: number, z: number; do { x = i < 70 * CORE ? (rand() - 0.5) * 50 : (rand() < 0.5 ? -1 : 1) * (25 + rand() * (X_HALF - 25)); z = Z_START - rand() * (Z_START - Z_END); } while (distToPath(x, z) < 2.4 || plots.some(p => Math.hypot(p.x - x, p.z - z) < 3));
+                kit.add(rand() < 0.12 ? 'mushroom' : 'stone', x, heightAt(x, z), z, 1.6 + rand() * 1.4);
+            }
+        } else {
+            const head = new THREE.OctahedronGeometry(0.12, 0), m = new THREE.Matrix4(), c = new THREE.Color();
+            for (const [x0, x1, count] of [[-20, 20, Math.round(1600 * CORE)], [-X_HALF, -20, 450], [20, X_HALF, 450]]) {
+                const fl = new THREE.InstancedMesh(head, mat(0xffffff), count);
+                for (let i = 0; i < count; i++) {
+                    let x: number, z: number; do { x = x0 + rand() * (x1 - x0); z = Z_START - rand() * (Z_START - Z_END); } while (distToPath(x, z) < 2 || plots.some(p => Math.hypot(p.x - x, p.z - z) < 2.4));
+                    if (noise(x * 0.25, z * 0.25) < 0.45) { i--; continue; } // wildflowers grow in patches
+                    m.compose(new THREE.Vector3(x, heightAt(x, z) + 0.35 + rand() * 0.2, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 3, 0)), new THREE.Vector3(1, 0.6, 1));
+                    fl.setMatrixAt(i, m); fl.setColorAt(i, c.setHex(P.flowers[Math.floor(rand() * P.flowers.length)]));
+                }
+                fl.computeBoundingSphere(); scene.add(fl);
+            }
+            const ROCKS = Math.round(70 * CORE) + 50, rocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.5, 0), mat(P.stone), ROCKS);
+            for (let i = 0; i < ROCKS; i++) {
+                let x: number, z: number; do { x = i < 70 * CORE ? (rand() - 0.5) * 50 : (rand() < 0.5 ? -1 : 1) * (25 + rand() * (X_HALF - 25)); z = Z_START - rand() * (Z_START - Z_END); } while (distToPath(x, z) < 2.4 || plots.some(p => Math.hypot(p.x - x, p.z - z) < 3));
+                const sc = 0.3 + rand() * 0.9; m.compose(new THREE.Vector3(x, heightAt(x, z) + 0.1 * sc, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rand(), rand() * 6, rand())), new THREE.Vector3(sc, sc * 0.6, sc)); rocks.setMatrixAt(i, m);
+            }
+            rocks.castShadow = true; rocks.computeBoundingSphere(); scene.add(rocks);
         }
-        const ROCKS = Math.round(70 * CORE) + 50, rocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.5, 0), mat(P.stone), ROCKS);
-        for (let i = 0; i < ROCKS; i++) {
-            let x: number, z: number; do { x = i < 70 * CORE ? (rand() - 0.5) * 50 : (rand() < 0.5 ? -1 : 1) * (25 + rand() * (X_HALF - 25)); z = Z_START - rand() * (Z_START - Z_END); } while (distToPath(x, z) < 2.4 || plots.some(p => Math.hypot(p.x - x, p.z - z) < 3));
-            const sc = 0.3 + rand() * 0.9; m.compose(new THREE.Vector3(x, heightAt(x, z) + 0.1 * sc, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rand(), rand() * 6, rand())), new THREE.Vector3(sc, sc * 0.6, sc)); rocks.setMatrixAt(i, m);
-        }
-        rocks.castShadow = true; rocks.computeBoundingSphere(); scene.add(rocks);
         // Groves to the sides, a sparser layer to the 31:9 edge, and a forest past the level's tree
         for (let i = 0; i < Math.round(46 * CORE); i++) tree((rand() < 0.5 ? -1 : 1) * (12 + rand() * 18), 8 - rand() * (8 - Z_END), 0.9 + rand() * 1.1, rand() < 0.35);
         for (let i = 0; i < 55; i++) tree((rand() < 0.5 ? -1 : 1) * (30 + rand() * (X_HALF - 30)), 8 - rand() * (8 - Z_END), 1 + rand() * 1.3, rand() < 0.4);
@@ -251,6 +286,7 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
         for (let i = 0; i < Math.round(40 * CORE) + 30; i++) {
             let x: number, z: number; do { x = i < 40 * CORE ? (rand() - 0.5) * 26 : (rand() < 0.5 ? -1 : 1) * (13 + rand() * (X_HALF - 13)); z = Z_START - rand() * (Z_START - Z_END); } while (distToPath(x, z) < 2.8 || plots.some(p => Math.hypot(p.x - x, p.z - z) < 3.3));
             if (wet(x, z)) continue;
+            if (kit) { kit.add('bush', x, heightAt(x, z), z, 1.8 + rand() * 1.2); continue; }
             const b = shadowed(new THREE.Mesh(bush, mat(P.canopy[Math.floor(rand() * 3)]))); b.position.set(x, heightAt(x, z) + 0.3, z); b.scale.set(1 + rand(), 0.7 + rand() * 0.5, 1 + rand()); scene.add(b);
         }
     }
@@ -357,8 +393,10 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
     }
 
     /* ---------- Light: a warm low sun (or moonlight) whose shadows follow the view ---------- */
-    scene.add(new THREE.HemisphereLight(P.hemiSky, P.hemiGround, P.hemiI));
-    const sun = new THREE.DirectionalLight(P.sunCol, P.sunI);
+    // The pixel pass has no tone curve, so its light is lower, enough not to clip
+    const LIGHT = opts.pixel ? (opts.night ? 0.9 : 0.55) : 1;
+    scene.add(new THREE.HemisphereLight(P.hemiSky, P.hemiGround, P.hemiI * LIGHT));
+    const sun = new THREE.DirectionalLight(P.sunCol, P.sunI * LIGHT);
     sun.castShadow = true; sun.shadow.mapSize.set(3072, 1536); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
     Object.assign(sun.shadow.camera, { left: -72, right: 72, top: 62, bottom: -40, near: 1, far: 160 });
     scene.add(sun, sun.target);
@@ -421,6 +459,7 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
     };
     const fullPlant = (height: number): THREE.Group => {
         const g = new THREE.Group();
+        if (kit) { g.add(kit.mesh('grown', height / 2.1 * 1.65)); return g; }
         if (opts.species === 'cactus') {
             const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 1.6, 10), mat(P.leaf)); body.position.y = 0.8; g.add(shadowed(body));
             g.add(shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 6), mat(P.leaf))).translateY(1.6));
@@ -437,15 +476,17 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
         mergeGroup(head); head.userData.dynamic = true; g.add(head); heads.push(head);
         return g;
     };
-    const sprout = () => { const g = new THREE.Group(); g.add(stem(0.7, P.limeDeep, 0.05), leaf(P.lime, 0.62, 1, 1.15), leaf(P.limeDeep, 0.66, -1, 1.05)); return g; };
+    const sprout = () => { const g = new THREE.Group(); if (kit) { g.add(kit.mesh('sprout', 1.35)); return g; } g.add(stem(0.7, P.limeDeep, 0.05), leaf(P.lime, 0.62, 1, 1.15), leaf(P.limeDeep, 0.66, -1, 1.05)); return g; };
     const seed = () => {
         const g = new THREE.Group();
+        if (kit) { g.add(kit.mesh('seed', 1.2)); return g; }
         g.add(shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat(P.soilDark)))); g.children[0].scale.y = 0.45;
         const s = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 6), mat(P.seed))); s.position.y = 0.2; s.scale.set(1.3, 0.8, 1); g.add(s); return g;
     };
     /** A wooden sign by a unit with its speaking left for later. */
     const signpost = () => {
         const g = new THREE.Group();
+        if (kit) { g.add(kit.mesh('sign', 1.2)); return g; }
         g.add(shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.1, 0.1), mat(P.wood))).translateY(0.55));
         g.add(shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.5, 0.06), mat(0xe9d3a6))).translateY(1.05));
         // A microphone mark painted on the board
@@ -460,9 +501,12 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
         const at = plots[i], g = new THREE.Group(); g.position.set(at.x, heightAt(at.x, at.z), at.z);
         if (state.startsWith('exam')) {
             // The level's tree, which blooms when the exam is passed, and an arch toward the next level
-            g.add(shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.8, 4.2, 9), mat(P.trunk))).translateY(2.1));
-            [[0, 5.6, 0, 2.6], [-1.9, 4.8, 0.4, 1.8], [1.9, 5, -0.3, 1.9], [0.4, 6.8, -0.4, 1.7], [-0.8, 4.3, 1.4, 1.4]].forEach(([x, y, z, r], k) =>
-                g.add(shadowed(new THREE.Mesh(new THREE.IcosahedronGeometry(r, 1), mat(P.canopy[k % 3]))).translateX(x).translateY(y).translateZ(z)));
+            if (kit) g.add(kit.mesh(state === 'exam-done' ? 'examTreeBloom' : 'examTree', 5.2));
+            else {
+                g.add(shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.8, 4.2, 9), mat(P.trunk))).translateY(2.1));
+                [[0, 5.6, 0, 2.6], [-1.9, 4.8, 0.4, 1.8], [1.9, 5, -0.3, 1.9], [0.4, 6.8, -0.4, 1.7], [-0.8, 4.3, 1.4, 1.4]].forEach(([x, y, z, r], k) =>
+                    g.add(shadowed(new THREE.Mesh(new THREE.IcosahedronGeometry(r, 1), mat(P.canopy[k % 3]))).translateX(x).translateY(y).translateZ(z)));
+            }
             const lit = state !== 'exam-locked';
             for (let k = 0; k < 6; k++) {
                 const a = k / 6 * Math.PI * 2, lan = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 8), new THREE.MeshLambertMaterial({ color: 0xffd27a, emissive: 0xffb84a, emissiveIntensity: lit ? (opts.night ? 2.2 : 0.6) : 0.05 }));
@@ -470,7 +514,8 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
                 g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.6), mat(0x3a2a1a)).translateX(lan.position.x).translateY(lan.position.y + 0.4).translateZ(lan.position.z));
             }
             if (opts.night && lit) { const light = new THREE.PointLight(0xffc070, 18, 14, 1.6); light.position.y = 3.5; g.add(light); }
-            const blossom = new THREE.IcosahedronGeometry(0.2, 0), blossoms = state === 'exam-done' ? 140 : 70;
+            // The sprite tree carries its own blossom
+            const blossom = new THREE.IcosahedronGeometry(0.2, 0), blossoms = kit ? 0 : state === 'exam-done' ? 140 : 70;
             for (let k = 0; k < blossoms; k++) {
                 const a = rand() * Math.PI * 2, e = rand() * 1.2, r = 2.2 + rand() * 0.6;
                 g.add(new THREE.Mesh(blossom, mat(k % 3 ? 0xf6b7cf : 0xffffff)).translateX(Math.cos(a) * Math.cos(e) * r).translateY(5.4 + Math.sin(e) * r * 0.8).translateZ(Math.sin(a) * Math.cos(e) * r));
@@ -510,6 +555,8 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
         gr.addColorStop(0, 'rgba(255,220,150,.95)'); gr.addColorStop(1, 'rgba(255,200,120,0)'); x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
         scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(lanterns), new THREE.PointsMaterial({ map: new THREE.CanvasTexture(cv), size: 2.6, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
     }
+
+    { const cutouts = kit?.build(); if (cutouts) scene.add(cutouts); }
 
     /* ---------- Bake: static meshes merge by zone into a few draw calls ---------- */
     {
@@ -565,7 +612,7 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
 
     const resize = () => {
         const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
-        renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = h > w ? 52 : 40; camera.updateProjectionMatrix();
+        renderer.setSize(w, h, false); print?.setSize(w, h); camera.aspect = w / h; camera.fov = h > w ? 52 : 40; camera.updateProjectionMatrix();
     };
     const observer = new ResizeObserver(resize); observer.observe(canvas); resize();
 
@@ -626,7 +673,7 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
             const x = THREE.MathUtils.clamp((v.x * 0.5 + 0.5) * w, 76, w - 76), y = (-v.y * 0.5 + 0.5) * h;
             anchors[i].x = x; anchors[i].y = y; anchors[i].visible = v.z < 1 && y > 120 && y < h - 40;
         });
-        renderer.render(scene, camera);
+        if (print) print.render(scene, camera); else renderer.render(scene, camera);
         onFrame(anchors);
     };
     raf = requestAnimationFrame(frame);
@@ -646,6 +693,8 @@ export function createGarden(canvas: HTMLCanvasElement, opts: GardenOptions, onF
                 for (const material of Array.isArray(m.material) ? m.material : [m.material]) { (material as THREE.MeshLambertMaterial).map?.dispose(); material.dispose(); }
             });
             sun.shadow.map?.dispose();
+            print?.dispose();
+            kit?.dispose();
             renderer.dispose();
             // Give the context back now instead of waiting for the garbage collector
             renderer.forceContextLoss();

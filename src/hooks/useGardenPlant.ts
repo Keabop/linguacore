@@ -24,3 +24,19 @@ export function useGardenPlant() {
 
     return { species, chosen, setPlant, isPro };
 }
+
+export type GardenStyle = 'pixel' | 'classic';
+
+/**
+ * How the 3D garden is drawn: hand-drawn pixel art (the default) or the classic low-poly look.
+ * Stored next to the species in `user_metadata.garden_style`, so it follows the user too.
+ */
+export function useGardenStyle() {
+    const { user } = useAuth();
+    const style: GardenStyle = user?.user_metadata?.garden_style === 'classic' ? 'classic' : 'pixel';
+    const setStyle = useCallback(async (next: GardenStyle) => {
+        const { error } = await supabase.auth.updateUser({ data: { garden_style: next } });
+        if (error) throw error;
+    }, []);
+    return { style, setStyle };
+}
