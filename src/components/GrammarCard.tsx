@@ -60,7 +60,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                     <BookOpen className="w-5 h-5 text-accent-blue" />
                 </div>
                 <div>
-                    <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-semibold">
+                    <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">
                         {t('grammar.title')}
                     </p>
                     <h2 className="text-xl font-extrabold leading-tight">{card.title}</h2>
@@ -146,7 +146,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                 transition={{ delay: 0.4 }}
                 onClick={handleUnderstood}
                 disabled={saving}
-                className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] hover:brightness-90 disabled:opacity-50"
+                className="btn-primary w-full py-3.5 disabled:opacity-50"
             >
                 {saving ? t('common.loading') : t('grammar.understood')}
             </motion.button>

@@ -1,6 +1,6 @@
 import { generateWithFallback } from '../lib/gemini.js';
 import { EXAM_CRITERIA, criteriaInstructions, isCriteriaExam, type CriterionScore } from '../lib/examCriteria.js';
-import { STUDENT_DATA_RULE, TASK_DATA_RULE, descriptorRubric, fitToBand, studentData, toCefrLevel } from '../lib/cefrDescriptors.js';
+import { STUDENT_DATA_RULE, TASK_DATA_RULE, descriptorRubric, studentData, toCefrLevel } from '../lib/cefrDescriptors.js';
 
 export const WRITING_TYPES = ['sentence-construction', 'paragraph-completion', 'free-writing', 'error-correction'] as const;
 
@@ -36,6 +36,14 @@ interface WritingEvaluationResponse {
     criteria?: CriterionScore[];
 }
 
+/** A correction that only changes capitals, punctuation or spacing is not one. */
+export function onlyMechanics(original: string, corrected: string): boolean {
+    const bare = (text: string) => text.toLowerCase().replace(/[’‘]/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+    return bare(original) === bare(corrected);
+}
+
+const clampScore = (value: unknown) => Math.round(Math.max(0, Math.min(100, Number(value) || 0)));
+
 export async function evaluateWriting(params: WritingEvaluationRequest): Promise<WritingEvaluationResponse> {
     const level = toCefrLevel(params.level);
     const exam = isCriteriaExam(params.exam) ? criteriaInstructions(EXAM_CRITERIA[params.exam].writing) : null;
@@ -65,16 +73,20 @@ ${typeInstructions[params.type] || ''}
 
 ALL feedback text (corrections explanations, notes, encouragement) MUST be in SPANISH.
 
+NOT ERRORS: capital letters, punctuation (commas, periods, a missing final period, question or
+exclamation marks) and spacing. A missing apostrophe in a contraction ("dont") is spelling, so it counts. Never list them as corrections and never lower a score
+for them. Only grammar, word choice and spelling of the words themselves count.
+
 ${exam
     ? exam.rules
-    : `Score breakdown:
+    : `Score breakdown (each sub-score uses the bands above; an answer that does the task with no real
+errors is "above" in grammar and vocabulary, so it scores 100 there):
 - Grammar: 40% weight — accuracy of grammar, especially target patterns
 - Vocabulary: 30% weight — range, appropriateness, spelling
 - Coherence: 30% weight — logical flow, organization, clarity`}
 
 You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exact format:
-{${exam ? '' : `
-  "band": "meets",`}
+{
   "score": 70,
   "corrections": [
     {
@@ -82,7 +94,7 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exac
       "corrected": "the corrected version",
       "explanation": "Explicación en español de por qué es incorrecto",
       "type": "grammar",
-      "example_variants": ["Correct example using the same pattern", "Another correct example"]
+      "example_variants": ["Another correct sentence using the same pattern"]
     }
   ],
   "feedback": {
@@ -95,9 +107,9 @@ You MUST respond with ONLY valid JSON (no markdown, no code fences) in this exac
   ${exam.field}` : ''}
 }
 
-For each correction, include 2 "example_variants": additional correct sentences that demonstrate proper usage of the same pattern.
+For each correction, include 1 "example_variants" entry: another correct sentence with the same pattern.
 If the student's text is perfect or near-perfect, return an empty corrections array and high scores.
-The "improvedVersion" should always be the best version of what the student was trying to say.`;
+The "improvedVersion" should always be the best version of what the student was trying to say, changing only what the corrections change.`;
 
     const text = await generateWithFallback(prompt, { temperature: 0 });
 
@@ -110,15 +122,24 @@ The "improvedVersion" should always be the best version of what the student was 
         throw new SyntaxError('Invalid JSON');
     }
 
+    // The model's sub-scores end up whole numbers from 0 to 100, like the speaking ones
+    const feedback = Object.fromEntries((['grammar', 'vocabulary', 'coherence'] as const).map(k => [k, {
+        score: clampScore(parsed.feedback?.[k]?.score),
+        note: typeof parsed.feedback?.[k]?.note === 'string' ? parsed.feedback[k].note : '',
+    }])) as WritingEvaluationResponse['feedback'];
+    // A reply without any sub-score falls back to the model's own number instead of a 0
+    const hasSubScores = (['grammar', 'vocabulary', 'coherence'] as const).some(k => typeof parsed.feedback?.[k]?.score === 'number');
+    const corrections: WritingCorrection[] = (Array.isArray(parsed.corrections) ? parsed.corrections : [])
+        .filter((c: any) => typeof c?.original === 'string' && typeof c?.corrected === 'string' && !onlyMechanics(c.original, c.corrected));
+
     return {
-        // Without an exam the score sits in the band the model chose; an exam's comes from its criteria
-        score: fitToBand(parsed.score, exam ? undefined : parsed.band),
-        corrections: parsed.corrections || [],
-        // The model's sub-scores end up whole numbers from 0 to 100, like the speaking ones
-        feedback: Object.fromEntries((['grammar', 'vocabulary', 'coherence'] as const).map(k => [k, {
-            score: Math.round(Math.max(0, Math.min(100, Number(parsed.feedback?.[k]?.score) || 0))),
-            note: typeof parsed.feedback?.[k]?.note === 'string' ? parsed.feedback[k].note : '',
-        }])) as WritingEvaluationResponse['feedback'],
+        // Without an exam the score is the weighted sub-scores the learner sees (it used to be the
+        // model's own number, which could say 79 under three 100s); an exam's comes from its criteria
+        score: exam || !hasSubScores
+            ? clampScore(parsed.score)
+            : Math.round(feedback.grammar.score * 0.4 + feedback.vocabulary.score * 0.3 + feedback.coherence.score * 0.3),
+        corrections,
+        feedback,
         improvedVersion: parsed.improvedVersion || params.text,
         encouragement: parsed.encouragement || '¡Sigue practicando!',
         ...(exam && Array.isArray(parsed.criteria) ? { criteria: parsed.criteria } : {}),

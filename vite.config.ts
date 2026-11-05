@@ -14,9 +14,16 @@ export default defineConfig({
             },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,json,svg,png,ico}'],
+                // three.js comes with the 3D home only: cached on first use (below), not precached for everyone
+                globIgnores: ['**/Garden3D-*.js'],
                 navigateFallback: '/index.html',
                 navigateFallbackDenylist: [/^\/api\//],
                 runtimeCaching: [
+                    {
+                        urlPattern: /\/assets\/Garden3D-[\w-]+\.js$/,
+                        handler: 'CacheFirst',
+                        options: { cacheName: 'garden3d', expiration: { maxEntries: 2 } },
+                    },
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
                         handler: 'CacheFirst',

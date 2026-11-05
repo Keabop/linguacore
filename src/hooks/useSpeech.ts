@@ -23,6 +23,18 @@ interface SpeechRecognitionInstance extends EventTarget {
     onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
     onend: (() => void) | null;
     onstart: (() => void) | null;
+    /** The final text of this session so far (ours, not the browser's). */
+    lastFinal?: string;
+}
+
+/** The recognition listening right now, whichever component started it. */
+let activeRecognition: SpeechRecognitionInstance | null = null;
+/** Stops the component that owns it from listening again, so two of them never take the mic back and forth. */
+let releaseActive: (() => void) | null = null;
+
+/** Two pieces of what was said, with one space between them. */
+function joinSpeech(before: string, after: string): string {
+    return [before.trim(), after.trim()].filter(Boolean).join(' ');
 }
 
 declare global {
@@ -66,73 +78,98 @@ export function useSpeech(): UseSpeechReturn {
         ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
     const synthesisSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-    // --- Initialize recognition ---
-    const getRecognition = useCallback(() => {
-        if (recognitionRef.current) return recognitionRef.current;
-        if (!recognitionSupported) return null;
+    // What the learner said in earlier sessions of this recording: the browser ends a session on
+    // its own (after a pause, or after each phrase on Android) and it is restarted, keeping the text
+    const keptRef = useRef('');
+    // The learner still wants to listen: a session the browser ended is started again
+    const wantedRef = useRef(false);
+    const restartsRef = useRef(0);
 
+    const startSession = useCallback(() => {
+        if (!recognitionSupported) return;
+        // Only one recognition can listen at a time: one left open by the previous prompt (its stop
+        // is still finishing) made the new one start deaf, so it is closed first
+        if (activeRecognition && activeRecognition !== recognitionRef.current) releaseActive?.();
+        activeRecognition?.abort();
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        // A fresh instance each time: a stopped one doesn't always start again (Chrome on Android)
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
         recognition.lang = 'en-US';
+        const isCurrent = () => recognitionRef.current === recognition;
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
+            if (!isCurrent()) return;
+            restartsRef.current = 0;
             let final = '';
             let interim = '';
-
             for (let i = 0; i < event.results.length; i++) {
                 const result = event.results[i];
-                if (result.isFinal) {
-                    final += result[0].transcript;
-                } else {
-                    interim += result[0].transcript;
-                }
+                if (result.isFinal) final += result[0].transcript;
+                else interim += result[0].transcript;
             }
-
-            setTranscript(final);
+            setTranscript(joinSpeech(keptRef.current, final));
             setInterimTranscript(interim);
+            recognition.lastFinal = final;
         };
 
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-            // 'no-speech' and 'aborted' are not real errors
+            if (!isCurrent()) return;
+            // A pause or our own abort is not an error: the session ends and starts again
             if (event.error === 'no-speech' || event.error === 'aborted') return;
+            wantedRef.current = false;
             setRecognitionError(event.error);
             setIsListening(false);
         };
 
         recognition.onend = () => {
-            setIsListening(false);
+            if (!isCurrent()) return;
+            keptRef.current = joinSpeech(keptRef.current, recognition.lastFinal ?? '');
             setInterimTranscript('');
+            // Ended by the browser while the learner is still speaking: listen again, a few times at most
+            if (wantedRef.current && restartsRef.current < 5) {
+                restartsRef.current += 1;
+                startSession();
+                return;
+            }
+            wantedRef.current = false;
+            if (activeRecognition === recognition) activeRecognition = null;
+            setIsListening(false);
         };
 
         recognitionRef.current = recognition;
-        return recognition;
-    }, [recognitionSupported]);
-
-    // --- Recognition controls ---
-    const startListening = useCallback(() => {
-        const recognition = getRecognition();
-        if (!recognition) return;
-
-        setRecognitionError(null);
-        setTranscript('');
-        setInterimTranscript('');
-
+        activeRecognition = recognition;
+        releaseActive = () => {
+            wantedRef.current = false;
+            recognitionRef.current = null;
+            setInterimTranscript('');
+            setIsListening(false);
+        };
         try {
             recognition.start();
             setIsListening(true);
         } catch {
-            // Already started — ignore
+            wantedRef.current = false;
+            setIsListening(false);
         }
-    }, [getRecognition]);
+    }, [recognitionSupported]);
+
+    // --- Recognition controls ---
+    const startListening = useCallback(() => {
+        setRecognitionError(null);
+        setTranscript('');
+        setInterimTranscript('');
+        keptRef.current = '';
+        restartsRef.current = 0;
+        wantedRef.current = true;
+        startSession();
+    }, [startSession]);
 
     const stopListening = useCallback(() => {
-        const recognition = recognitionRef.current;
-        if (!recognition) return;
-
+        wantedRef.current = false;
         try {
-            recognition.stop();
+            recognitionRef.current?.stop();
         } catch {
             // Already stopped — ignore
         }
@@ -141,6 +178,7 @@ export function useSpeech(): UseSpeechReturn {
     }, []);
 
     const resetTranscript = useCallback(() => {
+        keptRef.current = '';
         setTranscript('');
         setInterimTranscript('');
     }, []);
@@ -174,7 +212,11 @@ export function useSpeech(): UseSpeechReturn {
     // --- Cleanup ---
     useEffect(() => {
         return () => {
-            recognitionRef.current?.abort();
+            wantedRef.current = false;
+            const recognition = recognitionRef.current;
+            recognitionRef.current = null;
+            recognition?.abort();
+            if (activeRecognition === recognition) activeRecognition = null;
             if (synthesisSupported) window.speechSynthesis.cancel();
         };
     }, [synthesisSupported]);

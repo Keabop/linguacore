@@ -6,7 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import type { ReadStoryRow } from '../lib/database.types';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, RefreshCw, PenLine, Mic, Trophy, CheckCircle2, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
+import { BookOpen, RefreshCw, PenLine, Mic, Trophy, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
 import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db';
 import { allUnits } from '../data/curriculum/units';
 import { levelOfId, useLevelContent } from '../data/levels';
@@ -17,6 +17,7 @@ import { useCards } from '../hooks/useCards';
 import { shuffle } from '../lib/shuffle';
 import { useUnitProgress, type UnitStep } from '../hooks/useUnitProgress';
 import { useSkillCards } from '../hooks/useSkillCards';
+import { useLevelUnitProgress } from '../hooks/useLevelUnitProgress';
 import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
 import { toast } from '../lib/toast';
@@ -25,6 +26,8 @@ import ExerciseRunner from '../components/exercises/ExerciseRunner';
 import OutputStep from '../components/OutputStep';
 import LevelAssessment from './LevelAssessment';
 import BackButton from '../components/ui/BackButton';
+import PageHead from '../components/ui/PageHead';
+import LevelBadge from '../components/ui/LevelBadge';
 
 /* ===== Step metadata ===== */
 
@@ -36,15 +39,6 @@ const STEPS: { key: UnitStep; icon: typeof BookOpen }[] = [
     { key: 'output', icon: Mic },
     { key: 'checkpoint', icon: Trophy },
 ];
-
-const STEP_LABELS: Record<string, string> = {
-    grammar: 'Gramática',
-    story: 'Historia',
-    vocab: 'Vocabulario',
-    exercises: 'Ejercicios',
-    output: 'Output',
-    checkpoint: 'Checkpoint',
-};
 
 function stepIndex(step: UnitStep): number {
     const idx = STEPS.findIndex(s => s.key === step);
@@ -72,7 +66,7 @@ const slideVariants = {
 
 /* ===== Celebration ===== */
 
-function CelebrationCard({ onBack }: { onBack: () => void }) {
+function CelebrationCard({ onBack, note }: { onBack: () => void; note?: string }) {
     const { species } = useGardenPlant();
 
     // Unit complete is one of the three achievement moments: the unit's plant grows
@@ -83,16 +77,17 @@ function CelebrationCard({ onBack }: { onBack: () => void }) {
             transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center justify-center py-16"
         >
-            <div role="status" className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-10 w-full max-w-sm text-center space-y-6 shadow-[var(--shadow-float)]">
+            <div role="status" className="app-specimen">
                 <PlantCircle species={species} size="lg" height={44} delay={200} />
 
                 <div className="space-y-2">
-                    <h2 className="text-3xl font-extrabold tracking-tight text-[var(--color-on-surface)]">
+                    <h2 className="app-h2">
                         ¡Unidad completada!
                     </h2>
                     <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
                         Tu planta creció. Sigue avanzando en tu ruta para llenar el jardín de este nivel.
                     </p>
+                    {note && <p className="text-xs font-semibold text-[var(--color-tertiary-ink)]">{note}</p>}
                 </div>
 
                 <button onClick={onBack} className="btn-primary w-full py-4 text-base">
@@ -118,6 +113,11 @@ export default function UnitFlow() {
     // Only this unit's level is downloaded (src/data/levels), with its deck from the start
     const content = useLevelContent(levelOfId(unitId));
     useEffect(() => prefetchVocabulary(levelOfId(unitId)), [unitId]);
+    // The end-of-level exam waits for the speaking parts left for later in this level
+    const level = useLevelUnitProgress(unit?.level ?? levelOfId(unitId) ?? 'A1');
+    const { pendingSpeaking } = level;
+    // Just finished here: the celebration comes before the speaking left for later
+    const [justFinished, setJustFinished] = useState(false);
     const unitStories = useMemo(() => content?.stories.filter(s => s.unitId === unitId) ?? [], [content, unitId]);
     const unitStory = unitStories[0] ?? null;
     // One array per unit: a new one on every render would reshuffle the checkpoint below
@@ -152,6 +152,51 @@ export default function UnitFlow() {
             <div className="space-y-6">
                 <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
                 <p className="text-[var(--color-on-surface-muted)]">Unidad no encontrada.</p>
+            </div>
+        );
+    }
+
+    // The exam waits until the level's progress is known: a failed read never opens it
+    if (unit.isAssessment && (level.isLoading || level.isError)) {
+        return (
+            <div className="space-y-6">
+                <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
+                {level.isError
+                    ? <p className="text-sm text-[var(--color-on-surface-muted)]">{t('unitFlow.progressError')}</p>
+                    : <div className="text-[var(--color-on-surface-muted)] text-sm">{t('common.loading')}</div>}
+            </div>
+        );
+    }
+
+    // Assessment unit with speaking still pending in the level: those units first
+    if (unit.isAssessment && pendingSpeaking.length > 0) {
+        return (
+            <div className="space-y-6">
+                <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
+                <div className="app-sheet p-6 md:p-8 space-y-5">
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-black tracking-tight">{t('unitFlow.pendingTitle', { count: pendingSpeaking.length })}</h2>
+                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{t('unitFlow.pendingBody')}</p>
+                    </div>
+                    <ul className="space-y-3">
+                        {pendingSpeaking.map(u => (
+                            <li key={u.id}>
+                                <button
+                                    onClick={() => navigate(`/path/${u.id}`)}
+                                    className="w-full flex items-center justify-between gap-3 rounded-xl bg-[var(--color-surface-container-low)] px-4 py-3 text-left hover:bg-[var(--color-surface-container)] transition-colors"
+                                >
+                                    <span className="min-w-0">
+                                        <span className="block text-xs font-bold text-[var(--color-on-surface-muted)]">{t('path.unit')} {u.unitNumber}</span>
+                                        <span className="block text-sm font-bold truncate">{u.title}</span>
+                                    </span>
+                                    <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-tertiary-ink)]">
+                                        <Mic className="w-4 h-4" aria-hidden="true" />{t('path.speakingPending')}
+                                    </span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         );
     }
@@ -194,6 +239,7 @@ export default function UnitFlow() {
 
     const handleCheckpointComplete = async (score: number) => {
         if (score >= 80) {
+            setJustFinished(true);
             await updateProgress({
                 checkpoint_passed: true,
                 completed_at: new Date().toISOString(),
@@ -219,8 +265,24 @@ export default function UnitFlow() {
     /* -- Render current step content -- */
 
     const renderStepContent = () => {
+        // A finished unit with its speaking left for later opens on that speaking
+        if (currentStep === 'completed' && progress?.speaking_pending && !justFinished) {
+            return (
+                <OutputStep
+                    unitId={unitId!}
+                    level={unit.level}
+                    speakingOnly
+                    speakingPending
+                    onSpeakingDone={() => updateProgress({ speaking_pending: false })}
+                    onComplete={() => navigate('/path')}
+                />
+            );
+        }
+        if (currentStep === 'completed' && progress?.speaking_pending) {
+            return <CelebrationCard onBack={() => navigate('/path', { state: { grew: unitId } })} note={t('unitFlow.speakingStillPending')} />;
+        }
         if (currentStep === 'completed') {
-            return <CelebrationCard onBack={() => navigate('/path')} />;
+            return <CelebrationCard onBack={() => navigate('/path', { state: { grew: unitId } })} />;
         }
 
         return (
@@ -288,6 +350,7 @@ export default function UnitFlow() {
                             description="No hay ejercicios disponibles para esta unidad todavía."
                             actionLabel="Saltar"
                             onAction={async () => {
+                                setJustFinished(true);
                                 await updateProgress({ exercises_score: 100 });
                                 await markStepComplete('exercises');
                                 handleStepAdvance();
@@ -299,6 +362,9 @@ export default function UnitFlow() {
                         <OutputStep
                             unitId={unitId!}
                             level={unit.level}
+                            speakingPending={!!progress?.speaking_pending}
+                            onSpeakingPending={() => updateProgress({ speaking_pending: true })}
+                            onSpeakingDone={() => updateProgress({ speaking_pending: false })}
                             onComplete={handleOutputComplete}
                         />
                     )}
@@ -332,103 +398,47 @@ export default function UnitFlow() {
     };
 
     return (
-        <div className="space-y-12">
-            {/* Back button */}
+        <div className="space-y-8">
             <BackButton onClick={() => navigate('/path')} label={t('common.back')} />
 
-            {/* Unit title */}
             <motion.div
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-1"
+                transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-6"
             >
-                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-semibold">
-                    {t('path.unit')} {unit.unitNumber}
-                </p>
-                <h1 className="text-3xl font-black tracking-tight leading-tight">{unit.title}</h1>
+                <PageHead
+                    title={unit.title}
+                    meta={[
+                        `${t('path.unit')} ${unit.unitNumber}`,
+                        unit.grammarTopic,
+                        <LevelBadge key="level" level={unit.level} size="compact" withStage />,
+                    ]}
+                />
+
+                {/* The unit's stem: one leaf per step, the current one named */}
+                {currentStep !== 'completed' && (
+                    <ol className="unit-stem" aria-label={t('unitFlow.stepsLabel')}>
+                        {STEPS.map((step, i) => {
+                            const Icon = step.icon;
+                            const state = i < activeStepIdx ? 'is-done' : i === activeStepIdx ? 'is-current' : '';
+                            return (
+                                <li key={step.key} className={state} aria-current={i === activeStepIdx ? 'step' : undefined}>
+                                    <span className="unit-stem-mark" aria-hidden="true">
+                                        {i < activeStepIdx ? <Check className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
+                                    </span>
+                                    <span className="unit-stem-label">{t(`pathView.steps.${step.key}`)}</span>
+                                </li>
+                            );
+                        })}
+                    </ol>
+                )}
+                {currentStep !== 'completed' && (
+                    <p className="unit-stem-caption" aria-hidden="true">
+                        {t('unitFlow.stepOf', { n: activeStepIdx + 1, total: STEPS.length })} · {t(`pathView.steps.${STEPS[activeStepIdx]?.key}`)}
+                    </p>
+                )}
             </motion.div>
-
-            {/* Step indicator (horizontal stepper) */}
-            {currentStep !== 'completed' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="flex items-center gap-1 sm:gap-2"
-                >
-                    {STEPS.map((step, i) => {
-                        const Icon = step.icon;
-                        const isCompleted = i < activeStepIdx;
-                        const isCurrent = i === activeStepIdx;
-                        const isUpcoming = i > activeStepIdx;
-
-                        return (
-                            <div key={step.key} className={`flex items-center gap-1 sm:gap-2 ${i < STEPS.length - 1 ? 'flex-1 sm:flex-none' : ''}`}>
-                                {/* Step dot/icon */}
-                                <div
-                                    className={`
-                                        flex shrink-0 items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-full transition-all duration-300
-                                        ${isCompleted
-                                            ? 'bg-[var(--color-success)]/20 text-[var(--color-success)] shadow-[0_2px_8px_color-mix(in_oklch,var(--color-success)_15%,transparent)]'
-                                            : isCurrent
-                                                ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] shadow-[var(--shadow-card)]'
-                                                : 'bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)]'
-                                        }
-                                    `}
-                                    title={STEP_LABELS[step.key]}
-                                >
-                                    {isCompleted ? (
-                                        <CheckCircle2 className="w-4 h-4" />
-                                    ) : (
-                                        <Icon className="w-4 h-4" />
-                                    )}
-                                </div>
-
-                                {/* Connector line: on phones it takes the free width, so every step fits from 320 px */}
-                                {i < STEPS.length - 1 && (
-                                    <div
-                                        className={`
-                                            h-[2px] flex-1 min-w-1 sm:flex-none sm:w-7 md:w-9 rounded-full transition-colors duration-300
-                                            ${isCompleted ? 'bg-[var(--color-success)]/40' : 'bg-[var(--color-surface-container-highest)]'}
-                                        `}
-                                    />
-                                )}
-                            </div>
-                        );
-                    })}
-                </motion.div>
-            )}
-
-            {/* Step labels (visible on wider screens) */}
-            {currentStep !== 'completed' && (
-                <div className="hidden sm:flex items-center gap-2 -mt-4">
-                    {STEPS.map((step, i) => {
-                        const isCompleted = i < activeStepIdx;
-                        const isCurrent = i === activeStepIdx;
-
-                        return (
-                            <div key={step.key} className="flex items-center gap-2">
-                                <span
-                                    className={`
-                                        text-[10px] font-semibold w-9 text-center leading-tight
-                                        ${isCompleted
-                                            ? 'text-[var(--color-success)]'
-                                            : isCurrent
-                                                ? 'text-[var(--color-primary)]'
-                                                : 'text-[var(--color-on-surface-muted)]'
-                                        }
-                                    `}
-                                >
-                                    {STEP_LABELS[step.key]}
-                                </span>
-                                {i < STEPS.length - 1 && (
-                                    <div className="w-5 sm:w-7 md:w-9" />
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
 
             {/* Step content */}
             <div className="min-h-[300px]">
@@ -464,14 +474,12 @@ function StepHeader({
     description: string;
 }) {
     return (
-        <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--color-primary)]/10 shadow-[var(--shadow-card)]">
-                <Icon className="w-5 h-5 text-[var(--color-primary)]" />
-            </div>
-            <div>
-                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-semibold">
-                    {label}
-                </p>
+        <div className="unit-step-head">
+            <span className="unit-step-icon" aria-hidden="true">
+                <Icon className="w-5 h-5" />
+            </span>
+            <div className="min-w-0">
+                <h2 className="app-h3">{label}</h2>
                 <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{description}</p>
             </div>
         </div>
@@ -517,7 +525,7 @@ function StoryStep({
                 description="Lee una historia para practicar la gramática de esta unidad."
             />
 
-            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 space-y-7 shadow-[var(--shadow-card)]">
+            <div className="app-sheet p-8 space-y-7">
                 {unitStories.length > 0 ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -571,7 +579,7 @@ function StoryStep({
                     <button
                         onClick={nextUnread ? () => readStory(nextUnread) : onComplete}
                         disabled={loadingRead && unitStories.length > 0}
-                        className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none"
+                        className="btn-primary flex-1 py-4 text-sm disabled:opacity-60 disabled:pointer-events-none"
                     >
                         {!unitStories.length ? t('unitFlow.skipForNow') : nextUnread ? t('unitFlow.readNextStory', { title: nextUnread.title }) : t('unitFlow.continue')}
                     </button>
@@ -693,7 +701,7 @@ function VocabStep({
                 }
             />
 
-            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 space-y-6 shadow-[var(--shadow-card)]">
+            <div className="app-sheet p-7 space-y-6">
                 {vocabItems.length > 0 ? (
                     <>
                         <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
@@ -776,7 +784,7 @@ function VocabStep({
 
                 <button
                     onClick={onComplete}
-                    className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                    className="btn-primary w-full py-4 text-sm"
                 >
                     Continuar
                 </button>
@@ -830,7 +838,7 @@ function CheckpointStep({
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center py-10"
                 >
-                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-10 w-full max-w-sm text-center space-y-6 shadow-[var(--shadow-float)]">
+                    <div className="app-specimen">
                         <div className="space-y-3">
                             <p className="text-5xl font-black tracking-tight text-[var(--color-error)]">
                                 {lastScore}%
@@ -842,7 +850,7 @@ function CheckpointStep({
 
                         <button
                             onClick={handleRetry}
-                            className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-4 rounded-full font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] flex items-center justify-center gap-2"
+                            className="btn-primary w-full py-4 flex items-center justify-center gap-2"
                         >
                             <RotateCcw className="w-4 h-4" />
                             Inténtalo de nuevo
@@ -872,14 +880,14 @@ function EmptyStepCard({
     return (
         <div className="space-y-6">
             <StepHeader icon={Icon} label={title} description={description} />
-            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 text-center space-y-6 shadow-[var(--shadow-card)]">
+            <div className="app-sheet p-8 text-center space-y-6">
                 <div className="w-16 h-16 rounded-2xl bg-[var(--color-surface-container)] flex items-center justify-center mx-auto">
                     <Icon className="w-8 h-8 text-[var(--color-on-surface-muted)]" />
                 </div>
                 <p className="text-[var(--color-on-surface-muted)] text-sm">{description}</p>
                 <button
                     onClick={onAction}
-                    className="bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3.5 px-8 rounded-full font-black text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                    className="btn-primary py-3.5 px-8 text-sm"
                 >
                     {actionLabel}
                 </button>

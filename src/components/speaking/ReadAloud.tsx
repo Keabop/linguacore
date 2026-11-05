@@ -71,7 +71,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
         <div className="space-y-6">
             <NoEnglishVoices />
             <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-accent-blue text-sm font-semibold">
+                <div className="flex items-center gap-2 text-[var(--color-primary)] text-sm font-semibold">
                     <Volume2 className="w-4 h-4" />
                     Lectura en voz alta
                 </div>
@@ -79,7 +79,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
             </div>
 
             <div className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">Lee este texto</p>
+                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">Lee este texto</p>
                 {!result ? (
                     <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium">{targetText}</p>
                 ) : (
@@ -92,7 +92,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                     </p>
                 )}
                 <button onClick={handleListen} disabled={isSpeaking || isListening}
-                    className="flex items-center gap-2 text-xs text-accent-blue hover:text-accent-blue/80 transition-colors disabled:opacity-40">
+                    className="flex items-center gap-2 text-xs text-[var(--color-primary)] hover:underline disabled:opacity-40">
                     <Volume2 className="w-3.5 h-3.5" />
                     {isSpeaking ? 'Reproduciendo...' : 'Escuchar pronunciación'}
                 </button>
@@ -143,7 +143,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(result?.score ?? 0)}
-                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            className="btn-primary flex-1 py-3.5">
                             Continuar
                         </button>
                     </>

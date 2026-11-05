@@ -16,6 +16,7 @@ import { UsageBadge } from '../components/UsageBadge';
 import { Lock, Check, Clock, Sparkles, Loader2, X, Search, Compass, Eye } from 'lucide-react';
 import { StoryIcon } from '../lib/storyVisuals';
 import { generateStory } from '../lib/ai';
+import PageHead from '../components/ui/PageHead';
 
 
 export const CEFR_COLORS: Record<string, string> = {
@@ -102,12 +103,11 @@ export default function StoryList() {
     return (
         <div className="space-y-14">
             {/* Header */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="space-y-2">
-                        <h1 className="text-4xl font-black tracking-tight leading-none">{t('nav.learn')}</h1>
-                        <p className="text-[var(--color-on-surface-muted)] leading-relaxed text-sm">{t('storyList.subtitle')}</p>
-                    </div>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                <PageHead
+                    title={t('nav.learn')}
+                    lead={t('storyList.subtitle')}
+                    actions={
                     <div className="flex items-center gap-3">
                         {isFree && storyUsage && (
                             <UsageBadge remaining={storyUsage.remaining} limit={storyUsage.limit} label="historias esta semana" />
@@ -117,7 +117,7 @@ export default function StoryList() {
                                 <p className="text-xs text-[var(--color-on-surface-muted)] flex items-center gap-1.5 font-medium">
                                     <Lock className="w-3 h-3" /> Ya generaste tu historia de esta semana
                                 </p>
-                                <Link to="/pricing" className="text-[10px] text-[var(--color-primary)] font-bold hover:underline">
+                                <Link to="/pricing" className="text-xs text-[var(--color-primary)] font-bold hover:underline">
                                     Se reinicia el lunes — o desbloquea con Pro
                                 </Link>
                             </div>
@@ -130,7 +130,8 @@ export default function StoryList() {
                             </button>
                         )}
                     </div>
-                </div>
+                    }
+                />
             </motion.div>
 
             {/* AI Story Generation Modal */}

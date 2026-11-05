@@ -528,14 +528,14 @@ export default function Account() {
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start justify-between"
+                    className="app-head-row app-head"
                 >
                     <div className="flex items-center gap-4">
                         <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-2xl font-black text-[var(--color-on-primary)] shadow-[var(--shadow-elevated)]">
                             {initial}
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black tracking-tight text-[var(--color-on-surface)]">{authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0]}</h1>
+                            <h1 className="app-title">{authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0]}</h1>
                             <p className="text-sm text-[var(--color-on-surface-muted)]">{authUser?.email}</p>
                             <div className="flex items-center gap-2 mt-1">
                                 <LevelBadge level={progressInfo?.currentLevel ?? 'A1'} size="compact" />
@@ -579,7 +579,7 @@ export default function Account() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.12 }}
-                    className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
+                    className="app-sheet p-6 space-y-6 text-left"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
@@ -689,7 +689,7 @@ export default function Account() {
                                 <button
                                     onClick={() => handleCreateCareerDeck(profession)}
                                     disabled={generatingDeck || !profession.trim()}
-                                    className="flex items-center justify-center bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-bold p-3.5 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
+                                    className="btn-primary flex items-center justify-center text-sm p-3.5 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                                     title="Generar mazo profesional"
                                 >
                                     {generatingDeck ? (
@@ -729,7 +729,7 @@ export default function Account() {
                                 <button
                                     onClick={() => handleImportWords(importText)}
                                     disabled={importing || !importText.trim()}
-                                    className="flex items-center gap-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold px-5 py-2 rounded-xl disabled:opacity-50 disabled:pointer-events-none hover:-translate-y-0.5 shadow-[var(--shadow-card)] transition-all cursor-pointer"
+                                    className="btn-primary flex items-center gap-2 text-xs px-5 py-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                                 >
                                     {importing ? (
                                         <>
@@ -754,7 +754,7 @@ export default function Account() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.15 }}
-                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]"
+                        className="app-sheet p-6"
                     >
                         <div className="text-sm font-bold text-[var(--color-on-surface-muted)] mb-4">{t('progress.currentLevel')}</div>
                         <div className="flex items-center gap-4">
@@ -780,7 +780,7 @@ export default function Account() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.16 }}
-                    className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-6 text-left"
+                    className="app-sheet p-6 space-y-6 text-left"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
@@ -803,7 +803,7 @@ export default function Account() {
                             </p>
                             <Link
                                 to="/review/simulator"
-                                className="inline-flex items-center justify-center bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold px-6 py-3 rounded-full shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                                className="btn-primary inline-flex items-center justify-center text-xs px-6 py-3"
                             >
                                 Iniciar Simulacro CEFR
                             </Link>
@@ -839,7 +839,7 @@ export default function Account() {
                                                     <h3 className="font-extrabold text-sm text-[var(--color-on-surface)] leading-tight">
                                                         {getTestTitle(sim.test_type)}
                                                     </h3>
-                                                    <span className="text-[10px] text-[var(--color-on-surface-muted)] flex items-center gap-1.5 mt-0.5">
+                                                    <span className="text-xs text-[var(--color-on-surface-muted)] flex items-center gap-1.5 mt-0.5">
                                                         <Calendar className="w-3.5 h-3.5 shrink-0" /> {formattedDate}
                                                     </span>
                                                 </div>
@@ -849,7 +849,7 @@ export default function Account() {
                                             </div>
 
                                             {/* Skills breakdown grid */}
-                                            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-surface-container-high)] text-[11px] text-[var(--color-on-surface-muted)]">
+                                            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-surface-container-high)] text-xs text-[var(--color-on-surface-muted)]">
                                                 <div className="flex justify-between items-center bg-[var(--color-surface-container)] px-2.5 py-1.5 rounded-lg">
                                                     <span>Lectura:</span>
                                                     <span className="font-bold text-[var(--color-on-surface)]">{pctOrDash(sim.reading_score)}</span>
@@ -872,13 +872,13 @@ export default function Account() {
                                         </div>
 
                                         <div className="flex items-center justify-between pt-2 border-t border-dashed border-[var(--color-surface-container-high)]">
-                                            <div className="text-[11px] text-[var(--color-on-surface-muted)]">
+                                            <div className="text-xs text-[var(--color-on-surface-muted)]">
                                                 {sim.report?.headline
                                                     ? <>{t(`simulator.report.${sim.report.headline.label}`, { defaultValue: sim.report.headline.label })}: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.report.confidence ? t(`simulator.confidence.${sim.report.confidence}`) : sim.report.headline.value}</span></>
                                                     : <>Puntaje Promedio: <span className="font-black text-[var(--color-tertiary-ink)] text-sm ml-0.5">{sim.score}%</span></>}
                                             </div>
                                             {sim.writing_feedback && (
-                                                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-md flex items-center gap-1 border border-[var(--color-success)]/20">
+                                                <span className="text-[9px] font-bold text-[var(--color-success)] bg-[var(--color-success)]/10 px-2 py-0.5 rounded-md flex items-center gap-1 border border-[var(--color-success)]/20">
                                                     <Check className="inline w-3.5 h-3.5 -mt-0.5 mr-1" aria-hidden="true" />Feedback IA
                                                 </span>
                                             )}
@@ -896,7 +896,7 @@ export default function Account() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]"
+                        className="app-sheet p-6"
                     >
                         <div className="text-sm font-bold text-[var(--color-on-surface-muted)] mb-4">{t('stats.activity')}</div>
                         <div className="grid grid-cols-7 gap-2">
@@ -916,7 +916,7 @@ export default function Account() {
                                 );
                             })}
                         </div>
-                        <div className="flex justify-between mt-3 text-[10px] text-[var(--color-on-surface-muted)]">
+                        <div className="flex justify-between mt-3 text-xs text-[var(--color-on-surface-muted)]">
                             <span>{t('stats.lessActive')}</span>
                             <div className="flex gap-1">
                                 {[0, 0.2, 0.4, 0.7, 1].map((op, i) => (
@@ -944,7 +944,7 @@ export default function Account() {
                             <p className="text-sm text-[var(--color-on-surface-muted)]">{t('account.proStats')}</p>
                             <Link
                                 to="/pricing"
-                                className="bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold px-6 py-2.5 rounded-full shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                                className="btn-primary text-xs px-6 py-2.5"
                             >
                                 {t('account.upgradeToPro')}
                             </Link>
@@ -958,7 +958,7 @@ export default function Account() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.25 }}
-                        className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]"
+                        className="app-sheet p-6"
                     >
                         <div className="text-sm font-bold text-[var(--color-on-surface-muted)] mb-4">{t('stats.vocabulary')}</div>
                         <div className="space-y-4">
@@ -992,10 +992,10 @@ function StatCard({ icon, value, label, color }: {
     icon: React.ReactNode; value: number | string; label: string; color: string;
 }) {
     return (
-        <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 text-center shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+        <div className="card p-5 text-center">
             <div className={`flex justify-center ${color}`}>{icon}</div>
             <p className={`text-2xl font-black tracking-tight mt-1 ${color}`}>{value}</p>
-            <p className="text-[10px] text-[var(--color-on-surface-muted)] mt-0.5">{label}</p>
+            <p className="text-xs text-[var(--color-on-surface-muted)] mt-0.5">{label}</p>
         </div>
     );
 }

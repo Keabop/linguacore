@@ -14,6 +14,9 @@ import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BackButton from '../components/ui/BackButton';
+import PageHead from '../components/ui/PageHead';
+import LevelBadge from '../components/ui/LevelBadge';
+import PillTabs, { panelId, tabId } from '../components/ui/PillTabs';
 
 type Tab = 'writing' | 'speaking';
 
@@ -90,23 +93,15 @@ export default function Practice() {
     if (!selectedLevel) {
         return (
             <div className="space-y-10">
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-                    <h1 className="text-3xl font-black tracking-tight">Práctica libre</h1>
-                    <p className="text-[var(--color-on-surface-muted)] text-sm mt-1">Practica tu escritura y habla cuando quieras.</p>
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                    <PageHead title="Práctica libre" lead="Practica tu escritura y habla cuando quieras." />
                 </motion.div>
                 <div className="grid grid-cols-2 gap-4">
-                    {LEVELS.map((l, i) => (
-                        <motion.button
-                            key={l}
-                            onClick={() => setSelectedLevel(l)}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                            className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 text-center space-y-2"
-                        >
-                            <span className="text-3xl font-black tracking-tight text-[var(--color-primary)]">{l}</span>
-                            <p className="text-xs text-[var(--color-on-surface-muted)]">{levelLabel(l)}</p>
-                        </motion.button>
+                    {LEVELS.map(l => (
+                        <button key={l} type="button" onClick={() => setSelectedLevel(l)} className="app-index">
+                            <LevelBadge level={l} withStage />
+                            <span className="text-sm text-[var(--color-on-surface-muted)]">{levelLabel(l)}</span>
+                        </button>
                     ))}
                 </div>
             </div>
@@ -115,24 +110,22 @@ export default function Practice() {
 
     return (
         <div className="space-y-8">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <BackButton onClick={() => setSelectedLevel(null)} />
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight">Práctica libre</h1>
-                    <span className="text-xs font-bold text-[var(--color-primary)]">{selectedLevel} — {levelLabel(selectedLevel)}</span>
-                </div>
+                <PageHead title="Práctica libre" meta={[`${selectedLevel} · ${levelLabel(selectedLevel)}`]} />
             </motion.div>
-            <div className="flex gap-3">
-                <button onClick={() => setTab('writing')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${tab === 'writing' ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)]'}`}>
-                    <PenLine className="w-4 h-4" /> Escritura
-                </button>
-                <button onClick={() => setTab('speaking')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${tab === 'speaking' ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)]' : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] hover:shadow-[var(--shadow-card)]'}`}>
-                    <Mic className="w-4 h-4" /> Habla
-                </button>
-            </div>
-            <motion.div key={`${tab}-${selectedLevel}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+            <PillTabs
+                className="app-tabs"
+                label="Práctica"
+                idBase="practice"
+                value={tab}
+                onChange={setTab}
+                tabs={[
+                    { value: 'writing', label: <><PenLine className="w-4 h-4" aria-hidden="true" /> Escritura</> },
+                    { value: 'speaking', label: <><Mic className="w-4 h-4" aria-hidden="true" /> Habla</> },
+                ]}
+            />
+            <motion.div key={`${tab}-${selectedLevel}`} role="tabpanel" id={panelId('practice', tab)} aria-labelledby={tabId('practice', tab)} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
                 {tab === 'writing' ? (
                     <WritingPractice level={selectedLevel} />
                 ) : (
@@ -158,7 +151,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
     const [error, setError] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
-    const [viewingFeedback, setViewingFeedback] = useState<WritingEvaluationResponse | null>(null);
+    const [viewingFeedback, setViewingFeedback] = useState<(WritingEvaluationResponse & { text?: string }) | null>(null);
 
     // Fetch writing history
     const { data: writingHistory } = useQuery({
@@ -246,7 +239,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
     if (viewingFeedback) {
         return (
             <div className="space-y-6">
-                <WritingFeedback data={viewingFeedback} onNext={() => setViewingFeedback(null)} nextLabel="Volver" />
+                <WritingFeedback data={viewingFeedback} text={viewingFeedback.text} onNext={() => setViewingFeedback(null)} nextLabel="Volver" />
             </div>
         );
     }
@@ -254,7 +247,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
     if (phase === 'select') {
         return (
             <div className="space-y-5">
-                <h3 className="text-sm font-semibold text-[var(--color-on-surface-muted)] uppercase tracking-wider">Elige un tema</h3>
+                <h3 className="text-sm font-semibold text-[var(--color-on-surface-muted)]">Elige un tema</h3>
                 {topics.map((topic, i) => (
                     <motion.button key={i} onClick={() => handleSelectTopic(topic)}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
@@ -291,6 +284,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
                                                 feedback: entry.feedback_summary || {},
                                                 improvedVersion: entry.improved_version || '',
                                                 encouragement: '',
+                                                text: entry.user_text || '',
                                             });
                                         }}
                                         className="w-full text-left bg-[var(--color-card)] rounded-2xl p-4 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 space-y-2">
@@ -330,7 +324,7 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
     if (phase === 'feedback' && feedback) {
         return (
             <div className="space-y-6">
-                <WritingFeedback data={feedback} onNext={handleReset} nextLabel="Otro tema" />
+                <WritingFeedback data={feedback} text={text} onNext={handleReset} nextLabel="Otro tema" />
                 {!saved ? (
                     <button onClick={handleSave}
                         className="w-full bg-[var(--color-surface-container-low)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-[var(--color-on-surface)] py-3.5 rounded-full font-semibold transition-all duration-300 flex items-center justify-center gap-2">
@@ -347,8 +341,8 @@ function WritingPractice({ level }: { level: CEFRLevel }) {
 
     return (
         <div className="space-y-6">
-            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
-                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Tema</p>
+            <div className="app-sheet p-6">
+                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold mb-2">Tema</p>
                 <p className="text-sm text-[var(--color-on-surface)]">{selectedTopic}</p>
             </div>
 
@@ -411,7 +405,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
 
     if (!recognitionSupported) {
         return (
-            <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 text-center space-y-3 shadow-[var(--shadow-card)]">
+            <div className="app-sheet p-6 text-center space-y-3">
                 <Mic className="w-8 h-8 text-[var(--color-on-surface-muted)] mx-auto" />
                 <p className="text-sm text-[var(--color-on-surface-muted)]">Tu navegador no soporta reconocimiento de voz. Usa Chrome para esta función.</p>
             </div>
@@ -421,7 +415,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
     return (
         <div className="space-y-6">
             <div className="bg-[var(--color-surface-container-low)] rounded-[var(--radius-lg)] p-6 space-y-3 shadow-[var(--shadow-card)]">
-                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">Lee en voz alta</p>
+                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">Lee en voz alta</p>
                 {!result ? (
                     <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium">{targetText}</p>
                 ) : (
@@ -481,7 +475,7 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
                             Reintentar
                         </button>
                         <button onClick={handleNext}
-                            className="flex-1 bg-[var(--color-primary)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]">
+                            className="btn-primary flex-1 py-3.5">
                             Siguiente
                         </button>
                     </>

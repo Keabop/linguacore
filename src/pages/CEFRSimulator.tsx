@@ -27,6 +27,7 @@ import { ieltsQuestions, ieltsWriting, ieltsSpeaking } from '../data/assessments
 import { useSpeech } from '../hooks/useSpeech';
 import { evaluateWriting, evaluateSpeaking, type CriterionScore } from '../lib/ai';
 import { toast } from '../lib/toast';
+import PageHead from '../components/ui/PageHead';
 
 type PageState = 'selection' | 'instructions' | 'testing' | 'writing' | 'speaking' | 'grading' | 'dashboard';
 
@@ -553,10 +554,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                         exit={{ opacity: 0, y: -16 }}
                         className="space-y-8"
                     >
-                        <div>
-                            <h1 className="text-3xl font-black tracking-tight">{t('simulator.centerTitle')}</h1>
-                            <p className="text-sm text-[var(--color-on-surface-muted)]">{t('simulator.centerSubtitle')}</p>
-                        </div>
+                        <PageHead title={t('simulator.centerTitle')} lead={t('simulator.centerSubtitle')} />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {presets.map(p => {
@@ -577,7 +575,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                                     {p.id === 'placement' ? <Compass className="w-6 h-6" /> : <Award className="w-6 h-6" />}
                                                 </div>
                                                 {locked && (
-                                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[var(--color-tertiary)]/10 text-[var(--color-tertiary-ink)] flex items-center gap-1">
+                                                    <span className="px-2.5 py-1 rounded-full text-xs font-black bg-[var(--color-tertiary)]/10 text-[var(--color-tertiary-ink)] flex items-center gap-1">
                                                         <Shield className="w-3 h-3" /> Pro
                                                     </span>
                                                 )}
@@ -610,49 +608,31 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="max-w-md mx-auto widget space-y-6 !py-8 text-center"
+                        className="max-w-lg mx-auto widget space-y-6 text-left"
                     >
-                        <div className="w-16 h-16 rounded-full bg-[var(--color-tertiary)]/15 flex items-center justify-center mx-auto shadow-md">
-                            <Sparkles className="w-8 h-8 text-[var(--color-tertiary-ink)]" />
+                        <div className="unit-step-head">
+                            <span className="unit-step-icon" aria-hidden="true"><Sparkles className="w-5 h-5" /></span>
+                            <div className="min-w-0">
+                                <h2 className="app-h2">{presetTitle(selectedPreset)}</h2>
+                                <p className="text-sm text-[var(--color-on-surface-muted)]">{t('simulator.formalInstructions')}</p>
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-black">{presetTitle(selectedPreset)}</h2>
-                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">{t('simulator.formalInstructions')}</p>
-                        </div>
+                        <ol className="app-rules">
+                            <li><span>{t('simulator.ruleNoTranslators')}</span></li>
+                            <li><span>{t('simulator.ruleTimer')}</span></li>
+                            <li><span><Trans i18nKey="simulator.listeningPlays" count={selectedPreset.audioPlays} components={{ strong: <strong /> }} /></span></li>
+                            {selectedPreset.id === 'placement' && <li><span>{t('simulator.ruleAdaptive', { min: PLACEMENT.minItems, max: PLACEMENT.maxItems })}</span></li>}
+                        </ol>
 
-                        <div className="text-sm text-left bg-[var(--color-surface-container)] rounded-[1.5rem] p-5 space-y-3 text-[var(--color-on-surface-muted)]">
-                            <p className="flex items-start gap-2.5">
-                                <span className="font-bold text-[var(--color-tertiary-ink)]">1.</span>
-                                <span>{t('simulator.ruleNoTranslators')}</span>
-                            </p>
-                            <p className="flex items-start gap-2.5">
-                                <span className="font-bold text-[var(--color-tertiary-ink)]">2.</span>
-                                <span>{t('simulator.ruleTimer')}</span>
-                            </p>
-                            <p className="flex items-start gap-2.5">
-                                <span className="font-bold text-[var(--color-tertiary-ink)]">3.</span>
-                                <span><Trans i18nKey="simulator.listeningPlays" count={selectedPreset.audioPlays} components={{ strong: <strong /> }} /></span>
-                            </p>
-                            {selectedPreset.id === 'placement' && (
-                                <p className="flex items-start gap-2.5">
-                                    <span className="font-bold text-[var(--color-tertiary-ink)]">4.</span>
-                                    <span>{t('simulator.ruleAdaptive', { min: PLACEMENT.minItems, max: PLACEMENT.maxItems })}</span>
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-3">
                             <button
                                 onClick={() => (guest ? navigate('/') : setState('selection'))}
-                                className="flex-1 bg-[var(--color-surface-container)] text-[var(--color-on-surface-muted)] py-3.5 rounded-full font-bold text-sm active:scale-97"
+                                className="btn-secondary flex-1 py-3.5 text-sm"
                             >
                                 {t('simulator.back')}
                             </button>
-                            <button
-                                onClick={handleStartTest}
-                                className="flex-1 bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] py-3.5 rounded-full font-black text-sm active:scale-97 hover:shadow-[0_4px_20px_color-mix(in_oklch,var(--color-tertiary)_25%,transparent)]"
-                            >
+                            <button onClick={handleStartTest} className="btn-primary flex-1 py-3.5 text-sm">
                                 {t('simulator.enterTest')}
                             </button>
                         </div>
@@ -682,7 +662,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
 
                         <div className="widget space-y-6">
                             {current.task && (
-                                <p className="text-[11px] font-black uppercase tracking-wider text-[var(--color-tertiary-ink)]">{current.task}</p>
+                                <p className="text-xs font-black text-[var(--color-tertiary-ink)]">{current.task}</p>
                             )}
                             {/* 3A. READING COMPONENT */}
                             {current.passage && <PassageView text={current.passage} />}
@@ -690,7 +670,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                             {/* 3B. DIALOGUE LISTENING COMPONENT */}
                             {current.dialogue && (
                                 <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-6 text-center space-y-4 border border-[var(--color-surface-container)]">
-                                    <h4 className="text-xs uppercase tracking-widest font-black text-[var(--color-on-surface-muted)] flex items-center justify-center gap-1.5">
+                                    <h4 className="text-xs font-black text-[var(--color-on-surface-muted)] flex items-center justify-center gap-1.5">
                                         <Volume2 className="w-4.5 h-4.5 text-[var(--color-primary)]" /> {t('simulator.listeningComprehension')}
                                     </h4>
                                     
@@ -706,7 +686,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                         <div className="text-left text-xs text-[var(--color-on-surface-muted)] font-bold">
                                             <p>{t('simulator.plays', { used: audioPlayCount[audioKey] || 0, max: maxPlays })}</p>
                                             {new Set(current.dialogue.map(l => l.accent)).size > 1 && (
-                                                <p className="text-[10px] text-[var(--color-tertiary-ink)] mt-0.5">{t('simulator.mixedAccents')}</p>
+                                                <p className="text-xs text-[var(--color-tertiary-ink)] mt-0.5">{t('simulator.mixedAccents')}</p>
                                             )}
                                         </div>
                                     </div>
@@ -721,7 +701,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
 
                                     {/* Inline play limit warning */}
                                     {(audioPlayCount[audioKey] || 0) >= maxPlays && (
-                                        <div className="text-[11px] font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5 pt-1">
+                                        <div className="text-xs font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5 pt-1">
                                             <AlertCircle className="w-3.5 h-3.5" /> {t('simulator.limitReached')}
                                         </div>
                                     )}
@@ -745,7 +725,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                 {pageQuestions.map((q, i) => (
                                     <section key={q.id} aria-label={t('simulator.question', { n: currentIdx + i + 1 })} className="space-y-2">
                                         {pageQuestions.length > 1 && (
-                                            <p className="text-[11px] font-black uppercase tracking-wider text-[var(--color-primary)]">{t('simulator.question', { n: currentIdx + i + 1 })}</p>
+                                            <p className="text-xs font-black text-[var(--color-primary)]">{t('simulator.question', { n: currentIdx + i + 1 })}</p>
                                         )}
                                         <QuestionView question={q} response={answers[q.id]} onChange={(r) => setAnswer(q.id, r)} />
                                     </section>
@@ -814,7 +794,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
 
                                     <div className="widget space-y-6">
                                         <div className="space-y-3 bg-[var(--color-surface-container)] rounded-2xl p-5 border border-[var(--color-surface-container-highest)]">
-                                            <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">{t('simulator.specificInstructions')}</p>
+                                            <p className="text-xs text-[var(--color-tertiary-ink)] font-bold">{t('simulator.specificInstructions')}</p>
                                             <p className="text-base font-bold leading-relaxed whitespace-pre-line">{activePrompt.prompt}</p>
                                             {activePrompt.choices && (
                                                 <TaskChoice
@@ -847,7 +827,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                                 </div>
                                             )}
                                             <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{activePrompt.instructions}</p>
-                                            <div className="text-[11px] font-black text-[var(--color-primary)]">
+                                            <div className="text-xs font-black text-[var(--color-primary)]">
                                                 {t('simulator.suggestedLength', { length: activePrompt.targetWords })}
                                             </div>
                                         </div>
@@ -941,7 +921,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                                 <Volume2 className="w-5 h-5" />
                                             </button>
                                             <div className="space-y-1.5 flex-1">
-                                                <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">
+                                                <p className="text-xs text-[var(--color-tertiary-ink)] font-bold">
                                                     {activePrompt.listenOnly ? t('simulator.sentenceToRepeat') : t('simulator.examinerQuestion')}
                                                 </p>
                                                 {activePrompt.listenOnly && !synthesisSupported ? (
@@ -997,14 +977,14 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                                     </svg>
                                                 )}
                                             </button>
-                                            <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
+                                            <span className="text-xs font-bold text-[var(--color-on-surface-muted)]">
                                                 {isListening ? t('simulator.recordingNow') : t('simulator.pressToRecord')}
                                             </span>
                                         </div>
 
                                         {/* Transcript Display Area */}
                                         <div className="space-y-2 text-left">
-                                            <label className="text-xs font-black uppercase text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.transcriptLabel')}</label>
+                                            <label className="text-xs font-black text-[var(--color-on-surface-muted)]">{t('simulator.transcriptLabel')}</label>
                                             <textarea
                                                 value={recordedText}
                                                 onChange={(e) => setSpeakingAnswers(prev => ({ ...prev, [activePrompt.id]: e.target.value }))}
@@ -1070,7 +1050,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                         </div>
                         <div className="space-y-2">
                             <h2 className="text-2xl font-black">{t('simulator.processing')}</h2>
-                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">{t('simulator.aiGrading')}</p>
+                            <p className="text-xs text-[var(--color-on-surface-muted)] font-bold">{t('simulator.aiGrading')}</p>
                             <p className="text-sm text-[var(--color-on-surface-muted)] max-w-sm mx-auto leading-relaxed">
                                 {t('simulator.processingDetail')}
                             </p>
@@ -1090,8 +1070,8 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                         {/* Header */}
                         <div className="flex justify-between items-center shrink-0">
                             <div>
-                                <h1 className="text-3xl font-black tracking-tight text-[var(--color-success)]">{t('simulator.completed')}</h1>
-                                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-widest font-black mt-1">{t('simulator.performanceReport')}</p>
+                                <h1 className="app-title">{t('simulator.completed')}</h1>
+                                <p className="text-xs text-[var(--color-on-surface-muted)] font-black mt-1">{t('simulator.performanceReport')}</p>
                             </div>
                             {guest ? (
                                 <button onClick={() => navigate('/auth')} className="btn-primary py-2 px-5 text-xs">
@@ -1113,13 +1093,13 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                             {/* Score Card */}
                             <div className="widget flex flex-col items-center gap-5 text-center !py-8">
                                 <div className="space-y-2">
-                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('simulator.estimatedLevel')}</p>
+                                    <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">{t('simulator.estimatedLevel')}</p>
                                     <span className="level-leaf px-5 py-2 text-3xl" style={{ background: LEVEL_COLOR[results.report.level] }}>
                                         {results.report.level}
                                     </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t(`simulator.report.${results.report.headline.label}`, { defaultValue: results.report.headline.label })}</p>
+                                    <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">{t(`simulator.report.${results.report.headline.label}`, { defaultValue: results.report.headline.label })}</p>
                                     {results.report.confidence ? (
                                         <>
                                             <p className="text-2xl font-black text-[var(--color-on-surface)]">{t(`simulator.confidence.${results.report.confidence}`)}</p>
@@ -1144,7 +1124,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
 
                             {/* Radar Chart SVG Widget */}
                             <div className="widget md:col-span-2 space-y-3 flex flex-col justify-center">
-                                <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.skillsBreakdown')}</h4>
+                                <h4 className="text-xs font-black text-[var(--color-on-surface-muted)]">{t('simulator.skillsBreakdown')}</h4>
                                 
                                 <div className="flex flex-col sm:flex-row justify-around items-center gap-6">
                                     {/* SVG Radar Chart */}
@@ -1289,33 +1269,33 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                 {results.writingFeedback.criteria?.length ? <CriteriaGrid criteria={results.writingFeedback.criteria} /> : (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
-                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Grammatical Accuracy</span>
+                                        <span className="text-xs text-[var(--color-on-surface-muted)] font-bold block">Grammatical Accuracy</span>
                                         <span className="text-3xl font-black text-[var(--color-primary)] block mt-1">{results.writingFeedback.feedback.grammar.score}%</span>
-                                        <p className="text-[11px] text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{results.writingFeedback.feedback.grammar.note}</p>
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{results.writingFeedback.feedback.grammar.note}</p>
                                     </div>
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
-                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Lexical Range</span>
+                                        <span className="text-xs text-[var(--color-on-surface-muted)] font-bold block">Lexical Range</span>
                                         <span className="text-3xl font-black text-[var(--color-tertiary-ink)] block mt-1">{results.writingFeedback.feedback.vocabulary.score}%</span>
-                                        <p className="text-[11px] text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{results.writingFeedback.feedback.vocabulary.note}</p>
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{results.writingFeedback.feedback.vocabulary.note}</p>
                                     </div>
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
-                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Coherence & Cohesion</span>
+                                        <span className="text-xs text-[var(--color-on-surface-muted)] font-bold block">Coherence & Cohesion</span>
                                         <span className="text-3xl font-black text-[var(--color-success)] block mt-1">{results.writingFeedback.feedback.coherence.score}%</span>
-                                        <p className="text-[11px] text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{results.writingFeedback.feedback.coherence.note}</p>
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] leading-relaxed mt-2">{results.writingFeedback.feedback.coherence.note}</p>
                                     </div>
                                 </div>
                                 )}
 
                                 {/* Encouragement */}
                                 <div className="p-5 rounded-2xl bg-[var(--color-tertiary)]/5 border-l-4 border-[var(--color-tertiary)] text-xs leading-relaxed text-[var(--color-on-surface-muted)]">
-                                    <span className="font-black text-[var(--color-tertiary-ink)] uppercase tracking-wider mr-2">{t('simulator.tutorTip')}</span>
+                                    <span className="font-black text-[var(--color-tertiary-ink)] mr-2">{t('simulator.tutorTip')}</span>
                                     {results.writingFeedback.encouragement}
                                 </div>
 
                                 {/* Text Corrections block */}
                                 {results.writingFeedback.corrections && results.writingFeedback.corrections.length > 0 && (
                                     <div className="space-y-4">
-                                        <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.writingCorrections')}</h4>
+                                        <h4 className="text-xs font-black text-[var(--color-on-surface-muted)]">{t('simulator.writingCorrections')}</h4>
                                         <div className="space-y-3">
                                             {results.writingFeedback.corrections.map((corr: any, cIdx: number) => (
                                                 <div key={cIdx} className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] rounded-2xl p-4 text-xs space-y-2">
@@ -1330,9 +1310,9 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                                     <p className="text-[var(--color-on-surface-muted)] leading-relaxed">{corr.explanation}</p>
                                                     {corr.example_variants && corr.example_variants.length > 0 && (
                                                         <div className="pt-1.5 border-t border-[var(--color-surface-container)] space-y-1">
-                                                            <p className="text-[10px] text-[var(--color-primary)] font-bold">{t('simulator.suggestedVariations')}</p>
+                                                            <p className="text-xs text-[var(--color-primary)] font-bold">{t('simulator.suggestedVariations')}</p>
                                                             {corr.example_variants.map((v: string, vIdx: number) => (
-                                                                <p key={vIdx} className="italic text-[10px] text-[var(--color-on-surface-muted)] flex items-center gap-1.5">
+                                                                <p key={vIdx} className="italic text-xs text-[var(--color-on-surface-muted)] flex items-center gap-1.5">
                                                                     <CheckCircle className="w-3 h-3 text-[var(--color-success)] flex-shrink-0" /> {v}
                                                                 </p>
                                                             ))}
@@ -1356,15 +1336,15 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                                 {results.speakingFeedback.criteria?.length ? <CriteriaGrid criteria={results.speakingFeedback.criteria} /> : (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
-                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Pronunciation Accuracy</span>
+                                        <span className="text-xs text-[var(--color-on-surface-muted)] font-bold block">Pronunciation Accuracy</span>
                                         <span className="text-3xl font-black text-[var(--color-accent-blue)] block mt-1">{results.speakingFeedback.pronunciationScore}%</span>
                                     </div>
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
-                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Fluency & Coherence</span>
+                                        <span className="text-xs text-[var(--color-on-surface-muted)] font-bold block">Fluency & Coherence</span>
                                         <span className="text-3xl font-black text-[var(--color-tertiary-ink)] block mt-1">{results.speakingFeedback.fluencyScore}%</span>
                                     </div>
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4 text-center">
-                                        <span className="text-[10px] text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider block">Lexical & Grammatical Range</span>
+                                        <span className="text-xs text-[var(--color-on-surface-muted)] font-bold block">Lexical & Grammatical Range</span>
                                         <span className="text-3xl font-black text-[var(--color-success)] block mt-1">{results.speakingFeedback.vocabularyScore}%</span>
                                     </div>
                                 </div>
@@ -1372,14 +1352,14 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
 
                                 {/* Detailed feedback */}
                                 <div className="p-5 rounded-2xl bg-[var(--color-accent-blue)]/5 border-l-4 border-[var(--color-accent-blue)] text-xs leading-relaxed text-[var(--color-on-surface-muted)]">
-                                    <span className="font-black text-[var(--color-accent-blue)] uppercase tracking-wider mr-2">{t('simulator.examinerAssessment')}</span>
+                                    <span className="font-black text-[var(--color-accent-blue)] mr-2">{t('simulator.examinerAssessment')}</span>
                                     {results.speakingFeedback.detailedFeedback}
                                 </div>
 
                                 {/* Speaking Corrections block */}
                                 {results.speakingFeedback.corrections && results.speakingFeedback.corrections.length > 0 && (
                                     <div className="space-y-4">
-                                        <h4 className="text-xs uppercase font-black text-[var(--color-on-surface-muted)] tracking-wider">{t('simulator.speakingCorrections')}</h4>
+                                        <h4 className="text-xs font-black text-[var(--color-on-surface-muted)]">{t('simulator.speakingCorrections')}</h4>
                                         <div className="space-y-3">
                                             {results.speakingFeedback.corrections.map((corr: any, cIdx: number) => (
                                                 <div key={cIdx} className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] rounded-2xl p-4 text-xs space-y-2">
@@ -1415,12 +1395,12 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                             </div>
                             <div className="space-y-2 text-center">
                                 <h3 className="text-2xl font-black text-[var(--color-on-surface)]">{t('simulator.unlockPro')}</h3>
-                                <p className="text-[10px] text-[var(--color-tertiary-ink)] font-bold uppercase tracking-wider">{t('simulator.premiumPlan')}</p>
+                                <p className="text-xs text-[var(--color-tertiary-ink)] font-bold">{t('simulator.premiumPlan')}</p>
                                 <p className="text-xs leading-relaxed text-[var(--color-on-surface-muted)] pt-1">
                                     {t('simulator.proOnly')}
                                 </p>
                             </div>
-                            <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-left text-[11px] text-[var(--color-on-surface-muted)] space-y-2 font-bold font-mono">
+                            <div className="bg-[var(--color-surface-container)] p-4 rounded-2xl text-left text-xs text-[var(--color-on-surface-muted)] space-y-2 font-bold font-mono">
                                 <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />{t('simulator.proLevels')}</p>
                                 <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />{t('simulator.proWriting')}</p>
                                 <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />{t('simulator.proUnlimited')}</p>

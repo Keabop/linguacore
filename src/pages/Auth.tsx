@@ -7,34 +7,32 @@ import { useAuth } from '../lib/AuthContext';
 import PageLoader from '../components/PageLoader';
 import { loadGuest } from '../lib/guestTrial';
 import AuthBackdrop from '../components/ui/AuthBackdrop';
-import Wordmark, { LeafMark } from '../components/ui/Wordmark';
+import Wordmark from '../components/ui/Wordmark';
 import { LegalCheckbox } from '../components/LegalConsent';
+import PillTabs, { panelId, tabId } from '../components/ui/PillTabs';
 
 type Mode = 'login' | 'register';
 
 const legalLink = 'font-semibold text-[var(--color-primary)] underline underline-offset-2';
 
 /**
- * The auth screens' frame. On a phone the landscape covers the whole screen behind the card;
- * on a wide screen it fills a panel on the left, next to the form.
+ * The door to the garden: on the leaf-green desk, the notebook's cover (the garden landscape) and
+ * its first page, where you sign in or start your own. On a phone the cover shrinks to a band.
  */
 function AuthShell({ children }: { children: ReactNode }) {
     const { t } = useTranslation();
     return (
-        <div className="relative min-h-screen bg-[var(--color-background)] lg:grid lg:grid-cols-2">
-            <AuthBackdrop className="fixed inset-0 h-full w-full lg:hidden" />
-            <aside className="relative m-4 hidden overflow-hidden rounded-[var(--radius-lg)] lg:block">
-                <AuthBackdrop className="absolute inset-0 h-full w-full" />
-                <div className="relative z-10 flex h-full flex-col p-10">
-                    <Wordmark className="text-2xl" />
-                    <p className="mt-16 max-w-sm font-display text-4xl font-extrabold leading-tight tracking-[-0.035em] text-[var(--color-on-surface)]">
-                        {t('auth.tagline')}
-                    </p>
-                </div>
-            </aside>
-            <main className="relative z-10 flex min-h-screen items-center justify-center px-5 py-10">
-                {children}
-            </main>
+        <div className="nb-ground min-h-screen px-3 py-4 sm:px-6 sm:py-8 flex flex-col">
+            <header className="mx-auto w-full max-w-[64rem] pb-4 sm:pb-6">
+                <Link to="/landing" aria-label="Voxie"><Wordmark className="text-2xl !text-[var(--color-on-primary)]" markClassName="w-7 h-7 !text-[var(--color-on-primary)]" /></Link>
+            </header>
+            <div className="auth-book mx-auto w-full max-w-[64rem] flex-1">
+                <aside className="auth-cover">
+                    <AuthBackdrop className="absolute inset-0 h-full w-full" />
+                    <p className="auth-cover-line">{t('auth.tagline')}</p>
+                </aside>
+                <main className="nb-page auth-page">{children}</main>
+            </div>
         </div>
     );
 }
@@ -85,14 +83,14 @@ export default function Auth() {
         return (
             <AuthShell>
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-10 max-w-sm w-full text-center space-y-5 shadow-[var(--shadow-float)]"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="auth-form text-center space-y-5"
                 >
-                    <div className="w-16 h-16 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto">
+                    <div className="w-16 h-16 rounded-full bg-[var(--color-primary-container)] flex items-center justify-center mx-auto">
                         <Mail className="w-8 h-8 text-[var(--color-primary)]" />
                     </div>
-                    <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)] font-display">Revisa tu correo</h2>
+                    <h2 className="auth-title">Revisa tu correo</h2>
                     <p className="text-sm text-[var(--color-on-surface-muted)] font-body leading-relaxed">
                         Te enviamos un enlace de confirmación a <span className="text-[var(--color-on-surface)] font-semibold">{email}</span>. Haz clic en el enlace para activar tu cuenta.
                     </p>
@@ -110,26 +108,32 @@ export default function Auth() {
     return (
         <AuthShell>
             <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                className="w-full max-w-[420px] bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 sm:p-8 shadow-[var(--shadow-float)]"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                className="auth-form"
             >
-                {/* Logo + Branding */}
-                <div className="flex flex-col items-center mb-8">
-                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-primary-container)]">
-                        <LeafMark className="h-9 w-9" />
-                    </div>
-                    <h1 className="text-3xl font-extrabold text-[var(--color-on-surface)] tracking-[-0.04em] mb-1 font-display">voxie</h1>
-                    <p className="text-sm text-[var(--color-on-surface-muted)] font-body">
-                        {mode === 'login' ? 'Inicia sesión para continuar' : 'Crea tu cuenta para empezar'}
+                <PillTabs
+                    className="auth-tabs"
+                    label="Acceso"
+                    idBase="auth"
+                    value={mode}
+                    onChange={m => { setMode(m); setError(null); }}
+                    tabs={[{ value: 'login', label: 'Entrar' }, { value: 'register', label: 'Crear cuenta' }]}
+                />
+
+                <div role="tabpanel" id={panelId('auth', mode)} aria-labelledby={tabId('auth', mode)}>
+                <div className="mb-7 space-y-2">
+                    <h1 className="auth-title">{mode === 'login' ? 'Vuelve a tu jardín' : 'Empieza tu jardín'}</h1>
+                    <p className="text-sm text-[var(--color-on-surface-muted)]">
+                        {mode === 'login' ? 'Tus plantas siguen donde las dejaste.' : 'Gratis, de A1 a B2. Tu primera semilla te espera.'}
                     </p>
-                    {fromTrial && <p className="mt-2 text-xs text-[var(--color-primary)] font-semibold">{t('trial.pending')}</p>}
+                    {fromTrial && <p className="text-xs font-semibold text-[var(--color-primary)]">{t('trial.pending')}</p>}
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label htmlFor="auth-email" className="block text-xs text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider mb-2.5 font-body">Correo electrónico</label>
+                        <label htmlFor="auth-email" className="auth-label">Correo electrónico</label>
                         <input
                             id="auth-email"
                             type="email"
@@ -138,12 +142,12 @@ export default function Auth() {
                             onChange={e => setEmail(e.target.value)}
                             placeholder="tu@correo.com"
                             required
-                            className="w-full text-sm bg-[var(--color-surface-container-low)] rounded-full px-5 py-3.5 text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 focus:bg-[var(--color-surface-container)] transition-all duration-300 font-body"
+                            className="auth-input"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="auth-password" className="block text-xs text-[var(--color-on-surface-muted)] font-bold uppercase tracking-wider mb-2.5 font-body">Contraseña</label>
+                        <label htmlFor="auth-password" className="auth-label">Contraseña</label>
                         <input
                             id="auth-password"
                             type="password"
@@ -153,20 +157,20 @@ export default function Auth() {
                             placeholder="••••••••"
                             required
                             minLength={8}
-                            className="w-full text-sm bg-[var(--color-surface-container-low)] rounded-full px-5 py-3.5 text-[var(--color-on-surface)] placeholder:text-[var(--color-on-surface-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 focus:bg-[var(--color-surface-container)] transition-all duration-300 font-body"
+                            className="auth-input"
                         />
                     </div>
 
                     {mode === 'register' && <LegalCheckbox checked={accepted} onChange={setAccepted} />}
 
                     {error && (
-                        <p className="text-xs text-[var(--color-error)] bg-[var(--color-error)]/8 rounded-2xl px-5 py-3 font-body">{error}</p>
+                        <p role="alert" className="text-sm text-[var(--color-error)] bg-[var(--color-error-light)] rounded-[var(--radius-sm)] px-4 py-3">{error}</p>
                     )}
 
                     <button
                         type="submit"
                         disabled={submitting || blocked}
-                        className="w-full py-4 text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full font-bold shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300"
+                        className="btn-primary w-full py-3.5 text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         {submitting ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -178,19 +182,20 @@ export default function Auth() {
                         )}
                     </button>
                 </form>
+                </div>
 
                 {/* Divider */}
                 <div className="flex items-center gap-4 my-7">
-                    <div className="flex-1 h-px bg-[var(--color-surface-container-high)]" />
-                    <span className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider font-body">o</span>
-                    <div className="flex-1 h-px bg-[var(--color-surface-container-high)]" />
+                    <div className="flex-1 h-px bg-[var(--color-outline-variant)]" />
+                    <span className="text-xs text-[var(--color-on-surface-variant)]">o</span>
+                    <div className="flex-1 h-px bg-[var(--color-outline-variant)]" />
                 </div>
 
                 {/* Google OAuth */}
                 <button
                     onClick={signInWithGoogle}
                     disabled={blocked}
-                    className="w-full py-4 text-sm flex items-center justify-center gap-3 bg-[var(--color-surface-container-low)] rounded-full font-semibold text-[var(--color-on-surface)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 shadow-[var(--shadow-card)] disabled:opacity-50 disabled:pointer-events-none"
+                    className="btn-secondary w-full py-3.5 text-sm flex items-center justify-center gap-3 auth-google disabled:opacity-50 disabled:pointer-events-none"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -200,18 +205,6 @@ export default function Auth() {
                     </svg>
                     Continuar con Google
                 </button>
-
-                {/* Toggle mode: inside the card, so nothing behind it can cover it */}
-                <p className="text-center text-sm text-[var(--color-on-surface-muted)] mt-7 font-body">
-                    {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
-                    {' '}
-                    <button
-                        onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); }}
-                        className="text-[var(--color-primary)] font-bold hover:text-[var(--color-primary-light)] transition-all duration-300"
-                    >
-                        {mode === 'login' ? 'Regístrate' : 'Inicia sesión'}
-                    </button>
-                </p>
 
                 {/* Simplified privacy notice: the law asks for it where the data is collected */}
                 <p className="mt-6 text-[11px] leading-relaxed text-[var(--color-on-surface-muted)] font-body">

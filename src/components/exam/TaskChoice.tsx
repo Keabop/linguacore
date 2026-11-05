@@ -29,7 +29,7 @@ export default function TaskChoice({ choices, value, onChange, hintId }: {
                     onClick={() => onChange(choice.id)}
                     className={`${OPTION} font-normal ${value === choice.id ? OPTION_ON : OPTION_IDLE}`}
                 >
-                    <span className="block text-xs font-black uppercase tracking-wider text-[var(--color-primary)]">{choice.label}</span>
+                    <span className="block text-xs font-black text-[var(--color-primary)]">{choice.label}</span>
                     <span className="leading-relaxed text-[var(--color-on-surface)]">{choice.prompt}</span>
                 </button>
             ))}

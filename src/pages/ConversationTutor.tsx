@@ -15,6 +15,7 @@ import { useUsageLimits } from '../hooks/useUsageLimits';
 import { UsageBadge } from '../components/UsageBadge';
 import { SendIcon } from '../components/icons';
 import BackButton from '../components/ui/BackButton';
+import PageHead from '../components/ui/PageHead';
 import { useDialogKeys } from '../hooks/useDialogKeys';
 import { toast } from '../lib/toast';
 
@@ -177,25 +178,14 @@ export default function ConversationTutor() {
             <div className="space-y-8 w-full max-w-full overflow-hidden flex flex-col min-w-0">
 
                 {/* Header */}
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-between pb-6">
-                    <div className="flex items-center gap-4">
-                        <BackButton to="/dashboard" />
-                        <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
-                                <MessageCircle className="w-5 h-5 text-[var(--color-on-primary)]" aria-hidden="true" />
-                            </div>
-                            <div className="space-y-0.5">
-                                <h2 className="font-black text-lg tracking-tight leading-tight">{t('chat.title')}</h2>
-                                <p className="text-xs text-[var(--color-on-surface-muted)]">{t('chat.level', { level })}</p>
-                            </div>
-                        </div>
-                    </div>
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                    <BackButton to="/dashboard" />
+                    <PageHead title={t('chat.title')} meta={[t('chat.level', { level })]} />
                 </motion.div>
 
                 {/* New conversation button */}
                 <button ref={newConversationRef} onClick={startNewConversation}
-                    className="w-full py-4 font-bold flex items-center justify-center gap-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full shadow-[var(--shadow-elevated)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] transition-all duration-300 text-base">
+                    className="btn-primary self-start px-6 py-3 flex items-center justify-center gap-2 text-sm">
                     <Plus className="w-5 h-5" /> {t('chat.startConversation')}
                 </button>
 
@@ -346,7 +336,7 @@ export default function ConversationTutor() {
                                 {t('common.cancel')}
                             </button>
                             <button onClick={handleEndSession}
-                                className="flex-1 py-3 rounded-full font-bold bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                                className="btn-primary flex-1 py-3">
                                 {t('chat.endSession')}
                             </button>
                         </div>
@@ -541,7 +531,7 @@ export default function ConversationTutor() {
                         type="submit"
                         disabled={!input.trim() || isLoading}
                         aria-label={t('common.send')}
-                        className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full px-5 py-3 shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:opacity-40 active:scale-95"
+                        className="btn-primary px-5 py-3 disabled:opacity-40"
                     >
                         <SendIcon size={16} aria-hidden="true" />
                     </button>

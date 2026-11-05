@@ -330,7 +330,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 <p className="text-[var(--color-on-surface-muted)] text-lg">{t('reader.storyNotFound', 'Historia no encontrada')}</p>
                 <button
                     onClick={() => navigate('/learn')}
-                    className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-8 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                    className="btn-primary px-8 py-3.5"
                 >
                     {t('reader.backToStories', 'Volver a historias')}
                 </button>
@@ -341,7 +341,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
     if (completed && guest) {
         return (
             <LazyMotion features={domAnimation}>
-                <m.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16 space-y-6">
+                <m.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="app-specimen mx-auto my-6">
                     <PlantCircle species={species} size="lg" height={44} />
                     <h2 className="text-3xl font-black tracking-tight">{t('reader.storyCompleted')}</h2>
                     <p className="text-[var(--color-on-surface-muted)] text-base max-w-md mx-auto">
@@ -369,7 +369,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 <m.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-16 space-y-6"
+                    className="app-specimen mx-auto my-6"
                 >
                     <PlantCircle species={species} size="lg" height={44} />
                     <h2 className="text-3xl font-black tracking-tight">{t('reader.storyCompleted')}</h2>
@@ -380,7 +380,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         {returnTo && (
                             <button
                                 onClick={() => navigate(returnTo)}
-                                className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                                className="btn-primary px-7 py-3.5"
                             >
                                 {t('reader.backToLesson')}
                             </button>
@@ -394,7 +394,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         {!returnTo && (
                             <button
                                 onClick={() => navigate('/review')}
-                                className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-7 py-3.5 rounded-full font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97]"
+                                className="btn-primary px-7 py-3.5"
                             >
                                 {t('dashboard.startReview')}
                             </button>
@@ -435,7 +435,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 tabIndex={0}
                 onClick={handleWordClick}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
-                className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 text-lg leading-relaxed tracking-wide focus:outline-none shadow-[var(--shadow-card)] transition-all duration-300 pb-48 sm:pb-36 lg:pb-32"
+                className="app-sheet p-8 text-lg leading-relaxed tracking-wide focus:outline-none transition-all duration-300 pb-48 sm:pb-36 lg:pb-32"
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(processedHTML, {
@@ -489,7 +489,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] border border-[var(--color-primary)]/10 space-y-5 text-center transition-all duration-300"
                     >
                         <div className="flex justify-between items-center text-xs shrink-0">
-                            <span className="font-bold text-[var(--color-primary)] uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="font-bold text-[var(--color-primary)] flex items-center gap-1.5">
                                 <Headphones className="w-4 h-4" /> Práctica de Shadowing (Pro)
                             </span>
                             <button
@@ -501,7 +501,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         </div>
                         
                         <div className="space-y-3">
-                            <p className="text-[10px] text-[var(--color-on-surface-muted)] uppercase tracking-wider">Oración objetivo:</p>
+                            <p className="text-[10px] text-[var(--color-on-surface-muted)]">Oración objetivo:</p>
                             <div className="bg-[var(--color-surface-container-low)] p-4 rounded-2xl">
                                 {comparedWords.length > 0 ? (
                                     <div className="flex flex-wrap gap-x-1.5 gap-y-1 justify-center text-base font-extrabold leading-relaxed">
@@ -574,7 +574,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
 
                         {transcript && (
                             <div className="space-y-1.5 text-left bg-[var(--color-surface-container)]/30 p-3.5 rounded-2xl">
-                                <p className="text-[9.5px] text-[var(--color-on-surface-muted)] uppercase tracking-wider">Lo que escuchó la IA:</p>
+                                <p className="text-[9.5px] text-[var(--color-on-surface-muted)]">Lo que escuchó la IA:</p>
                                 <p className="text-xs text-[var(--color-on-surface)] leading-relaxed italic">
                                     "{transcript}"
                                 </p>
@@ -597,7 +597,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 <button
                     onClick={handleComplete}
                     disabled={!savedStatuses || saving}
-                    className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-black py-4 rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] active:scale-[0.97] text-base tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                    className="btn-primary w-full py-4 text-base tracking-wide disabled:opacity-60 disabled:pointer-events-none"
                 >
                     <Check className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.storyCompleted')}
                 </button>
@@ -658,7 +658,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 {!playback.usingRecording && <NoEnglishVoices />}
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">Modo Audiolibro</p>
+                        <p className="text-[10px] text-[var(--color-primary)] font-bold">Modo Audiolibro</p>
                         <p className="text-xs text-[var(--color-on-surface)] truncate font-medium">
                             {currentSentenceIdx !== -1 ? sentences[currentSentenceIdx] : 'Selecciona una oración para comenzar'}
                         </p>
@@ -765,13 +765,13 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                                 </div>
 
                                 <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
-                                    <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-1">{t('reader.translation')}</p>
+                                    <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.translation')}</p>
                                     <p className="text-base font-bold">{selectedWord.translations.join(', ')}</p>
                                 </div>
 
                                 {selectedWord.examples.length > 0 && (
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
-                                        <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-1">{t('reader.example')}</p>
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.example')}</p>
                                         <p className="text-sm text-[var(--color-on-surface-muted)] italic">"{selectedWord.examples[0]}"</p>
                                     </div>
                                 )}

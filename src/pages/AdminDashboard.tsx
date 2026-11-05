@@ -76,13 +76,13 @@ function StatTile({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.4, ease: 'easeOut' }}
-            className="rounded-[1.5rem] p-5 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] shadow-[var(--shadow-card)] flex items-center gap-4"
+            className="card p-5 flex items-center gap-4"
         >
             <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-md shrink-0">
                 <Icon className="w-5 h-5 text-[var(--color-on-primary)]" />
             </div>
             <div>
-                <p className="text-[10px] font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider">{label}</p>
+                <p className="text-[10px] font-bold text-[var(--color-on-surface-muted)]">{label}</p>
                 <p className="text-xl font-black text-[var(--color-on-surface)] mt-0.5">
                     <CountUp from={0} to={value} duration={1} />
                 </p>
@@ -135,7 +135,7 @@ function UserCard({
                     <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm sm:text-base font-black text-[var(--color-on-surface)] truncate">{displayName}</h3>
                         {user.tier === 'pro' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-tertiary)]/20 border border-[var(--color-tertiary)]/30 text-[var(--color-tertiary-ink)] text-[9px] font-black uppercase tracking-wider shrink-0">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-tertiary)]/20 border border-[var(--color-tertiary)]/30 text-[var(--color-tertiary-ink)] text-[9px] font-black shrink-0">
                                 <Crown className="w-2.5 h-2.5" /> Pro
                             </span>
                         )}
@@ -222,7 +222,7 @@ function UserCard({
                             </div>
                             {/* Level progress mini-bars */}
                             <div className="mt-4">
-                                <p className="text-[10px] font-black text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-2">Progreso por nivel</p>
+                                <p className="text-[10px] font-black text-[var(--color-on-surface-muted)] mb-2">Progreso por nivel</p>
                                 <div className="grid grid-cols-4 gap-2">
                                     {(['A1', 'A2', 'B1', 'B2'] as const).map(lvl => {
                                         const p = user.level_progress?.[lvl];
@@ -259,7 +259,7 @@ function UserCard({
 function DetailCell({ label, value }: { label: string; value: string }) {
     return (
         <div className="space-y-0.5">
-            <p className="text-[9px] font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider">{label}</p>
+            <p className="text-[9px] font-bold text-[var(--color-on-surface-muted)]">{label}</p>
             <p className="text-xs font-semibold text-[var(--color-on-surface)] capitalize">{value || '—'}</p>
         </div>
     );
@@ -286,7 +286,7 @@ function LevelDistribution({ profiles }: { profiles: AdminUser[] }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
         >
-            <div className="rounded-[1.5rem] bg-[var(--color-card)] p-5 sm:p-6 shadow-[var(--shadow-card)] border border-[var(--color-outline-subtle)]">
+            <div className="card p-5 sm:p-6">
                 <div className="flex items-center gap-2 mb-4">
                     <BarChart3 className="w-4 h-4 text-[var(--color-primary)]" />
                     <h3 className="text-sm font-black text-[var(--color-on-surface)]">Distribución por Nivel</h3>
@@ -439,15 +439,15 @@ export default function AdminDashboard() {
             <motion.div
                 initial={{ opacity: 0, y: -16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex items-center justify-between"
+                transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                className="app-head-row app-head"
             >
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
                         <Shield className="w-6 h-6 text-[var(--color-on-primary)]" />
                     </div>
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-[var(--color-on-surface)] tracking-tight">
+                        <h1 className="app-title">
                             Panel de Control
                         </h1>
                         <p className="text-xs text-[var(--color-on-surface-muted)] font-medium mt-0.5">

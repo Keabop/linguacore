@@ -89,10 +89,19 @@ describe('UnitFlow', () => {
         expect(screen.getByRole('heading', { name: '¡Unidad completada!' })).toBeInTheDocument();
     });
 
-    it('turns the assessment unit into the end-of-level exam', () => {
+    it('turns the assessment unit into the end-of-level exam', async () => {
         renderUnit('a1-u8');
-        expect(screen.getByRole('button', { name: 'Comenzar' })).toBeInTheDocument();
+        expect(await screen.findByRole('button', { name: 'Comenzar' })).toBeInTheDocument();
         expect(screen.getByText(/preguntas de gramática/)).toBeInTheDocument();
+    });
+
+    it('keeps the end-of-level exam closed while a unit has its speaking pending', async () => {
+        unit.tables.unit_progress = [{ unit_id: 'a1-u2', completed_at: '2026-11-03T00:00:00Z', speaking_pending: true }];
+        renderUnit('a1-u8');
+        expect(await screen.findByRole('heading', { name: 'Te falta 1 parte de habla' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Comenzar' })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Falta: Habla/ })).toBeInTheDocument();
+        unit.tables.unit_progress = [];
     });
 
     it('says so for a unit that does not exist', () => {
