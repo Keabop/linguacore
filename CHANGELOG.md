@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/Keabop/linguacore/compare/v1.3.0...v1.4.0) (2026-11-05)
+
+
+### Novedades
+
+* jardín en pixel art, elegible en configuración ([#45](https://github.com/Keabop/linguacore/issues/45)) ([adfe480](https://github.com/Keabop/linguacore/commit/adfe48033bdc0ea340dd04ea7689636ab890caee))
+
+
+### Correcciones
+
+* modo oscuro grafito, palabras sin parpadeo y avance al acertar ([#42](https://github.com/Keabop/linguacore/issues/42)) ([1b4d684](https://github.com/Keabop/linguacore/commit/1b4d684db5e2729e6101f961956ce58f37f01bf5))
+* sin toasts, errores en la página y siguiente unidad al terminar ([#43](https://github.com/Keabop/linguacore/issues/43)) ([627b64a](https://github.com/Keabop/linguacore/commit/627b64a05d31a40211dd504322c8736da3b26183))
+
 ## [1.3.0](https://github.com/Keabop/linguacore/compare/v1.2.0...v1.3.0) (2026-11-05)
 
 
