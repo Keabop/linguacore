@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/Keabop/linguacore/compare/v1.2.0...v1.3.0) (2026-11-05)
+
+
+### Novedades
+
+* aviso de versión nueva que se aplica entre tareas ([#40](https://github.com/Keabop/linguacore/issues/40)) ([9995a29](https://github.com/Keabop/linguacore/commit/9995a2933ca9d9d178016f982de6694ab60ebf6d))
+
 ## [1.2.0](https://github.com/Keabop/linguacore/compare/v1.1.1...v1.2.0) (2026-11-05)
 
 
