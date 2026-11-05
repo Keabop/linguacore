@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Toaster } from './lib/toast';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader, { afterSproutGrows } from './components/PageLoader';
@@ -130,7 +129,6 @@ export default function App() {
                     <Route path="/admin" element={<SafeRoute><RequireAdmin><AdminDashboard /></RequireAdmin></SafeRoute>} />
                 </Route>
             </Routes>
-            <Toaster />
             <UpdatePrompt />
         </BrowserRouter>
     );

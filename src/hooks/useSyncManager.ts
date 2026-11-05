@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 import {
     loadQueue,
     processQueue,
@@ -51,13 +51,9 @@ export function useSyncManager(): SyncState & { manualSync: () => Promise<void> 
             const result = await processQueue(supabase);
             if (result.success > 0) {
                 qc.invalidateQueries();
-                toast.success({
-                    title: 'Sincronización completada',
-                    description: `${result.success} cambios sincronizados`,
-                });
             }
             if (result.failed > 0) {
-                toast.error({
+                notice.error({
                     title: 'Error de sincronización',
                     description: `${result.failed} cambios no pudieron sincronizarse`,
                 });
@@ -78,10 +74,6 @@ export function useSyncManager(): SyncState & { manualSync: () => Promise<void> 
         const result = await processQueue(supabase);
         if (result.success > 0) {
             qc.invalidateQueries();
-            toast.success({
-                title: 'Sincronización completada',
-                description: `${result.success} cambios sincronizados`,
-            });
         }
     }, [qc]);
 

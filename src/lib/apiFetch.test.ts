@@ -6,7 +6,7 @@ const auth = vi.hoisted(() => ({
     signOut: vi.fn(),
 }));
 vi.mock('./supabase', () => ({ supabase: { auth } }));
-vi.mock('./toast', () => ({ toast: { error: vi.fn() } }));
+vi.mock('./notice', () => ({ notice: { error: vi.fn() } }));
 
 import { apiFetch, SessionEndedError } from './apiFetch';
 

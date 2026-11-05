@@ -12,7 +12,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRecordActivity } from '../hooks/useRecordActivity';
 import { useCards } from '../hooks/useCards';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 import DOMPurify from 'dompurify';
 import LevelBadge from '../components/ui/LevelBadge';
 import { useSpeech } from '../hooks/useSpeech';
@@ -306,7 +306,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
             if (firstReading) void recordActivity('story');
             setCompleted(true);
         } catch {
-            toast.error({ title: t('reader.saveFailed') });
+            notice.error({ title: t('reader.saveFailed') });
         } finally {
             setSaving(false);
         }
@@ -669,10 +669,6 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                             onClick={() => {
                                 const next = accent === 'US' ? 'UK' : accent === 'UK' ? 'AU' : 'US';
                                 setAccent(next);
-                                toast.success({
-                                    title: 'Acento cambiado',
-                                    description: `Acento ajustado a: ${next === 'US' ? 'Inglés Americano' : next === 'UK' ? 'Inglés Británico' : 'Inglés Australiano'}`
-                                });
                             }}
                             className="w-14 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
                             title="Acento del sintetizador"

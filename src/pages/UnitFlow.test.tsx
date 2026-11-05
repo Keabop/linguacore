@@ -14,7 +14,7 @@ const unit = vi.hoisted(() => ({
     // Rows the fake Supabase returns per table
     tables: {} as Record<string, unknown[]>,
 }));
-const toasts = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
+const notices = vi.hoisted(() => ({ error: vi.fn(), warning: vi.fn(), clear: vi.fn() }));
 
 vi.mock('../hooks/useUnitProgress', () => ({
     useUnitProgress: () => ({ progress: null, currentStep: unit.step, isLoading: false, updateProgress: unit.updateProgress, markStepComplete: unit.markStepComplete }),
@@ -23,7 +23,7 @@ vi.mock('../hooks/useSkillCards', () => ({ useSkillCards: () => ({ addSkillCards
 vi.mock('../hooks/useGardenPlant', () => ({ useGardenPlant: () => ({ species: 'girasol' }) }));
 vi.mock('../hooks/useCards', () => ({ useCards: () => ({ saveStoryWords: unit.saveStoryWords, isWordInDeck: vi.fn(async () => false), isWordKnown: vi.fn(async () => false) }) }));
 vi.mock('../lib/AuthContext', () => ({ useAuth: () => ({ user: { id: 'user-1' } }) }));
-vi.mock('../lib/toast', () => ({ toast: toasts }));
+vi.mock('../lib/notice', () => ({ notice: notices }));
 // `select()` can be awaited as is (all rows) or narrowed with `in()` / `eq()`
 vi.mock('../lib/supabase', () => ({
     supabase: {
@@ -67,8 +67,7 @@ beforeEach(() => {
     unit.updateProgress.mockClear();
     unit.markStepComplete.mockClear();
     unit.saveStoryWords.mockReset().mockResolvedValue(undefined);
-    toasts.success.mockClear();
-    toasts.error.mockClear();
+    notices.error.mockClear();
 });
 
 describe('UnitFlow', () => {
@@ -151,7 +150,7 @@ describe('UnitFlow vocabulary step', () => {
         renderUnit('a1-u1');
         const add = await screen.findByRole('button', { name: `Añadir ${deck.length} palabras a mi repaso` });
         fireEvent.click(add);
-        await waitFor(() => expect(toasts.error).toHaveBeenCalled());
+        await waitFor(() => expect(notices.error).toHaveBeenCalled());
         expect(add).toBeEnabled();
     });
 });
