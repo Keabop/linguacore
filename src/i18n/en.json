@@ -433,7 +433,14 @@
     "seeplans": "See plans",
     "saveError": "Your plant couldn't be saved. Try again.",
     "unitsLabel": "{{done}} of {{total}} units complete",
-    "streakLabel": "{{count}}-day streak"
+    "streakLabel": "{{count}}-day streak",
+    "styleTitle": "Garden style",
+    "styleHint": "How the garden of your path is drawn.",
+    "style": {
+      "pixel": "Pixel art",
+      "classic": "Classic 3D"
+    },
+    "styleFailed": "The style could not be saved. Try again."
   },
   "simulator": {
     "timeUpTitle": "Time is up",

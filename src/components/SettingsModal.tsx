@@ -15,6 +15,7 @@ import { offlineUpdate } from '../lib/offlineMutation';
 import { apiFetch } from '../lib/apiFetch';
 import { LEGAL_OWNER } from '../data/legalOwner';
 import PlantPicker from './garden/PlantPicker';
+import GardenStylePicker from './garden/GardenStylePicker';
 import type { Profile } from '../lib/database.types';
 import { version } from '../../package.json';
 
@@ -276,6 +277,8 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                 <div className="border-t border-[var(--color-outline-subtle)]" />
 
                                 <PlantPicker onNavigate={onClose} />
+
+                                <GardenStylePicker />
 
                                 {/* Divider */}
                                 <div className="border-t border-[var(--color-outline-subtle)]" />
