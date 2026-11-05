@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Keabop/linguacore/compare/v1.1.1...v1.2.0) (2026-11-05)
+
+
+### Novedades
+
+* lecciones parciales, rediseño libreta y puntajes justos ([#38](https://github.com/Keabop/linguacore/issues/38)) ([8d9987d](https://github.com/Keabop/linguacore/commit/8d9987d6c89bc626ecb5394ae40e518e1c0a88e4))
+
 ## [1.1.1](https://github.com/Keabop/linguacore/compare/v1.1.0...v1.1.1) (2026-11-03)
 
 
