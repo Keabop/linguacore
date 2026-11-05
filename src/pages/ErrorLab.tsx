@@ -135,7 +135,7 @@ export default function ErrorLab() {
     // Empty state
     if (dueErrorCards.length === 0 && !sessionCompleted) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-center space-y-6 max-w-md mx-auto">
+            <div className="app-specimen mx-auto my-6">
                 <style>{`.floating-bar { display: none !important; }`}</style>
                 <div className="w-16 h-16 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
                     <Sparkles className="w-8 h-8 text-[var(--color-on-primary)]" />
@@ -150,7 +150,7 @@ export default function ErrorLab() {
                     onClick={() => navigate('/dashboard')}
                     className="btn-primary px-8 py-3.5 text-sm"
                 >
-                    Volver al Dashboard
+                    Volver al inicio
                 </button>
             </div>
         );
@@ -158,7 +158,7 @@ export default function ErrorLab() {
 
     if (sessionCompleted) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-center space-y-6 max-w-md mx-auto animate-pulse">
+            <div className="app-specimen mx-auto my-6">
                 <style>{`.floating-bar { display: none !important; }`}</style>
                 <div className="w-16 h-16 rounded-full bg-[var(--color-success)]/10 flex items-center justify-center">
                     <Trophy className="w-8 h-8 text-[var(--color-success)]" />
@@ -217,17 +217,17 @@ export default function ErrorLab() {
                         className="space-y-6"
                     >
                         <div className="widget space-y-4 !py-8">
-                            <p className="text-[10px] text-accent-red font-bold uppercase tracking-wider">Tu oración original</p>
+                            <p className="text-[10px] text-accent-red font-bold">Tu oración original</p>
                             <p className="text-base line-through text-[var(--color-error)]/80">{currentCard.originalSentence}</p>
                         </div>
 
                         <div className="widget space-y-4 !py-8 bg-[var(--color-success)]/5 border-l-4 border-[var(--color-success)]">
-                            <p className="text-[10px] text-[var(--color-success)] font-bold uppercase tracking-wider">Oración correcta</p>
+                            <p className="text-[10px] text-[var(--color-success)] font-bold">Oración correcta</p>
                             <p className="text-lg font-bold text-[var(--color-on-surface)]">{currentCard.correctedSentence}</p>
                         </div>
 
                         <div className="widget space-y-3">
-                            <h4 className="text-xs font-bold text-[var(--color-on-surface-muted)] uppercase tracking-wider flex items-center gap-2">
+                            <h4 className="text-xs font-bold text-[var(--color-on-surface-muted)] flex items-center gap-2">
                                 <AlertCircle className="w-4 h-4 text-[var(--color-primary)]" /> Explicación del Tutor
                             </h4>
                             <p className="text-sm leading-relaxed text-[var(--color-on-surface)]">{currentCard.explanation}</p>
@@ -235,7 +235,7 @@ export default function ErrorLab() {
 
                         <button
                             onClick={() => setStep(1)}
-                            className="btn-primary w-full py-4 text-sm font-bold active:scale-98"
+                            className="btn-primary w-full py-4 text-sm active:scale-98"
                         >
                             Comenzar Reconstrucción
                         </button>
@@ -251,7 +251,7 @@ export default function ErrorLab() {
                         className="space-y-6"
                     >
                         <div className="widget space-y-4 text-center">
-                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">Fase 2: Sentence Builder</p>
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">Fase 2: Sentence Builder</p>
                             <h3 className="text-sm text-[var(--color-on-surface-muted)]">Reordena las fichas para formar la oración corregida</h3>
                             
                             {/* Selected words slot */}
@@ -263,7 +263,7 @@ export default function ErrorLab() {
                                         <button
                                             key={`${word}-${idx}`}
                                             onClick={() => match && handleRemoveSelected(word, match.id)}
-                                            className="px-3 py-1.5 text-xs font-semibold bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl shadow-md active:scale-95"
+                                            className="btn-primary px-3 py-1.5 text-xs"
                                         >
                                             {word}
                                         </button>
@@ -314,7 +314,7 @@ export default function ErrorLab() {
                             <button
                                 onClick={checkBuilderAnswer}
                                 disabled={selectedWords.length === 0}
-                                className="btn-primary w-full py-4 text-sm font-bold disabled:opacity-40 active:scale-98"
+                                className="btn-primary w-full py-4 text-sm disabled:opacity-40 active:scale-98"
                             >
                                 Verificar secuencia
                             </button>
@@ -331,7 +331,7 @@ export default function ErrorLab() {
                         className="space-y-6"
                     >
                         <div className="widget text-center space-y-2">
-                            <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider">Fase 3: Smart Quiz</p>
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">Fase 3: Smart Quiz</p>
                             <h3 className="text-base font-bold text-[var(--color-on-surface)]">¿Cuál es la oración gramaticalmente correcta?</h3>
                         </div>
 
@@ -382,7 +382,7 @@ export default function ErrorLab() {
                                 </p>
                                 <button
                                     onClick={() => { setQuizStatus('pending'); setSelectedOption(null); }}
-                                    className="px-5 py-2.5 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold shadow-md"
+                                    className="btn-primary px-5 py-2.5 text-xs"
                                 >
                                     Reintentar Quiz
                                 </button>

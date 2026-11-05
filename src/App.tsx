@@ -35,7 +35,8 @@ function lazyRetry<T extends ComponentType<any>>(
 }
 
 const Landing = lazyRetry(() => import('./pages/Landing'));
-const GardenHome = lazyRetry(() => import('./pages/GardenHome'));
+const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
+const GardenPath = lazyRetry(() => import('./pages/GardenPath'));
 const StoryList = lazyRetry(() => import('./pages/StoryList'));
 const ReviewSession = lazyRetry(() => import('./pages/ReviewSession'));
 const Account = lazyRetry(() => import('./pages/Account'));
@@ -43,7 +44,6 @@ const ConversationTutor = lazyRetry(() => import('./pages/ConversationTutor'));
 const Practice = lazyRetry(() => import('./pages/Practice'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const StoryReader = lazyRetry(() => import('./pages/StoryReader'));
-const LearningPath = lazyRetry(() => import('./pages/LearningPath'));
 const UnitFlow = lazyRetry(() => import('./pages/UnitFlow'));
 const Pricing = lazyRetry(() => import('./pages/Pricing'));
 const ErrorLab = lazyRetry(() => import('./pages/ErrorLab'));
@@ -66,7 +66,8 @@ function SafeRoute({ children }: { children: ReactNode }) {
 function RequireAuth({ children }: { children: ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <PageLoader />;
-    if (!user) return <Navigate to="/" replace />;
+    // Signed out (or the session ended): straight to the sign-in, not the landing
+    if (!user) return <Navigate to="/auth" replace />;
     return <LegalConsent>{children}</LegalConsent>;
 }
 
@@ -101,6 +102,8 @@ export default function App() {
             <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<SmartHome />} />
+                {/* The landing, also for a signed-in learner who wants to see it */}
+                <Route path="/landing" element={<Suspense fallback={<PageLoader />}><div className="page-enter"><Landing /></div></Suspense>} />
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><div className="page-enter"><Auth /></div></Suspense>} />
                 <Route path="/credits" element={<SafeRoute><Credits /></SafeRoute>} />
                 <Route path="/privacidad" element={<SafeRoute><Legal doc="privacidad" /></SafeRoute>} />
@@ -111,7 +114,7 @@ export default function App() {
 
                 {/* Protected routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>
-                    <Route path="/dashboard" element={<GardenHome />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/learn" element={<StoryList />} />
                     <Route path="/learn/:storyId" element={<SafeRoute><StoryReader /></SafeRoute>} />
                     <Route path="/review" element={<ReviewSession />} />
@@ -119,7 +122,7 @@ export default function App() {
                     <Route path="/review/simulator" element={<SafeRoute><CEFRSimulator /></SafeRoute>} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/chat" element={<ConversationTutor />} />
-                    <Route path="/path" element={<SafeRoute><LearningPath /></SafeRoute>} />
+                    <Route path="/path" element={<SafeRoute><GardenPath /></SafeRoute>} />
                     <Route path="/path/:unitId" element={<SafeRoute><UnitFlow /></SafeRoute>} />
                     <Route path="/practice" element={<Practice />} />
                     <Route path="/pricing" element={<SafeRoute><Pricing /></SafeRoute>} />

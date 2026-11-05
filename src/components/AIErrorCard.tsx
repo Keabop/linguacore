@@ -18,7 +18,7 @@ export default function AIErrorCard({ error, onRetry, disabled }: Props) {
             <button
                 onClick={onRetry}
                 disabled={disabled || !isOnline}
-                className="btn-secondary flex items-center gap-2 text-sm font-semibold"
+                className="btn-secondary flex items-center gap-2 text-sm"
             >
                 <RefreshCw className="w-4 h-4" />
                 {isOnline ? t('common.retry') : t('common.offlineDisabled')}

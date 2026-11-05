@@ -122,7 +122,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
 
                 <button
                     onClick={() => setPhase('rating')}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
                 >
                     <ArrowRight className="w-4 h-4" /> {t('review.next', 'Siguiente')}
                 </button>
@@ -138,7 +138,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
             className="space-y-6"
         >
             <div className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-2">
-                <p className="text-xs text-accent-orange font-semibold uppercase tracking-wider">
+                <p className="text-xs text-accent-orange font-semibold">
                     {card.errorType === 'grammar' ? 'Gramática' :
                      card.errorType === 'vocabulary' ? 'Vocabulario' :
                      card.errorType === 'spelling' ? 'Ortografía' : 'Estilo'}
@@ -168,7 +168,7 @@ export default function ErrorReview({ card, onComplete }: Props) {
                     <button
                         onClick={handleSubmitFreeForm}
                         disabled={!userAnswer.trim()}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+                        className="btn-primary w-full py-3.5 disabled:opacity-40 disabled:pointer-events-none"
                     >
                         {t('review.check', 'Verificar')}
                     </button>

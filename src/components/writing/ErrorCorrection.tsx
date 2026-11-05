@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { sameText } from '../../lib/sameText';
+import { sameWords } from '../../lib/sameText';
 
 interface Props {
     instruction: string;
@@ -16,7 +16,7 @@ export default function ErrorCorrection({ instruction, errorText, targetGrammar,
     const { t } = useTranslation();
     const [text, setText] = useState('');
     // The text with errors sent back as is would spend an AI evaluation on nothing
-    const unchanged = sameText(text, errorText);
+    const unchanged = sameWords(text, errorText);
 
     const handleSubmit = () => {
         const trimmed = text.trim();
@@ -39,7 +39,7 @@ export default function ErrorCorrection({ instruction, errorText, targetGrammar,
                 transition={{ delay: 0.1 }}
                 className="bg-accent-red/8 border border-accent-red/20 rounded-xl p-5"
             >
-                <p className="text-xs text-accent-red font-semibold uppercase tracking-wider mb-2">Texto con errores</p>
+                <p className="text-xs text-accent-red font-semibold mb-2">Texto con errores</p>
                 <p className="text-[var(--color-on-surface)] text-base leading-relaxed italic">&quot;{errorText}&quot;</p>
             </motion.div>
 
@@ -79,7 +79,7 @@ export default function ErrorCorrection({ instruction, errorText, targetGrammar,
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim() || unchanged}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="btn-primary w-full py-3.5 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar corrección
                 <ArrowRight className="w-4 h-4" />

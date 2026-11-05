@@ -87,7 +87,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
             >
                 <div className={`bg-[var(--color-card)] ${getScoreShadow()} rounded-[var(--radius-lg)] p-10 w-full max-w-sm text-center space-y-7 shadow-[var(--shadow-elevated)]`}>
                     <div className="space-y-2">
-                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-medium">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] font-medium">
                             {t('exercises.title')}
                         </p>
                         <p className={`text-6xl font-extrabold ${getScoreColor()}`}>
@@ -119,7 +119,7 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
 
                     <button
                         onClick={() => onComplete(score)}
-                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
+                        className="btn-primary w-full py-3.5"
                     >
                         {score === 0 ? t('exercises.tryAgain') : t('exercises.finish')}
                     </button>

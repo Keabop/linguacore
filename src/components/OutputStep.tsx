@@ -131,7 +131,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                 <button
                     // Nothing left to speak: a speaking left pending here is done too
                     onClick={() => { if (speakingPending) onSpeakingDone?.(); onComplete(); }}
-                    className="bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="btn-primary px-6 py-3"
                 >
                     Saltar
                 </button>
@@ -145,7 +145,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
         <div className="space-y-7">
             {/* Section header */}
             <div className="space-y-1">
-                <h3 className="text-lg font-bold text-[var(--color-on-surface)]">{speakingOnly ? t('output.pendingTitle') : 'Producción'}</h3>
+                <h3 className="app-h3">{speakingOnly ? t('output.pendingTitle') : 'Producción'}</h3>
                 <p className="text-sm text-[var(--color-on-surface-muted)]">
                     {speakingOnly ? t('output.pendingIntro') : 'Practica tu escritura y habla en inglés.'}
                 </p>
@@ -159,31 +159,25 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-3">
+            <div className="app-tabs" role="group" aria-label="Producción">
                 {hasWriting && (
                     <button
+                        type="button"
+                        aria-pressed={activeTab === 'writing'}
                         onClick={() => setActiveTab('writing')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
-                            activeTab === 'writing'
-                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
-                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-primary)]'
-                        }`}
                     >
-                        {writingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : <PenLine className="w-4 h-4" />}
+                        {writingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" /> : <PenLine className="w-4 h-4" />}
                         Escritura
                         {writingDone && writingScore !== null && <span className="text-xs opacity-70">({writingScore}%)</span>}
                     </button>
                 )}
                 {hasSpeaking && (
                     <button
+                        type="button"
+                        aria-pressed={activeTab === 'speaking'}
                         onClick={() => setActiveTab('speaking')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
-                            activeTab === 'speaking'
-                                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
-                                : 'bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-primary)]'
-                        }`}
                     >
-                        {speakingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" /> : pending ? <Clock className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                        {speakingDone ? <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" /> : pending ? <Clock className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                         Habla
                         {pending && !speakingDone && <span className="text-xs opacity-70">({t('output.pendingTag')})</span>}
                         {speakingDone && speakingScore !== null && <span className="text-xs opacity-70">({speakingScore}%)</span>}
@@ -209,7 +203,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                     </div>
                     <button
                         onClick={() => navigate('/learn')}
-                        className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2"
                     >
                         <BookOpen className="w-4 h-4" /> Ir a leer cuentos
                     </button>
@@ -263,7 +257,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                         </div>
                         <button
                             onClick={() => setPending(false)}
-                            className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2"
                         >
                             <Mic className="w-4 h-4" /> Ya puedo hablar
                         </button>
@@ -283,7 +277,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     onClick={onComplete}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="btn-primary w-full py-3.5"
                 >
                     {speakingOnly ? t('output.backToPath') : pending ? t('output.continuePending') : 'Continuar al checkpoint'}
                 </motion.button>

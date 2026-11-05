@@ -56,7 +56,8 @@
     "errorsClearDesc": "Cuando el tutor detecte un error en lo que escribes, aparecerá aquí para practicarlo.",
     "enterLab": "Entrar al laboratorio",
     "streakDays": "días seguidos",
-    "streakStart": "Practica hoy para empezar tu racha."
+    "streakStart": "Practica hoy para empezar tu racha.",
+    "words": "palabras"
   },
   "reader": {
     "backToLesson": "Volver a la lección",
@@ -294,7 +295,9 @@
     "pendingTitle_other": "Te faltan {{count}} partes de habla",
     "pendingBody": "Antes del examen de fin de nivel, completa la habla de las unidades que dejaste para después.",
     "progressError": "No se pudo revisar tu progreso del nivel. Revisa tu conexión e inténtalo de nuevo.",
-    "speakingStillPending": "Te falta la habla de esta unidad: complétala desde la ruta antes del examen de fin de nivel."
+    "speakingStillPending": "Te falta la habla de esta unidad: complétala desde la ruta antes del examen de fin de nivel.",
+    "stepsLabel": "Pasos de la unidad",
+    "stepOf": "Paso {{n}} de {{total}}"
   },
   "exercises": {
     "title": "Ejercicios",
@@ -671,7 +674,9 @@
   "writing": {
     "perfect": "¡Perfecto! Tu respuesta coincide con la respuesta modelo.",
     "noCorrections": "Sin correcciones: tu respuesta está bien escrita.",
-    "unchanged": "Todavía es el texto con errores: corrige las partes que están mal."
+    "unchanged": "Todavía es el texto con errores: corrige las partes que están mal.",
+    "yourText": "Lo que escribiste",
+    "improved": "Versión mejorada"
   },
   "garden3d": {
     "unit": "Unidad {{n}}",
@@ -679,31 +684,57 @@
     "examTitle": "Examen de fin de nivel",
     "done": "Completada",
     "pending": "Falta: Habla",
-    "locked": "Se abre al terminar la anterior",
     "examDone": "Aprobado",
-    "examLocked": "Se abre al terminar las unidades",
     "examPending": "Completa la habla de la unidad {{n}}",
-    "takeExam": "Presentar examen",
     "continueUnit": "Continuar: Unidad {{n}}",
-    "openUnit": "Abrir {{title}}",
-    "listView": "Ver como lista",
     "title": {
       "A1": "Tu jardín está echando raíces",
       "A2": "Tus brotes están creciendo",
       "B1": "Tu jardín se llena de hojas",
       "B2": "Tu jardín está en flor"
     },
-    "stage": {
-      "A1": "semilla",
-      "A2": "brote",
-      "B1": "hoja",
-      "B2": "flor"
-    },
     "sub_one": "{{grown}} de {{total}} plantas crecieron. Te falta {{count}} unidad para el examen de {{level}}.",
     "sub_other": "{{grown}} de {{total}} plantas crecieron. Te faltan {{count}} unidades para el examen de {{level}}.",
-    "subExam": "Todas tus plantas crecieron: ya puedes presentar el examen de {{level}}.",
     "subPending_one": "Solo te falta la habla de {{count}} unidad para el examen.",
-    "subPending_other": "Solo te falta la habla de {{count}} unidades para el examen.",
-    "subDone": "Aprobaste el nivel: tu {{stage}} floreció."
+    "subPending_other": "Solo te falta la habla de {{count}} unidades para el examen."
+  },
+  "pathView": {
+    "levels": "Niveles",
+    "levelLocked": "Se abre al aprobar {{prev}}",
+    "grown": "{{grown}} de {{total}} plantas",
+    "view": "Vista de la ruta",
+    "view3d": "Jardín",
+    "viewList": "Lista",
+    "continue": "Continuar",
+    "start": "Empezar",
+    "review": "Repasar unidad",
+    "finishSpeaking": "Terminar la habla",
+    "takeExam": "Presentar examen",
+    "seeExam": "Ver examen",
+    "goToUnit": "Ir a la unidad {{n}}",
+    "lockedUnit": "Se abre al terminar la unidad {{n}}.",
+    "lockedExam": "Se abre al terminar todas las unidades del nivel.",
+    "close": "Cerrar",
+    "stepsDone": "{{done}} de {{total}} pasos",
+    "details": "Detalles de {{title}}",
+    "steps": {
+      "grammar": "Gramática",
+      "story": "Historia",
+      "vocab": "Vocabulario",
+      "exercises": "Ejercicios",
+      "output": "Escritura y habla",
+      "checkpoint": "Checkpoint"
+    },
+    "status": {
+      "done": "Completada",
+      "pending": "Falta la habla",
+      "current": "En curso",
+      "locked": "Bloqueada",
+      "exam-locked": "Bloqueado",
+      "exam-open": "Listo para presentar",
+      "exam-done": "Aprobado"
+    },
+    "pastLevel": "Nivel terminado: así quedó tu jardín.",
+    "empty": "Este nivel todavía no tiene unidades."
   }
 }

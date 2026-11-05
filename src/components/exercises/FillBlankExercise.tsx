@@ -42,7 +42,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 text-center shadow-[var(--shadow-card)]"
+                className="app-sheet p-6 text-center"
             >
                 <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">
                     {parts.map((part, i) => (
@@ -82,7 +82,7 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                     <button
                         type="submit"
                         disabled={!answer.trim()}
-                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px disabled:opacity-40 text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] shadow-[var(--shadow-card)]"
+                        className="btn-primary w-full disabled:opacity-40 py-3.5"
                     >
                         {t('exercises.checkAnswer')}
                     </button>
@@ -101,12 +101,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                             <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
                         </p>
                     </div>
-                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)]">
+                    <div className="card p-5">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(true)}
-                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
+                        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>
@@ -127,12 +127,12 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
                             <span className="text-[var(--color-primary)] font-bold">{exercise.correctAnswer}</span>
                         </p>
                     </div>
-                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)]">
+                    <div className="card p-5">
                         <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
                     </div>
                     <button
                         onClick={() => onAnswer(false)}
-                        className="w-full bg-[var(--color-primary)] hover:-translate-y-px text-[var(--color-on-primary)] py-3.5 rounded-full font-bold transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 shadow-[var(--shadow-card)]"
+                        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
                     >
                         {t('exercises.next')} <ArrowRight className="w-4 h-4" />
                     </button>

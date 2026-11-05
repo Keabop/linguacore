@@ -227,6 +227,14 @@
    ============================================ */
 
 /* === BUTTONS === */
+@layer components {
+/* Ruled sheet: one working page (an exercise, a form section) */
+.app-sheet {
+  --rule-gap: 2.25rem;
+  position: relative; border-radius: var(--radius-lg); background-color: var(--color-background);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule-gap) - 1px), var(--color-outline-subtle) calc(var(--rule-gap) - 1px) var(--rule-gap));
+  background-position: 0 1.5rem; box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-card);
+}
 /* Primary: a «key» that sinks when pressed */
 .btn-primary {
   background-color: var(--color-primary);
@@ -289,13 +297,8 @@
     margin-bottom: 28px;
   }
 }
-
-.widget-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-on-surface-muted);
-  margin-bottom: 24px;
-  font-family: var(--font-body);
+/* Account and credits sections: a ruled sheet, not a floating box */
+.widget { background-color: var(--color-background); box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-card); }
 }
 
 /* === INPUTS === */
@@ -594,20 +597,7 @@ span[data-word].in-deck {
 }
 
 /* === MODE CARDS (review) — No borders, elevated === */
-.mode-card {
-  background: var(--color-card);
-  border-radius: var(--radius-lg);
-  padding: 28px;
-  margin-bottom: 16px;
-  cursor: pointer;
-  transition: all 0.3s var(--ease-out);
-  box-shadow: var(--shadow-card);
-}
 
-.mode-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-float);
-}
 
 /* === REVIEW INPUT === */
 .review-input {
@@ -839,39 +829,6 @@ span[data-word].in-deck {
 .drag-handle-glow {
   animation: drag-handle-pulse 2s var(--ease-in-out) infinite;
 }
-
-/* === TIMELINE & ROAD MAP CLASS ENCAPSULATION === */
-
-.timeline-connector {
-  position: absolute;
-  left: 13px;
-  top: 1rem;
-  bottom: 1rem;
-  width: 3px;
-  border-radius: 9999px;
-  background: var(--color-outline-variant);
-}
-
-.timeline-node-container {
-  position: absolute;
-  left: -27px;
-  width: 3px;
-  top: 1.75rem; /* top-7 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-@media (min-width: 768px) {
-  .timeline-connector {
-    left: 21px;
-  }
-  .timeline-node-container {
-    left: -35px;
-  }
-}
-
 
 /* ============================================
    JARDÍN — plants, garden row, level chips, streak and achievement moments
@@ -1120,16 +1077,401 @@ span[data-word].in-deck {
 .garden3d-tag.is-current { outline: 3px solid color-mix(in oklch, var(--color-level-a2) 70%, transparent); outline-offset: 2px; }
 .garden3d-tag-link { position: absolute; inset: 0; border-radius: inherit; background: transparent; cursor: pointer; }
 .garden3d-tag-link:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
-.garden3d-hero {
-  position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 4; width: min(calc(100vw - 2rem), 36rem);
-  display: grid; gap: 0.5rem; padding: 1rem 1.125rem; border-radius: var(--radius-lg);
-  background: color-mix(in oklch, var(--color-card) 94%, transparent); box-shadow: var(--shadow-float);
-  transition: padding var(--dur-short) var(--ease-out);
+.garden3d-tag.is-selected { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+/* ===== Path: one slim bar, a details panel, the trail of plots ===== */
+.path-bar {
+  display: grid; grid-template-columns: auto minmax(10rem, 1fr) auto auto; align-items: center; gap: 0.75rem 1.25rem;
+  padding: 0.625rem 0.75rem 0.625rem 0.625rem; border-radius: var(--radius-lg);
+  background: var(--color-card); box-shadow: var(--shadow-card);
 }
-.garden3d-hero.is-compact { padding: 0.625rem 1rem; }
-.garden3d-hero.is-compact .garden3d-hero-more { display: none; }
-@media (max-width: 1024px) { .garden3d-hero { top: 0.75rem; } .garden3d-hero.beside-admin { top: 4rem; } }
-@media (min-width: 1025px) { .garden3d-hero.below-rail { top: 6.5rem; } }
+.path-bar.is-floating { box-shadow: var(--shadow-float); background: color-mix(in oklch, var(--color-card) 95%, transparent); }
+.path-bar-dock { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 4; width: min(calc(100vw - 2rem), 60rem); }
+@media (max-width: 1024px) { .path-bar-dock { top: 0.75rem; } .path-bar-dock.beside-admin { top: 4rem; } }
+@media (min-width: 1025px) { .path-bar-dock.below-rail { top: 6.5rem; } }
+.path-bar-levels { display: flex; gap: 0.25rem; padding: 0.125rem; border-radius: 999px; background: var(--color-surface-container); }
+.path-level {
+  display: inline-flex; align-items: center; gap: 0.25rem; min-width: 2.75rem; min-height: 2.75rem; justify-content: center;
+  padding: 0.375rem 0.625rem; border-radius: 0 0.9rem 0 0.9rem; font: 600 0.75rem var(--font-mono);
+  color: var(--color-on-surface-muted); transition: background-color 220ms var(--ease-out), color 220ms var(--ease-out);
+}
+.path-level:hover:not(:disabled) { color: var(--color-on-surface); background: var(--color-surface-container-high); }
+.path-level[aria-pressed="true"] { background: var(--level); color: var(--color-level-ink); }
+/* B1 green is too light for the dark ink at this size: it takes the leaf with paper text */
+.path-level[data-level="B1"][aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-primary); }
+.path-level:disabled { opacity: 0.55; cursor: not-allowed; }
+.path-level:focus-visible, .path-view-switch button:focus-visible, .path-plot-head:focus-visible, .unit-sheet-close:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.path-bar-progress { display: grid; gap: 0.25rem; min-width: 0; }
+.path-bar-today { display: flex; align-items: center; gap: 0.75rem; }
+.path-bar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-width: 0; }
+.path-bar-next { white-space: nowrap; }
+.path-view-switch { display: flex; padding: 0.125rem; border-radius: 999px; background: var(--color-surface-container); }
+.path-view-switch button { min-height: 2.75rem; padding: 0.375rem 0.875rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 600; color: var(--color-on-surface-muted); }
+.path-view-switch button[aria-pressed="true"] { background: var(--color-card); color: var(--color-on-surface); box-shadow: var(--shadow-card); }
+/* The four columns need about 56rem: below that (or beside the rail) the bar takes two rows,
+   levels and growth on top, watering and the actions underneath, so the garden keeps the view */
+@media (max-width: 1180px) {
+  .path-bar { grid-template-columns: auto minmax(0, 1fr); gap: 0.5rem 1rem; }
+  .path-bar-levels { grid-column: 1; }
+  .path-bar-progress { grid-column: 2; }
+  .path-bar-today { grid-column: 1; }
+  .path-bar-actions { grid-column: 2; justify-content: flex-end; }
+}
+@media (max-width: 640px) {
+  .path-bar { grid-template-columns: minmax(0, 1fr); }
+  .path-bar-levels, .path-bar-progress { grid-column: 1 / -1; justify-content: space-between; }
+  .path-level { flex: 1; }
+  .path-bar-today { grid-column: 1 / -1; }
+  .path-bar-actions { grid-column: 1 / -1; justify-content: stretch; }
+  .path-bar-actions > * { flex: 1 1 auto; }
+  .path-view-switch button { flex: 1; }
+  .path-bar-next { white-space: normal; }
+}
+/* While walking the garden on a phone the bar keeps only the levels and the next step */
+@media (max-width: 640px) {
+  .path-bar.is-floating .path-bar-progress, .path-bar.is-floating .path-bar-today { display: none; }
+  .path-bar.is-floating .path-bar-actions { grid-column: 1 / -1; justify-content: space-between; }
+}
+
+/* Above the floating nav and the rail (z 50), and below the path bar wherever it ends */
+.unit-sheet {
+  position: fixed; z-index: 60; right: 1rem; bottom: 1rem; top: calc(var(--path-dock-bottom, 6rem) + 0.75rem); width: min(24rem, calc(100vw - 2rem)); overflow-y: auto;
+  display: grid; align-content: start; gap: 1.25rem; padding: 1.25rem; border-radius: var(--radius-lg);
+  background: var(--color-card); box-shadow: var(--shadow-float); outline: none;
+  animation: sheet-in 420ms var(--ease-out);
+}
+@media (max-width: 640px) { .unit-sheet { top: auto; left: 0.5rem; right: 0.5rem; bottom: 0.5rem; width: auto; max-height: 70dvh; } }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(12px); } }
+.unit-sheet-close { display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: 999px; color: var(--color-on-surface-muted); background: var(--color-surface-container); }
+.unit-sheet-close:hover { color: var(--color-on-surface); background: var(--color-surface-container-high); }
+.unit-steps { display: grid; gap: 0.125rem; }
+.unit-steps li { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.25rem; font-size: 0.875rem; color: var(--color-on-surface-muted); border-bottom: 1px solid var(--color-outline-subtle); }
+.unit-steps li:last-child { border-bottom: 0; }
+.unit-steps li.is-done { color: var(--color-on-surface); }
+.unit-step-mark { display: grid; place-items: center; width: 1.25rem; height: 1.25rem; border-radius: 999px; border: 1.5px solid var(--color-outline); }
+.unit-steps li.is-done .unit-step-mark { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+.unit-steps li.is-pending .unit-step-mark { background: var(--color-tertiary-container); border-color: var(--color-tertiary); color: var(--color-tertiary-ink); }
+
+.path-list { display: grid; gap: 1.5rem; }
+.path-list-garden { padding: 1rem 1.25rem 0; border-radius: var(--radius-lg); background: var(--color-surface-container-low); overflow: hidden; }
+.path-trail { position: relative; display: grid; gap: 0.75rem; }
+/* The soil trail the plots sit on */
+.path-trail::before { content: ""; position: absolute; left: 2.0625rem; top: 1.5rem; bottom: 1.5rem; width: 0.375rem; border-radius: 999px; background: var(--color-soil); }
+.path-plot { position: relative; display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 1rem; align-items: start; }
+.path-plot-bed {
+  position: relative; z-index: 1; display: grid; place-items: end center; height: 4.5rem; padding: 0 0.5rem 0.25rem; border-radius: 1.25rem;
+  background: var(--color-card); box-shadow: var(--shadow-card), inset 0 -0.625rem 0 var(--color-soil); color: var(--color-tertiary-ink);
+}
+.path-plot-bed svg { width: 3rem; height: 3.5rem; }
+.path-plot.is-current .path-plot-bed, .path-plot.is-exam-open .path-plot-bed { box-shadow: 0 0 0 3px color-mix(in oklch, var(--level) 70%, transparent), var(--shadow-elevated), inset 0 -0.625rem 0 var(--color-soil); }
+.path-plot-body { padding: 1rem 1.125rem; border-radius: var(--radius-lg); background: var(--color-card); box-shadow: var(--shadow-card); transition: box-shadow 220ms var(--ease-out); }
+.path-plot:hover .path-plot-body, .path-plot.is-open .path-plot-body { box-shadow: var(--shadow-elevated); }
+.path-plot.is-locked .path-plot-body, .path-plot.is-exam-locked .path-plot-body { background: var(--color-surface-container-low); box-shadow: none; }
+.path-plot.is-locked .path-plot-bed { background: var(--color-surface-container); }
+.path-plot-head { display: flex; align-items: center; gap: 1rem; width: 100%; text-align: left; }
+.path-plot-head > span:first-child { flex: 1; }
+.path-plot-chevron { color: var(--color-on-surface-variant); transition: transform 220ms var(--ease-out); }
+.path-plot.is-open .path-plot-chevron { transform: rotate(180deg); }
+.path-plot.is-done .path-plot-status, .path-plot.is-current .path-plot-status, .path-plot.is-exam-done .path-plot-status, .path-plot.is-exam-open .path-plot-status { color: var(--color-primary); }
+.path-plot.is-pending .path-plot-status { color: var(--color-tertiary-ink); }
+.path-pips { display: flex; gap: 0.25rem; }
+.path-pips i { width: 0.5rem; height: 0.875rem; border-radius: 0 0.5rem 0 0.5rem; background: var(--color-surface-container-high); }
+.path-pips i.is-done { background: var(--color-primary); }
+.path-pips i.is-pending { background: var(--color-tertiary); }
+@media (max-width: 640px) {
+  .path-plot { grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.75rem; }
+  .path-plot-bed { height: 3.5rem; }
+  .path-trail::before { left: 1.5625rem; }
+  .path-pips { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .unit-sheet { animation: none; } }
+
 /* The layout's content sits above the garden (it is transparent), so banners and prompts stay usable */
 body.has-garden3d .main-content { position: relative; z-index: 2; pointer-events: none; }
 body.has-garden3d .main-content-inner > * { pointer-events: auto; }
+
+/* ===== Landing: a field notebook open on a leaf-green desk ===== */
+.nb-ground { background: var(--color-primary); color: var(--color-on-surface); }
+.nb-ground ::selection { background: var(--color-tertiary); color: var(--color-level-ink); }
+.nb-navlink { padding: 0.5rem 0.75rem; font-size: 0.875rem; font-weight: 600; white-space: nowrap; color: var(--color-on-primary); text-underline-offset: 4px; }
+.nb-navlink:hover { text-decoration: underline; }
+.nb-navbtn {
+  padding: 0.625rem 1.25rem; border-radius: 999px; font-size: 0.875rem; font-weight: 700; white-space: nowrap;
+  background: var(--color-background); color: var(--color-on-surface); box-shadow: 0 3px 0 var(--color-primary-press);
+  transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
+}
+.nb-navbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--color-primary-press); }
+.nb-navlink:focus-visible, .nb-navbtn:focus-visible { outline: 3px solid var(--color-on-primary); outline-offset: 3px; }
+
+/* Paper: ruled lines and a red margin, the notebook's own grid */
+.nb-page {
+  --rule-gap: 2.25rem;
+  position: relative; background-color: var(--color-background);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule-gap) - 1px), var(--color-outline-subtle) calc(var(--rule-gap) - 1px) var(--rule-gap));
+  background-position: 0 1.5rem;
+}
+.nb-spread {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-radius: 0.75rem 0.75rem 1.25rem 1.25rem; overflow: hidden;
+  box-shadow: 0 30px 60px -24px oklch(20% 0.06 150 / 0.55), 0 2px 0 var(--color-primary-press);
+}
+.nb-page-left { padding: clamp(1.5rem, 4vw, 3.5rem); border-right: 1px solid var(--color-outline-variant); }
+.nb-page-right { padding: clamp(1.5rem, 4vw, 3.5rem); display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
+/* The gutter: the pages bend into the stitching */
+.nb-page-left { box-shadow: inset -18px 0 24px -20px oklch(30% 0.05 150 / 0.35); }
+.nb-page-right { box-shadow: inset 18px 0 24px -20px oklch(30% 0.05 150 / 0.35); }
+.nb-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.4rem, 5.4vw, 4.5rem); line-height: 0.96; letter-spacing: -0.035em; overflow-wrap: anywhere; text-wrap: balance; }
+.nb-hint { margin-top: 1.5rem; font: 0.8125rem var(--font-mono); color: var(--color-on-surface-variant); }
+.nb-sentence { margin-top: 0.75rem; font-size: clamp(1.25rem, 2.2vw, 1.625rem); line-height: var(--rule-gap); font-weight: 500; }
+.nb-wrong {
+  padding: 0 0.25rem; border-radius: 0.375rem; font-weight: 700; color: var(--color-error);
+  text-decoration: underline wavy var(--color-error); text-underline-offset: 6px; text-decoration-thickness: 1.5px;
+  transition: background-color 120ms var(--ease-out);
+}
+.nb-wrong:hover, .nb-wrong.is-open { background: var(--color-error-light); }
+.nb-wrong:focus-visible, .nb-options button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.nb-options {
+  position: absolute; z-index: 2; left: 50%; top: calc(100% + 0.25rem); transform: translateX(-50%); display: flex; gap: 0.25rem;
+  padding: 0.375rem; border-radius: 999px; background: var(--color-card); box-shadow: var(--shadow-float); white-space: nowrap; line-height: 1.2;
+}
+.nb-options button { padding: 0.375rem 0.75rem; border-radius: 999px; font-size: 1rem; font-weight: 600; }
+.nb-options button:hover { background: var(--color-primary-container); }
+.nb-options button.is-wrong { background: var(--color-error-light); color: var(--color-error); }
+.nb-fix { display: inline-block; }
+.nb-fix s { color: var(--color-error); text-decoration-thickness: 2px; font-weight: 500; }
+.nb-fix-new { padding: 0 0.25rem; border-radius: 0.375rem; background: var(--color-primary-container); font-weight: 700; }
+.nb-note {
+  position: relative; margin-top: 1.5rem; max-width: 34rem; padding: 0.875rem 1.125rem; border-radius: 0.75rem; transform: rotate(-0.6deg);
+  background: var(--color-tertiary-container); color: var(--color-on-surface); font-size: 0.9375rem; line-height: 1.5;
+  box-shadow: 0 8px 18px -12px oklch(40% 0.08 80 / 0.5);
+}
+.nb-scores { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 1.5rem; font-family: var(--font-mono); font-size: 0.8125rem; }
+.nb-scores div { display: flex; gap: 0.5rem; }
+.nb-scores dt { color: var(--color-on-surface-variant); }
+.nb-scores dd { font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.nb-specimen {
+  position: relative; align-self: center; display: grid; justify-items: center; gap: 1rem; width: min(100%, 19rem);
+  padding: 2rem 1.5rem 1.25rem; border-radius: 1rem; background: var(--color-card); border: 1.5px solid var(--color-outline-variant);
+  box-shadow: 0 14px 30px -18px oklch(30% 0.06 150 / 0.45); transform: rotate(1.2deg);
+}
+.nb-specimen svg { width: 9rem; height: 11rem; }
+.nb-specimen figcaption { font: 0.75rem var(--font-mono); color: var(--color-on-surface-variant); text-align: center; }
+.nb-tape {
+  position: absolute; top: -0.75rem; left: 50%; width: 6.5rem; height: 1.5rem; transform: translateX(-50%) rotate(-4deg);
+  background: color-mix(in oklch, var(--color-tertiary-container) 85%, transparent); box-shadow: 0 1px 2px oklch(30% 0.04 80 / 0.15);
+}
+.nb-cta { display: grid; justify-items: start; gap: 0.75rem; }
+
+.nb-sheet { padding: clamp(1.5rem, 4vw, 3.5rem); border-radius: 1rem; box-shadow: 0 24px 50px -24px oklch(20% 0.06 150 / 0.5); }
+.nb-sheet-head { max-width: 40rem; display: grid; gap: 0.75rem; color: var(--color-on-surface-muted); }
+.nb-h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.02; letter-spacing: -0.03em; color: var(--color-on-surface); text-wrap: balance; }
+.nb-h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; }
+.nb-specimens { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem 1.5rem; margin-top: 2.5rem; }
+.nb-mount { position: relative; display: grid; align-content: start; gap: 0.75rem; padding: 1.75rem 1.25rem 1.25rem; border-radius: 0.875rem; background: var(--color-card); border: 1.5px solid var(--color-outline-variant); }
+.nb-mount:nth-child(odd) { transform: rotate(-0.8deg); }
+.nb-mount:nth-child(even) { transform: rotate(0.7deg); }
+.nb-mount-plant { display: grid; place-items: end center; height: 7rem; border-bottom: 1.5px dashed var(--color-outline); }
+.nb-mount-plant svg { width: 5rem; height: 6.5rem; }
+.nb-samples { display: grid; gap: 0.125rem; font-size: 0.875rem; }
+.nb-samples li::before { content: "— "; color: var(--color-on-surface-variant); }
+.nb-label { margin-top: auto; font: 0.75rem var(--font-mono); color: var(--color-on-surface-variant); }
+
+.nb-spread-plain .nb-page-right { justify-content: center; }
+.nb-steps { display: grid; gap: 1.5rem; margin-top: 2rem; }
+.nb-steps li { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); gap: 1rem; }
+.nb-step-n { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 999px; border: 2px solid var(--color-primary); font: 700 0.9375rem var(--font-mono); color: var(--color-primary); }
+.nb-steps h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; }
+.nb-steps p { color: var(--color-on-surface-muted); }
+.nb-pockets { gap: 2.5rem; }
+.nb-card { position: relative; display: grid; gap: 0.5rem; padding: 1.75rem 1.5rem 1.5rem; border-radius: 0.875rem; background: var(--color-card); border: 1.5px solid var(--color-outline-variant); color: var(--color-on-surface-muted); }
+.nb-card:nth-child(1) { transform: rotate(-1deg); }
+.nb-card:nth-child(2) { transform: rotate(0.8deg); }
+.nb-card .nb-h3 { color: var(--color-on-surface); }
+
+.nb-prices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 2.5rem; max-width: 52rem; }
+.nb-price { display: flex; flex-direction: column; gap: 1rem; padding: 1.75rem; border-radius: var(--radius-lg); background: var(--color-card); border: 1.5px solid var(--color-outline-variant); color: var(--color-on-surface-muted); }
+.nb-price.is-pro { border: 2px solid var(--color-primary); }
+.nb-price .nb-h3 { color: var(--color-on-surface); }
+.nb-amount { font-family: var(--font-display); font-weight: 800; font-size: 2.5rem; color: var(--color-on-surface); font-variant-numeric: tabular-nums; }
+.nb-price ul { display: grid; gap: 0.625rem; font-size: 0.875rem; color: var(--color-on-surface); }
+.nb-price li { display: flex; gap: 0.625rem; }
+.nb-price li svg { flex-shrink: 0; margin-top: 0.125rem; color: var(--color-primary); }
+.nb-price a { margin-top: auto; }
+
+@media (max-width: 900px) {
+  .nb-spread { grid-template-columns: minmax(0, 1fr); }
+  .nb-page-left { border-right: 0; border-bottom: 1px solid var(--color-outline-variant); box-shadow: none; }
+  .nb-page-right { box-shadow: none; }
+  .nb-specimens { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .nb-specimens, .nb-prices { grid-template-columns: minmax(0, 1fr); }
+  /* On a phone the pressed plant sits beside its caption, so the action stays near the sentence */
+  .nb-page-right { gap: 1.25rem; }
+  .nb-specimen { transform: none; width: 100%; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: end; justify-items: start; padding: 1.25rem 1rem 0.75rem; }
+  .nb-specimen svg { width: 4.5rem; height: 5.5rem; }
+  .nb-specimen figcaption { text-align: left; padding-bottom: 0.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { .nb-mount, .nb-card, .nb-specimen, .nb-note { transform: none; } }
+
+/* ===== Auth: the notebook's cover (the garden) and its first page ===== */
+.auth-book {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-radius: 0.75rem 1.25rem 1.25rem 0.75rem; overflow: hidden;
+  box-shadow: 0 30px 60px -24px oklch(20% 0.06 150 / 0.55), 0 2px 0 var(--color-primary-press);
+}
+.auth-cover { position: relative; min-height: 36rem; overflow: hidden; border-right: 0.5rem solid var(--color-primary-press); }
+.auth-cover-line {
+  position: absolute; left: 2.5rem; right: 2.5rem; top: 2.5rem; max-width: 22rem;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 3.4vw, 2.75rem); line-height: 1.02; letter-spacing: -0.035em; color: var(--color-on-surface);
+  text-wrap: balance;
+}
+.auth-page { display: grid; place-items: center; padding: clamp(1.5rem, 5vw, 3.5rem); }
+.auth-form { width: 100%; max-width: 24rem; }
+.auth-title { font-family: var(--font-display); font-weight: 800; font-size: 2rem; line-height: 1.05; letter-spacing: -0.03em; color: var(--color-on-surface); }
+.auth-tabs { display: flex; gap: 0.25rem; padding: 0.25rem; margin-bottom: 1.75rem; border-radius: 999px; background: var(--color-surface-container); }
+.auth-tabs button { flex: 1; padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; color: var(--color-on-surface-muted); transition: background-color 220ms var(--ease-out), color 220ms var(--ease-out); }
+.auth-tabs button[aria-selected="true"] { background: var(--color-card); color: var(--color-on-surface); box-shadow: var(--shadow-card); }
+.auth-tabs button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.auth-label { display: block; margin-bottom: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: var(--color-on-surface-muted); }
+.auth-input {
+  width: 100%; padding: 0.8125rem 1rem; border-radius: var(--radius-sm); font-size: 1rem;
+  background: var(--color-card); color: var(--color-on-surface); border: 1.5px solid var(--color-outline);
+  transition: border-color 120ms var(--ease-out);
+}
+.auth-input::placeholder { color: var(--color-on-surface-variant); }
+.auth-input:hover { border-color: var(--color-on-surface-variant); }
+.auth-input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-primary); }
+@media (max-width: 860px) {
+  .auth-book { grid-template-columns: minmax(0, 1fr); border-radius: 1.25rem; }
+  .auth-cover { min-height: 11rem; border-right: 0; border-bottom: 0.5rem solid var(--color-primary-press); }
+  .auth-cover-line { top: 1.25rem; left: 1.25rem; font-size: 1.5rem; }
+}
+
+/* ===== App: the same field notebook, now on the work table ===== */
+/* Entry heading: the title, one line about the page, the facts in mono and a ruled line under it */
+.app-head { display: grid; gap: 0.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--color-outline-variant); text-align: left; }
+.app-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.75rem 1rem; }
+.app-head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.app-title {
+  min-width: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 4.2vw, 2.875rem);
+  line-height: 1.02; letter-spacing: -0.035em; color: var(--color-on-surface); text-wrap: balance; overflow-wrap: anywhere;
+}
+.app-lead { max-width: 60ch; color: var(--color-on-surface-muted); }
+.app-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 0.875rem; font: 0.8125rem/1.4 var(--font-mono); color: var(--color-on-surface-variant); }
+.app-meta time::first-letter { text-transform: uppercase; }
+.app-h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.625rem, 3vw, 2.125rem); line-height: 1.05; letter-spacing: -0.03em; color: var(--color-on-surface); text-wrap: balance; overflow-wrap: anywhere; }
+.app-h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.1875rem; line-height: 1.15; letter-spacing: -0.02em; color: var(--color-on-surface); }
+.app-section-label { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: var(--color-on-surface-muted); }
+
+/* A spread inside the app: same pages and spine as the landing, lifted off the table instead of the desk */
+.app-spread {
+  /* The pages wrap by the width of the column, not the window (the sidebar takes part of it); the 1px gap is the spine */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1px; background: var(--color-outline-variant);
+  border-radius: var(--radius-lg); box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-elevated);
+}
+.app-spread > .nb-page-left { border-right: 0; }
+.app-spread > .nb-page-left, .app-spread > .nb-page-right { padding: clamp(1.25rem, 3vw, 2.25rem); }
+.app-today { display: flex; flex-direction: column; gap: 1.25rem; }
+.app-today-garden { display: grid; gap: 0.5rem; margin-top: auto; padding: 0.75rem 0.75rem 0.5rem; border-radius: var(--radius-md); background: var(--color-card); border: 1.5px dashed var(--color-outline); }
+.app-today-garden figcaption { font: 0.75rem var(--font-mono); color: var(--color-on-surface-variant); }
+.app-ledger { justify-content: flex-start; gap: 0; }
+.app-ledger > li { display: grid; gap: 0.625rem; padding-block: 1.125rem; border-bottom: 1px dashed var(--color-outline); }
+.app-ledger > li:first-child { padding-top: 0; }
+.app-ledger > li:last-child { border-bottom: 0; padding-bottom: 0; }
+.app-ledger-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; }
+.app-ledger-note { font-size: 0.8125rem; color: var(--color-on-surface-variant); max-width: 48ch; }
+
+
+/* Index card: something to pick (a story, a mode); it sits slightly askew and straightens under the cursor */
+.app-index {
+  position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; text-align: left;
+  border-radius: 0.875rem; background: var(--color-card); border: 1.5px solid var(--color-outline-variant);
+  box-shadow: 0 10px 22px -18px oklch(30% 0.06 150 / 0.45);
+  transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out), border-color 220ms var(--ease-out);
+}
+.app-index:nth-child(odd) { transform: rotate(-0.35deg); }
+.app-index:nth-child(even) { transform: rotate(0.35deg); }
+.app-index:hover { transform: translateY(-2px); border-color: var(--color-outline); box-shadow: var(--shadow-elevated); }
+.app-index:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; transform: none; }
+
+
+@media (prefers-reduced-motion: reduce) { .app-index, .app-index:hover { transform: none; } }
+
+/* Unit stem: one leaf per step joined by the stem; only the current step says its name */
+.unit-stem { display: flex; align-items: center; }
+.unit-stem li { position: relative; display: flex; flex: 1 1 0; align-items: center; gap: 0.5rem; min-width: 0; font-size: 0.8125rem; font-weight: 600; color: var(--color-on-surface-variant); }
+.unit-stem li:last-child { flex: 0 0 auto; }
+.unit-stem li:not(:last-child)::after { content: ""; flex: 1 1 auto; min-width: 0; height: 2px; margin-inline: 0.25rem; border-radius: 999px; background: var(--color-surface-container-highest); }
+.unit-stem li.is-done::after { background: var(--color-primary); }
+.unit-stem li.is-current { flex: 2 1 0; color: var(--color-on-surface); }
+.unit-stem-mark { display: grid; place-items: center; flex-shrink: 0; width: 1.875rem; height: 1.875rem; border-radius: 0 0.9375rem 0 0.9375rem; background: var(--color-surface-container); color: var(--color-on-surface-muted); }
+.unit-stem li.is-done .unit-stem-mark { background: var(--color-primary); color: var(--color-on-primary); }
+.unit-stem li.is-current .unit-stem-mark { background: var(--color-primary-container); color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary); }
+.unit-stem-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.unit-stem li:not(.is-current) .unit-stem-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+.unit-stem-caption { display: none; font: 600 0.8125rem var(--font-mono); color: var(--color-on-surface-muted); }
+/* On a phone the six leaves only fit without words: the step is named underneath */
+@media (max-width: 640px) {
+  .unit-stem li.is-current { flex: 1 1 0; }
+  .unit-stem-mark { width: 1.625rem; height: 1.625rem; }
+  .unit-stem li .unit-stem-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .unit-stem-caption { display: block; margin-top: -0.75rem; }
+}
+.unit-step-head { display: flex; align-items: center; gap: 0.875rem; }
+.unit-step-icon { display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: 0 1.375rem 0 1.375rem; background: var(--color-primary-container); color: var(--color-primary); }
+
+/* Pressed specimen: the plant that grew, taped to the page (unit complete, checkpoint result) */
+.app-specimen {
+  position: relative; display: grid; justify-items: center; gap: 1.5rem; width: 100%; max-width: 24rem;
+  padding: 2.5rem 2rem 2rem; text-align: center; border-radius: 1rem;
+  background: var(--color-card); border: 1.5px solid var(--color-outline-variant);
+  box-shadow: 0 24px 50px -28px oklch(20% 0.06 150 / 0.5);
+}
+
+/* Specimens carry their tape on top */
+.app-specimen::before {
+  content: ""; position: absolute; top: -0.75rem; left: 50%; width: 6.5rem; height: 1.5rem; transform: translateX(-50%) rotate(-4deg);
+  background: color-mix(in oklch, var(--color-tertiary-container) 85%, transparent); box-shadow: 0 1px 2px oklch(30% 0.04 80 / 0.15);
+}
+.app-specimen h2 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.03em; }
+
+/* Tabs on a page: the same pill as the sign-in */
+.app-tabs { display: flex; gap: 0.25rem; padding: 0.25rem; border-radius: 999px; background: var(--color-surface-container); }
+.app-tabs button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; color: var(--color-on-surface-muted); transition: background-color 220ms var(--ease-out), color 220ms var(--ease-out); }
+.app-tabs button:hover { color: var(--color-on-surface); }
+.app-tabs button[aria-selected="true"], .app-tabs button[aria-pressed="true"] { background: var(--color-card); color: var(--color-on-surface); box-shadow: var(--shadow-card); }
+.app-tabs button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+/* Sections of the account and credits pages: a ruled sheet, not a floating box */
+
+/* Numbered rules written on the page (exam instructions) */
+.app-rules { display: grid; gap: 0.875rem; counter-reset: rule; font-size: 0.9375rem; color: var(--color-on-surface-muted); }
+.app-rules li { display: grid; grid-template-columns: 1.75rem minmax(0, 1fr); gap: 0.75rem; counter-increment: rule; }
+.app-rules li::before { content: counter(rule); display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; border: 1.5px solid var(--color-primary); font: 700 0.8125rem var(--font-mono); color: var(--color-primary); }
+
+/* ===== Review fixes: phones, touch and layering ===== */
+@media (max-width: 560px) { .auth-cover-line { font-size: 1.375rem; max-width: 14rem; } }
+/* The Google button keeps its card on the ruled page */
+.auth-google { background-color: var(--color-card); }
+.auth-tabs button, .app-tabs button { min-height: 2.75rem; }
+.nb-options button { min-height: 2.75rem; }
+/* The wrong words get a 44 px target without moving the line */
+.nb-wrong { position: relative; }
+.nb-wrong::after { content: ""; position: absolute; inset: -0.625rem -0.5rem; }
+/* On a phone the options sit in the line, right after the word, so the page never cuts them */
+@media (max-width: 560px) {
+  .nb-options { position: static; transform: none; display: inline-flex; flex-wrap: wrap; white-space: normal; vertical-align: middle; margin: 0.25rem 0.25rem; border-radius: 1rem; }
+}
+/* Stacked or side by side, the spread's spine is the grid gap: no extra rule under the left page */
+.app-spread > .nb-page-left { border-bottom: 0; }
+
+/* The admin's floating button sits top-left on tablets and phones: the page starts below it */
+@media (max-width: 1024px) { .app-layout.has-admin .main-content-inner { padding-top: 4.5rem; } }
+
+/* Tape note: the text to work from (the Spanish sentence to translate), stuck on the page */
+.app-note {
+  position: relative; padding: 0.875rem 1.125rem; border-radius: 0.75rem; transform: rotate(-0.4deg);
+  background: var(--color-tertiary-container); color: var(--color-on-surface); font-size: 0.9375rem; line-height: 1.5;
+  box-shadow: 0 8px 18px -12px oklch(40% 0.08 80 / 0.5);
+}
+@media (prefers-reduced-motion: reduce) { .app-note { transform: none; } }

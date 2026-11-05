@@ -77,12 +77,12 @@ describe('WritingRunner saves AI evaluations', () => {
         expect(evaluateWriting).toHaveBeenCalledTimes(1);
     });
 
-    it('still asks the AI when only the capitals or the punctuation differ', async () => {
-        evaluateWriting.mockReset().mockResolvedValue(evaluation);
+    it('does not ask the AI when only the capitals or the punctuation differ', async () => {
+        evaluateWriting.mockReset();
         render(<MemoryRouter><WritingRunner prompts={[{ ...prompt, id: 'w3' }]} level="A1" onComplete={vi.fn()} /></MemoryRouter>);
-        submit('my family is small. i have one sister');
-        expect(await screen.findByText('¡Bien!')).toBeInTheDocument();
-        expect(evaluateWriting).toHaveBeenCalledTimes(1);
+        submit('my family is small, i have one sister');
+        expect(await screen.findByText(/coincide con la respuesta modelo/)).toBeInTheDocument();
+        expect(evaluateWriting).not.toHaveBeenCalled();
     });
 
     it('does not ask the AI when the answer is the model answer', async () => {

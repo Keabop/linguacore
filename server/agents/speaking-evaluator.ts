@@ -66,8 +66,15 @@ Genera un informe analítico riguroso. Responde SOLO con JSON válido (sin markd
 
     // The model's numbers are not trusted as they come: each one ends up a whole number from 0 to 100
     const percent = (n: unknown) => Math.round(Math.max(0, Math.min(100, Number(n) || 0)));
+    const subScores = [parsed.pronunciationScore, parsed.fluencyScore, parsed.vocabularyScore];
+    const hasSubScores = subScores.some(n => typeof n === 'number');
     return {
-        score: fitToBand(parsed.score, exam ? undefined : parsed.band),
+        // Without an exam the score is the average of the three sub-scores the learner sees (the
+        // model's own number could say 79 under three 100s); an exam's comes from its criteria, and a
+        // reply without sub-scores keeps the model's number inside its band
+        score: !exam && hasSubScores
+            ? Math.round(subScores.reduce((sum: number, n) => sum + percent(n), 0) / subScores.length)
+            : fitToBand(parsed.score, exam ? undefined : parsed.band),
         pronunciationScore: percent(parsed.pronunciationScore),
         fluencyScore: percent(parsed.fluencyScore),
         vocabularyScore: percent(parsed.vocabularyScore),

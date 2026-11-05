@@ -13,7 +13,7 @@ import AIErrorCard from '../AIErrorCard';
 import EvaluationLimitCard from '../EvaluationLimitCard';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n/config';
-import { sameText } from '../../lib/sameText';
+import { sameWords } from '../../lib/sameText';
 
 /**
  * Evaluations already made in this tab, by prompt and answer: sending the same text again
@@ -46,6 +46,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [phase, setPhase] = useState<Phase>('writing');
     const [feedback, setFeedback] = useState<WritingEvaluationResponse | null>(null);
+    const [answer, setAnswer] = useState('');
     const [scores, setScores] = useState<number[]>([]);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,8 +55,9 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
 
     const handleSubmit = async (text: string) => {
         const key = `${level}|${current.id}|${current.instruction}|${text.trim().replace(/\s+/g, ' ')}`;
+        setAnswer(text);
         const known = evaluated.get(key)
-            ?? (current.referenceAnswer && sameText(text, current.referenceAnswer) ? perfectFeedback(text) : undefined);
+            ?? (current.referenceAnswer && sameWords(text, current.referenceAnswer) ? perfectFeedback(text) : undefined);
         if (known) {
             setFeedback(known);
             setScores(prev => [...prev, known.score]);
@@ -209,6 +211,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                     >
                         <WritingFeedback
                             data={feedback}
+                            text={answer}
                             onNext={handleNext}
                             nextLabel={isLast ? 'Finalizar escritura' : 'Siguiente ejercicio'}
                         />

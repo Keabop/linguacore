@@ -22,7 +22,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
         <div className="space-y-6">
             {/* Instruction */}
             <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-accent-blue text-sm font-semibold">
+                <div className="flex items-center gap-2 text-[var(--color-primary)] text-sm font-semibold">
                     <Languages className="w-4 h-4" />
                     Construcción de oración
                 </div>
@@ -35,9 +35,9 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-accent-blue/8 border border-accent-blue/20 rounded-xl p-5"
+                    className="app-note"
                 >
-                    <p className="text-xs text-accent-blue font-semibold uppercase tracking-wider mb-2">Texto en español</p>
+                    <p className="text-xs text-[var(--color-tertiary-ink)] font-semibold mb-2">Texto en español</p>
                     <p className="text-[var(--color-on-surface)] text-base leading-relaxed">{sourceText}</p>
                 </motion.div>
             )}
@@ -78,7 +78,7 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim()}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="btn-primary w-full py-3.5 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />

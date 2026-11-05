@@ -15,6 +15,20 @@ describe('evaluateSpeaking', () => {
         expect(prompt).toContain(CEFR_DESCRIPTORS.B1.speaking);
         expect(prompt).toContain('0–59');
     });
+
+    it('scores with the sub-scores the learner sees, not a lower number of its own', async () => {
+        gemini.generateWithFallback.mockResolvedValueOnce(JSON.stringify({
+            band: 'meets', score: 79, pronunciationScore: 100, fluencyScore: 100, vocabularyScore: 100,
+        }));
+        const result = await evaluateSpeaking({ transcripts: ['I like football'], prompts: ['What do you do at weekends?'], level: 'B1' });
+        expect(result.score).toBe(100);
+    });
+
+    it("keeps the model's own score inside its band when it sends no sub-scores", async () => {
+        gemini.generateWithFallback.mockResolvedValueOnce('{"band": "below", "score": 70}');
+        const result = await evaluateSpeaking({ transcripts: ['I like football'], prompts: ['What do you do at weekends?'], level: 'B1' });
+        expect(result.score).toBe(59);
+    });
 });
 
 describe('conversation tutor', () => {

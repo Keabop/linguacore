@@ -16,6 +16,7 @@ import { storyIndex as allStories } from '../data/storyIndex';
 import { getUnitsByLevel } from '../data/curriculum/units';
 import { StoryIcon } from '../lib/storyVisuals';
 import LevelBadge from '../components/ui/LevelBadge';
+import PageHead from '../components/ui/PageHead';
 import PageLoader from '../components/PageLoader';
 import { storyDetails } from '../data/storyDetails';
 import DBErrorCard from '../components/DBErrorCard';
@@ -106,155 +107,125 @@ export default function Dashboard() {
         <div className="space-y-8">
             <PWAInstallPrompt />
 
-            <motion.header {...fadeIn(0)} className="space-y-1.5 text-left">
-                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight text-[var(--color-on-surface)]">
-                    {t('dashboard.hello', { name: userName })}
-                </h1>
-                <p className="text-sm md:text-base text-[var(--color-on-surface-muted)]">
-                    {getContextualGreeting(t, dueCards.length, user?.streak ?? 0)}
-                </p>
-            </motion.header>
+            <motion.div {...fadeIn(0)}>
+                <PageHead
+                    title={t('dashboard.hello', { name: userName })}
+                    lead={getContextualGreeting(t, dueCards.length, user?.streak ?? 0)}
+                    dated
+                    meta={[<LevelBadge key="level" level={currentLevel} withStage size="compact" />]}
+                />
+            </motion.div>
 
-            {/* Bento: «Hoy» is the big block; streak, review and error lab sit beside it */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-                {/* Hoy */}
-                <motion.section
-                    {...fadeIn(1)}
-                    aria-labelledby="today-title"
-                    className="card md:col-span-2 md:row-span-2 p-6 sm:p-7 flex flex-col gap-5 text-left"
-                >
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <span className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('dashboard.today')}</span>
-                        <LevelBadge level={currentLevel} withStage />
-                    </div>
+            {/* Today's spread: the unit on the left page, the daily chores on the right one */}
+            <motion.section {...fadeIn(1)} className="nb-spread app-spread" aria-labelledby="today-title">
+                <div className="nb-page nb-page-left app-today">
+                    <p className="app-section-label">{t('dashboard.today')}</p>
 
                     {allUnitsCompleted ? (
                         <div className="space-y-2">
-                            <h2 id="today-title" className="text-2xl font-extrabold tracking-tight">{t('dashboard.waterGarden')}</h2>
-                            <p className="text-sm text-[var(--color-on-surface-muted)]">{t('dashboard.allCompleted')}</p>
+                            <h2 id="today-title" className="app-h2">{t('dashboard.waterGarden')}</h2>
+                            <p className="text-[var(--color-on-surface-muted)]">{t('dashboard.allCompleted')}</p>
                         </div>
                     ) : firstIncompleteUnit ? (
-                        <div className="space-y-1">
-                            <p className="text-xs font-semibold text-[var(--color-on-surface-variant)]">
-                                {t('dashboard.nextUnit')} · {unitsCompleted + 1}/{unitsTotal}
+                        <div className="space-y-1.5">
+                            <h2 id="today-title" className="app-h2">{firstIncompleteUnit.title}</h2>
+                            <p className="text-[var(--color-on-surface-muted)]">{firstIncompleteUnit.grammarTopic}</p>
+                            <p className="font-mono text-sm text-[var(--color-on-surface-variant)]">
+                                {t('dashboard.nextUnit')} {unitsCompleted + 1}/{unitsTotal}
                             </p>
-                            <h2 id="today-title" className="text-2xl font-extrabold tracking-tight leading-tight">
-                                {firstIncompleteUnit.title}
-                            </h2>
-                            <p className="text-sm text-[var(--color-on-surface-muted)]">{firstIncompleteUnit.grammarTopic}</p>
                         </div>
                     ) : (
-                        <h2 id="today-title" className="text-2xl font-extrabold tracking-tight">{t('dashboard.waterGarden')}</h2>
+                        <h2 id="today-title" className="app-h2">{t('dashboard.waterGarden')}</h2>
                     )}
 
                     {unitsTotal > 0 && (
-                        <div className="space-y-2 mt-auto">
+                        <figure className="app-today-garden">
                             <Garden
                                 total={unitsTotal}
                                 completed={unitsCompleted}
                                 label={t('garden.unitsLabel', { done: unitsCompleted, total: unitsTotal })}
                             />
-                            <p className="text-xs font-mono text-[var(--color-on-surface-variant)]">
-                                {t('garden.unitsLabel', { done: unitsCompleted, total: unitsTotal })}
-                            </p>
-                        </div>
+                            <figcaption>{t('garden.unitsLabel', { done: unitsCompleted, total: unitsTotal })}</figcaption>
+                        </figure>
                     )}
 
-                    <div className="flex flex-wrap gap-3">
-                        {allUnitsCompleted ? (
-                            <button onClick={() => navigate('/path')} className="btn-primary px-6 py-3 text-sm inline-flex items-center gap-2">
-                                {t('dashboard.goToPath')} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                            </button>
-                        ) : firstIncompleteUnit ? (
-                            <button
-                                onClick={() => navigate(`/path/${firstIncompleteUnit.id}`)}
-                                className="btn-primary px-6 py-3 text-sm inline-flex items-center gap-2"
-                            >
-                                {t('dashboard.continue')} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                            </button>
-                        ) : null}
-                        {reviewCount > 0 && (
-                            <button onClick={() => navigate('/review')} className="btn-secondary px-6 py-3 text-sm">
-                                {t('dashboard.review')} · {reviewCount}
-                            </button>
-                        )}
-                    </div>
-                </motion.section>
+                    {allUnitsCompleted ? (
+                        <button onClick={() => navigate('/path')} className="btn-primary self-start px-6 py-3 text-sm inline-flex items-center gap-2">
+                            {t('dashboard.goToPath')} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                    ) : firstIncompleteUnit ? (
+                        <button
+                            onClick={() => navigate(`/path/${firstIncompleteUnit.id}`)}
+                            className="btn-primary self-start px-6 py-3 text-sm inline-flex items-center gap-2"
+                        >
+                            {t('dashboard.continue')} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                    ) : null}
+                </div>
 
-                {/* Streak */}
-                <motion.section {...fadeIn(2)} className="card p-6 flex flex-col gap-3 text-left" aria-label={t('dashboard.streak')}>
-                    <span className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('dashboard.streak')}</span>
-                    <div className="flex items-center gap-3">
-                        <StreakChip count={user.streak} className="text-xl" />
-                        <span className="text-sm text-[var(--color-on-surface-muted)]">{t('dashboard.streakDays')}</span>
-                    </div>
-                    <GoalDrops done={user.goalProgress} goal={user.dailyGoal} freezes={user.streakFreezes} />
-                    <p className="text-xs text-[var(--color-on-surface-variant)]">
-                        {user.streak > 0 ? t('dashboard.deckSize', { count: totalCards }) : t('dashboard.streakStart')}
-                    </p>
-                </motion.section>
+                <ul className="nb-page nb-page-right app-ledger">
+                    <li>
+                        <p className="app-section-label">{t('dashboard.streak')}</p>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                            <StreakChip count={user.streak} className="text-xl" />
+                            <span className="text-sm text-[var(--color-on-surface-muted)]">{t('dashboard.streakDays')}</span>
+                            <GoalDrops done={user.goalProgress} goal={user.dailyGoal} freezes={user.streakFreezes} />
+                        </div>
+                        <p className="app-ledger-note">
+                            {user.streak > 0 ? t('dashboard.deckSize', { count: totalCards }) : t('dashboard.streakStart')}
+                        </p>
+                    </li>
 
-                {/* Review */}
-                <motion.section {...fadeIn(3)} className="card p-6 flex flex-col gap-3 text-left" aria-labelledby="review-title">
-                    <div className="flex items-center gap-2 text-[var(--color-on-surface-muted)]">
-                        <RefreshCw className="w-4 h-4" aria-hidden="true" />
-                        <span className="text-sm font-semibold">{t('dashboard.dueToday')}</span>
-                    </div>
-                    {reviewCount > 0 ? (
-                        <>
-                            <h2 id="review-title" className="text-lg font-extrabold leading-tight">
-                                {t('dashboard.reviewDue', { count: dueCards.length })}
-                            </h2>
-                            {dueSkillCards.length > 0 && (
-                                <p className="text-xs text-[var(--color-on-surface-muted)]">
-                                    + {t('dashboard.skillsDue', { count: dueSkillCards.length })}
-                                </p>
-                            )}
-                            <button onClick={() => navigate('/review')} className="btn-primary mt-auto px-5 py-2.5 text-sm self-start">
-                                {t('dashboard.startReview')}
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <h2 id="review-title" className="text-lg font-extrabold leading-tight">{t('dashboard.allCaughtUp')}</h2>
-                            <p className="text-xs text-[var(--color-on-surface-muted)]">{t('dashboard.allCaughtUpDesc')}</p>
-                        </>
-                    )}
-                </motion.section>
-
-                {/* Error lab */}
-                <motion.section
-                    {...fadeIn(4)}
-                    className="card md:col-span-3 p-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between text-left"
-                    aria-labelledby="lab-title"
-                >
-                    <div className="flex items-start gap-3">
-                        <span className="w-10 h-10 rounded-full bg-[var(--color-error-light)] text-[var(--color-error)] flex items-center justify-center shrink-0">
-                            <Activity className="w-5 h-5" aria-hidden="true" />
-                        </span>
-                        <div>
-                            <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('dashboard.errorLab')}</p>
-                            <h2 id="lab-title" className="text-lg font-extrabold leading-tight">
-                                {dueErrorCards.length > 0
-                                    ? t('dashboard.errorsPending', { count: dueErrorCards.length })
-                                    : t('dashboard.errorsClear')}
-                            </h2>
-                            {dueErrorCards.length === 0 && totalErrorCards === 0 && (
-                                <p className="text-xs text-[var(--color-on-surface-muted)] mt-1 max-w-prose">{t('dashboard.errorsClearDesc')}</p>
+                    <li>
+                        <p className="app-section-label">
+                            <RefreshCw className="w-4 h-4" aria-hidden="true" /> {t('dashboard.dueToday')}
+                        </p>
+                        <div className="app-ledger-row">
+                            <div className="min-w-0">
+                                <h3 className="app-h3">
+                                    {reviewCount > 0 ? t('dashboard.reviewDue', { count: dueCards.length }) : t('dashboard.allCaughtUp')}
+                                </h3>
+                                {reviewCount === 0 && <p className="app-ledger-note">{t('dashboard.allCaughtUpDesc')}</p>}
+                                {reviewCount > 0 && dueSkillCards.length > 0 && (
+                                    <p className="app-ledger-note">+ {t('dashboard.skillsDue', { count: dueSkillCards.length })}</p>
+                                )}
+                            </div>
+                            {reviewCount > 0 && (
+                                <button onClick={() => navigate('/review')} className="btn-secondary px-5 py-2.5 text-sm shrink-0">
+                                    {t('dashboard.review')}
+                                </button>
                             )}
                         </div>
-                    </div>
-                    <button onClick={() => navigate('/review/lab')} className="btn-secondary px-5 py-2.5 text-sm shrink-0 self-start sm:self-auto">
-                        {t('dashboard.enterLab')}
-                    </button>
-                </motion.section>
-            </div>
+                    </li>
 
-            {/* Recommended stories */}
+                    <li>
+                        <p className="app-section-label">
+                            <Activity className="w-4 h-4" aria-hidden="true" /> {t('dashboard.errorLab')}
+                        </p>
+                        <div className="app-ledger-row">
+                            <div className="min-w-0">
+                                <h3 className="app-h3">
+                                    {dueErrorCards.length > 0
+                                        ? t('dashboard.errorsPending', { count: dueErrorCards.length })
+                                        : t('dashboard.errorsClear')}
+                                </h3>
+                                {dueErrorCards.length === 0 && totalErrorCards === 0 && (
+                                    <p className="app-ledger-note">{t('dashboard.errorsClearDesc')}</p>
+                                )}
+                            </div>
+                            <button onClick={() => navigate('/review/lab')} className="btn-secondary px-5 py-2.5 text-sm shrink-0">
+                                {t('dashboard.enterLab')}
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </motion.section>
+
+            {/* Recommended stories: index cards pinned under the spread */}
             {recommended.length > 0 && (
-                <motion.section {...fadeIn(5)} className="space-y-4" aria-labelledby="stories-title">
+                <motion.section {...fadeIn(2)} className="space-y-4" aria-labelledby="stories-title">
                     <div className="flex items-center justify-between gap-3">
-                        <h2 id="stories-title" className="text-lg font-extrabold">{t('dashboard.recommended')}</h2>
+                        <h2 id="stories-title" className="app-h3">{t('dashboard.recommended')}</h2>
                         <button
                             onClick={() => navigate('/learn')}
                             className="text-sm text-[var(--color-primary)] font-semibold inline-flex items-center gap-1.5 whitespace-nowrap"
@@ -267,30 +238,26 @@ export default function Dashboard() {
                         {recommended.map((story) => {
                             const details = storyDetails[story.id] || { spanishTitle: '', description: '' };
                             return (
-                                <button
-                                    key={story.id}
-                                    onClick={() => navigate(`/learn/${story.id}`)}
-                                    className="card p-5 flex flex-col gap-3 text-left transition-transform duration-[var(--dur-short)] ease-[var(--ease-out)] hover:-translate-y-0.5"
-                                >
-                                    <div className="flex justify-between items-center gap-2">
+                                <button key={story.id} onClick={() => navigate(`/learn/${story.id}`)} className="app-index">
+                                    <span className="flex justify-between items-center gap-2">
                                         <LevelBadge level={story.level} size="compact" />
                                         <span className="text-xs font-mono text-[var(--color-on-surface-variant)]">
-                                            {story.wordCount} palabras
+                                            {story.wordCount} {t('dashboard.words')}
                                         </span>
-                                    </div>
-                                    <div className="flex items-start gap-3">
+                                    </span>
+                                    <span className="flex items-start gap-3">
                                         <span className="h-10 w-10 rounded-full bg-[var(--color-surface-container)] flex items-center justify-center shrink-0">
                                             <StoryIcon storyId={story.id} className="h-5 w-5 text-[var(--color-primary)]" />
                                         </span>
-                                        <div className="min-w-0">
-                                            <h3 className="font-extrabold text-base leading-tight line-clamp-1">{story.title}</h3>
+                                        <span className="min-w-0">
+                                            <span className="block font-display font-extrabold text-base leading-tight line-clamp-1">{story.title}</span>
                                             {details.spanishTitle && (
-                                                <p className="text-xs text-[var(--color-on-surface-variant)] mt-0.5 truncate">{details.spanishTitle}</p>
+                                                <span className="block text-xs text-[var(--color-on-surface-variant)] mt-0.5 truncate">{details.spanishTitle}</span>
                                             )}
-                                        </div>
-                                    </div>
+                                        </span>
+                                    </span>
                                     {details.description && (
-                                        <p className="text-[13px] line-clamp-2 leading-relaxed text-[var(--color-on-surface-muted)]">{details.description}</p>
+                                        <span className="block text-[13px] line-clamp-2 leading-relaxed text-[var(--color-on-surface-muted)]">{details.description}</span>
                                     )}
                                 </button>
                             );

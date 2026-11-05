@@ -37,3 +37,5 @@ dev-dist
 # Kokoro (npm run content:audio): local venv and model files
 scripts/audio/.venv
 scripts/audio/models
+
+*.tsbuildinfo

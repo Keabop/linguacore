@@ -74,7 +74,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                             <div className="flex gap-3 justify-center">
                                 <button
                                     onClick={this.handleGoHome}
-                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-medium hover:bg-[var(--color-primary)] transition-colors"
+                                    className="btn-primary flex items-center gap-2 px-4 py-2.5 text-sm"
                                 >
                                     <Home className="w-4 h-4" />
                                     Ir al inicio
@@ -117,7 +117,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                             </button>
                             <button
                                 onClick={this.handleGoHome}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-medium hover:bg-[var(--color-primary)] transition-colors"
+                                className="btn-primary flex items-center gap-2 px-4 py-2.5 text-sm"
                             >
                                 <Home className="w-4 h-4" />
                                 Ir al inicio
