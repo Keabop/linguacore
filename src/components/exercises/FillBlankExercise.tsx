@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import AnswerFeedback from './AnswerFeedback';
 import { motion } from 'framer-motion';
-import { X, ArrowRight } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
 import { answersMatch } from '../../lib/normalizeAnswer';
-import PlayOnMount from '../icons/PlayOnMount';
-import { CheckIcon } from '../icons';
 
 interface FillBlankExerciseProps {
     exercise: GrammarExercise;
@@ -90,53 +88,13 @@ export default function FillBlankExercise({ exercise, onAnswer }: FillBlankExerc
             </form>
 
             {/* Feedback */}
-            {status === 'correct' && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-5"
-                >
-                    <div className="text-center">
-                        <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
-                            <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
-                        </p>
-                    </div>
-                    <div className="card p-5">
-                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
-                    </div>
-                    <button
-                        onClick={() => onAnswer(true)}
-                        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
-                    >
-                        {t('exercises.next')} <ArrowRight className="w-4 h-4" />
-                    </button>
-                </motion.div>
-            )}
-
-            {status === 'incorrect' && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-5"
-                >
-                    <div className="text-center space-y-2">
-                        <p className="text-lg font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5">
-                            <X className="w-5 h-5" /> {t('exercises.incorrect')}
-                        </p>
-                        <p className="text-sm text-[var(--color-on-surface-muted)]">
-                            <span className="text-[var(--color-primary)] font-bold">{exercise.correctAnswer}</span>
-                        </p>
-                    </div>
-                    <div className="card p-5">
-                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
-                    </div>
-                    <button
-                        onClick={() => onAnswer(false)}
-                        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
-                    >
-                        {t('exercises.next')} <ArrowRight className="w-4 h-4" />
-                    </button>
-                </motion.div>
+            {status !== 'pending' && (
+                <AnswerFeedback
+                    correct={status === 'correct'}
+                    correctAnswer={exercise.correctAnswer}
+                    explanation={exercise.explanation}
+                    onNext={() => onAnswer(status === 'correct')}
+                />
             )}
         </div>
     );

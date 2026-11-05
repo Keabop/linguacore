@@ -1,59 +1,60 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRight } from 'lucide-react';
+import AnswerFeedback from './AnswerFeedback';
+import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'framer-motion';
 import type { GrammarExercise } from '../../lib/db';
 import { answersMatch } from '../../lib/normalizeAnswer';
-import PlayOnMount from '../icons/PlayOnMount';
-import { CheckIcon } from '../icons';
 
 interface WordOrderExerciseProps {
     exercise: GrammarExercise;
     onAnswer: (correct: boolean) => void;
 }
 
+/** One word of the sentence, with an id of its own: the same word can appear twice */
+interface Token {
+    id: string;
+    word: string;
+}
+
 export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerciseProps) {
     const { t } = useTranslation();
-    const [placedWords, setPlacedWords] = useState<string[]>([]);
-    const [availableWords, setAvailableWords] = useState<string[]>([]);
+    const reduceMotion = useReducedMotion();
+    const [placedWords, setPlacedWords] = useState<Token[]>([]);
+    const [availableWords, setAvailableWords] = useState<Token[]>([]);
     const [status, setStatus] = useState<'pending' | 'correct' | 'incorrect'>('pending');
 
     useEffect(() => {
         setPlacedWords([]);
-        setAvailableWords(exercise.scrambledWords ? [...exercise.scrambledWords] : []);
+        setAvailableWords((exercise.scrambledWords ?? []).map((word, i) => ({ id: `${exercise.id}-${i}`, word })));
         setStatus('pending');
     }, [exercise.id, exercise.scrambledWords]);
 
-    const handlePlaceWord = (word: string, index: number) => {
+    // A tapped word keeps its id, so it flies to the other row and only that chip moves; the rest
+    // keep their place instead of remounting (keys by position made every chip blink)
+    const handlePlaceWord = (token: Token) => {
         if (status !== 'pending') return;
-
-        const newAvailable = [...availableWords];
-        newAvailable.splice(index, 1);
-        setAvailableWords(newAvailable);
-        setPlacedWords([...placedWords, word]);
+        setAvailableWords(words => words.filter(w => w.id !== token.id));
+        setPlacedWords(words => [...words, token]);
     };
 
-    const handleRemoveWord = (word: string, index: number) => {
+    const handleRemoveWord = (token: Token) => {
         if (status !== 'pending') return;
-
-        const newPlaced = [...placedWords];
-        newPlaced.splice(index, 1);
-        setPlacedWords(newPlaced);
-        setAvailableWords([...availableWords, word]);
+        setPlacedWords(words => words.filter(w => w.id !== token.id));
+        setAvailableWords(words => [...words, token]);
     };
 
     const handleCheck = () => {
-        const builtSentence = placedWords.join(' ');
+        const builtSentence = placedWords.map(w => w.word).join(' ');
         const isCorrect = answersMatch(builtSentence, exercise.correctAnswer);
         setStatus(isCorrect ? 'correct' : 'incorrect');
     };
 
     const allPlaced = availableWords.length === 0 && placedWords.length > 0;
 
-    const chipVariants = {
-        initial: { opacity: 0, scale: 0.8 },
-        animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 0.8, transition: { duration: 0.15 } },
+    const chipMotion = {
+        layout: 'position' as const,
+        transition: reduceMotion ? { duration: 0 } : { type: 'spring' as const, stiffness: 520, damping: 38, mass: 0.7 },
+        whileTap: reduceMotion ? undefined : { scale: 0.94 },
     };
 
     return (
@@ -67,71 +68,65 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
                 <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
             </motion.div>
 
-            {/* Answer area */}
-            <div
-                className={`min-h-[72px] bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 transition-all duration-300 ${
-                    status === 'correct'
-                        ? 'bg-[var(--color-success)]/10 shadow-[0_0_0_3px_var(--color-success)] border-flash-correct'
-                        : status === 'incorrect'
-                          ? 'bg-[var(--color-error)]/10 shadow-[0_0_0_3px_var(--color-error)] border-flash-incorrect'
-                          : 'shadow-[var(--shadow-card)]'
-                }`}
-            >
-                <div className="flex flex-wrap gap-3 min-h-[40px] items-center">
-                    <AnimatePresence mode="popLayout">
-                        {placedWords.length === 0 && status === 'pending' && (
-                            <motion.span
-                                key="placeholder"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="text-sm text-[var(--color-on-surface-muted)] italic"
-                            >
-                                ...
-                            </motion.span>
-                        )}
-                        {placedWords.map((word, i) => (
+            <LayoutGroup id={`word-order-${exercise.id}`}>
+                {/* Answer area */}
+                <div
+                    className={`min-h-[72px] bg-[var(--color-card)] rounded-[var(--radius-lg)] p-4 transition-[background-color,box-shadow] duration-300 ${
+                        status === 'correct'
+                            ? 'bg-[var(--color-success)]/10 shadow-[0_0_0_3px_var(--color-success)] border-flash-correct'
+                            : status === 'incorrect'
+                              ? 'bg-[var(--color-error)]/10 shadow-[0_0_0_3px_var(--color-error)] border-flash-incorrect'
+                              : 'shadow-[var(--shadow-card)]'
+                    }`}
+                >
+                    <div className="flex flex-wrap gap-3 min-h-[40px] items-center">
+                        <AnimatePresence initial={false}>
+                            {placedWords.length === 0 && status === 'pending' && (
+                                <motion.span
+                                    key="placeholder"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                                    className="text-sm text-[var(--color-on-surface-muted)]"
+                                >
+                                    ...
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                        {placedWords.map(token => (
                             <motion.button
-                                key={`placed-${word}-${i}`}
-                                variants={chipVariants}
-                                initial="initial"
-                                animate="animate"
-                                exit="exit"
-                                layout
-                                onClick={() => handleRemoveWord(word, i)}
+                                key={token.id}
+                                layoutId={token.id}
+                                {...chipMotion}
+                                type="button"
+                                onClick={() => handleRemoveWord(token)}
                                 disabled={status !== 'pending'}
-                                className={`bg-[var(--color-primary)]/20 rounded-full px-4 py-2 text-sm font-medium text-[var(--color-on-surface)] transition-all duration-300 ${
-                                    status === 'pending' ? 'cursor-pointer hover:bg-[var(--color-primary)]/30 active:scale-95' : 'cursor-default'
-                                }`}
+                                className={`word-chip is-placed ${status === 'pending' ? '' : 'cursor-default'}`}
                             >
-                                {word}
+                                {token.word}
                             </motion.button>
                         ))}
-                    </AnimatePresence>
+                    </div>
                 </div>
-            </div>
 
-            {/* Available words pool */}
-            {status === 'pending' && (
-                <div className="flex flex-wrap gap-3 justify-center">
-                    <AnimatePresence mode="popLayout">
-                        {availableWords.map((word, i) => (
+                {/* Available words pool */}
+                {status === 'pending' && (
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        {availableWords.map(token => (
                             <motion.button
-                                key={`available-${word}-${i}`}
-                                variants={chipVariants}
-                                initial="initial"
-                                animate="animate"
-                                exit="exit"
-                                layout
-                                onClick={() => handlePlaceWord(word, i)}
-                                className="rounded-full px-4 py-2 bg-[var(--color-surface-container-highest)] shadow-sm text-sm font-medium text-[var(--color-on-surface)] cursor-pointer hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)] active:scale-95 transition-all duration-300"
+                                key={token.id}
+                                layoutId={token.id}
+                                {...chipMotion}
+                                type="button"
+                                onClick={() => handlePlaceWord(token)}
+                                className="word-chip"
                             >
-                                {word}
+                                {token.word}
                             </motion.button>
                         ))}
-                    </AnimatePresence>
-                </div>
-            )}
+                    </div>
+                )}
+            </LayoutGroup>
 
             {/* Check button */}
             {status === 'pending' && (
@@ -145,53 +140,13 @@ export default function WordOrderExercise({ exercise, onAnswer }: WordOrderExerc
             )}
 
             {/* Feedback */}
-            {status === 'correct' && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-5"
-                >
-                    <div className="text-center">
-                        <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
-                            <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
-                        </p>
-                    </div>
-                    <div className="card p-5">
-                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
-                    </div>
-                    <button
-                        onClick={() => onAnswer(true)}
-                        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
-                    >
-                        {t('exercises.next')} <ArrowRight className="w-4 h-4" />
-                    </button>
-                </motion.div>
-            )}
-
-            {status === 'incorrect' && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-5"
-                >
-                    <div className="text-center space-y-2">
-                        <p className="text-lg font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5">
-                            <X className="w-5 h-5" /> {t('exercises.incorrect')}
-                        </p>
-                        <p className="text-sm text-[var(--color-on-surface-muted)]">
-                            <span className="text-[var(--color-primary)] font-bold">{exercise.correctAnswer}</span>
-                        </p>
-                    </div>
-                    <div className="card p-5">
-                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
-                    </div>
-                    <button
-                        onClick={() => onAnswer(false)}
-                        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
-                    >
-                        {t('exercises.next')} <ArrowRight className="w-4 h-4" />
-                    </button>
-                </motion.div>
+            {status !== 'pending' && (
+                <AnswerFeedback
+                    correct={status === 'correct'}
+                    correctAnswer={exercise.correctAnswer}
+                    explanation={exercise.explanation}
+                    onNext={() => onAnswer(status === 'correct')}
+                />
             )}
         </div>
     );

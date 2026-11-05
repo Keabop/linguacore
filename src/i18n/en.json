@@ -309,7 +309,8 @@
     "next": "Next",
     "finish": "Finish",
     "tryAgain": "Try again",
-    "zeroHint": "You need at least one right answer to move on to the next step. Review the grammar card if you need to."
+    "zeroHint": "You need at least one right answer to move on to the next step. Review the grammar card if you need to.",
+    "autoNext": "When you get it right, it moves on by itself in a few seconds."
   },
   "practice": {
     "saveToHistory": "Save to history",

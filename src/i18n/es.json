@@ -309,7 +309,8 @@
     "next": "Siguiente",
     "finish": "Finalizar",
     "tryAgain": "Volver a intentarlo",
-    "zeroHint": "Necesitas al menos una respuesta correcta para pasar al siguiente paso. Repasa la tarjeta de gramática si lo necesitas."
+    "zeroHint": "Necesitas al menos una respuesta correcta para pasar al siguiente paso. Repasa la tarjeta de gramática si lo necesitas.",
+    "autoNext": "Si aciertas, pasa sola a la siguiente en unos segundos."
   },
   "practice": {
     "saveToHistory": "Guardar en historial",
