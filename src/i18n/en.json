@@ -736,5 +736,11 @@
     },
     "pastLevel": "Level finished: this is how your garden turned out.",
     "empty": "This level has no units yet."
+  },
+  "update": {
+    "title": "A new version of Voxie is ready",
+    "body": "Update to get the latest; your progress stays.",
+    "action": "Update",
+    "later": "Later"
   }
 }

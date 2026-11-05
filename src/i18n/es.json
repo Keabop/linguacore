@@ -736,5 +736,11 @@
     },
     "pastLevel": "Nivel terminado: así quedó tu jardín.",
     "empty": "Este nivel todavía no tiene unidades."
+  },
+  "update": {
+    "title": "Hay una versión nueva de Voxie",
+    "body": "Actualiza para tener lo último; tu avance se queda.",
+    "action": "Actualizar",
+    "later": "Más tarde"
   }
 }
