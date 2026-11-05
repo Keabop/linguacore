@@ -26,6 +26,10 @@
   --color-surface-container-highest:oklch(89.5% 0.03 105);
   --color-card:                 oklch(99.2% 0.006 95);
   --color-card-hover:           oklch(97% 0.012 98);
+  /* The notebook's paper (pages, ruled sheets) */
+  --color-paper:                oklch(97.5% 0.014 95);
+  /* Ink of the notebook's drop shadows: leaf-tinted by day, plain black at night */
+  --ink-shadow:                 oklch(25% 0.06 150);
 
   /* Legacy aliases (keep existing refs working) */
   --color-surface-high:         oklch(92% 0.026 102);
@@ -115,49 +119,53 @@
   --dur-long: 420ms;
 }
 
-/* === DARK MODE: jardín de noche === */
+/* === DARK MODE: grafito ===
+   Neutral greys with a hint of warmth (paper at night). Green stays only where it means something:
+   the main action, the right answer and the plants. */
 .dark {
   --color-primary:              oklch(74% 0.15 150);
   --color-primary-light:        oklch(82% 0.12 150);
-  --color-primary-container:    oklch(30% 0.05 150);
+  --color-primary-container:    oklch(30% 0.045 150);
   --color-primary-press:        oklch(52% 0.12 152);
-  --color-background:           oklch(17% 0.02 155);
-  --color-surface:              oklch(17% 0.02 155);
-  --color-surface-container-lowest: oklch(23.5% 0.026 155);
-  --color-surface-container-low:    oklch(19% 0.022 155);
-  --color-surface-container:        oklch(21% 0.025 155);
-  --color-surface-container-high:   oklch(25% 0.027 155);
-  --color-surface-container-highest:oklch(28% 0.03 155);
-  --color-card:                 oklch(23.5% 0.026 155);
-  --color-card-hover:           oklch(26% 0.028 155);
-  --color-surface-high:         oklch(25% 0.027 155);
-  --color-surface-highest:      oklch(28% 0.03 155);
-  --color-text:                 oklch(94% 0.015 100);
-  --color-text-secondary:       oklch(80% 0.02 120);
-  --color-on-surface:           oklch(94% 0.015 100);
-  --color-on-surface-muted:     oklch(80% 0.02 120);
-  --color-on-surface-variant:   oklch(68% 0.02 130);
-  --color-on-primary:           oklch(18% 0.03 155);
-  --color-tertiary-container:   oklch(30% 0.05 80);
+  --color-background:           oklch(15% 0.005 80);
+  --color-surface:              oklch(15% 0.005 80);
+  --color-surface-container-lowest: oklch(20.5% 0.005 80);
+  --color-surface-container-low:    oklch(17.5% 0.005 80);
+  --color-surface-container:        oklch(22% 0.005 80);
+  --color-surface-container-high:   oklch(25.5% 0.005 80);
+  --color-surface-container-highest:oklch(29% 0.005 80);
+  --color-card:                 oklch(20.5% 0.005 80);
+  --color-card-hover:           oklch(23.5% 0.005 80);
+  --color-paper:                oklch(19.5% 0.005 80);
+  --color-surface-high:         oklch(25.5% 0.005 80);
+  --color-surface-highest:      oklch(29% 0.005 80);
+  --color-text:                 oklch(94% 0.006 85);
+  --color-text-secondary:       oklch(78% 0.006 85);
+  --color-on-surface:           oklch(94% 0.006 85);
+  --color-on-surface-muted:     oklch(78% 0.006 85);
+  --color-on-surface-variant:   oklch(66% 0.006 85);
+  --color-on-primary:           oklch(16% 0.01 150);
+  --color-tertiary-container:   oklch(30% 0.045 80);
   --color-tertiary-light:       oklch(40% 0.07 80);
-  --color-outline:              oklch(40% 0.025 155);
-  --color-outline-subtle:       oklch(32% 0.025 155 / 0.6);
-  --color-outline-variant:      oklch(32% 0.025 155);
+  --color-outline:              oklch(38% 0.005 80);
+  --color-outline-subtle:       oklch(30% 0.005 80 / 0.8);
+  --color-outline-variant:      oklch(30% 0.005 80);
   --color-focus:                oklch(78% 0.17 150);
   --color-success:              oklch(74% 0.15 150);
-  --color-success-light:        oklch(30% 0.05 150);
-  --color-warning-light:        oklch(30% 0.05 80);
+  --color-success-light:        oklch(30% 0.045 150);
+  --color-warning-light:        oklch(30% 0.045 80);
   --color-error:                oklch(68% 0.17 27);
   --color-error-light:          oklch(30% 0.06 27);
   --color-on-error:             oklch(18% 0.03 27);
   --color-tertiary-ink:         oklch(84% 0.13 82);
   --color-accent-blue:          oklch(72% 0.11 240);
-  --color-soil:                 oklch(28% 0.035 90);
-  --color-seed:                 oklch(55% 0.07 65);
-  --color-daisy-line:           oklch(70% 0.02 100);
-  --shadow-card:    0 1px 0 oklch(32% 0.025 155), 0 12px 30px -16px oklch(5% 0.02 155 / 0.8);
-  --shadow-elevated: 0 1px 0 oklch(32% 0.025 155), 0 18px 40px -18px oklch(5% 0.02 155 / 0.85);
-  --shadow-float:   0 24px 48px -18px oklch(5% 0.02 155 / 0.9);
+  --color-soil:                 oklch(31% 0.03 70);
+  --color-seed:                 oklch(58% 0.07 65);
+  --color-daisy-line:           oklch(70% 0.01 100);
+  --ink-shadow:                 oklch(0% 0 0);
+  --shadow-card:    0 1px 0 oklch(30% 0.005 80), 0 12px 30px -16px oklch(0% 0 0 / 0.7);
+  --shadow-elevated: 0 1px 0 oklch(30% 0.005 80), 0 18px 40px -18px oklch(0% 0 0 / 0.75);
+  --shadow-float:   0 24px 48px -18px oklch(0% 0 0 / 0.8);
 }
 
 /* === GLOBAL STYLES === */
@@ -231,7 +239,7 @@
 /* Ruled sheet: one working page (an exercise, a form section) */
 .app-sheet {
   --rule-gap: 2.25rem;
-  position: relative; border-radius: var(--radius-lg); background-color: var(--color-background);
+  position: relative; border-radius: var(--radius-lg); background-color: var(--color-paper);
   background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule-gap) - 1px), var(--color-outline-subtle) calc(var(--rule-gap) - 1px) var(--rule-gap));
   background-position: 0 1.5rem; box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-card);
 }
@@ -298,7 +306,7 @@
   }
 }
 /* Account and credits sections: a ruled sheet, not a floating box */
-.widget { background-color: var(--color-background); box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-card); }
+.widget { background-color: var(--color-paper); box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-card); }
 }
 
 /* === INPUTS === */
@@ -1206,19 +1214,19 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 /* Paper: ruled lines and a red margin, the notebook's own grid */
 .nb-page {
   --rule-gap: 2.25rem;
-  position: relative; background-color: var(--color-background);
+  position: relative; background-color: var(--color-paper);
   background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule-gap) - 1px), var(--color-outline-subtle) calc(var(--rule-gap) - 1px) var(--rule-gap));
   background-position: 0 1.5rem;
 }
 .nb-spread {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-radius: 0.75rem 0.75rem 1.25rem 1.25rem; overflow: hidden;
-  box-shadow: 0 30px 60px -24px oklch(20% 0.06 150 / 0.55), 0 2px 0 var(--color-primary-press);
+  box-shadow: 0 30px 60px -24px color-mix(in oklch, var(--ink-shadow) 55%, transparent), 0 2px 0 var(--color-primary-press);
 }
 .nb-page-left { padding: clamp(1.5rem, 4vw, 3.5rem); border-right: 1px solid var(--color-outline-variant); }
 .nb-page-right { padding: clamp(1.5rem, 4vw, 3.5rem); display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
 /* The gutter: the pages bend into the stitching */
-.nb-page-left { box-shadow: inset -18px 0 24px -20px oklch(30% 0.05 150 / 0.35); }
-.nb-page-right { box-shadow: inset 18px 0 24px -20px oklch(30% 0.05 150 / 0.35); }
+.nb-page-left { box-shadow: inset -18px 0 24px -20px color-mix(in oklch, var(--ink-shadow) 35%, transparent); }
+.nb-page-right { box-shadow: inset 18px 0 24px -20px color-mix(in oklch, var(--ink-shadow) 35%, transparent); }
 .nb-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.4rem, 5.4vw, 4.5rem); line-height: 0.96; letter-spacing: -0.035em; overflow-wrap: anywhere; text-wrap: balance; }
 .nb-hint { margin-top: 1.5rem; font: 0.8125rem var(--font-mono); color: var(--color-on-surface-variant); }
 .nb-sentence { margin-top: 0.75rem; font-size: clamp(1.25rem, 2.2vw, 1.625rem); line-height: var(--rule-gap); font-weight: 500; }
@@ -1251,7 +1259,7 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 .nb-specimen {
   position: relative; align-self: center; display: grid; justify-items: center; gap: 1rem; width: min(100%, 19rem);
   padding: 2rem 1.5rem 1.25rem; border-radius: 1rem; background: var(--color-card); border: 1.5px solid var(--color-outline-variant);
-  box-shadow: 0 14px 30px -18px oklch(30% 0.06 150 / 0.45); transform: rotate(1.2deg);
+  box-shadow: 0 14px 30px -18px color-mix(in oklch, var(--ink-shadow) 45%, transparent); transform: rotate(1.2deg);
 }
 .nb-specimen svg { width: 9rem; height: 11rem; }
 .nb-specimen figcaption { font: 0.75rem var(--font-mono); color: var(--color-on-surface-variant); text-align: center; }
@@ -1261,7 +1269,7 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 }
 .nb-cta { display: grid; justify-items: start; gap: 0.75rem; }
 
-.nb-sheet { padding: clamp(1.5rem, 4vw, 3.5rem); border-radius: 1rem; box-shadow: 0 24px 50px -24px oklch(20% 0.06 150 / 0.5); }
+.nb-sheet { padding: clamp(1.5rem, 4vw, 3.5rem); border-radius: 1rem; box-shadow: 0 24px 50px -24px color-mix(in oklch, var(--ink-shadow) 50%, transparent); }
 .nb-sheet-head { max-width: 40rem; display: grid; gap: 0.75rem; color: var(--color-on-surface-muted); }
 .nb-h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.02; letter-spacing: -0.03em; color: var(--color-on-surface); text-wrap: balance; }
 .nb-h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; }
@@ -1316,7 +1324,7 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 /* ===== Auth: the notebook's cover (the garden) and its first page ===== */
 .auth-book {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-radius: 0.75rem 1.25rem 1.25rem 0.75rem; overflow: hidden;
-  box-shadow: 0 30px 60px -24px oklch(20% 0.06 150 / 0.55), 0 2px 0 var(--color-primary-press);
+  box-shadow: 0 30px 60px -24px color-mix(in oklch, var(--ink-shadow) 55%, transparent), 0 2px 0 var(--color-primary-press);
 }
 .auth-cover { position: relative; min-height: 36rem; overflow: hidden; border-right: 0.5rem solid var(--color-primary-press); }
 .auth-cover-line {
@@ -1372,6 +1380,10 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 .app-spread > .nb-page-left, .app-spread > .nb-page-right { padding: clamp(1.25rem, 3vw, 2.25rem); }
 .app-today { display: flex; flex-direction: column; gap: 1.25rem; }
 .app-today-garden { display: grid; gap: 0.5rem; margin-top: auto; padding: 0.75rem 0.75rem 0.5rem; border-radius: var(--radius-md); background: var(--color-card); border: 1.5px dashed var(--color-outline); }
+/* The pressed row of plants sits on the page itself: a soft band, not a dark box, in both modes */
+.app-today-garden .garden { height: 5.5rem; background: color-mix(in oklch, var(--color-primary-container) 45%, transparent); }
+.dark .app-today-garden { background: var(--color-paper); }
+.dark .app-today-garden .garden { background: var(--color-surface-container); }
 .app-today-garden figcaption { font: 0.75rem var(--font-mono); color: var(--color-on-surface-variant); }
 .app-ledger { justify-content: flex-start; gap: 0; }
 .app-ledger > li { display: grid; gap: 0.625rem; padding-block: 1.125rem; border-bottom: 1px dashed var(--color-outline); }
@@ -1385,7 +1397,7 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 .app-index {
   position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; text-align: left;
   border-radius: 0.875rem; background: var(--color-card); border: 1.5px solid var(--color-outline-variant);
-  box-shadow: 0 10px 22px -18px oklch(30% 0.06 150 / 0.45);
+  box-shadow: 0 10px 22px -18px color-mix(in oklch, var(--ink-shadow) 45%, transparent);
   transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out), border-color 220ms var(--ease-out);
 }
 .app-index:nth-child(odd) { transform: rotate(-0.35deg); }
@@ -1425,7 +1437,7 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
   position: relative; display: grid; justify-items: center; gap: 1.5rem; width: 100%; max-width: 24rem;
   padding: 2.5rem 2rem 2rem; text-align: center; border-radius: 1rem;
   background: var(--color-card); border: 1.5px solid var(--color-outline-variant);
-  box-shadow: 0 24px 50px -28px oklch(20% 0.06 150 / 0.5);
+  box-shadow: 0 24px 50px -28px color-mix(in oklch, var(--ink-shadow) 50%, transparent);
 }
 
 /* Specimens carry their tape on top */
@@ -1492,3 +1504,43 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .update-toast { animation: none; } }
 
+
+/* At night the chosen pill is the lighter one: on a dark track a card-coloured pill would sink */
+.dark .app-tabs button[aria-selected="true"], .dark .app-tabs button[aria-pressed="true"],
+.dark .auth-tabs button[aria-selected="true"], .dark .path-view-switch button[aria-pressed="true"] {
+  background: var(--color-surface-container-highest);
+}
+
+/* At night the notebook rests on a graphite desk: a bright green one would glare around the pages */
+.dark .nb-ground { background: oklch(11% 0.005 80); }
+.dark .nb-ground header, .dark .nb-ground footer { --color-on-primary: var(--color-on-surface); }
+.dark .nb-navbtn { background: var(--color-primary); color: oklch(16% 0.01 150); }
+
+/* Word chips of the sentence builder: CSS only fades colours; the movement is Framer's (a CSS
+   transition on transform fights the layout animation and makes the chips flicker) */
+.word-chip {
+  min-height: 2.75rem; padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500;
+  color: var(--color-on-surface); background: var(--color-surface-container-highest);
+  box-shadow: 0 1px 0 var(--color-outline-variant);
+  transition: background-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.word-chip.is-placed { background: var(--color-primary-container); box-shadow: none; }
+@media (hover: hover) {
+  .word-chip:hover:not(:disabled) { background: var(--color-surface-container-high); box-shadow: var(--shadow-card); }
+  .word-chip.is-placed:hover:not(:disabled) { background: color-mix(in oklch, var(--color-primary-container) 80%, var(--color-primary)); }
+}
+.word-chip:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+/* After a right answer the "next" button fills like a stem growing, then the exercise moves on */
+.answer-next { position: relative; overflow: hidden; scroll-margin-bottom: 1.5rem; }
+.answer-next.is-counting::before {
+  content: ""; position: absolute; inset: 0; transform-origin: left center; transform: scaleX(0);
+  background: color-mix(in oklch, var(--color-primary-press) 55%, transparent);
+  animation: answer-fill var(--answer-wait, 3000ms) linear forwards;
+}
+.answer-next.is-paused::before { animation-play-state: paused; }
+@keyframes answer-fill { to { transform: scaleX(1); } }
+/* The floating nav covers the bottom of the screen on tablets and phones */
+@media (max-width: 1024px) { .answer-next { scroll-margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem); } }
+@media (prefers-reduced-motion: reduce) { .answer-next.is-counting::before { animation: none; } }

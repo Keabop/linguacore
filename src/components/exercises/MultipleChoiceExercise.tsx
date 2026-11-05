@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import AnswerFeedback from './AnswerFeedback';
 import { motion } from 'framer-motion';
-import { Check, X, ArrowRight } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import type { GrammarExercise } from '../../lib/db';
-import PlayOnMount from '../icons/PlayOnMount';
-import { CheckIcon } from '../icons';
 import { shuffle } from '../../lib/shuffle';
 
 interface MultipleChoiceExerciseProps {
@@ -100,32 +99,11 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
 
             {/* Feedback */}
             {status !== 'pending' && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-5"
-                >
-                    <div className="text-center">
-                        {status === 'correct' ? (
-                            <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
-                                <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
-                            </p>
-                        ) : (
-                            <p className="text-lg font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5">
-                                <X className="w-5 h-5" /> {t('exercises.incorrect')}
-                            </p>
-                        )}
-                    </div>
-                    <div className="card p-5">
-                        <p className="text-sm text-[var(--color-on-surface-muted)] leading-relaxed">{exercise.explanation}</p>
-                    </div>
-                    <button
-                        onClick={() => onAnswer(status === 'correct')}
-                        className="btn-primary w-full py-3.5 flex items-center justify-center gap-2"
-                    >
-                        {t('exercises.next')} <ArrowRight className="w-4 h-4" />
-                    </button>
-                </motion.div>
+                <AnswerFeedback
+                    correct={status === 'correct'}
+                    explanation={exercise.explanation}
+                    onNext={() => onAnswer(status === 'correct')}
+                />
             )}
         </div>
     );
