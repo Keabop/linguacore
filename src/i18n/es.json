@@ -433,7 +433,14 @@
     "seeplans": "Ver planes",
     "saveError": "No se pudo guardar tu planta. Intenta de nuevo.",
     "unitsLabel": "{{done}} de {{total}} unidades completas",
-    "streakLabel": "Racha de {{count}} días"
+    "streakLabel": "Racha de {{count}} días",
+    "styleTitle": "Estilo del jardín",
+    "styleHint": "Cómo se dibuja el jardín de tu ruta.",
+    "style": {
+      "pixel": "Pixel art",
+      "classic": "Clásico 3D"
+    },
+    "styleFailed": "No se pudo guardar el estilo. Inténtalo de nuevo."
   },
   "simulator": {
     "timeUpTitle": "Tiempo agotado",
