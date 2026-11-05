@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAdmin } from '../hooks/useAdmin';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 import LevelBadge from '../components/ui/LevelBadge';
 import CountUp from '../components/reactbits/CountUp';
 import type { Profile } from '../lib/database.types';
@@ -386,12 +386,9 @@ export default function AdminDashboard() {
         },
         onSuccess: (_, { newTier }) => {
             queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-            toast.success({
-                title: newTier === 'pro' ? '¡Usuario actualizado a Pro!' : 'Usuario cambiado a Free',
-            });
         },
         onError: (err: Error) => {
-            toast.error({ title: 'Error al actualizar', description: err.message });
+            notice.error({ title: 'Error al actualizar', description: err.message });
         },
     });
 

@@ -741,74 +741,6 @@ span[data-word].in-deck {
 }
 
 
-/* === VOXIE CUSTOM TOAST SYSTEM === */
-@keyframes toast-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(-1rem) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-toast-enter {
-  animation: toast-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.voxie-toast {
-  background: var(--color-card);
-  border: 1px solid color-mix(in oklch, var(--color-primary) 12%, transparent);
-  color: var(--color-on-surface);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dark .voxie-toast {
-  background: var(--color-card);
-  border: 1px solid color-mix(in oklch, var(--color-primary) 16%, transparent);
-}
-
-/* Success State */
-.voxie-toast.toast-success {
-  border-color: color-mix(in oklch, var(--color-success) 30%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-success) 6%, transparent), var(--shadow-card);
-}
-.dark .voxie-toast.toast-success {
-  border-color: color-mix(in oklch, var(--color-success) 40%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-success) 12%, transparent), var(--shadow-card);
-}
-
-/* Error State */
-.voxie-toast.toast-error {
-  border-color: color-mix(in oklch, var(--color-error) 30%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-error) 6%, transparent), var(--shadow-card);
-}
-.dark .voxie-toast.toast-error {
-  border-color: color-mix(in oklch, var(--color-error) 40%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-error) 12%, transparent), var(--shadow-card);
-}
-
-/* Warning State */
-.voxie-toast.toast-warning {
-  border-color: color-mix(in oklch, var(--color-tertiary) 30%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-tertiary) 6%, transparent), var(--shadow-card);
-}
-.dark .voxie-toast.toast-warning {
-  border-color: color-mix(in oklch, var(--color-tertiary) 40%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-tertiary) 12%, transparent), var(--shadow-card);
-}
-
-/* Info State */
-.voxie-toast.toast-info {
-  border-color: color-mix(in oklch, var(--color-primary) 25%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-primary) 6%, transparent), var(--shadow-card);
-}
-.dark .voxie-toast.toast-info {
-  border-color: color-mix(in oklch, var(--color-primary) 35%, transparent);
-  box-shadow: 0 8px 30px color-mix(in oklch, var(--color-primary) 12%, transparent), var(--shadow-card);
-}
-
 /* === FLASH ANIMATIONS === */
 /* Answer feedback: a correct answer pops (achievement moment), a wrong one nudges */
 .border-flash-correct { animation: celebrate-pop 380ms var(--ease-spring); }
@@ -1544,3 +1476,17 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 /* The floating nav covers the bottom of the screen on tablets and phones */
 @media (max-width: 1024px) { .answer-next { scroll-margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem); } }
 @media (prefers-reduced-motion: reduce) { .answer-next.is-counting::before { animation: none; } }
+
+/* Something went wrong on this screen: written on the page, at the top of the work, never floating */
+.page-notice {
+  position: sticky; top: 0.75rem; z-index: 20; display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.875rem 0.875rem 0.875rem 1rem; border-radius: var(--radius-md);
+  background: var(--color-error-light); color: var(--color-error);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-error) 30%, transparent);
+  animation: sheet-in 220ms var(--ease-out);
+}
+.page-notice.is-warning { background: var(--color-tertiary-container); color: var(--color-tertiary-ink); box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-tertiary) 40%, transparent); }
+.page-notice-close { display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; margin: -0.625rem -0.5rem -0.625rem 0; border-radius: 999px; color: var(--color-on-surface-muted); }
+.page-notice-close:hover { color: var(--color-on-surface); background: color-mix(in oklch, var(--color-on-surface) 8%, transparent); }
+.page-notice-close:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .page-notice { animation: none; } }

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Wordmark from './ui/Wordmark';
+import { PageNotice } from '../lib/notice';
 
 /** The frame of the trial pages (`/probar`): no sidebar, only the way back and the sign-up. */
 export default function TrialShell({ children }: { children: ReactNode }) {
@@ -12,7 +13,10 @@ export default function TrialShell({ children }: { children: ReactNode }) {
                 <Link to="/" aria-label={t('trial.home')}><Wordmark className="text-2xl" /></Link>
                 <Link to="/auth" className="btn-primary px-4 sm:px-5 py-2.5 text-sm whitespace-nowrap">{t('trial.createAccountShort')}</Link>
             </header>
-            <main className="mx-auto max-w-3xl px-4 sm:px-6 pb-16">{children}</main>
+            <main className="mx-auto max-w-3xl px-4 sm:px-6 pb-16">
+                <PageNotice className="mb-6" />
+                {children}
+            </main>
         </div>
     );
 }

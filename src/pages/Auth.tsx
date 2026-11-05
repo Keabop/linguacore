@@ -10,6 +10,7 @@ import AuthBackdrop from '../components/ui/AuthBackdrop';
 import Wordmark from '../components/ui/Wordmark';
 import { LegalCheckbox } from '../components/LegalConsent';
 import PillTabs, { panelId, tabId } from '../components/ui/PillTabs';
+import { PageNotice } from '../lib/notice';
 
 type Mode = 'login' | 'register';
 
@@ -26,6 +27,7 @@ function AuthShell({ children }: { children: ReactNode }) {
             <header className="mx-auto w-full max-w-[64rem] pb-4 sm:pb-6">
                 <Link to="/landing" aria-label="Voxie"><Wordmark className="text-2xl !text-[var(--color-on-primary)]" markClassName="w-7 h-7 !text-[var(--color-on-primary)]" /></Link>
             </header>
+            <PageNotice className="mx-auto mb-4 w-full max-w-[64rem]" />
             <div className="auth-book mx-auto w-full max-w-[64rem] flex-1">
                 <aside className="auth-cover">
                     <AuthBackdrop className="absolute inset-0 h-full w-full" />

@@ -26,7 +26,7 @@ import { toeflQuestions, toeflWriting, toeflSpeaking } from '../data/assessments
 import { ieltsQuestions, ieltsWriting, ieltsSpeaking } from '../data/assessments/ielts-questions';
 import { useSpeech } from '../hooks/useSpeech';
 import { evaluateWriting, evaluateSpeaking, type CriterionScore } from '../lib/ai';
-import { toast } from '../lib/toast';
+import { notice } from '../lib/notice';
 import PageHead from '../components/ui/PageHead';
 
 type PageState = 'selection' | 'instructions' | 'testing' | 'writing' | 'speaking' | 'grading' | 'dashboard';
@@ -207,7 +207,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
         const active = state === 'testing' || state === 'writing' || state === 'speaking';
         if (!active || timeLeft > 0 || isTimeUp) return;
         setIsTimeUp(true);
-        toast.error({
+        notice.error({
             title: t('simulator.timeUpTitle'),
             description: t('simulator.timeUpBody')
         });
@@ -341,7 +341,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
             done();
             setAudioPlayCount(prev => ({ ...prev, [key]: plays }));
             setAudioFailed(prev => ({ ...prev, [key]: true }));
-            toast.error({ title: t('simulator.audioFailedTitle'), description: t('simulator.audioFailedBody') });
+            notice.error({ title: t('simulator.audioFailedTitle'), description: t('simulator.audioFailedBody') });
         };
         if (question.audioSrc) playAudioFile(question.audioSrc, done, failed);
         else playListening(question.dialogue!, question.level, (lineIdx) => setActiveDialogueLine(lineIdx), done, failed);
@@ -467,7 +467,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                     aiFeedbackObj = aiResult;
                 } catch (err) {
                     console.error("Error evaluating writing:", err);
-                    toast.error({ title: t('simulator.writingFailedTitle'), description: t('simulator.aiFailedBody') });
+                    notice.error({ title: t('simulator.writingFailedTitle'), description: t('simulator.aiFailedBody') });
                 }
             }
 
@@ -488,7 +488,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
                     aiSpeakingFeedbackObj = aiResult;
                 } catch (err) {
                     console.error("Error evaluating speaking:", err);
-                    toast.error({ title: t('simulator.speakingFailedTitle'), description: t('simulator.aiFailedBody') });
+                    notice.error({ title: t('simulator.speakingFailedTitle'), description: t('simulator.aiFailedBody') });
                 }
             }
 
@@ -527,7 +527,7 @@ export default function CEFRSimulator({ guest = false }: { guest?: boolean } = {
             setState('dashboard');
         } catch (err) {
             console.error(err);
-            toast.error({
+            notice.error({
                 title: t('simulator.gradingErrorTitle'),
                 description: t('simulator.gradingErrorBody')
             });

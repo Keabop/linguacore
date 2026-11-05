@@ -16,7 +16,6 @@ import GrammarReview from '../components/GrammarReview';
 import ErrorReview from '../components/ErrorReview';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Trophy, RefreshCw, BookOpen, AlertTriangle } from 'lucide-react';
-import { toast } from '../lib/toast';
 import CountUp from '../components/reactbits/CountUp';
 import BackButton from '../components/ui/BackButton';
 import PlantCircle from '../components/garden/PlantCircle';
