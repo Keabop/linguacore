@@ -15,7 +15,7 @@ interface Props {
 export default function EvaluationLimitCard({ referenceAnswer, onContinue }: Props) {
     const { t } = useTranslation();
     return (
-        <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 space-y-4 shadow-[var(--shadow-card)]">
+        <div className="card p-6 space-y-4">
             <div className="flex items-start gap-3">
                 <Droplet className="w-5 h-5 mt-0.5 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />
                 <div className="space-y-1">
@@ -25,7 +25,7 @@ export default function EvaluationLimitCard({ referenceAnswer, onContinue }: Pro
             </div>
             {referenceAnswer && (
                 <div className="rounded-xl bg-[var(--color-primary-container)] p-4 space-y-1">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('evaluationLimit.modelAnswer')}</p>
+                    <p className="text-xs font-semibold text-[var(--color-on-surface-muted)]">{t('evaluationLimit.modelAnswer')}</p>
                     <p className="text-sm text-[var(--color-on-surface)]">{referenceAnswer}</p>
                 </div>
             )}

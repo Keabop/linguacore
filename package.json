@@ -25,6 +25,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^6.1.2",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",
@@ -49,7 +50,8 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-i18next": "^17.1.9",
-    "react-router-dom": "^7.13.0"
+    "react-router-dom": "^7.13.0",
+    "three": "^0.180.0"
   },
   "overrides": {
     "jake": "^13.0.3",

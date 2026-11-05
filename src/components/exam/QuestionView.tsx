@@ -85,7 +85,7 @@ function TrueFalseNotGiven({ q, value, onChange }: { q: TfngQuestion; value?: Tf
     const keys = useRadioKeys(values, value, onChange);
     return (
         <div className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
+            <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">
                 {q.variant === 'yes-no' ? t('exam.yesNoPrompt') : t('exam.tfngPrompt')}
             </p>
             <p id={id} className="text-lg font-bold leading-snug">{q.text}</p>
@@ -124,7 +124,7 @@ function Gap({ q, value, onChange }: { q: GapQuestion; value: string; onChange: 
     return (
         <div className="space-y-3">
             {(q.instruction || q.maxWords) && (
-                <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">
+                <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">
                     {q.instruction ?? `Write ${wordLimitLabel(q.maxWords!, q.allowNumber)}`}
                 </p>
             )}
@@ -149,7 +149,7 @@ function CompleteWords({ q, value, onChange }: { q: CompleteWordsQuestion; value
     let gap = -1;
     return (
         <div className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('exam.completeWords')}</p>
+            <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">{t('exam.completeWords')}</p>
             <p className="text-base leading-[2.4] text-[var(--color-on-surface)]">
                 {parseCompleteWords(q.text).map((part, i) => {
                     if (typeof part === 'string') return <span key={i}>{part}</span>;
@@ -193,7 +193,7 @@ function BuildSentence({ q, value, onChange }: { q: BuildSentenceQuestion; value
     });
     return (
         <div className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-on-surface-muted)]">{t('exam.buildSentence')}</p>
+            <p className="text-xs font-bold text-[var(--color-on-surface-muted)]">{t('exam.buildSentence')}</p>
             <p className="text-lg font-bold leading-snug">{q.text}</p>
             <div ref={sentenceRef} role="group" aria-label={t('exam.yourSentence')} className="min-h-14 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-outline-variant)] p-3 flex flex-wrap gap-2">
                 {value.length === 0 && <span className="text-sm text-[var(--color-on-surface-muted)] self-center">{t('exam.tapPieces')}</span>}

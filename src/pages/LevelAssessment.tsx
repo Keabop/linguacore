@@ -260,7 +260,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                     </p>
                 </div>
 
-                <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 w-full max-w-sm space-y-5 shadow-[var(--shadow-card)]">
+                <div className="app-sheet p-7 w-full max-w-sm space-y-5">
                     {[
                         { icon: CheckCircle2, title: t('assessment.partGrammar', { count: grammarCount }), body: t('assessment.partGrammarBody') },
                         { icon: Headphones, title: t('assessment.partSkills'), body: t('assessment.partSkillsBody') },
@@ -327,12 +327,12 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 {current.passage && <PassageView text={current.passage} />}
 
                 {current.dialogue && (
-                    <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-5 space-y-3 shadow-[var(--shadow-card)]">
+                    <div className="app-sheet p-5 space-y-3">
                         {!hasRecording(current.dialogue, current.level) && <NoEnglishVoices />}
                         <button
                             onClick={handlePlay}
                             disabled={isPlayingAudio || playsUsed >= AUDIO_PLAYS}
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold disabled:opacity-50 transition-all active:scale-[0.97]"
+                            className="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50"
                         >
                             <Volume2 className="w-4 h-4" />
                             {isPlayingAudio ? t('assessment.playing') : t('assessment.play')}
@@ -344,7 +344,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                 )}
 
                 {onPage.map(q => (
-                    <div key={q.id} className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
+                    <div key={q.id} className="app-sheet p-6">
                         <QuestionView
                             question={q}
                             response={responses[q.id]}
@@ -425,7 +425,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         transition={{ delay: 0.4 }}
                         className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_color-mix(in_oklch,var(--color-tertiary)_12%,transparent)]"
                     >
-                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] font-bold">
                             {t('assessment.title', { level })}
                         </p>
                         <p className="text-6xl font-black tracking-tight text-[var(--color-tertiary-ink)]">
@@ -482,7 +482,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                         className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-8 w-full max-w-sm text-center space-y-5 shadow-[0_8px_40px_color-mix(in_oklch,var(--color-error)_10%,transparent)]"
                     >
-                        <p className="text-sm text-[var(--color-on-surface-muted)] uppercase tracking-wider font-bold">
+                        <p className="text-sm text-[var(--color-on-surface-muted)] font-bold">
                             {t('assessment.title', { level })}
                         </p>
                         <p className="text-6xl font-black tracking-tight text-[var(--color-error)]">
@@ -499,7 +499,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-6 w-full max-w-sm space-y-4 shadow-[var(--shadow-card)]"
+                            className="app-sheet p-6 w-full max-w-sm space-y-4"
                         >
                             <p className="text-sm font-black text-[var(--color-on-surface-muted)]">
                                 {t('assessment.reviewTopics')}

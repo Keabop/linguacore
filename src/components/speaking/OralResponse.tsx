@@ -136,7 +136,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
                         <button onClick={() => onComplete(score)}
-                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]">
+                            className="btn-primary flex-1 py-3.5">
                             Continuar
                         </button>
                     </>

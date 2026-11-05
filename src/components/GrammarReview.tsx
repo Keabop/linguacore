@@ -124,7 +124,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
 
                 <button
                     onClick={() => setShowTip(false)}
-                    className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    className="btn-primary w-full py-3 flex items-center justify-center gap-2"
                 >
                     {t('review.startExercises', 'Start Exercises')}
                     <ArrowRight className="w-4 h-4" />
@@ -228,7 +228,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
 
                             <button
                                 onClick={handleNext}
-                                className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
+                                className="btn-primary w-full py-3"
                             >
                                 {isLastExercise ? t('review.finish', 'Finish') : t('review.next', 'Next')}
                             </button>

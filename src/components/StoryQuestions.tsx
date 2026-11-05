@@ -18,7 +18,7 @@ export default function StoryQuestions({ questions }: { questions: StoryQuestion
     const done = Object.keys(answers).length === shuffled.length;
 
     return (
-        <section aria-labelledby="story-questions-title" className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 space-y-6 shadow-[var(--shadow-card)]">
+        <section aria-labelledby="story-questions-title" className="app-sheet p-7 space-y-6">
             <div className="space-y-1">
                 <h3 id="story-questions-title" className="text-lg font-bold text-[var(--color-on-surface)]">{t('reader.questionsTitle')}</h3>
                 <p className="text-sm text-[var(--color-on-surface-muted)]">{t('reader.questionsIntro')}</p>

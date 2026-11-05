@@ -105,7 +105,7 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 className="widget text-center"
             >
-                <p className="text-xs text-[var(--color-on-surface-muted)] uppercase tracking-wider mb-4">
+                <p className="text-xs text-[var(--color-on-surface-muted)] mb-4">
                     {t('review.clozeMode')}
                 </p>
                 <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">
@@ -139,7 +139,7 @@ export default function ClozeReview({ card, vocabulary, onResult }: Props) {
                         <button
                             type="submit"
                             disabled={!answer.trim()}
-                            className="flex-1 bg-[var(--color-primary)] hover:brightness-90 disabled:opacity-40 text-[var(--color-on-primary)] py-3 rounded-xl font-bold transition-all active:scale-[0.98]"
+                            className="btn-primary flex-1 disabled:opacity-40 py-3"
                         >
                             {t('review.check')} ↵
                         </button>

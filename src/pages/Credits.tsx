@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import BackButton from '../components/ui/BackButton';
 // CMUdict's BSD license asks for its notice in the app's documentation once its data ships
 import cmudictLicense from '../../content/reference/CMUDICT-LICENSE?raw';
+import PageHead from '../components/ui/PageHead';
 
 /** Sources of the teaching content and the notices their licenses ask for. */
 export default function Credits() {
@@ -14,10 +15,7 @@ export default function Credits() {
             {/* Reached from the settings or the landing page; opened by its link, it goes home */}
             <BackButton label={t('common.back')} onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))} />
 
-            <div className="space-y-2">
-                <h1 className="text-3xl font-black tracking-tight">{t('credits.title')}</h1>
-                <p className="text-sm text-[var(--color-on-surface-muted)]">{t('credits.intro')}</p>
-            </div>
+            <PageHead title={t('credits.title')} lead={t('credits.intro')} />
 
             <section className="widget space-y-3">
                 <h2 className="text-lg font-bold">{t('credits.cefrjTitle')}</h2>

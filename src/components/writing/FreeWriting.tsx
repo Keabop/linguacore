@@ -80,7 +80,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !isInRange || isOverLimit}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="btn-primary w-full py-3.5 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />

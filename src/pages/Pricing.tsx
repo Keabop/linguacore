@@ -5,6 +5,7 @@ import { Check, Loader2, PartyPopper } from 'lucide-react';
 import { useTier } from '../hooks/useTier';
 import { supabase } from '../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
+import PageHead from '../components/ui/PageHead';
 
 // Each line must hold in the code: the fixed content is all free, only the AI is limited
 const FREE_FEATURES = [
@@ -140,16 +141,13 @@ export default function Pricing() {
                 </motion.div>
             )}
 
-            <div className="mb-10 text-center">
-                <h1 className="text-4xl font-black tracking-tight text-[var(--color-on-surface)]">Precios</h1>
-                <p className="mt-3 text-[var(--color-on-surface-muted)] text-base">
-                    Sin trucos, sin precios falsos, sin compromisos
-                </p>
+            <div className="mb-10">
+                <PageHead title="Precios" lead="Sin trucos, sin precios falsos, sin compromisos" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Free Plan */}
-                <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-7 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
+                <div className="app-sheet p-7 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300">
                     <h2 className="text-xl font-black tracking-tight text-[var(--color-on-surface)]">Gratis</h2>
                     <p className="mt-2 text-2xl font-black tracking-tight">
                         $0 <span className="text-base font-normal text-[var(--color-on-surface-muted)]">— Para siempre</span>
@@ -213,7 +211,7 @@ export default function Pricing() {
                                 <button
                                     onClick={() => handleSubscribe('monthly')}
                                     disabled={loading !== null}
-                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-bold bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="btn-primary flex w-full cursor-pointer items-center justify-center gap-2 px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {loading === 'monthly' && <Loader2 className="size-4 animate-spin" />}
                                     Mensual — $115/mes

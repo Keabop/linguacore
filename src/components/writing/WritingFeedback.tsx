@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { markPhrases, sameWords } from '../../lib/sameText';
 
 interface Correction {
     original: string;
@@ -23,6 +25,8 @@ interface FeedbackData {
 
 interface Props {
     data: FeedbackData;
+    /** What the learner wrote: shown with its errors marked next to the improved version. */
+    text?: string;
     onNext?: () => void;
     nextLabel?: string;
 }
@@ -67,6 +71,16 @@ function ScoreRing({ score }: { score: number }) {
     );
 }
 
+function Marked({ text, phrases, className }: { text: string; phrases: string[]; className: string }) {
+    return (
+        <p className="text-sm text-[var(--color-on-surface)] leading-relaxed">
+            {markPhrases(text, phrases).map((piece, i) => piece.marked
+                ? <mark key={i} className={`${className} rounded px-0.5`}>{piece.text}</mark>
+                : <span key={i}>{piece.text}</span>)}
+        </p>
+    );
+}
+
 function CategoryBar({ label, score, note }: { label: string; score: number; note: string }) {
     const color = score >= 80 ? 'bg-[var(--color-success)]' : score >= 60 ? 'bg-accent-orange' : 'bg-accent-red';
     return (
@@ -88,8 +102,12 @@ function CategoryBar({ label, score, note }: { label: string; score: number; not
     );
 }
 
-export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' }: Props) {
+export default function WritingFeedback({ data: raw, text, onNext, nextLabel = 'Siguiente' }: Props) {
+    const { t } = useTranslation();
     const [showImproved, setShowImproved] = useState(false);
+    // Capitals and punctuation are not errors, also in feedback saved before the evaluator dropped them
+    const data = { ...raw, corrections: (raw.corrections ?? []).filter(c =>
+        typeof c?.original === 'string' && typeof c?.corrected === 'string' && !sameWords(c.original, c.corrected)) };
 
     return (
         <motion.div
@@ -113,7 +131,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {/* Corrections */}
             {data.corrections.length > 0 && (
                 <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                    <h3 className="text-sm font-semibold text-[var(--color-on-surface)] uppercase tracking-wider">Correcciones</h3>
+                    <h3 className="text-sm font-semibold text-[var(--color-on-surface)]">Correcciones</h3>
                     {data.corrections.map((c, i) => (
                         <div key={i} className="bg-[var(--color-card-hover)] rounded-lg p-3.5 space-y-1.5">
                             <div className="flex items-center gap-2 text-xs">
@@ -135,7 +153,16 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                 </div>
             )}
 
-            {/* Improved version (expandable) */}
+            {/* Nothing to correct: no improved version to show */}
+            {data.corrections.length === 0 && (
+                <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-4 flex items-center gap-2 text-sm font-semibold text-[var(--color-on-surface)]">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--color-success)] shrink-0" />
+                    {t('writing.noCorrections')}
+                </div>
+            )}
+
+            {/* Improved version (expandable), only when there was something to correct */}
+            {data.corrections.length > 0 && data.improvedVersion && (
             <button
                 onClick={() => setShowImproved(!showImproved)}
                 className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-4 flex items-center justify-between text-sm text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)] transition-colors"
@@ -146,6 +173,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                 </span>
                 {showImproved ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
+            )}
             <AnimatePresence>
                 {showImproved && (
                     <motion.div
@@ -154,8 +182,17 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-5">
-                            <p className="text-sm text-[var(--color-on-surface)] leading-relaxed">{data.improvedVersion}</p>
+                        <div className="space-y-3">
+                            {text?.trim() && (
+                                <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-2">
+                                    <h4 className="text-xs font-semibold text-[var(--color-on-surface-muted)]">{t('writing.yourText')}</h4>
+                                    <Marked text={text} phrases={data.corrections.map(c => c.original)} className="bg-accent-red/15 text-accent-red line-through decoration-accent-red/60" />
+                                </div>
+                            )}
+                            <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-5 space-y-2">
+                                <h4 className="text-xs font-semibold text-[var(--color-on-surface-muted)]">{t('writing.improved')}</h4>
+                                <Marked text={data.improvedVersion} phrases={data.corrections.map(c => c.corrected)} className="bg-[var(--color-success)]/20 text-[var(--color-on-surface)] font-semibold" />
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -165,7 +202,7 @@ export default function WritingFeedback({ data, onNext, nextLabel = 'Siguiente' 
             {onNext && (
                 <button
                     onClick={onNext}
-                    className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98]"
+                    className="btn-primary w-full py-3.5"
                 >
                     {nextLabel}
                 </button>

@@ -257,7 +257,7 @@ export default function Layout() {
     };
 
     return (
-        <div className={`app-layout pos-${position}`}>
+        <div className={`app-layout pos-${position} ${isAdmin ? 'has-admin' : ''}`}>
 
             {/* ===== WHERE THE RAIL WILL LAND WHILE DRAGGING ===== */}
             <AnimatePresence>

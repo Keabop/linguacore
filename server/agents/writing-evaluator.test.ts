@@ -58,4 +58,24 @@ describe('evaluateWriting against the CEFR', () => {
         const result = await evaluateWriting({ ...base, exam: 'cambridge_b2' });
         expect(result.criteria).toEqual(criteria);
     });
+
+    it('scores with the sub-scores the learner sees, not a lower number of its own', async () => {
+        const full = { score: 100, note: '' };
+        gemini.generateWithFallback.mockResolvedValueOnce(JSON.stringify({ score: 79, corrections: [], feedback: { grammar: full, vocabulary: full, coherence: full } }));
+        expect((await evaluateWriting(base)).score).toBe(100);
+    });
+
+    it("keeps the model's own score when it sends no sub-scores", async () => {
+        gemini.generateWithFallback.mockResolvedValueOnce(JSON.stringify({ score: 70, corrections: [], feedback: {} }));
+        expect((await evaluateWriting(base)).score).toBe(70);
+    });
+
+    it('drops corrections that only change capitals or punctuation', async () => {
+        const corrections = [
+            { original: 'i like cats', corrected: 'I like cats.', explanation: '', type: 'style' },
+            { original: 'she go', corrected: 'she goes', explanation: '', type: 'grammar' },
+        ];
+        gemini.generateWithFallback.mockResolvedValueOnce(JSON.stringify({ score: 70, corrections, feedback: {} }));
+        expect((await evaluateWriting(base)).corrections.map(c => c.corrected)).toEqual(['she goes']);
+    });
 });

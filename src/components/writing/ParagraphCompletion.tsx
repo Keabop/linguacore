@@ -21,7 +21,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
     return (
         <div className="space-y-6">
             <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-[var(--color-accent-blue)] text-sm font-semibold">
+                <div className="flex items-center gap-2 text-[var(--color-primary)] text-sm font-semibold">
                     <FileText className="w-4 h-4" />
                     Completar párrafo
                 </div>
@@ -34,7 +34,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
                 transition={{ delay: 0.1 }}
                 className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5"
             >
-                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider mb-2">Contexto</p>
+                <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold mb-2">Contexto</p>
                 <p className="text-[var(--color-on-surface)] text-sm leading-relaxed">{sourceText}</p>
                 <div className="mt-3 border-l-2 border-[var(--color-primary)]/40 pl-3">
                     <p className="text-xs text-[var(--color-on-surface-muted)] italic">Continúa desde aquí...</p>
@@ -68,7 +68,7 @@ export default function ParagraphCompletion({ instruction, sourceText, targetGra
             <button
                 onClick={handleSubmit}
                 disabled={disabled || !text.trim()}
-                className="w-full bg-[var(--color-primary)] hover:brightness-90 text-[var(--color-on-primary)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
+                className="btn-primary w-full py-3.5 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
                 Enviar
                 <ArrowRight className="w-4 h-4" />

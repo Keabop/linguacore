@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BackButton from '../components/ui/BackButton';
 import { LEGAL_DOCS, LEGAL_UPDATED, type LegalDocId } from '../data/legal';
+import PageHead from '../components/ui/PageHead';
 
 const linkClass = 'font-semibold text-[var(--color-primary)] underline underline-offset-2';
 
@@ -35,14 +36,14 @@ export default function Legal({ doc }: { doc: LegalDocId }) {
             {/* Linked from the sign-up form, the footer and the settings; opened from outside the app, it goes home */}
             <BackButton label={t('common.back')} onClick={() => (location.key === 'default' ? navigate('/') : navigate(-1))} />
 
-            <header className="space-y-3">
-                <h1 className="text-3xl font-black tracking-tight [overflow-wrap:anywhere]">{title}</h1>
-                <p className="text-xs text-[var(--color-on-surface-muted)]">{t('legal.updated', { date: LEGAL_UPDATED })}</p>
-                {!i18n.language.startsWith('es') && (
-                    <p className="text-xs text-[var(--color-on-surface-muted)]">{t('legal.spanishOnly')}</p>
-                )}
-                <p className="text-sm leading-relaxed text-[var(--color-on-surface-muted)]">{inline(intro)}</p>
-            </header>
+            <PageHead
+                title={title}
+                lead={inline(intro)}
+                meta={[
+                    t('legal.updated', { date: LEGAL_UPDATED }),
+                    !i18n.language.startsWith('es') && t('legal.spanishOnly'),
+                ]}
+            />
 
             {sections.map((section, s) => (
                 <section key={section.title} className="space-y-3" aria-labelledby={`legal-${s}`}>

@@ -199,7 +199,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <button
                                             onClick={handleUpdateUsername}
                                             disabled={updatingUsername || !username.trim()}
-                                            className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold rounded-xl shadow-md hover:brightness-95 transition-all disabled:opacity-55 shrink-0 flex items-center justify-center min-w-[70px]"
+                                            className="btn-primary px-4 py-2 text-xs disabled:opacity-55 shrink-0 flex items-center justify-center min-w-[70px]"
                                         >
                                             {updatingUsername ? (
                                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -342,7 +342,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                             </div>
                                             <button
                                                 onClick={() => { navigate('/pricing'); onClose(); }}
-                                                className="text-xs bg-[var(--color-primary)] text-[var(--color-on-primary)] px-4 py-2 rounded-lg font-medium hover:brightness-90 transition-colors"
+                                                className="btn-primary text-xs px-4 py-2"
                                             >
                                                 {t('account.upgradeToPro')}
                                             </button>
@@ -432,7 +432,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold uppercase tracking-wider">{t('account.cancelConfirmLose')}</p>
+                                            <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">{t('account.cancelConfirmLose')}</p>
                                             <ul className="space-y-1.5">
                                                 {[
                                                     t('account.cancelLoseLevel'),
@@ -455,7 +455,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <div className="flex gap-3">
                                             <button
                                                 onClick={() => setShowCancelConfirm(false)}
-                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90 transition-colors"
+                                                className="btn-primary flex-1 py-2.5 text-sm"
                                             >
                                                 {t('account.cancelKeep')}
                                             </button>
@@ -514,7 +514,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                                         <div className="flex gap-3">
                                             <button
                                                 onClick={() => setShowDeleteConfirm(false)}
-                                                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:brightness-90 transition-colors"
+                                                className="btn-primary flex-1 py-2.5 text-sm"
                                             >
                                                 {t('settings.deleteKeep')}
                                             </button>

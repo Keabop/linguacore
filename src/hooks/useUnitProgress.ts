@@ -15,7 +15,8 @@ export interface UseUnitProgressReturn {
     progress: UnitProgressRow | null;
     currentStep: UnitStep;
     isLoading: boolean;
-    updateProgress: (updates: Partial<UnitProgressRow>) => Promise<void>;
+    /** False when the change could not be saved (it is kept, and synced later, when offline). */
+    updateProgress: (updates: Partial<UnitProgressRow>) => Promise<boolean>;
     markStepComplete: (step: UnitStep) => Promise<void>;
 }
 
@@ -52,8 +53,8 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
 
     const currentStep = determineStep((progress as UnitProgressRow | null | undefined) ?? null);
 
-    const updateProgress = async (updates: Partial<UnitProgressRow>) => {
-        if (!userId) return;
+    const updateProgress = async (updates: Partial<UnitProgressRow>): Promise<boolean> => {
+        if (!userId) return false;
 
         const existing = progress as UnitProgressRow | null | undefined;
 
@@ -85,6 +86,7 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
                 if ('output_completed' in updates) mapped.output_completed = updates.output_completed;
                 if ('checkpoint_passed' in updates) mapped.checkpoint_passed = updates.checkpoint_passed;
                 if ('completed_at' in updates) mapped.completed_at = updates.completed_at;
+                if ('speaking_pending' in updates) mapped.speaking_pending = updates.speaking_pending;
 
                 await offlineUpdate('unit_progress', mapped, { id: existing.id });
             } else {
@@ -104,8 +106,12 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
             }
 
             qc.invalidateQueries({ queryKey: ['unit-progress'] });
+            // The path and the end-of-level exam read the whole level
+            qc.invalidateQueries({ queryKey: ['unitProgress'] });
+            return true;
         } catch {
             qc.invalidateQueries({ queryKey: ['unit-progress'] });
+            return false;
         }
     };
 

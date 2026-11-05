@@ -11,6 +11,27 @@ import ParagraphCompletion from './ParagraphCompletion';
 import WritingFeedback from './WritingFeedback';
 import AIErrorCard from '../AIErrorCard';
 import EvaluationLimitCard from '../EvaluationLimitCard';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n/config';
+import { sameWords } from '../../lib/sameText';
+
+/**
+ * Evaluations already made in this tab, by prompt and answer: sending the same text again
+ * (after going back, or a retry) shows the same result without spending another evaluation.
+ */
+const evaluated = new Map<string, WritingEvaluationResponse>();
+
+/** The model answer written as is needs no AI to say it is right. */
+function perfectFeedback(text: string): WritingEvaluationResponse {
+    const full = { score: 100, note: '' };
+    return {
+        score: 100,
+        corrections: [],
+        feedback: { grammar: full, vocabulary: full, coherence: full },
+        improvedVersion: text,
+        encouragement: i18n.t('writing.perfect'),
+    };
+}
 
 interface Props {
     prompts: WritingPrompt[];
@@ -25,6 +46,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [phase, setPhase] = useState<Phase>('writing');
     const [feedback, setFeedback] = useState<WritingEvaluationResponse | null>(null);
+    const [answer, setAnswer] = useState('');
     const [scores, setScores] = useState<number[]>([]);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +54,17 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
     const isLast = currentIndex === prompts.length - 1;
 
     const handleSubmit = async (text: string) => {
+        const key = `${level}|${current.id}|${current.instruction}|${text.trim().replace(/\s+/g, ' ')}`;
+        setAnswer(text);
+        const known = evaluated.get(key)
+            ?? (current.referenceAnswer && sameWords(text, current.referenceAnswer) ? perfectFeedback(text) : undefined);
+        if (known) {
+            setFeedback(known);
+            setScores(prev => [...prev, known.score]);
+            setPhase('feedback');
+            return;
+        }
+
         setPhase('evaluating');
         setError(null);
 
@@ -44,6 +77,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                 current.targetGrammar,
                 current.referenceAnswer,
             );
+            evaluated.set(key, result);
             setFeedback(result);
             setScores(prev => [...prev, result.score]);
             setPhase('feedback');
@@ -177,6 +211,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                     >
                         <WritingFeedback
                             data={feedback}
+                            text={answer}
                             onNext={handleNext}
                             nextLabel={isLast ? 'Finalizar escritura' : 'Siguiente ejercicio'}
                         />

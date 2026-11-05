@@ -76,7 +76,7 @@ export default function PWAInstallPrompt() {
                 ) : deferredPrompt ? (
                     <button
                         onClick={install}
-                        className="mt-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+                        className="btn-primary mt-2 text-xs px-4 py-2"
                     >
                         Instalar ahora
                     </button>
