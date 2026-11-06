@@ -32,6 +32,10 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
     const useFile = !!audio && !!starts && starts.length === sentences.length && accent === 'US' && !audioFailed;
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    // A tapped sentence is played on its own: playback stops when it ends. With the recording, a
+    // timer stops it right at the next sentence's start (timeupdate only comes every ~250 ms)
+    const onlyRef = useRef<number | null>(null);
+    const onlyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     // Each spoken sentence gets a token; callbacks of an older one are ignored
     const tokenRef = useRef(0);
     const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -68,6 +72,11 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
             if (settled || token !== tokenRef.current) return;
             settled = true;
             clearTimers();
+            if (onlyRef.current === index) {
+                onlyRef.current = null;
+                setIsPlaying(false);
+                return;
+            }
             timersRef.current.push(setTimeout(() => { if (token === tokenRef.current) speakFrom(index + 1); }, SENTENCE_GAP_MS));
         };
         utterance.onend = next;
@@ -103,17 +112,47 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
         const el = new Audio(audio.src);
         el.dataset.src = audio.src;
         el.preservesPitch = true;
+        // The sentence played alone is over: it stays highlighted, ready to play on from there
+        const stopOnly = (only: number) => {
+            clearTimeout(onlyTimerRef.current);
+            onlyRef.current = null;
+            wantsFileRef.current = false;
+            el.pause();
+            indexRef.current = only;
+            setCurrentIndex(only);
+            setIsPlaying(false);
+        };
         el.addEventListener('timeupdate', () => {
+            // A pause fires one last timeupdate, already past the sentence: it changes nothing
+            if (!wantsFileRef.current) return;
             const t = el.currentTime + 0.05;
             let i = 0;
             while (i + 1 < (starts?.length ?? 0) && starts![i + 1] <= t) i++;
+            const only = onlyRef.current;
+            if (only !== null) {
+                const end = starts?.[only + 1];
+                if (i > only || (end !== undefined && end - el.currentTime <= 0.02)) {
+                    stopOnly(only);
+                    return;
+                }
+                if (end !== undefined) {
+                    clearTimeout(onlyTimerRef.current);
+                    onlyTimerRef.current = setTimeout(() => {
+                        if (onlyRef.current === only) stopOnly(only);
+                    }, ((end - el.currentTime) / (el.playbackRate || 1)) * 1000);
+                }
+            }
             indexRef.current = i;
             setCurrentIndex(i);
         });
         el.addEventListener('ended', () => {
+            clearTimeout(onlyTimerRef.current);
+            const only = onlyRef.current;
+            onlyRef.current = null;
             wantsFileRef.current = false;
             setIsPlaying(false);
-            setCurrentIndex(-1);
+            // The last sentence played alone stays highlighted, as with the browser's voices
+            setCurrentIndex(only ?? -1);
         });
         el.addEventListener('error', () => fallbackRef.current(indexRef.current));
         audioRef.current = el;
@@ -123,6 +162,7 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
 
     const playFrom = useCallback((index: number) => {
         const from = Math.max(0, index);
+        clearTimeout(onlyTimerRef.current);
         setIsPlaying(true);
         if (!useFile) {
             speakFrom(from);
@@ -151,6 +191,8 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
     }, [useFile, getAudio, rate, starts, speakFrom]);
 
     const pause = useCallback(() => {
+        clearTimeout(onlyTimerRef.current);
+        onlyRef.current = null;
         wantsFileRef.current = false;
         setIsPlaying(false);
         audioRef.current?.pause();
@@ -159,14 +201,34 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
 
     const toggle = useCallback(() => {
         if (isPlaying) pause();
-        else playFrom(currentIndex === -1 ? 0 : currentIndex);
+        else {
+            onlyRef.current = null;
+            playFrom(currentIndex === -1 ? 0 : currentIndex);
+        }
     }, [isPlaying, pause, playFrom, currentIndex]);
 
-    /** Goes to a sentence; keeps reading from there if it was reading. */
+    /**
+     * Goes to a sentence; keeps reading from there if it was reading. While a sentence plays alone,
+     * the new one plays alone too.
+     */
     const seek = useCallback((index: number) => {
         if (index < 0 || index >= sentences.length) return;
-        if (isPlaying) playFrom(index);
-        else setCurrentIndex(index);
+        if (!isPlaying) {
+            setCurrentIndex(index);
+            return;
+        }
+        if (onlyRef.current !== null) onlyRef.current = index;
+        playFrom(index);
+    }, [isPlaying, playFrom, sentences.length]);
+
+    /**
+     * A tapped sentence: while the story is being read, reading goes on from it; otherwise that
+     * sentence alone is heard.
+     */
+    const playSentence = useCallback((index: number) => {
+        if (index < 0 || index >= sentences.length) return;
+        if (!isPlaying || onlyRef.current !== null) onlyRef.current = index;
+        playFrom(index);
     }, [isPlaying, playFrom, sentences.length]);
 
     // A new speed applies at once; a new accent may switch between the recording and the
@@ -191,6 +253,7 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
 
     // Leaving the story stops it
     useEffect(() => () => {
+        clearTimeout(onlyTimerRef.current);
         wantsFileRef.current = false;
         audioRef.current?.pause();
         tokenRef.current++;
@@ -198,5 +261,5 @@ export function useStoryPlayback({ sentences, level, accent, audio }: Options) {
         if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
     }, []);
 
-    return { isPlaying, currentIndex, rate, setRate, toggle, pause, seek, usingRecording: useFile };
+    return { isPlaying, currentIndex, rate, setRate, toggle, pause, seek, playSentence, usingRecording: useFile };
 }

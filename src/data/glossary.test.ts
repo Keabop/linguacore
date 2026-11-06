@@ -37,3 +37,13 @@ describe('glossary', () => {
         });
     });
 });
+
+describe('glossary examples', () => {
+    it('say in Spanish what every English example says', () => {
+        for (const entry of GLOSSARY) {
+            // Contractions and lists of forms explain themselves
+            const explained = /=|\(|→/.test(entry.example) && !entry.example.includes('"');
+            expect(!!entry.exampleEs || explained, entry.id).toBe(true);
+        }
+    });
+});

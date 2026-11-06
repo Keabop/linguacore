@@ -28,10 +28,10 @@ vi.mock('../hooks/useUnitProgress', async () => {
     };
 });
 vi.mock('../components/exercises/ExerciseRunner', () => ({
-    default: ({ onComplete }: { onComplete: (score: number) => void }) => (
+    default: ({ onComplete, exercises }: { onComplete: (score: number, missed: unknown[]) => void; exercises: unknown[] }) => (
         <div>
-            <button onClick={() => onComplete(60)}>score 60</button>
-            <button onClick={() => onComplete(100)}>score 100</button>
+            <button onClick={() => onComplete(60, exercises.slice(0, 1))}>score 60</button>
+            <button onClick={() => onComplete(100, [])}>score 100</button>
         </div>
     ),
 }));
@@ -66,9 +66,22 @@ const renderUnit = () => render(
 );
 
 describe('UnitFlow steps', () => {
-    it('goes from the exercises to the output step with a score above zero', async () => {
+    it('goes from the exercises to the output step when they pass', async () => {
+        renderUnit();
+        fireEvent.click(screen.getByRole('button', { name: 'score 100' }));
+        expect(await screen.findByRole('button', { name: 'output done' })).toBeInTheDocument();
+    });
+
+    it('under 75 % reviews the exercises, asks again, and lets go on after the second try', async () => {
         renderUnit();
         fireEvent.click(screen.getByRole('button', { name: 'score 60' }));
+        expect(await screen.findByRole('heading', { name: 'Repasa antes de volver a intentarlo' })).toBeInTheDocument();
+        expect(screen.getByText('La regla, en corto')).toBeInTheDocument();
+        expect(screen.getByText('Lo que falló')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /Seguir de todos modos/ })).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Intentarlo de nuevo/ }));
+        fireEvent.click(await screen.findByRole('button', { name: 'score 60' }));
+        fireEvent.click(await screen.findByRole('button', { name: /Seguir de todos modos/ }));
         expect(await screen.findByRole('button', { name: 'output done' })).toBeInTheDocument();
     });
 
@@ -83,8 +96,9 @@ describe('UnitFlow steps', () => {
         unit.start = { ...NEW_ROW, exercises_score: 80, output_completed: true };
         renderUnit();
         fireEvent.click(screen.getByRole('button', { name: 'score 60' }));
-        expect(await screen.findByText('60%')).toBeInTheDocument();
-        fireEvent.click(screen.getByRole('button', { name: /Inténtalo de nuevo/ }));
+        expect(await screen.findByText('Sacaste 60%. Para seguir necesitas 80%.')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /Seguir de todos modos/ })).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Intentarlo de nuevo/ }));
         expect(await screen.findByRole('button', { name: 'score 100' })).toBeInTheDocument();
     });
 

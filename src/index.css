@@ -722,6 +722,7 @@ span[data-word].in-deck {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   padding: 8px 16px;
   border-radius: 9999px;
   font-size: 0.8125rem;
@@ -1527,6 +1528,73 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
   background: color-mix(in oklch, var(--color-tertiary-container) 85%, transparent); box-shadow: 0 1px 2px oklch(30% 0.04 80 / 0.15);
 }
 .app-specimen h2 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.03em; }
+
+/* The invitation to «Primeros pasos» */
+.first-steps-card {
+  display: flex; align-items: center; gap: 0.875rem; padding: 1rem 1.25rem; border-radius: var(--radius-md, 1rem);
+  background: var(--color-primary-container); transition: transform var(--dur-short) var(--ease-out);
+}
+.first-steps-card:hover { transform: translateY(-1px); }
+
+/* «Primeros pasos»: the lessons and their phrases */
+.first-steps-lesson {
+  display: flex; align-items: center; gap: 0.875rem; width: 100%; padding: 1rem 1.125rem; border-radius: var(--radius-md, 1rem);
+  background: var(--color-card); border: 1.5px solid var(--color-outline-variant);
+  transition: border-color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out);
+}
+.first-steps-lesson:hover { border-color: var(--color-on-surface-muted); }
+.first-steps-lesson.is-next { border-color: var(--color-primary); }
+.first-steps-number {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 999px;
+  font-weight: 800; font-size: 0.875rem; background: var(--color-primary-container); color: var(--color-on-surface);
+}
+.first-steps-line { display: flex; align-items: flex-start; gap: 0.75rem; }
+.first-steps-line .speak-button { margin-top: 0.125rem; }
+.first-steps-who {
+  flex-shrink: 0; min-width: 2.75rem; margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.75rem;
+  font-weight: 600; color: var(--color-on-surface-variant);
+}
+.first-steps-phrase { display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; border-radius: var(--radius-md, 1rem); background: var(--color-card); border: 1px solid var(--color-outline-variant); }
+
+/* The big play of a listening exercise */
+.listen-play {
+  display: inline-flex; align-items: center; justify-content: center; width: 4.5rem; height: 4.5rem; border-radius: 999px;
+  color: var(--color-on-primary); background: var(--color-primary); box-shadow: var(--shadow-card);
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.listen-play:active { transform: scale(0.94); }
+
+/* A speaker next to English text: every word and example can be heard */
+.speak-button {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: 999px;
+  color: var(--color-primary); background: color-mix(in oklch, var(--color-primary) 10%, transparent);
+  transition: background-color var(--dur-short) var(--ease-out);
+}
+.speak-button:hover { background: color-mix(in oklch, var(--color-primary) 18%, transparent); }
+.speak-button:active { transform: scale(0.94); }
+.sounds-like { font-size: 0.75rem; color: var(--color-on-surface-muted); }
+.sounds-like b { font-weight: 700; color: var(--color-on-surface); }
+
+/* Story with its Spanish: each sentence on its line, the translation under it */
+.story-bilingual .story-sentence { display: block; margin-top: 0.875rem; }
+.story-bilingual p > .story-sentence:first-child { margin-top: 0; }
+.story-sentence-es { display: block; margin-top: 0.125rem; font-size: 0.9375rem; line-height: 1.5; letter-spacing: normal; color: var(--color-on-surface-muted); }
+.story-spanish-toggle {
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1rem; border-radius: 999px;
+  font-size: 0.875rem; font-weight: 600; color: var(--color-on-surface-muted); box-shadow: inset 0 0 0 1.5px var(--color-outline-variant);
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+.story-spanish-toggle:hover { color: var(--color-on-surface); }
+.story-spanish-toggle[aria-pressed="true"] { background: var(--color-primary-container); color: var(--color-on-surface); box-shadow: none; }
+.story-question-es, .story-option-es { display: block; font-weight: 400; color: var(--color-on-surface-muted); }
+.story-question-es { margin-top: 0.125rem; font-size: 0.875rem; }
+.story-option-es { font-size: 0.8125rem; }
+
+/* Below the pass mark: a short review before trying again */
+.retry-review { display: grid; gap: 1.25rem; padding: 1.5rem; text-align: left; scroll-margin-top: 1.5rem; }
+.retry-review-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-on-surface-muted); }
+.retry-review-rules { display: grid; gap: 0.375rem; padding-left: 1.125rem; list-style: disc; font-size: 0.9375rem; line-height: 1.5; color: var(--color-on-surface); }
+.retry-review-item { display: grid; gap: 0.25rem; padding: 0.75rem 0.875rem; border-radius: var(--radius-sm); background: var(--color-surface-container-low); overflow-wrap: anywhere; }
 
 /* Tabs on a page: the same pill as the sign-in */
 .app-tabs { display: flex; gap: 0.25rem; padding: 0.25rem; border-radius: 999px; background: var(--color-surface-container); }

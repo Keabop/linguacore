@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MotionGlobalConfig } from 'framer-motion';
 import type { GrammarExercise } from '../../lib/db';
@@ -116,10 +116,13 @@ describe('ExerciseRunner', () => {
         expect(screen.getByText('1 de 2')).toBeInTheDocument();
         answer('is');
         await screen.findByText('2 de 2', {}, SLOW);
+        // The first exercise leaves with an animation: answer once the second one is on screen
+        await waitFor(() => expect(screen.getAllByRole('button', { name: 'am' })).toHaveLength(1), SLOW);
+        await waitFor(() => expect(screen.getByRole('button', { name: 'am' })).toBeEnabled(), SLOW);
         answer('am');
         await screen.findByText('Puntuación: 50%', {}, SLOW);
         fireEvent.click(screen.getByRole('button', { name: /Finalizar/ }));
-        expect(onComplete).toHaveBeenCalledWith(50);
+        expect(onComplete).toHaveBeenCalledWith(50, [{ ...choice, id: 'm2' }]);
     });
 
     it('says to try again when no answer was right', async () => {
@@ -129,7 +132,13 @@ describe('ExerciseRunner', () => {
         await screen.findByText('Puntuación: 0%', {}, SLOW);
         expect(screen.getByText(/al menos una respuesta correcta/)).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Volver a intentarlo' }));
-        expect(onComplete).toHaveBeenCalledWith(0);
+        expect(onComplete).toHaveBeenCalledWith(0, [choice]);
+    });
+
+    it('under the pass mark leads to the review', async () => {
+        render(<ExerciseRunner exercises={[choice]} passScore={75} onComplete={vi.fn()} />);
+        answer('am');
+        expect(await screen.findByRole('button', { name: 'Ver qué repasar' }, SLOW)).toBeInTheDocument();
     });
 
     it('counts a double tap on "next" once, without skipping an exercise or going past the last', async () => {
@@ -146,5 +155,86 @@ describe('ExerciseRunner', () => {
         fireEvent.click(again);
         await screen.findByText('3 de 3', {}, SLOW);
         expect(screen.queryByText('Puntuación', { exact: false })).toBeNull();
+    });
+});
+
+describe('comprehension exercises', () => {
+    const meaning: GrammarExercise = { id: 'c1', unitId: 'a1-u1', type: 'meaning-choice', question: 'I am a student.', correctAnswer: 'Yo soy estudiante.', options: ['Yo soy estudiante.', 'Ella es maestra.', 'Estamos cansados.'], explanation: '«I am a student» = «Yo soy estudiante».' };
+    const listen: GrammarExercise = { ...meaning, id: 'c2', type: 'listen-choice', correctAnswer: 'I am a student.', options: ['I am a student.', 'She is a teacher.', 'We are tired.'], meaning: 'Yo soy estudiante.' };
+
+    it('asks what an English sentence means, with the options in Spanish', () => {
+        const onAnswer = vi.fn();
+        render(<MultipleChoiceExercise exercise={meaning} onAnswer={onAnswer} />);
+        expect(screen.getByText('¿Qué significa?')).toBeInTheDocument();
+        expect(screen.getByText('I am a student.')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Yo soy estudiante.' }));
+        fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
+        expect(onAnswer).toHaveBeenCalledWith(true);
+    });
+
+    it('without an English voice, asks which sentence means the Spanish: nothing to guess, nothing to copy', () => {
+        // jsdom has no speech synthesis
+        const onAnswer = vi.fn();
+        render(<MultipleChoiceExercise exercise={listen} onAnswer={onAnswer} />);
+        expect(screen.getByText('¿Cuál dice esto en inglés?')).toBeInTheDocument();
+        expect(screen.getByText('Yo soy estudiante.')).toBeInTheDocument();
+        // The English sentence appears only as one option among three
+        expect(screen.getAllByText('I am a student.')).toHaveLength(1);
+        fireEvent.click(screen.getByRole('button', { name: 'I am a student.' }));
+        fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
+        expect(onAnswer).toHaveBeenCalledWith(true);
+    });
+
+    it('with an English voice, plays the sentence and hides it until answered', () => {
+        const speak = vi.fn();
+        const voice = { lang: 'en-US', name: 'Samantha', localService: true, default: true, voiceURI: 'x' };
+        Object.defineProperty(window, 'speechSynthesis', {
+            configurable: true,
+            value: { getVoices: () => [voice], speak, cancel: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn() },
+        });
+        (globalThis as Record<string, unknown>).SpeechSynthesisUtterance = class { constructor(public text: string) {} };
+        const view = render(<MultipleChoiceExercise exercise={listen} onAnswer={vi.fn()} />);
+        try {
+            expect(screen.getByText('Escucha y elige lo que oíste')).toBeInTheDocument();
+            expect(speak).toHaveBeenCalled();
+            expect(screen.getAllByText('I am a student.')).toHaveLength(1);
+        } finally {
+            view.unmount();
+            delete (window as { speechSynthesis?: unknown }).speechSynthesis;
+        }
+    });
+
+    it('while the voices load, shows neither the listening nor the reading form', () => {
+        vi.useFakeTimers();
+        Object.defineProperty(window, 'speechSynthesis', {
+            configurable: true,
+            value: { getVoices: () => [], speak: vi.fn(), cancel: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn() },
+        });
+        const view = render(<MultipleChoiceExercise exercise={listen} onAnswer={vi.fn()} />);
+        try {
+            expect(screen.queryByText('Escucha y elige lo que oíste')).not.toBeInTheDocument();
+            expect(screen.queryByText('¿Cuál dice esto en inglés?')).not.toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: 'I am a student.' })).not.toBeInTheDocument();
+            act(() => { vi.advanceTimersByTime(1500); });
+            expect(screen.getByText('¿Cuál dice esto en inglés?')).toBeInTheDocument();
+        } finally {
+            view.unmount();
+            vi.useRealTimers();
+            delete (window as { speechSynthesis?: unknown }).speechSynthesis;
+        }
+    });
+});
+
+describe('AnswerFeedback markup', () => {
+    it('puts no block inside a paragraph when the answer is right', async () => {
+        const { default: AnswerFeedback } = await import('./AnswerFeedback');
+        const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const { container } = render(<AnswerFeedback correct explanation="Bien." onNext={vi.fn()} />);
+        try {
+            expect(container.querySelector('p div')).toBeNull();
+            expect(errors.mock.calls.flat().join(' ')).not.toMatch(/cannot be a descendant/);
+        } finally {
+            errors.mockRestore();
+        }
     });
 });

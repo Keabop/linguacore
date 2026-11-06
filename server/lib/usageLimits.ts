@@ -8,7 +8,9 @@ import { currentTier } from './mercadopago.js';
 const FREE_DAILY_LIMITS: Record<string, number> = {
     'conversation-tutor': 5,   // 5 messages/day
     'evaluations': 8,          // writing and speaking evaluations/day (a unit's output step has 4)
+    'evaluation-retries': 8,   // redoing prompts under the pass mark, apart: retrying never eats the day's evaluations
     'other-ai': 10,            // agents the app doesn't call (vocab-enricher, exercise-creator, career-deck)
+    'translations': 15,        // Spanish of B1 and B2 stories/day (A1 and A2 have theirs written by hand)
 };
 
 const FREE_WEEKLY_LIMITS: Record<string, number> = {

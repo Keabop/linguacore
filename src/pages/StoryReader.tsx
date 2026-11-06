@@ -9,14 +9,15 @@ import PageLoader from '../components/PageLoader';
 import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { isLimitReached, translateStory } from '../lib/ai';
 import { useRecordActivity } from '../hooks/useRecordActivity';
 import { useCards } from '../hooks/useCards';
 import { notice } from '../lib/notice';
 import DOMPurify from 'dompurify';
 import LevelBadge from '../components/ui/LevelBadge';
 import { useSpeech } from '../hooks/useSpeech';
-import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy, Lightbulb, BookOpen, Check } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy, Lightbulb, BookOpen, Check, Languages } from 'lucide-react';
 import BackButton from '../components/ui/BackButton';
 import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
@@ -29,6 +30,21 @@ import { SPEECH_RATE, type Accent } from '../lib/voices';
 import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 import { saveGuestStory } from '../lib/guestTrial';
 import { useNoteContext } from '../components/notebook/NotebookContext';
+import { escapeHtml } from '../lib/glossify';
+import SpeakButton from '../components/ui/SpeakButton';
+import { soundsLike } from '../lib/soundsLike';
+
+const SPANISH_KEY = 'voxie-story-spanish';
+
+/** The learner's last choice of showing the Spanish under each sentence; null if never chosen. */
+function readSpanishChoice(): boolean | null {
+    try {
+        const stored = localStorage.getItem(SPANISH_KEY);
+        return stored === null ? null : stored === 'on';
+    } catch {
+        return null;
+    }
+}
 
 /** How long the word card shows the choice before closing: enough to see it was taken. */
 const WORD_CARD_CLOSE_MS = 1100;
@@ -154,14 +170,55 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
     const wordStatus = selectedWord ? wordStatuses.get(selectedWord.id) ?? 'none' : 'none';
     const selectedIsSaved = !!selectedWord && (savedStatuses?.get(selectedWord.id) ?? 'none') !== 'none';
 
+    // The Spanish of each sentence, written by hand in A1 and A2. Shown by default in A1, where
+    // whoever starts from zero reads; the learner's choice is remembered
+    // B1 and B2 have theirs from the AI, once per story (cached on the server), and only when asked
+    // for in that story: the remembered choice alone never spends one of the day's translations
+    const [spanishChoice, setSpanishChoice] = useState(readSpanishChoice);
+    const translatedByAI = !!staticStory && !staticStory.translation && !!authUser && (staticStory.level === 'B1' || staticStory.level === 'B2');
+    const [askedAIFor, setAskedAIFor] = useState<string | null>(null);
+    const aiTranslation = useQuery({
+        queryKey: ['story-translation', staticStory?.id],
+        queryFn: () => translateStory(staticStory!.id),
+        enabled: translatedByAI && askedAIFor === staticStory?.id,
+        staleTime: Infinity,
+        gcTime: Infinity,
+        // The day's limit stays reached until tomorrow: asking again only spends the wait
+        retry: (failures, error) => failures < 1 && !isLimitReached(error),
+    });
+    // Only a translation that lines up with today's sentences and questions: an old one (the story was
+    // edited since) would show the wrong Spanish under a sentence
+    const fetchedTranslation = staticStory?.translation ?? aiTranslation.data;
+    const translation = fetchedTranslation && storyContent
+        && fetchedTranslation.sentences.length === storySentences(storyContent).length
+        && (fetchedTranslation.questions?.length ?? 0) === (story?.questions?.length ?? 0)
+        ? fetchedTranslation : undefined;
+    const showSpanish = !!translation && (spanishChoice ?? story?.level === 'A1');
+    const waitingForAI = translatedByAI && !translation && askedAIFor === staticStory?.id && !aiTranslation.isError;
+    const toggleSpanish = () => {
+        let next: boolean;
+        if (translatedByAI && !translation) {
+            // Asked for while the AI one loads: pressing again turns it off
+            next = !waitingForAI;
+            setAskedAIFor(next ? staticStory!.id : null);
+        } else {
+            next = !showSpanish;
+        }
+        setSpanishChoice(next);
+        try { localStorage.setItem(SPANISH_KEY, next ? 'on' : 'off'); } catch { /* not kept */ }
+    };
+
     // --- Sentences: the same split the recording was cut with (src/lib/storySentences.ts) ---
     // Keyed on the text too, so the sentences (and the shadowing effect below) don't change every render
     const { processedHTML, sentences } = useMemo(() => {
         if (!storyContent) return { processedHTML: '', sentences: [] as string[] };
-        const html = wrapStorySentences(storyContent, (part, i) =>
-            `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${i}">${part}</span>`);
+        const html = wrapStorySentences(storyContent, (part, i) => {
+            const spanish = showSpanish && translation?.sentences[i];
+            return `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${i}">${part}</span>`
+                + (spanish ? `<span class="story-sentence-es" data-sentence-idx="${i}">${escapeHtml(spanish)}</span>` : '');
+        });
         return { processedHTML: html, sentences: storySentences(storyContent) };
-    }, [storyContent]);
+    }, [storyContent, showSpanish, translation]);
 
     // Static stories have a recording (npm run content:audio); AI stories use the browser's voices
     const recording = useMemo(
@@ -169,7 +226,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         [staticStory, sentences],
     );
     const playback = useStoryPlayback({ sentences, level: story?.level ?? 'A1', accent, audio: recording });
-    const { isPlaying, currentIndex: currentSentenceIdx, rate: playbackRate, setRate: setPlaybackRate, seek: seekSentence } = playback;
+    const { isPlaying, currentIndex: currentSentenceIdx, rate: playbackRate, setRate: setPlaybackRate, seek: seekSentence, playSentence } = playback;
 
     // --- Sentence Highlighting and Auto-Scroll ---
     useEffect(() => {
@@ -231,25 +288,37 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         setHasPracticed(true);
     }, [transcript, currentSentenceIdx, sentences]);
 
+    // Where the open card's word was tapped: its sentence and what it means there
+    const [wordPlace, setWordPlace] = useState<{ sentence: number; gloss: string | null } | null>(null);
+
     const handleWordClick = useCallback(async (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         
         // Check if sentence span was clicked to jump index
         const sentenceElement = target.closest('.story-sentence');
+        const wordId = target.getAttribute('data-word');
         if (sentenceElement) {
             const sIdx = parseInt(sentenceElement.getAttribute('data-sentence-idx') || '-1', 10);
-            if (sIdx !== -1 && sIdx !== currentSentenceIdx) seekSentence(sIdx);
+            // A sentence is heard when tapped; a word on it opens its card and only moves there
+            if (sIdx !== -1 && !wordId) {
+                // The microphone would take the phone's own voice for the learner's
+                if (isListening) stopListening();
+                playSentence(sIdx);
+            }
+            else if (sIdx !== -1 && sIdx !== currentSentenceIdx) seekSentence(sIdx);
         }
 
-        const wordId = target.getAttribute('data-word');
         if (!wordId) return;
 
         const vocab = (isAIStory ? vocabMap.get(wordId) : vocabulary?.get(wordId)) as Vocabulary | undefined;
+        const sentence = parseInt(sentenceElement?.getAttribute('data-sentence-idx') ?? '-1', 10);
+        setWordPlace(sentence >= 0 ? { sentence, gloss: target.getAttribute('data-gloss') } : null);
         if (vocab) setSelectedWord(vocab);
-    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory, vocabulary]);
+    }, [currentSentenceIdx, seekSentence, playSentence, isListening, stopListening, vocabMap, isAIStory, vocabulary]);
 
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
+        setWordPlace(null);
         if (vocab) setSelectedWord(vocab);
     }, [vocabMap]);
 
@@ -276,14 +345,21 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
     // Every key word must be marked first: the ones left are listed so the learner can finish
     const unmarkedWords = keywords.filter(id => vocabMap.has(id) && wordStatuses.get(id) === 'none');
 
-    const handleComplete = async () => {
+    // `marked`: the words left, all marked at once from the sheet, so one tap finishes the story
+    const handleComplete = async (marked?: { choice: 'deck' | 'known'; ids: string[] }) => {
         if (!storyId || !savedStatuses) return;
-        if (unmarkedWords.length) {
+        const deck = marked?.choice === 'deck' ? new Set([...addedWords, ...marked.ids]) : addedWords;
+        const known = marked?.choice === 'known' ? new Set([...knownWords, ...marked.ids]) : knownWords;
+        if (marked) {
+            setAddedWords(deck);
+            setKnownWords(known);
+            setMissingWords(null);
+        } else if (unmarkedWords.length) {
             setMissingWords(unmarkedWords);
             return;
         }
         if (!authUser) {
-            saveGuestStory(storyId, [...addedWords], [...knownWords]);
+            saveGuestStory(storyId, [...deck], [...known]);
             setCompleted(true);
             return;
         }
@@ -291,13 +367,13 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         const unsaved = (ids: Set<string>) => [...ids].filter(id => savedStatuses.get(id) === 'none');
         setSaving(true);
         try {
-            await saveStoryWords(storyId, unsaved(addedWords), unsaved(knownWords));
+            await saveStoryWords(storyId, unsaved(deck), unsaved(known));
             const { offlineInsert } = await import('../lib/offlineMutation');
             const read = {
                 user_id: authUser.id,
                 story_id: storyId,
                 completed_at: new Date().toISOString(),
-                words_added: addedWords.size,
+                words_added: deck.size,
             };
             // Read once per story: a story read before keeps its first record, and only the first reading counts as study
             const firstReading = !qc.getQueryData<ReadStoryRow[]>(['readStories', authUser.id])?.some(r => r.story_id === storyId);
@@ -426,9 +502,28 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 </div>
             </div>
 
-            {/* Tap hint */}
-            <div className="bg-[var(--color-primary)]/8 text-[var(--color-primary)] text-xs py-3 px-5 rounded-full text-center shadow-[var(--shadow-card)]">
-                <Lightbulb className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.tapToTranslate')}
+            {/* Tap hint, and the Spanish of every sentence for whoever needs it */}
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="flex-1 min-w-[12rem] bg-[var(--color-primary)]/8 text-[var(--color-primary)] text-xs py-3 px-5 rounded-full text-center shadow-[var(--shadow-card)]">
+                    <Lightbulb className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t(translation ? 'reader.tapToTranslateSentence' : 'reader.tapToTranslate')}
+                </div>
+                {(translation || translatedByAI) && (
+                    <button
+                        type="button"
+                        onClick={toggleSpanish}
+                        aria-pressed={showSpanish || waitingForAI}
+                        aria-busy={aiTranslation.isFetching}
+                        className="story-spanish-toggle"
+                    >
+                        <Languages className="w-4 h-4" aria-hidden="true" />
+                        {aiTranslation.isFetching ? t('reader.translating') : t('reader.showSpanish')}
+                    </button>
+                )}
+                {askedAIFor === staticStory?.id && aiTranslation.isError && (
+                    <p role="alert" className="w-full text-xs text-[var(--color-error)]">
+                        {t(isLimitReached(aiTranslation.error) ? 'reader.translateLimit' : 'reader.translateFailed')}
+                    </p>
+                )}
             </div>
 
             {/* Story content */}
@@ -438,12 +533,12 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 tabIndex={0}
                 onClick={handleWordClick}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
-                className="app-sheet p-8 text-lg leading-relaxed tracking-wide focus:outline-none transition-all duration-300 pb-48 sm:pb-36 lg:pb-32"
+                className={`app-sheet p-8 text-lg leading-relaxed tracking-wide focus:outline-none transition-all duration-300 pb-48 sm:pb-36 lg:pb-32 ${showSpanish ? 'story-bilingual' : ''}`}
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(processedHTML, {
                         ALLOWED_TAGS: ['p', 'span', 'br'],
-                        ALLOWED_ATTR: ['data-word', 'class', 'data-sentence-idx'],
+                        ALLOWED_ATTR: ['data-word', 'data-gloss', 'class', 'data-sentence-idx'],
                     })
                 }}
             />
@@ -588,7 +683,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
             </AnimatePresence>
 
             {/* Comprehension questions, answered while reading (completing the story ends the reading) */}
-            {!!story.questions?.length && <StoryQuestions questions={story.questions} />}
+            {!!story.questions?.length && <StoryQuestions questions={story.questions} translation={translation} sentences={sentences} showSpanish={showSpanish} />}
 
             {/* Complete button */}
             <div className="space-y-2">
@@ -598,7 +693,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         : t('reader.allWordsMarked')}
                 </p>
                 <button
-                    onClick={handleComplete}
+                    onClick={() => void handleComplete()}
                     disabled={!savedStatuses || saving}
                     className="btn-primary w-full py-4 text-base tracking-wide disabled:opacity-60 disabled:pointer-events-none"
                 >
@@ -643,9 +738,26 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                                         </button>
                                     ))}
                                 </div>
+                                {/* Every word left with one tap: whoever starts from zero would otherwise open each one */}
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                    <button
+                                        onClick={() => void handleComplete({ choice: 'deck', ids: missingWords })}
+                                        disabled={saving}
+                                        autoFocus
+                                        className="btn-primary py-3 text-sm"
+                                    >
+                                        {t('reader.addAllAndFinish')}
+                                    </button>
+                                    <button
+                                        onClick={() => void handleComplete({ choice: 'known', ids: missingWords })}
+                                        disabled={saving}
+                                        className="btn-secondary py-3 text-sm"
+                                    >
+                                        {t('reader.knowAllAndFinish')}
+                                    </button>
+                                </div>
                                 <button
                                     onClick={() => setMissingWords(null)}
-                                    autoFocus
                                     className="w-full rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)] py-3 font-bold text-sm"
                                 >
                                     {t('common.close')}
@@ -656,75 +768,91 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 )}
             </AnimatePresence>, document.body)}
 
-            {/* Floating Audiobook Player Bar */}
-            <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
+            {/* Floating audiobook player: one row of controls, so it covers as little text as it can */}
+            <div className="fixed bottom-4 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)] rounded-[var(--radius-lg)] p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
                 {!playback.usingRecording && <NoEnglishVoices />}
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-[var(--color-primary)] font-bold">Modo Audiolibro</p>
-                        <p className="text-xs text-[var(--color-on-surface)] truncate font-medium">
-                            {currentSentenceIdx !== -1 ? sentences[currentSentenceIdx] : 'Selecciona una oración para comenzar'}
+                {/* On a phone the highlighted sentence is the text itself: only what it means, when the text hides it */}
+                <div className={`min-w-0 ${showSpanish ? 'hidden sm:block' : ''}`}>
+                    <p className="hidden sm:block text-xs text-[var(--color-on-surface)] truncate font-medium" lang="en">
+                        {currentSentenceIdx !== -1 ? sentences[currentSentenceIdx] : t('reader.playerHint')}
+                    </p>
+                    {currentSentenceIdx !== -1 && translation?.sentences[currentSentenceIdx] ? (
+                        <p className="text-xs text-[var(--color-on-surface-muted)] line-clamp-2" lang="es">
+                            {translation.sentences[currentSentenceIdx]}
                         </p>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Accent Selector */}
+                    ) : (
+                        <p className="sm:hidden text-xs text-[var(--color-on-surface-muted)]">{t('reader.playerHint')}</p>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
                         <button
+                            type="button"
+                            onClick={handlePrevSentence}
+                            disabled={currentSentenceIdx <= 0}
+                            aria-label={t('reader.previousSentence')}
+                            className="size-11 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+                        >
+                            <SkipBack className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handlePlayPause}
+                            aria-label={isPlaying ? t('reader.pause') : t('reader.play')}
+                            className="size-12 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
+                        >
+                            {isPlaying ? <Pause className="w-5 h-5 fill-current" aria-hidden="true" /> : <Play className="w-5 h-5 fill-current translate-x-0.5" aria-hidden="true" />}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleNextSentence}
+                            disabled={currentSentenceIdx === -1 || currentSentenceIdx >= sentences.length - 1}
+                            aria-label={t('reader.nextSentence')}
+                            className="size-11 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+                        >
+                            <SkipForward className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <button
+                            type="button"
                             onClick={() => {
                                 const next = accent === 'US' ? 'UK' : accent === 'UK' ? 'AU' : 'US';
                                 setAccent(next);
                             }}
-                            className="w-14 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
-                            title="Acento del sintetizador"
+                            className="h-11 w-12 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[11px] font-black transition-all cursor-pointer flex items-center justify-center"
+                            aria-label={t('reader.accent', { accent })}
+                            title={t('reader.accent', { accent })}
                         >
                             {accent}
                         </button>
-
                         <button
+                            type="button"
                             onClick={() => {
                                 setPlaybackRate(prev => prev === 0.75 ? 1 : prev === 1 ? 1.25 : 0.75);
                             }}
-                            className="w-8 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer"
-                            title="Velocidad de reproducción"
+                            className="size-11 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[11px] font-black transition-all cursor-pointer"
+                            aria-label={t('reader.speed', { rate: playbackRate })}
+                            title={t('reader.speed', { rate: playbackRate })}
                         >
                             {playbackRate}x
                         </button>
                         <button
+                            type="button"
                             onClick={handleToggleShadowing}
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-                                showShadowing 
-                                    ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-md' 
+                            aria-pressed={showShadowing}
+                            aria-label={t('reader.shadowing')}
+                            title={t('reader.shadowing')}
+                            className={`size-11 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                                showShadowing
+                                    ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-md'
                                     : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)]'
                             }`}
-                            title="Practicar Shadowing"
                         >
-                            <Mic className="w-4 h-4" />
+                            <Mic className="w-4 h-4" aria-hidden="true" />
                         </button>
                     </div>
-                </div>
-                
-                <div className="flex items-center justify-center gap-4">
-                    <button
-                        onClick={handlePrevSentence}
-                        disabled={currentSentenceIdx <= 0}
-                        className="p-2.5 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
-                    >
-                        <SkipBack className="w-4 h-4" />
-                    </button>
-                    
-                    <button
-                        onClick={handlePlayPause}
-                        className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
-                    >
-                        {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current translate-x-0.5" />}
-                    </button>
-                    
-                    <button
-                        onClick={handleNextSentence}
-                        disabled={currentSentenceIdx === -1 || currentSentenceIdx >= sentences.length - 1}
-                        className="p-2.5 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
-                    >
-                        <SkipForward className="w-4 h-4" />
-                    </button>
                 </div>
             </div>
 
@@ -748,11 +876,16 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                             className="fixed bottom-4 left-4 right-4 z-[75]"
                         >
                             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
-                                <div className="flex justify-between items-start">
-                                    <div>
+                                <div className="flex justify-between items-start gap-3">
+                                    <SpeakButton text={selectedWord.id} />
+                                    <div className="flex-1 min-w-0">
                                         <h3 className="text-xl font-black tracking-tight text-accent-blue">{selectedWord.id}</h3>
                                         {selectedWord.phonetic && (
                                             <p className="text-sm text-[var(--color-on-surface-muted)] mt-0.5">{selectedWord.phonetic}</p>
+                                        )}
+                                        {/* Whoever starts can't read IPA yet: the sound in Spanish letters */}
+                                        {selectedWord.cefrLevel === 'A1' && selectedWord.phonetic && (
+                                            <p className="sounds-like">{t('audio.soundsLike')} <b>{soundsLike(selectedWord.phonetic)}</b></p>
                                         )}
                                     </div>
                                     <button
@@ -763,15 +896,32 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                                     </button>
                                 </div>
 
+                                {wordPlace?.gloss && (
+                                    <div className="bg-[var(--color-primary-container)] rounded-2xl p-4">
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.meansHere')}</p>
+                                        <p className="text-base font-bold">{wordPlace.gloss}</p>
+                                    </div>
+                                )}
                                 <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
                                     <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.translation')}</p>
                                     <p className="text-base font-bold">{selectedWord.translations.join(', ')}</p>
                                 </div>
+                                {/* The dictionary meaning can mislead in a phrase: the whole sentence, in Spanish */}
+                                {wordPlace && translation?.sentences[wordPlace.sentence] && (
+                                    <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.inThisSentence')}</p>
+                                        <p className="text-sm" lang="en">{sentences[wordPlace.sentence]}</p>
+                                        <p className="text-sm text-[var(--color-on-surface-muted)] mt-1">{translation.sentences[wordPlace.sentence]}</p>
+                                    </div>
+                                )}
 
                                 {selectedWord.examples.length > 0 && (
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
                                         <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.example')}</p>
-                                        <p className="text-sm text-[var(--color-on-surface-muted)] italic">"{selectedWord.examples[0]}"</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="flex-1 text-sm text-[var(--color-on-surface-muted)] italic" lang="en">"{selectedWord.examples[0]}"</p>
+                                            <SpeakButton text={selectedWord.examples[0]} />
+                                        </div>
                                     </div>
                                 )}
 

@@ -6,6 +6,7 @@ import { createExercise } from '../../server/agents/exercise-creator.js';
 import { WRITING_TYPES, evaluateWriting } from '../../server/agents/writing-evaluator.js';
 import { generateCareerDeck } from '../../server/agents/career-deck.js';
 import { evaluateSpeaking } from '../../server/agents/speaking-evaluator.js';
+import { translateStory, translatableStory, translationCacheParams } from '../../server/agents/story-translator.js';
 import { env, setEnv } from '../../server/lib/config.js';
 import { authenticateRequest } from '../../server/lib/auth.js';
 import { isCriteriaExam } from '../../server/lib/examCriteria.js';
@@ -43,6 +44,7 @@ const DAILY_AGENT_LIMITS: Record<string, string> = {
     'vocab-enricher': 'other-ai',
     'exercise-creator': 'other-ai',
     'career-deck': 'other-ai',
+    'story-translator': 'translations',
 };
 
 /** The evaluators take an exam id (its criteria are chosen on the server), or none. */
@@ -53,6 +55,15 @@ const isText = (value: unknown, max: number, optional = false) =>
     (optional && value == null) || (typeof value === 'string' && value.length <= max);
 
 function validateInputSize(agent: AgentType, params: any): { valid: boolean; error?: string } {
+    // Only the app's own B1 and B2 stories, looked up by id: never free text, and nothing else, so no
+    // extra field can change the cache key and send each request to the model
+    if (agent === 'story-translator') {
+        const keys = params && typeof params === 'object' && !Array.isArray(params) ? Object.keys(params) : null;
+        if (!keys || keys.length !== 1 || typeof params.storyId !== 'string' || params.storyId.length > 40 || !translatableStory(params.storyId)) {
+            return { valid: false, error: 'Historia desconocida.' };
+        }
+        return { valid: true };
+    }
     if (!params) return { valid: true };
 
     switch (agent) {
@@ -107,6 +118,7 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
             break;
         }
         case 'writing-evaluator': {
+            if (params.retry !== undefined && params.retry !== true) return { valid: false, error: 'Reintento inválido.' };
             if (!isText(params.text, 3000)) {
                 return { valid: false, error: 'El texto a evaluar debe ser texto de máximo 3000 caracteres.' };
             }
@@ -214,6 +226,15 @@ export const onRequestPost: PagesFunction = async (context) => {
             });
         }
 
+        // A story already translated costs nothing: it is served before the daily limit is checked
+        const cacheKey = isCacheable(agent)
+            ? generateCacheKey(agent, agent === 'story-translator' ? translationCacheParams(params.storyId) : params)
+            : null;
+        const cachedFirst = agent === 'story-translator' && cacheKey ? await getCachedResponse(cacheKey) : null;
+        if (cachedFirst) {
+            return new Response(JSON.stringify(cachedFirst), { status: 200, headers: corsHeaders });
+        }
+
         // --- Usage limits check ---
         if (agent === 'conversation-tutor') {
             const usage = await checkUsageLimit(userId, 'conversation-tutor', userTier);
@@ -229,7 +250,8 @@ export const onRequestPost: PagesFunction = async (context) => {
             }
         }
 
-        const dailyFeature = DAILY_AGENT_LIMITS[agent];
+        // A retry under the pass mark has a count of its own, so redoing never uses up the day's evaluations
+        const dailyFeature = agent === 'writing-evaluator' && params?.retry === true ? 'evaluation-retries' : DAILY_AGENT_LIMITS[agent];
         if (dailyFeature) {
             const usage = await checkUsageLimit(userId, dailyFeature, userTier);
             if (!usage.allowed) {
@@ -258,11 +280,9 @@ export const onRequestPost: PagesFunction = async (context) => {
             }
         }
 
-        // --- Cache lookup ---
-        let cacheKey: string | null = null;
-        if (isCacheable(agent)) {
+        // --- Cache lookup (the translator's was done above) ---
+        if (cacheKey && agent !== 'story-translator') {
             try {
-                cacheKey = generateCacheKey(agent, params);
                 const cached = await getCachedResponse(cacheKey);
                 if (cached) {
                     return new Response(JSON.stringify(cached), {
@@ -298,6 +318,9 @@ export const onRequestPost: PagesFunction = async (context) => {
                 break;
             case 'speaking-evaluator':
                 result = await evaluateSpeaking(params);
+                break;
+            case 'story-translator':
+                result = await translateStory({ storyId: params.storyId });
                 break;
         }
 

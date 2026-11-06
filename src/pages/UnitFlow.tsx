@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -6,9 +6,10 @@ import { useAuth } from '../lib/AuthContext';
 import type { ReadStoryRow } from '../lib/database.types';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, RefreshCw, PenLine, Mic, Trophy, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
+import { BookOpen, RefreshCw, PenLine, Mic, Trophy, ChevronRight, Sparkles, Check } from 'lucide-react';
 import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db';
 import { allUnits } from '../data/curriculum/units';
+import { skillPrompt } from '../data/grammarLabels';
 import { levelOfId, useLevelContent } from '../data/levels';
 import { savedIdsOf, vocabularyAliases } from '../data/vocabulary/aliases';
 import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
@@ -29,6 +30,14 @@ import BackButton from '../components/ui/BackButton';
 import PageHead from '../components/ui/PageHead';
 import LevelBadge from '../components/ui/LevelBadge';
 import { useNoteContext } from '../components/notebook/NotebookContext';
+import RetryReview from '../components/RetryReview';
+import { useSessionState } from '../hooks/useSessionState';
+import { comprehensionExercises, examplePairs, storyPairs } from '../lib/comprehension';
+import SpeakButton from '../components/ui/SpeakButton';
+import { speakEnglish } from '../lib/speakEnglish';
+import { soundsLike } from '../lib/soundsLike';
+import { PASS_SCORE, fromExercises, retryVerdict, shortReview, type ReviewItem } from '../lib/retryPolicy';
+import { unitTitle, unitTopic } from '../data/curriculum/unitTitles';
 
 /* ===== Step metadata ===== */
 
@@ -114,7 +123,7 @@ export default function UnitFlow() {
     // Notes written here belong to the unit
     useNoteContext(unit && {
         key: `unit:${unit.id}`,
-        label: `${t('path.unit')} ${unit.unitNumber} · ${unit.title}`,
+        label: `${t('path.unit')} ${unit.unitNumber} · ${unitTitle(unit)}`,
         path: `/path/${unit.id}`,
     });
     // Only this unit's level is downloaded (src/data/levels), with its deck from the start
@@ -129,20 +138,33 @@ export default function UnitFlow() {
     const unitStory = unitStories[0] ?? null;
     // One array per unit: a new one on every render would reshuffle the checkpoint below
     const unitExercises = useMemo(() => content?.exercises.filter(e => e.unitId === unitId) ?? ([] as GrammarExercise[]), [content, unitId]);
+    // What the grammar card's examples mean and how they sound: questions answered by understanding,
+    // not by copying the pattern of the card
+    const unitPairs = useMemo(() => examplePairs(content?.grammarCards.find(c => c.unitId === unitId)), [content, unitId]);
+    const practiceExercises = useMemo(
+        () => [...unitExercises, ...comprehensionExercises(unitPairs, `${unitId}-practice`, { meaning: 1, listen: 1 })],
+        [unitExercises, unitPairs, unitId],
+    );
 
     // Track animation direction
     const [direction, setDirection] = useState(1);
     const [checkpointKey, setCheckpointKey] = useState(0);
-    const [exerciseAttempt, setExerciseAttempt] = useState(0);
 
     // Checkpoint exercise subset — must be above early returns to satisfy Rules of Hooks
-    // The checkpoint checks the unit with items the learner has not just answered: the unit's
-    // review-skill exercises. Units without skills fall back to their own exercises.
+    // The checkpoint checks the unit with items the learner has not just answered: a few of the
+    // unit's review-skill exercises, and above all what sentences of its stories mean. Those are not
+    // on the grammar card, so they are answered by understanding, not by copying its pattern.
+    // Units without skills or translated stories fall back to their own exercises and examples.
     const checkpointExercises = useMemo(() => {
         const fresh = unitId && content ? skillCheckpointExercises(unitId, content.skills) : [];
         const pool = fresh.length >= 5 ? fresh : unitExercises ?? [];
-        return shuffle(pool).slice(0, Math.min(5, pool.length));
-    }, [unitId, unitExercises, content, checkpointKey]); // eslint-disable-line react-hooks/exhaustive-deps
+        const sentences = storyPairs(unitStories);
+        const understanding = sentences.length >= 6
+            ? comprehensionExercises(sentences, `${unitId}-checkpoint`, { meaning: 4, listen: 0 })
+            : comprehensionExercises(unitPairs, `${unitId}-checkpoint`, { meaning: 2, listen: 0 });
+        const grammar = understanding.length >= 4 ? 3 : 5;
+        return shuffle([...shuffle(pool).slice(0, Math.min(grammar, pool.length)), ...understanding]);
+    }, [unitId, unitExercises, unitPairs, unitStories, content, checkpointKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Loading state: the progress, or the content of a lesson unit's level
     if (isLoading || (unit && !unit.isAssessment && !content)) {
@@ -194,7 +216,7 @@ export default function UnitFlow() {
                                 >
                                     <span className="min-w-0">
                                         <span className="block text-xs font-bold text-[var(--color-on-surface-muted)]">{t('path.unit')} {u.unitNumber}</span>
-                                        <span className="block text-sm font-bold truncate">{u.title}</span>
+                                        <span className="block text-sm font-bold truncate">{unitTitle(u)}</span>
                                     </span>
                                     <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-tertiary-ink)]">
                                         <Mic className="w-4 h-4" aria-hidden="true" />{t('path.speakingPending')}
@@ -230,12 +252,10 @@ export default function UnitFlow() {
 
     /* -- Exercise completion handlers -- */
 
+    // Reached once the exercises pass, or after the second try when the learner goes on anyway
     const handleExercisesComplete = async (score: number) => {
         await updateProgress({ exercises_score: score });
         await markStepComplete('exercises');
-        // A score of 0 keeps the unit on this step: the exercises start over instead of
-        // leaving the learner on the score screen
-        if (score === 0) setExerciseAttempt(n => n + 1);
         handleStepAdvance();
     };
 
@@ -333,9 +353,9 @@ export default function UnitFlow() {
                                 label={t('exercises.title')}
                                 description="Pon a prueba lo que aprendiste en esta unidad."
                             />
-                            <ExerciseRunner
-                                key={exerciseAttempt}
-                                exercises={unitExercises}
+                            <ExercisesStep
+                                unitId={unitId!}
+                                exercises={practiceExercises}
                                 onComplete={handleExercisesComplete}
                             />
                         </div>
@@ -369,6 +389,7 @@ export default function UnitFlow() {
 
                     {currentStep === 'checkpoint' && checkpointExercises.length > 0 && (
                         <CheckpointStep
+                            unitId={unitId!}
                             exercises={checkpointExercises}
                             onComplete={handleCheckpointComplete}
                             onRetry={() => setCheckpointKey(k => k + 1)}
@@ -406,10 +427,10 @@ export default function UnitFlow() {
                 className="space-y-6"
             >
                 <PageHead
-                    title={unit.title}
+                    title={unitTitle(unit)}
                     meta={[
                         `${t('path.unit')} ${unit.unitNumber}`,
-                        unit.grammarTopic,
+                        unitTopic(unit),
                         <LevelBadge key="level" level={unit.level} size="compact" withStage />,
                     ]}
                 />
@@ -456,7 +477,7 @@ function skillCheckpointExercises(unitId: string, skills: GrammarSkill[]): Gramm
             return { id, unitId, type: 'word-order', question: 'Ordena para formar una oración:', correctAnswer: e.answer, scrambledWords: shuffle(e.answer.split(' ')), explanation: e.explanation };
         }
         // Skill fill-blanks come with options, so they are answered by choosing
-        return { id, unitId, type: e.options ? 'multiple-choice' : 'fill-blank', question: e.prompt, correctAnswer: e.answer, options: e.options, explanation: e.explanation };
+        return { id, unitId, type: e.options ? 'multiple-choice' : 'fill-blank', question: skillPrompt(e.prompt, unitId), correctAnswer: e.answer, options: e.options, explanation: e.explanation };
     }));
 }
 
@@ -706,39 +727,44 @@ function VocabStep({
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {visible.map(v => (
-                                <button
-                                    key={v.id}
-                                    onClick={() => toggleFlip(v.id)}
-                                    aria-pressed={flipped.has(v.id)}
-                                    className={`
-                                        relative rounded-2xl p-4 text-left transition-all duration-300 min-h-[72px]
-                                        ${flipped.has(v.id)
-                                            ? 'bg-[var(--color-primary)]/10 shadow-[var(--shadow-card)]'
-                                            : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] hover:-translate-y-0.5'
-                                        }
-                                    `}
-                                >
-                                    {!flipped.has(v.id) ? (
-                                        <div className="flex flex-col gap-1">
-                                            <span className="font-bold text-sm text-[var(--color-on-surface)]">{v.id}</span>
-                                            {v.phonetic && (
-                                                <span className="text-[10px] text-[var(--color-on-surface-muted)]">{v.phonetic}</span>
-                                            )}
-                                            {(saved?.inDeck.has(v.id) || saved?.known.has(v.id)) && (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--color-primary)]">
-                                                    <Check className="h-3 w-3" aria-hidden="true" /> {t(saved.inDeck.has(v.id) ? 'unitFlow.inReview' : 'unitFlow.alreadyKnown')}
+                                <div key={v.id} className="relative">
+                                    <button
+                                        onClick={() => { if (!flipped.has(v.id)) speakEnglish(v.id); toggleFlip(v.id); }}
+                                        aria-pressed={flipped.has(v.id)}
+                                        className={`
+                                            relative rounded-2xl p-4 text-left transition-all duration-300 min-h-[72px]
+                                            ${flipped.has(v.id)
+                                                ? 'bg-[var(--color-primary)]/10 shadow-[var(--shadow-card)]'
+                                                : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] hover:-translate-y-0.5'
+                                            }
+                                        `}
+                                    >
+                                        {!flipped.has(v.id) ? (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-bold text-sm text-[var(--color-on-surface)] pr-8">{v.id}</span>
+                                                {v.phonetic && (
+                                                    <span className="text-[10px] text-[var(--color-on-surface-muted)]">{v.phonetic}</span>
+                                                )}
+                                                {v.cefrLevel === 'A1' && v.phonetic && (
+                                                    <span className="sounds-like">≈ <b>{soundsLike(v.phonetic)}</b></span>
+                                                )}
+                                                {(saved?.inDeck.has(v.id) || saved?.known.has(v.id)) && (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--color-primary)]">
+                                                        <Check className="h-3 w-3" aria-hidden="true" /> {t(saved.inDeck.has(v.id) ? 'unitFlow.inReview' : 'unitFlow.alreadyKnown')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-semibold text-xs text-[var(--color-primary)]">{v.translations.join(', ')}</span>
+                                                <span lang="en" className="text-[10px] text-[var(--color-on-surface-muted)] italic leading-tight">
+                                                    {v.examples[0]}
                                                 </span>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-1">
-                                            <span className="font-semibold text-xs text-[var(--color-primary)]">{v.translations.join(', ')}</span>
-                                            <span lang="en" className="text-[10px] text-[var(--color-on-surface-muted)] italic leading-tight">
-                                                {v.examples[0]}
-                                            </span>
-                                        </div>
-                                    )}
-                                </button>
+                                            </div>
+                                        )}
+                                    </button>
+                                    <SpeakButton text={v.id} className="absolute top-2 right-2 !w-8 !h-8" />
+                                </div>
                             ))}
                         </div>
                         {isDeck && vocabItems.length > visible.length && (
@@ -790,32 +816,87 @@ function VocabStep({
     );
 }
 
+/* -- Exercises Step -- */
+
+interface Review { score: number; items: ReviewItem[]; canContinue: boolean }
+
+/**
+ * The unit's exercises. Under the pass mark a short review of what failed comes first, then the set
+ * again in another order; after the second try the learner may go on with their best score.
+ */
+function ExercisesStep({
+    unitId,
+    exercises,
+    onComplete,
+}: {
+    unitId: string;
+    exercises: GrammarExercise[];
+    onComplete: (score: number) => void;
+}) {
+    // The tries survive a reload: reloading neither resets the count nor the best score
+    const [tries, setTries, forgetTries] = useSessionState(`voxie-tries:${unitId}:exercises`, { attempt: 1, best: 0 });
+    const { attempt } = tries;
+    const [review, setReview] = useState<Review | null>(null);
+    const round = useMemo(() => (attempt === 1 ? exercises : shuffle(exercises)), [attempt, exercises]);
+
+    const finish = (score: number) => {
+        forgetTries();
+        onComplete(score);
+    };
+
+    const handleComplete = (score: number, missed: GrammarExercise[] = []) => {
+        setTries(t => ({ ...t, best: Math.max(t.best, score) }));
+        const verdict = retryVerdict('exercises', score, attempt);
+        if (verdict === 'pass') {
+            finish(score);
+            return;
+        }
+        setReview({ score, items: shortReview(fromExercises(missed)), canContinue: verdict === 'may-continue' });
+    };
+
+    if (review) {
+        return (
+            <RetryReview
+                part="exercises"
+                unitId={unitId}
+                score={review.score}
+                items={review.items}
+                canContinue={review.canContinue}
+                onRetry={() => { setReview(null); setTries(t => ({ ...t, attempt: t.attempt + 1 })); }}
+                onContinue={() => finish(Math.max(tries.best, review.score))}
+            />
+        );
+    }
+    return <ExerciseRunner key={attempt} exercises={round} passScore={PASS_SCORE.exercises} onComplete={handleComplete} />;
+}
+
 /* -- Checkpoint Step -- */
 
 function CheckpointStep({
+    unitId,
     exercises,
     onComplete,
     onRetry,
 }: {
+    unitId: string;
     exercises: GrammarExercise[];
     onComplete: (score: number) => void;
     onRetry: () => void;
 }) {
-    const [lastScore, setLastScore] = useState<number | null>(null);
-    const [showRunner, setShowRunner] = useState(true);
+    const { t } = useTranslation();
+    const [review, setReview] = useState<Review | null>(null);
 
-    const handleComplete = (score: number) => {
-        setLastScore(score);
-        if (score >= 80) {
+    // The checkpoint is the unit's exam: under its mark it always asks again, after the review
+    const handleComplete = (score: number, missed: GrammarExercise[] = []) => {
+        if (retryVerdict('checkpoint', score, 1) === 'pass') {
             onComplete(score);
-        } else {
-            setShowRunner(false);
+            return;
         }
+        setReview({ score, items: shortReview(fromExercises(missed)), canContinue: false });
     };
 
     const handleRetry = () => {
-        setLastScore(null);
-        setShowRunner(true);
+        setReview(null);
         onRetry();
     };
 
@@ -823,37 +904,21 @@ function CheckpointStep({
         <div className="space-y-6">
             <StepHeader
                 icon={Trophy}
-                label="Checkpoint"
-                description="Demuestra tu dominio. Necesitas al menos 80% para aprobar."
+                label={t('unitFlow.checkpointTitle')}
+                description={t('unitFlow.checkpointLead', { pass: PASS_SCORE.checkpoint })}
             />
 
-            {showRunner ? (
-                <ExerciseRunner exercises={exercises} onComplete={handleComplete} />
+            {review ? (
+                <RetryReview
+                    part="checkpoint"
+                    unitId={unitId}
+                    score={review.score}
+                    items={review.items}
+                    canContinue={false}
+                    onRetry={handleRetry}
+                />
             ) : (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center py-10"
-                >
-                    <div className="app-specimen">
-                        <div className="space-y-3">
-                            <p className="text-5xl font-black tracking-tight text-[var(--color-error)]">
-                                {lastScore}%
-                            </p>
-                            <p className="text-[var(--color-on-surface-muted)] text-sm leading-relaxed">
-                                Necesitas al menos 80% para aprobar. Repasa el material y vuelve a intentarlo.
-                            </p>
-                        </div>
-
-                        <button
-                            onClick={handleRetry}
-                            className="btn-primary w-full py-4 flex items-center justify-center gap-2"
-                        >
-                            <RotateCcw className="w-4 h-4" />
-                            Inténtalo de nuevo
-                        </button>
-                    </div>
-                </motion.div>
+                <ExerciseRunner exercises={exercises} passScore={PASS_SCORE.checkpoint} onComplete={handleComplete} />
             )}
         </div>
     );

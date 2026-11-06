@@ -1,4 +1,4 @@
-import type { CEFRLevel, Story, Vocabulary } from './db';
+import type { CEFRLevel, Story, StoryTranslation, Vocabulary } from './db';
 import { apiFetch } from './apiFetch';
 import i18n from '../i18n/config';
 
@@ -39,10 +39,14 @@ async function callAgent<T>(agent: string, params: Record<string, any>): Promise
         });
 
         if (!response.ok) {
-            const data = await response.json().catch(() => ({ message: 'Unknown error' }));
-            // The AI can't serve some regions (see the terms): say so instead of a bare status
-            const message = data.error === 'region_unavailable' ? i18n.t('legal.regionUnavailable') : data.message;
-            const err = new Error(message || `Agent ${agent} failed: ${response.status}`);
+            const data = await response.json().catch(() => ({}));
+            // The AI can't serve some regions (see the terms): say so instead of a bare status.
+            // A server failure, or an answer that is not ours, gets a plain message: not the
+            // server's English, not a status code
+            const message = data.error === 'region_unavailable'
+                ? i18n.t('legal.regionUnavailable')
+                : response.status >= 500 || !data.message ? i18n.t('common.aiUnavailable') : data.message;
+            const err = new Error(message);
             (err as any).status = response.status;
             (err as any).code = data.error;
             throw err;
@@ -203,9 +207,11 @@ export async function evaluateWriting(
     targetGrammar: string[],
     referenceAnswer?: string,
     exam?: string,
+    /** Redoing a prompt under the pass mark: it spends the day's retries, not its evaluations. */
+    retry?: boolean,
 ): Promise<WritingEvaluationResponse> {
     return spendsEvaluation(callAgent<WritingEvaluationResponse>('writing-evaluator', {
-        text, prompt, level, type, targetGrammar, referenceAnswer, exam,
+        text, prompt, level, type, targetGrammar, referenceAnswer, exam, ...(retry ? { retry: true } : {}),
     }));
 }
 
@@ -240,6 +246,11 @@ export interface SpeakingEvaluationResponse {
     vocabularyScore: number;
     detailedFeedback: string;
     criteria?: CriterionScore[];
+}
+
+/** The Spanish of a B1 or B2 story, translated once and served from the cache after. */
+export async function translateStory(storyId: string): Promise<StoryTranslation> {
+    return callAgent<StoryTranslation>('story-translator', { storyId });
 }
 
 export async function evaluateSpeaking(

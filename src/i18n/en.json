@@ -66,7 +66,7 @@
     "allWordsMarked": "You marked every word.",
     "missingTitle_one": "{{count}} word left",
     "missingTitle_other": "{{count}} words left",
-    "missingHint": "Mark each one: add it to your deck or say you already know it. Tap one to open it.",
+    "missingHint": "Mark them all with one tap, or tap one to open it.",
     "savedOnComplete": "Saved when you complete the story.",
     "saveFailed": "Your words could not be saved. Try again.",
     "tapToTranslate": "Tap a word to see its translation",
@@ -95,7 +95,24 @@
     "answerEvidence": "The story says:",
     "questionsScore": "You got {{right}} of {{total}} right.",
     "addedFeedback": "Added to your deck",
-    "knownFeedback": "Marked as known"
+    "knownFeedback": "Marked as known",
+    "addAllAndFinish": "Add them all and finish",
+    "knowAllAndFinish": "I know them, finish",
+    "showSpanish": "Show Spanish",
+    "tapToTranslateSentence": "Tap a word to translate it, or a sentence to hear it and see what it means",
+    "playerHint": "Tap a sentence to hear it",
+    "previousSentence": "Previous sentence",
+    "nextSentence": "Next sentence",
+    "play": "Play",
+    "pause": "Pause",
+    "accent": "Accent: {{accent}}",
+    "speed": "Speed: {{rate}}x",
+    "shadowing": "Repeat aloud (shadowing)",
+    "translating": "Translating…",
+    "translateFailed": "Couldn't get the Spanish of this story. Try again later.",
+    "meansHere": "Here it means",
+    "inThisSentence": "In this sentence",
+    "translateLimit": "You've used today's translations on the free plan. You get more tomorrow, or none of these limits with Pro. Stories you already asked for stay in Spanish."
   },
   "storyList": {
     "subtitle": "Explore stories by level",
@@ -215,6 +232,7 @@
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Retry",
+    "aiUnavailable": "The AI did not answer. It is usually brief: try again in a moment.",
     "close": "Close",
     "cancel": "Cancel",
     "save": "Save",
@@ -297,7 +315,9 @@
     "progressError": "Your level progress could not be checked. Check your connection and try again.",
     "speakingStillPending": "The speaking of this unit is still left: finish it from the path before the end-of-level exam.",
     "stepsLabel": "Unit steps",
-    "stepOf": "Step {{n}} of {{total}}"
+    "stepOf": "Step {{n}} of {{total}}",
+    "checkpointTitle": "Checkpoint",
+    "checkpointLead": "Show what you know. You need at least {{pass}}% to pass."
   },
   "exercises": {
     "title": "Exercises",
@@ -310,7 +330,10 @@
     "finish": "Finish",
     "tryAgain": "Try again",
     "zeroHint": "You need at least one right answer to move on to the next step. Review the grammar card if you need to.",
-    "autoNext": "When you get it right, it moves on by itself in a few seconds."
+    "autoNext": "When you get it right, it moves on by itself in a few seconds.",
+    "whatDoesItMean": "What does it mean?",
+    "listenAndChoose": "Listen and choose what you heard",
+    "whichMeans": "Which one says this in English?"
   },
   "practice": {
     "saveToHistory": "Save to history",
@@ -677,14 +700,21 @@
     "deferError": "It could not be saved. Check your connection and try again.",
     "notNow": "Not now, back to the path",
     "backToPath": "Back to the path",
-    "continuePending": "Go on to the checkpoint (speaking pending)"
+    "continuePending": "Go on to the checkpoint (speaking pending)",
+    "listenInstead": "Meanwhile, practice listening",
+    "listenIntro": "Listen to each sentence of the unit and choose the one you heard. No microphone needed.",
+    "listenScore": "Listening practice: {{score}}%. You can do it again any time.",
+    "cantSpeakNow": "I can't speak right now"
   },
   "writing": {
     "perfect": "Perfect! Your answer matches the model answer.",
     "noCorrections": "No corrections: your answer is well written.",
     "unchanged": "It is still the text with errors: fix the parts that are wrong.",
     "yourText": "What you wrote",
-    "improved": "Improved version"
+    "improved": "Improved version",
+    "showHint": "Show hint",
+    "hideHint": "Hide hint",
+    "hintHelp": "These are the words you need, out of order. Tap them to add them and put them in order yourself."
   },
   "garden3d": {
     "unit": "Unit {{n}}",
@@ -790,5 +820,53 @@
     "capture": "Note it",
     "saveToNotebook": "Save to notebook",
     "glossaryQuote": "{{term}}: {{definition}} Example: {{example}}"
+  },
+  "retry": {
+    "title": "Review before trying again",
+    "score": "You got {{score}}%. You need {{pass}}% to go on.",
+    "rules": "The rule, in short",
+    "mistakes": "What went wrong",
+    "again": "Try again",
+    "againPrompts_one": "Redo the exercise that failed",
+    "againPrompts_other": "Redo the {{count}} exercises that failed",
+    "continue": "Go on anyway",
+    "continueNote": "You tried twice. What went wrong stays in your review.",
+    "seeReview": "See what to review",
+    "missedWords": "Not heard: {{words}}. Listen to the audio and repeat them slowly."
+  },
+  "audio": {
+    "listen": "Listen",
+    "listenTo": "Listen to “{{text}}”",
+    "soundsLike": "Sounds like"
+  },
+  "firstSteps": {
+    "title": "First steps",
+    "lead": "For whoever starts from zero, before unit 1. No grammar: listen, understand and repeat.",
+    "count": "{{done}} of {{total}} lessons",
+    "lessons": "Lessons",
+    "done": "Done",
+    "phrases_one": "{{count}} phrase",
+    "phrases_other": "{{count}} phrases",
+    "allLessons": "All lessons",
+    "practice": "Practice",
+    "practiceTitle": "Practice",
+    "finishedTitle": "You finished the first steps!",
+    "finishedBody": "You know the greetings, the numbers and the phrases you'll use most. Go on with unit 1.",
+    "goToUnit1": "Go to unit 1",
+    "cardTitle": "First steps",
+    "cardBody": "Starting from zero? Before unit 1: greetings, numbers and useful phrases, with audio and in Spanish.",
+    "cardAction": "Start",
+    "cardContinue": "Continue",
+    "dialogueTitle": "A short talk",
+    "playDialogue": "Play the talk",
+    "addWords_one": "Add {{count}} word to my review",
+    "addWords_other": "Add {{count}} words to my review",
+    "wordsAdded": "They're in your review",
+    "wordsHint": "We'll ask you about them in «Review» so you don't forget them.",
+    "wordsError": "Couldn't add them. Try again.",
+    "repeatTitle": "Say it aloud",
+    "repeatLead": "You finished the lesson. If you can speak, repeat these phrases: they stick better.",
+    "repeatInstruction": "Listen to the phrase and say it aloud.",
+    "skipRepeat": "I can't speak right now"
   }
 }

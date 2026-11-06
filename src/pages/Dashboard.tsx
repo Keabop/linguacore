@@ -24,7 +24,9 @@ import Garden from '../components/garden/Garden';
 import StreakChip from '../components/ui/StreakChip';
 import GoalDrops from '../components/ui/GoalDrops';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
+import FirstStepsCard from '../components/FirstStepsCard';
 import { useLevelUpNotice } from '../hooks/useLevelUpNotice';
+import { unitTitle, unitTopic } from '../data/curriculum/unitTitles';
 
 // Loaded only the first time a level-up happens
 const LevelUpModal = lazy(() => import('../components/ui/LevelUpModal'));
@@ -116,6 +118,9 @@ export default function Dashboard() {
                 />
             </motion.div>
 
+            {/* Whoever starts from zero: «Primeros pasos» first, while at the start of A1 */}
+            {currentLevel === 'A1' && unitsCompleted < 2 && <motion.div {...fadeIn(1)}><FirstStepsCard /></motion.div>}
+
             {/* Today's spread: the unit on the left page, the daily chores on the right one */}
             <motion.section {...fadeIn(1)} className="nb-spread app-spread" aria-labelledby="today-title">
                 <div className="nb-page nb-page-left app-today">
@@ -128,8 +133,8 @@ export default function Dashboard() {
                         </div>
                     ) : firstIncompleteUnit ? (
                         <div className="space-y-1.5">
-                            <h2 id="today-title" className="app-h2">{firstIncompleteUnit.title}</h2>
-                            <p className="text-[var(--color-on-surface-muted)]">{firstIncompleteUnit.grammarTopic}</p>
+                            <h2 id="today-title" className="app-h2">{unitTitle(firstIncompleteUnit)}</h2>
+                            <p className="text-[var(--color-on-surface-muted)]">{unitTopic(firstIncompleteUnit)}</p>
                             <p className="font-mono text-sm text-[var(--color-on-surface-variant)]">
                                 {t('dashboard.nextUnit')} {unitsCompleted + 1}/{unitsTotal}
                             </p>

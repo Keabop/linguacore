@@ -7,6 +7,7 @@ import type { SpeciesId } from '../garden/species';
 import type { GardenUnitState } from './states';
 import { createGarden, type Anchor, type GardenHandle } from './scene';
 import { useGardenStyle } from '../../hooks/useGardenPlant';
+import { unitTitle } from '../../data/curriculum/unitTitles';
 
 interface Garden3DProps {
     units: Unit[];
@@ -99,7 +100,7 @@ export default function Garden3D({ units, states, level, species, night, startAt
             <div className="garden3d-labels">
                 {units.map((u, i) => {
                     const s = states[i];
-                    const title = u.isAssessment ? t('garden3d.examTitle') : u.title;
+                    const title = u.isAssessment ? t('garden3d.examTitle') : unitTitle(u);
                     return (
                         <div
                             key={u.id}

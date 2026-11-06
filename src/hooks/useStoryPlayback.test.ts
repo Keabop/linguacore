@@ -19,7 +19,8 @@ class FakeAudio {
     addEventListener(type: string, fn: () => void) { this.listeners[type] = fn; }
     static playResult: () => Promise<void> = () => Promise.resolve();
     play() { return FakeAudio.playResult(); }
-    pause() {}
+    // A real pause fires one more timeupdate
+    pause() { this.listeners.timeupdate?.(); }
     at(seconds: number) {
         this.currentTime = seconds;
         this.listeners.timeupdate?.();
@@ -116,5 +117,79 @@ describe('useStoryPlayback with the browser voices', () => {
         act(() => { vi.advanceTimersByTime(sentenceTimeoutMs(sentences[0]) + 400); });
         act(() => { first.onend?.(); vi.advanceTimersByTime(400); });
         expect(result.current.currentIndex).toBe(1);
+    });
+});
+
+describe('useStoryPlayback, a tapped sentence', () => {
+    it('with the browser voices, says that sentence alone and stops', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US' }));
+        act(() => result.current.playSentence(1));
+        expect(spoken.map(u => u.text)).toEqual([sentences[1]]);
+        act(() => { spoken[0].onend?.(); vi.advanceTimersByTime(400); });
+        expect(spoken).toHaveLength(1);
+        expect(result.current.isPlaying).toBe(false);
+        expect(result.current.currentIndex).toBe(1);
+    });
+
+    const audio = { src: '/audio/abcdef12.ogg', sentences: [0, 2, 3.9] };
+
+    it('with a recording, plays from its start and stops where the next one begins', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US', audio }));
+        act(() => result.current.playSentence(1));
+        expect(FakeAudio.last.currentTime).toBe(2);
+        act(() => FakeAudio.last.at(3.0));
+        expect(result.current.isPlaying).toBe(true);
+        act(() => FakeAudio.last.at(4.0));
+        expect(result.current.isPlaying).toBe(false);
+        // The timeupdate of the pause, already in the next sentence, moves nothing
+        expect(result.current.currentIndex).toBe(1);
+    });
+
+    it('with a recording, stops on time between two timeupdates', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US', audio }));
+        act(() => result.current.playSentence(1));
+        act(() => FakeAudio.last.at(3.5));
+        act(() => { vi.advanceTimersByTime(390); });
+        expect(result.current.isPlaying).toBe(true);
+        act(() => { vi.advanceTimersByTime(20); });
+        expect(result.current.isPlaying).toBe(false);
+        expect(result.current.currentIndex).toBe(1);
+    });
+
+    it('with a recording, keeps the last sentence highlighted when it ends', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US', audio }));
+        act(() => result.current.playSentence(2));
+        act(() => FakeAudio.last.listeners.ended?.());
+        expect(result.current.isPlaying).toBe(false);
+        expect(result.current.currentIndex).toBe(2);
+    });
+
+    it('another sentence tapped while one plays alone is also heard alone', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US', audio }));
+        act(() => result.current.playSentence(0));
+        act(() => result.current.playSentence(2));
+        act(() => FakeAudio.last.at(4.0));
+        expect(result.current.isPlaying).toBe(true);
+        expect(result.current.currentIndex).toBe(2);
+    });
+
+    it('with the browser voices, the next sentence asked for while one plays alone plays alone', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US' }));
+        act(() => result.current.playSentence(0));
+        act(() => result.current.seek(1));
+        expect(spoken.at(-1)?.text).toBe(sentences[1]);
+        act(() => { spoken.at(-1)?.onend?.(); vi.advanceTimersByTime(400); });
+        expect(spoken.at(-1)?.text).toBe(sentences[1]);
+        expect(result.current.isPlaying).toBe(false);
+        expect(result.current.currentIndex).toBe(1);
+    });
+
+    it('while the story is being read, goes on reading from the tapped sentence', () => {
+        const { result } = renderHook(() => useStoryPlayback({ sentences, level: 'A1', accent: 'US' }));
+        act(() => result.current.toggle());
+        act(() => result.current.playSentence(1));
+        act(() => { spoken[1].onend?.(); vi.advanceTimersByTime(400); });
+        expect(result.current.currentIndex).toBe(2);
+        expect(result.current.isPlaying).toBe(true);
     });
 });

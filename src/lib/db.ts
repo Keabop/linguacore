@@ -19,6 +19,12 @@ export interface StoryQuestion {
   evidence: string;
 }
 
+/** The Spanish of a story: one entry per sentence, and its questions with their options in order. */
+export interface StoryTranslation {
+  sentences: string[];
+  questions?: { question: string; options: string[] }[];
+}
+
 export interface Story {
   id: string;
   level: import('./database.types').CEFRLevel;
@@ -28,6 +34,8 @@ export interface Story {
   estimatedMinutes: number;
   unitId?: string;
   questions?: StoryQuestion[];
+  /** Written by hand in A1 and A2, for whoever starts from zero. */
+  translation?: StoryTranslation;
 }
 
 export interface Vocabulary {
@@ -108,7 +116,12 @@ export interface GrammarSkill {
     exercises: SkillExercise[];
 }
 
-export type ExerciseType = 'fill-blank' | 'multiple-choice' | 'word-order';
+/**
+ * `meaning-choice`: an English sentence, its meaning chosen among Spanish options.
+ * `listen-choice`: a sentence heard, chosen among written ones; the text shows once answered.
+ * Both check understanding, not the copying of a pattern.
+ */
+export type ExerciseType = 'fill-blank' | 'multiple-choice' | 'word-order' | 'meaning-choice' | 'listen-choice';
 
 export interface Unit {
   id: string;
@@ -138,6 +151,8 @@ export interface GrammarExercise {
   options?: string[];
   scrambledWords?: string[];
   explanation: string;
+  /** Of a `listen-choice`: the sentence's Spanish, asked for instead when there is no English voice to hear it. */
+  meaning?: string;
 }
 
 export interface UnitProgress {

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PenLine, Loader2 } from 'lucide-react';
 import type { WritingPrompt, CEFRLevel } from '../../lib/db';
 import { evaluateWriting, isLimitReached } from '../../lib/ai';
+import { fromWriting, type PromptResult } from '../../lib/retryPolicy';
+import { shuffle } from '../../lib/shuffle';
 import type { WritingEvaluationResponse } from '../../lib/ai';
 import SentenceConstruction from './SentenceConstruction';
 import ErrorCorrection from './ErrorCorrection';
@@ -36,21 +38,29 @@ function perfectFeedback(text: string): WritingEvaluationResponse {
 interface Props {
     prompts: WritingPrompt[];
     level: CEFRLevel;
-    /** Average of the evaluated answers; null when none could be evaluated (free plan limit). */
-    onComplete: (avgScore: number | null) => void;
+    /** Average of the evaluated answers (null when none could be evaluated, free plan limit) and each one's result. */
+    onComplete: (avgScore: number | null, results: PromptResult[]) => void;
+    /** A retry of prompts that failed: counted apart from the day's evaluations (`evaluation-retries`). */
+    retry?: boolean;
 }
 
 type Phase = 'writing' | 'evaluating' | 'feedback' | 'limit';
 
-export default function WritingRunner({ prompts, level, onComplete }: Props) {
+/** The words of the model answer, without punctuation and shuffled: a word bank, not the answer. */
+const hintWordsOf = (answer: string | undefined) =>
+    answer ? shuffle(answer.split(/\s+/).map(w => w.replace(/[.,!?;:]+$/, '')).filter(Boolean)) : undefined;
+
+export default function WritingRunner({ prompts, level, onComplete, retry }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [phase, setPhase] = useState<Phase>('writing');
     const [feedback, setFeedback] = useState<WritingEvaluationResponse | null>(null);
     const [answer, setAnswer] = useState('');
-    const [scores, setScores] = useState<number[]>([]);
+    const [results, setResults] = useState<PromptResult[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     const current = prompts[currentIndex];
+    // Shuffled once per prompt, so the words stay put while the learner taps them
+    const hintWords = useMemo(() => (level === 'A1' ? hintWordsOf(current?.referenceAnswer) : undefined), [level, current?.id]); // eslint-disable-line react-hooks/exhaustive-deps
     const isLast = currentIndex === prompts.length - 1;
 
     const handleSubmit = async (text: string) => {
@@ -60,7 +70,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
             ?? (current.referenceAnswer && sameWords(text, current.referenceAnswer) ? perfectFeedback(text) : undefined);
         if (known) {
             setFeedback(known);
-            setScores(prev => [...prev, known.score]);
+            setResults(prev => [...prev, { id: current.id, score: known.score, review: fromWriting(known) }]);
             setPhase('feedback');
             return;
         }
@@ -76,10 +86,12 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                 current.type,
                 current.targetGrammar,
                 current.referenceAnswer,
+                undefined,
+                retry,
             );
             evaluated.set(key, result);
             setFeedback(result);
-            setScores(prev => [...prev, result.score]);
+            setResults(prev => [...prev, { id: current.id, score: result.score, review: fromWriting(result) }]);
             setPhase('feedback');
         } catch (err: any) {
             if (isLimitReached(err)) {
@@ -91,9 +103,13 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
         }
     };
 
-    const handleNext = () => {
+    // `extra`: the result of a prompt left without evaluation (free plan limit), so a retry of it lets go
+    const handleNext = (extra?: PromptResult) => {
+        const all = extra ? [...results, extra] : results;
+        if (extra) setResults(all);
         if (isLast) {
-            onComplete(scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null);
+            const scores = all.map(r => r.score).filter((n): n is number => n !== null);
+            onComplete(scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null, all);
         } else {
             setCurrentIndex(prev => prev + 1);
             setPhase('writing');
@@ -111,6 +127,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                         targetGrammar={current.targetGrammar}
                         onSubmit={handleSubmit}
                         disabled={phase !== 'writing'}
+                        hintWords={hintWords}
                     />
                 );
             case 'error-correction':
@@ -168,7 +185,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                 />
             </div>
 
-            {phase === 'limit' && <EvaluationLimitCard referenceAnswer={current.referenceAnswer} onContinue={handleNext} />}
+            {phase === 'limit' && <EvaluationLimitCard referenceAnswer={current.referenceAnswer} onContinue={() => handleNext({ id: current.id, score: null, review: [] })} />}
 
             {/* Error message */}
             {error && (
@@ -212,7 +229,7 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                         <WritingFeedback
                             data={feedback}
                             text={answer}
-                            onNext={handleNext}
+                            onNext={() => handleNext()}
                             nextLabel={isLast ? 'Finalizar escritura' : 'Siguiente ejercicio'}
                         />
                     </motion.div>

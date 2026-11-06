@@ -11,6 +11,8 @@ export interface GlossaryEntry {
     forms: string[];
     definition: string;
     example: string;
+    /** What the example says, when it is English to translate. */
+    exampleEs?: string;
 }
 
 export const GLOSSARY: GlossaryEntry[] = [
@@ -21,6 +23,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['sustantivo', 'sustantivos'],
         definition: 'Palabra que nombra a una persona, un animal, una cosa o una idea.',
         example: 'teacher, dog, book, love',
+        exampleEs: 'maestro, perro, libro, amor',
     },
     {
         id: 'contable',
@@ -28,6 +31,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['contable', 'contables', 'que se puede contar', 'que se pueden contar'],
         definition: 'Sustantivo que se cuenta por unidades: tiene singular y plural, y en singular lleva «a» o «an».',
         example: 'an apple, two apples',
+        exampleEs: 'una manzana, dos manzanas',
     },
     {
         id: 'incontable',
@@ -35,6 +39,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['incontable', 'incontables', 'que no se puede contar', 'que no se pueden contar'],
         definition: 'Sustantivo que no se cuenta por unidades: no tiene plural ni lleva «a» o «an».',
         example: 'water, music, information',
+        exampleEs: 'agua, música, información',
     },
     {
         id: 'singular',
@@ -42,6 +47,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['singular', 'singulares'],
         definition: 'Forma que habla de una sola persona o cosa.',
         example: 'a book, she is',
+        exampleEs: 'un libro, ella es',
     },
     {
         id: 'plural',
@@ -49,6 +55,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['plural', 'plurales'],
         definition: 'Forma que habla de dos o más personas o cosas. En inglés casi siempre se le agrega -s al sustantivo.',
         example: 'two books, they are',
+        exampleEs: 'dos libros, ellos son',
     },
     {
         id: 'verbo',
@@ -56,6 +63,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['verbo', 'verbos'],
         definition: 'Palabra que dice qué hace alguien o cómo está algo.',
         example: 'run, eat, be, have',
+        exampleEs: 'correr, comer, ser, tener',
     },
     {
         id: 'adjetivo',
@@ -63,6 +71,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['adjetivo', 'adjetivos'],
         definition: 'Palabra que describe a un sustantivo. En inglés va antes del sustantivo y no cambia en plural.',
         example: 'a big house, big houses',
+        exampleEs: 'una casa grande, casas grandes',
     },
     {
         id: 'adverbio',
@@ -70,6 +79,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['adverbio', 'adverbios'],
         definition: 'Palabra que dice cómo, cuándo, dónde o qué tan seguido pasa algo. Muchos terminan en -ly.',
         example: 'quickly, always, here',
+        exampleEs: 'rápido, siempre, aquí',
     },
     {
         id: 'pronombre',
@@ -77,6 +87,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['pronombre', 'pronombres'],
         definition: 'Palabra que toma el lugar de un sustantivo para no repetirlo.',
         example: 'Ana is tired. She is tired.',
+        exampleEs: 'Ana está cansada. Ella está cansada.',
     },
     {
         id: 'posesivo',
@@ -84,6 +95,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['posesivo', 'posesivos'],
         definition: 'Palabra que dice de quién es algo.',
         example: 'my book, your car, it is mine',
+        exampleEs: 'mi libro, tu carro, es mío',
     },
     {
         id: 'articulo',
@@ -91,6 +103,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['artículo', 'artículos'],
         definition: 'Palabra corta que va antes de un sustantivo y dice si hablamos de algo en general o de algo que ya conocemos.',
         example: 'a, an, the',
+        exampleEs: 'un, una, el, la',
     },
     {
         id: 'demostrativo',
@@ -98,6 +111,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['demostrativo', 'demostrativos'],
         definition: 'Palabra que señala algo según esté cerca o lejos de quien habla.',
         example: 'this, that, these, those',
+        exampleEs: 'este, ese, estos, esos',
     },
     {
         id: 'preposicion',
@@ -105,6 +119,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['preposición', 'preposiciones'],
         definition: 'Palabra corta que une ideas y marca lugar, tiempo o dirección.',
         example: 'in, on, at, to, from',
+        exampleEs: 'en, sobre, a, hacia, de',
     },
     {
         id: 'conector',
@@ -112,6 +127,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['conector', 'conectores', 'conjunción', 'conjunciones'],
         definition: 'Palabra que une dos ideas o dos oraciones.',
         example: 'and, but, because, although',
+        exampleEs: 'y, pero, porque, aunque',
     },
     {
         id: 'cuantificador',
@@ -119,6 +135,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['cuantificador', 'cuantificadores'],
         definition: 'Palabra que dice cuánto o cuántos hay de algo.',
         example: 'some, any, much, many, a lot of',
+        exampleEs: 'algo de, algo de (al preguntar) o nada de (al negar), mucho, muchos, un montón de',
     },
 
     // Parts of a sentence
@@ -128,6 +145,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['sujeto', 'sujetos'],
         definition: 'Quién o qué hace la acción. En inglés va antes del verbo y nunca se omite.',
         example: 'She works here. It is cold.',
+        exampleEs: 'Ella trabaja aquí. Hace frío.',
     },
     {
         id: 'objeto',
@@ -135,6 +153,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['objeto directo', 'objeto indirecto', 'pronombre objeto', 'pronombres objeto', 'pronombres de objeto'],
         definition: 'Quién o qué recibe la acción del verbo. En inglés va después del verbo.',
         example: 'I called her. She gave me the keys.',
+        exampleEs: 'La llamé. Ella me dio las llaves.',
     },
     {
         id: 'clausula',
@@ -142,6 +161,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['cláusula', 'cláusulas'],
         definition: 'Parte de una oración que tiene su propio sujeto y su propio verbo.',
         example: 'I stayed home | because it was raining.',
+        exampleEs: 'Me quedé en casa | porque estaba lloviendo.',
     },
     {
         id: 'clausula-relativa',
@@ -149,6 +169,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['cláusula relativa', 'cláusulas relativas', 'oración relativa', 'oraciones relativas'],
         definition: 'Cláusula que da información sobre un sustantivo. Empieza con who, which, that, where o whose.',
         example: 'The woman who lives next door is a doctor.',
+        exampleEs: 'La mujer que vive al lado es doctora.',
     },
     {
         id: 'pronombre-relativo',
@@ -156,6 +177,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['pronombre relativo', 'pronombres relativos'],
         definition: 'Palabra que abre una cláusula relativa y apunta al sustantivo que va antes.',
         example: 'who, which, that, whose, where',
+        exampleEs: 'quien, cual, que, cuyo, donde',
     },
     {
         id: 'tercera-persona',
@@ -163,6 +185,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['tercera persona'],
         definition: 'He, she, it o cualquier sustantivo en singular. En presente simple su verbo lleva -s.',
         example: 'She works. The dog runs.',
+        exampleEs: 'Ella trabaja. El perro corre.',
     },
 
     // Verb forms
@@ -172,6 +195,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['verbo auxiliar', 'verbos auxiliares', 'auxiliar', 'auxiliares'],
         definition: 'Verbo que ayuda a otro a formar preguntas, negaciones o tiempos. El significado lo pone el otro verbo.',
         example: 'Do you work? She has eaten.',
+        exampleEs: '¿Trabajas? Ella ya comió.',
     },
     {
         id: 'modal',
@@ -179,6 +203,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['verbo modal', 'verbos modales', 'modal', 'modales'],
         definition: 'Auxiliar que agrega una idea de habilidad, permiso, consejo, obligación o posibilidad. Va con el verbo en forma base y no cambia con el sujeto.',
         example: 'She can swim. You should rest.',
+        exampleEs: 'Ella sabe nadar. Deberías descansar.',
     },
     {
         id: 'modal-perfecto',
@@ -186,6 +211,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['modal perfecto', 'modales perfectos'],
         definition: 'Modal + have + participio. Sirve para deducir, dudar o lamentar algo del pasado.',
         example: 'She must have left. I should have called.',
+        exampleEs: 'Ella ya debió de irse. Debí haber llamado.',
     },
     {
         id: 'forma-base',
@@ -193,6 +219,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['forma base'],
         definition: 'El verbo como aparece en el diccionario, sin «to» y sin terminaciones.',
         example: 'go, eat, be',
+        exampleEs: 'ir, comer, ser',
     },
     {
         id: 'infinitivo',
@@ -200,6 +227,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['infinitivo', 'infinitivos'],
         definition: 'La forma base del verbo con «to» delante.',
         example: 'I want to go.',
+        exampleEs: 'Quiero ir.',
     },
     {
         id: 'gerundio',
@@ -207,6 +235,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['gerundio', 'gerundios'],
         definition: 'El verbo con -ing. Forma los tiempos continuos y también funciona como sustantivo.',
         example: 'I am reading. Swimming is fun.',
+        exampleEs: 'Estoy leyendo. Nadar es divertido.',
     },
     {
         id: 'participio',
@@ -214,6 +243,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['participio', 'participios', 'participio pasado', 'participios pasados'],
         definition: 'Forma del verbo de los tiempos perfectos y de la voz pasiva. En los verbos regulares termina en -ed.',
         example: 'I have worked. It was eaten.',
+        exampleEs: 'He trabajado. Fue comido.',
     },
     {
         id: 'participio-presente',
@@ -221,6 +251,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['participio presente', 'participios presentes'],
         definition: 'El verbo con -ing cuando describe a un sustantivo o abre una cláusula corta en lugar de una oración completa.',
         example: 'a running man. Feeling tired, I went home.',
+        exampleEs: 'un hombre corriendo. Como me sentía cansado, me fui a casa.',
     },
     {
         id: 'verbo-regular',
@@ -228,6 +259,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['verbo regular', 'verbos regulares'],
         definition: 'Verbo que forma el pasado y el participio agregando -ed.',
         example: 'work → worked, play → played',
+        exampleEs: 'trabajar → trabajó, jugar → jugó',
     },
     {
         id: 'verbo-irregular',
@@ -235,6 +267,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['verbo irregular', 'verbos irregulares'],
         definition: 'Verbo que no usa -ed en el pasado o en el participio: hay que aprender sus formas.',
         example: 'go → went → gone',
+        exampleEs: 'ir → fue → ido',
     },
     {
         id: 'contraccion',
@@ -249,6 +282,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['imperativo', 'imperativos'],
         definition: 'Forma para dar órdenes, instrucciones o consejos: el verbo en forma base, sin sujeto.',
         example: "Open the door. Don't worry.",
+        exampleEs: 'Abre la puerta. No te preocupes.',
     },
     {
         id: 'comparativo',
@@ -256,6 +290,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['comparativo', 'comparativos'],
         definition: 'Forma del adjetivo para comparar dos cosas: -er o more, seguido de than.',
         example: 'taller than, more expensive than',
+        exampleEs: 'más alto que, más caro que',
     },
     {
         id: 'superlativo',
@@ -263,6 +298,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['superlativo', 'superlativos'],
         definition: 'Forma del adjetivo para decir que algo es el que más de su grupo: the + -est o the most.',
         example: 'the tallest, the most expensive',
+        exampleEs: 'el más alto, el más caro',
     },
 
     // Kinds of sentence
@@ -272,6 +308,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['afirmativo', 'afirmativa', 'afirmativos', 'afirmativas'],
         definition: 'Oración que dice que algo sí pasa.',
         example: 'I like coffee.',
+        exampleEs: 'Me gusta el café.',
     },
     {
         id: 'negativo',
@@ -279,6 +316,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['forma negativa', 'oración negativa', 'oraciones negativas', 'negativo', 'negativa', 'negativos', 'negativas'],
         definition: 'Oración que dice que algo no pasa. En inglés lleva «not», casi siempre con un auxiliar.',
         example: "I don't like coffee. She isn't here.",
+        exampleEs: 'No me gusta el café. Ella no está aquí.',
     },
     {
         id: 'interrogativo',
@@ -286,6 +324,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['interrogativo', 'interrogativa', 'interrogativos', 'interrogativas'],
         definition: 'Oración que hace una pregunta. En inglés el auxiliar va antes del sujeto.',
         example: 'Do you like coffee?',
+        exampleEs: '¿Te gusta el café?',
     },
 
     // Tenses
@@ -295,6 +334,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['tiempo verbal', 'tiempos verbales'],
         definition: 'Forma del verbo que dice cuándo pasa algo.',
         example: 'I work / I worked / I will work',
+        exampleEs: 'trabajo / trabajé / trabajaré',
     },
     {
         id: 'presente-simple',
@@ -302,6 +342,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['presente simple'],
         definition: 'Tiempo para hábitos, rutinas y cosas que siempre son ciertas.',
         example: 'I work every day. Water boils at 100 °C.',
+        exampleEs: 'Trabajo todos los días. El agua hierve a 100 °C.',
     },
     {
         id: 'presente-continuo',
@@ -309,6 +350,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['presente continuo', 'presente progresivo'],
         definition: 'Tiempo para lo que pasa ahora o en estos días: am/is/are + verbo con -ing.',
         example: 'I am studying right now.',
+        exampleEs: 'Estoy estudiando ahorita.',
     },
     {
         id: 'presente-perfecto',
@@ -316,6 +358,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['presente perfecto'],
         definition: 'Tiempo que une el pasado con el presente: have/has + participio.',
         example: 'I have lived here for two years.',
+        exampleEs: 'Vivo aquí desde hace dos años.',
     },
     {
         id: 'pasado-simple',
@@ -323,6 +366,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['pasado simple'],
         definition: 'Tiempo para acciones que terminaron en un momento del pasado.',
         example: 'I visited Oaxaca last year.',
+        exampleEs: 'Visité Oaxaca el año pasado.',
     },
     {
         id: 'pasado-continuo',
@@ -330,6 +374,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['pasado continuo', 'pasado progresivo'],
         definition: 'Tiempo para algo que estaba pasando en un momento del pasado: was/were + verbo con -ing.',
         example: 'I was cooking when you called.',
+        exampleEs: 'Estaba cocinando cuando llamaste.',
     },
     {
         id: 'pasado-perfecto',
@@ -337,6 +382,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['pasado perfecto'],
         definition: 'Tiempo para algo que pasó antes de otro momento del pasado: had + participio.',
         example: 'The train had left when I arrived.',
+        exampleEs: 'El tren ya se había ido cuando llegué.',
     },
 
     // Bigger structures
@@ -346,6 +392,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['condicional', 'condicionales'],
         definition: 'Oración con «if»: dice qué pasa o qué pasaría si se cumple una condición.',
         example: 'If it rains, I stay home.',
+        exampleEs: 'Si llueve, me quedo en casa.',
     },
     {
         id: 'condicional-cero',
@@ -353,6 +400,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['condicional cero', 'zero conditional'],
         definition: 'Para hechos que siempre se cumplen: if + presente, presente.',
         example: 'If you heat ice, it melts.',
+        exampleEs: 'Si calientas el hielo, se derrite.',
     },
     {
         id: 'primer-condicional',
@@ -360,6 +408,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['primer condicional', 'primera condicional', 'first conditional'],
         definition: 'Para algo posible en el futuro: if + presente, will + verbo.',
         example: 'If it rains, I will stay home.',
+        exampleEs: 'Si llueve, me quedaré en casa.',
     },
     {
         id: 'segundo-condicional',
@@ -367,6 +416,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['segundo condicional', 'segunda condicional', 'second conditional'],
         definition: 'Para situaciones imaginarias o poco probables: if + pasado, would + verbo.',
         example: 'If I had more time, I would travel.',
+        exampleEs: 'Si tuviera más tiempo, viajaría.',
     },
     {
         id: 'tercer-condicional',
@@ -374,6 +424,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['tercer condicional', 'tercera condicional', 'third conditional'],
         definition: 'Para imaginar un pasado distinto que ya no se puede cambiar: if + had + participio, would have + participio.',
         example: 'If I had studied, I would have passed.',
+        exampleEs: 'Si hubiera estudiado, habría pasado.',
     },
     {
         id: 'voz-pasiva',
@@ -381,6 +432,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['voz pasiva', 'pasiva', 'pasivas'],
         definition: 'Forma en la que importa quién recibe la acción, no quién la hace: be + participio.',
         example: 'The bridge was built in 1990.',
+        exampleEs: 'El puente fue construido en 1990.',
     },
     {
         id: 'voz-activa',
@@ -388,6 +440,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['voz activa'],
         definition: 'La forma normal: el sujeto hace la acción.',
         example: 'They built the bridge in 1990.',
+        exampleEs: 'Construyeron el puente en 1990.',
     },
     {
         id: 'estilo-indirecto',
@@ -395,6 +448,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['estilo indirecto', 'reported speech'],
         definition: 'Contar lo que alguien dijo sin repetir sus palabras exactas. El verbo suele pasar un tiempo atrás.',
         example: '"I am tired." → She said she was tired.',
+        exampleEs: '«Estoy cansada». → Dijo que estaba cansada.',
     },
     {
         id: 'phrasal-verb',
@@ -409,6 +463,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['inversión'],
         definition: 'Poner el auxiliar antes del sujeto, como en una pregunta, para dar énfasis en un registro formal.',
         example: 'Never have I seen such a mess.',
+        exampleEs: 'Nunca había visto semejante desorden.',
     },
 
     // Sounds
@@ -418,6 +473,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['sonido de vocal', 'sonido vocal', 'sonidos vocales'],
         definition: 'Los sonidos de a, e, i, o, u. Para «a» o «an» cuenta cómo suena la palabra, no la letra con que se escribe.',
         example: 'an apple, an hour',
+        exampleEs: 'una manzana, una hora',
     },
     {
         id: 'consonante',
@@ -425,6 +481,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['sonido de consonante', 'sonido consonante', 'sonidos consonantes'],
         definition: 'Cualquier sonido que no es vocal, como b, d, k o y.',
         example: 'a book, a university (suena «yu»)',
+        exampleEs: 'un libro, una universidad',
     },
     {
         id: 'letra-vocal',
@@ -446,6 +503,7 @@ export const GLOSSARY: GlossaryEntry[] = [
         forms: ['sílaba', 'sílabas'],
         definition: 'Cada golpe de voz en que se divide una palabra.',
         example: 'ap-ple (2), beau-ti-ful (3)',
+        exampleEs: 'man-za-na (3), her-mo-so (3)',
     },
 ];
 

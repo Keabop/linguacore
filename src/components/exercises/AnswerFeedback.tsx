@@ -79,10 +79,11 @@ export default function AnswerFeedback({ correct, correctAnswer, explanation, on
             className="space-y-5"
         >
             <div className="text-center space-y-2">
+                {/* «Correcto» is a div: the animated icon is a div itself, which a <p> cannot hold */}
                 {correct ? (
-                    <p className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
+                    <div className="text-lg font-bold text-[var(--color-success)] flex items-center justify-center gap-1.5">
                         <PlayOnMount icon={CheckIcon} size={20} /> {t('exercises.correct')}
-                    </p>
+                    </div>
                 ) : (
                     <>
                         <p className="text-lg font-bold text-[var(--color-error)] flex items-center justify-center gap-1.5">

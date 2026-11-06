@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AnswerFeedback from './AnswerFeedback';
 import { motion } from 'framer-motion';
-import { Check, X } from 'lucide-react';
+import { Check, X, Volume2 } from 'lucide-react';
+import SpeakButton from '../ui/SpeakButton';
+import { speakEnglish } from '../../lib/speakEnglish';
+import { useEnglishVoices } from '../../hooks/useEnglishVoices';
 import type { GrammarExercise } from '../../lib/db';
 import { shuffle } from '../../lib/shuffle';
 
@@ -17,6 +20,20 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
     const [status, setStatus] = useState<'pending' | 'correct' | 'incorrect'>('pending');
     // The data lists the right answer early most of the time, so the order is shuffled per exercise
     const options = useMemo(() => shuffle(exercise.options ?? []), [exercise.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    const voices = useEnglishVoices();
+    const listenItem = exercise.type === 'listen-choice';
+    // With no English voice there is nothing to hear: it asks which sentence means the Spanish
+    // instead, so the answer is neither guessed nor copied from the screen
+    const noVoice = listenItem && voices.ready && !voices.hasEnglish && !!exercise.meaning;
+    // Until it is known whether there is a voice, a listening exercise shows neither form: no
+    // flash of «Escucha y elige» that turns into a reading question
+    const waiting = listenItem && !voices.ready;
+    const listening = listenItem && !waiting && !noVoice;
+
+    // A listening exercise plays its sentence as it appears; it can be heard again any time
+    useEffect(() => {
+        if (listening) speakEnglish(exercise.question);
+    }, [listening, exercise.question]);
 
     const handleSelect = (option: string) => {
         if (status !== 'pending') return;
@@ -74,12 +91,43 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                 animate={{ opacity: 1, y: 0 }}
                 className="app-sheet p-6 text-center"
             >
-                <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
+                {exercise.type === 'multiple-choice' && (
+                    <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
+                )}
+                {exercise.type === 'meaning-choice' && (
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('exercises.whatDoesItMean')}</p>
+                        <div className="flex items-center justify-center gap-3">
+                            <SpeakButton text={exercise.question} />
+                            <p className="text-xl leading-relaxed text-[var(--color-on-surface)]" lang="en">{exercise.question}</p>
+                        </div>
+                    </div>
+                )}
+                {listening && (
+                    <div className="space-y-4">
+                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('exercises.listenAndChoose')}</p>
+                        <button type="button" onClick={() => speakEnglish(exercise.question)} className="listen-play" aria-label={t('audio.listen')}>
+                            <Volume2 className="size-7" aria-hidden="true" />
+                        </button>
+                        {status !== 'pending' && (
+                            <p className="text-lg text-[var(--color-on-surface)]" lang="en">{exercise.question}</p>
+                        )}
+                    </div>
+                )}
+                {waiting && (
+                    <p className="text-sm text-[var(--color-on-surface-muted)]" role="status">{t('common.loading')}</p>
+                )}
+                {noVoice && (
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('exercises.whichMeans')}</p>
+                        <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.meaning}</p>
+                    </div>
+                )}
             </motion.div>
 
             {/* Options */}
             <div className="space-y-5">
-                {options.map((option, i) => (
+                {!waiting && options.map((option, i) => (
                     <motion.button
                         key={option}
                         initial={{ opacity: 0, y: 12 }}
@@ -91,7 +139,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                             status === 'pending' ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
                         } ${getOptionFeedbackClass(option)}`}
                     >
-                        <span className="text-[var(--color-on-surface)] font-medium">{option}</span>
+                        <span className="text-[var(--color-on-surface)] font-medium" lang={exercise.type === 'meaning-choice' ? 'es' : 'en'}>{option}</span>
                         {getOptionIcon(option)}
                     </motion.button>
                 ))}

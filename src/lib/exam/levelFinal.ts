@@ -16,7 +16,11 @@ const levelOfUnit = (unitId: string) => unitId.slice(0, 2).toUpperCase() as Exam
 export function exerciseToQuestion(ex: GrammarExercise): AssessmentQuestion {
     const base = { id: ex.id, section: 'use-of-english' as const, task: 'Grammar', level: levelOfUnit(ex.unitId), unitId: ex.unitId };
     switch (ex.type) {
-        case 'multiple-choice': {
+        // The level exam draws only from the units' own exercises, which never include the
+        // comprehension ones (they are made at run time); listed so the switch covers every type
+        case 'multiple-choice':
+        case 'meaning-choice':
+        case 'listen-choice': {
             const options = ex.options ?? [];
             return { ...base, text: ex.question, options, correctIndex: options.findIndex(o => normalizeAnswer(o) === normalizeAnswer(ex.correctAnswer)) };
         }

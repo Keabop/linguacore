@@ -19,6 +19,11 @@ const notices = vi.hoisted(() => ({ error: vi.fn(), warning: vi.fn(), clear: vi.
 vi.mock('../hooks/useUnitProgress', () => ({
     useUnitProgress: () => ({ progress: null, currentStep: unit.step, isLoading: false, updateProgress: unit.updateProgress, markStepComplete: unit.markStepComplete }),
 }));
+// The unit's own exercises only: the comprehension ones are random and tested on their own
+vi.mock('../lib/comprehension', async () => ({
+    ...(await vi.importActual<typeof import('../lib/comprehension')>('../lib/comprehension')),
+    comprehensionExercises: () => [],
+}));
 vi.mock('../hooks/useSkillCards', () => ({ useSkillCards: () => ({ addSkillCards: vi.fn(async () => 0) }) }));
 vi.mock('../hooks/useGardenPlant', () => ({ useGardenPlant: () => ({ species: 'girasol' }) }));
 vi.mock('../hooks/useCards', () => ({ useCards: () => ({ saveStoryWords: unit.saveStoryWords, isWordInDeck: vi.fn(async () => false), isWordKnown: vi.fn(async () => false) }) }));
@@ -186,9 +191,12 @@ describe('UnitFlow exercises with every answer wrong', () => {
             await answerWrong(exercises[i]);
         }
         await screen.findByText('Puntuación: 0%');
-        fireEvent.click(screen.getByRole('button', { name: 'Volver a intentarlo' }));
-        await waitFor(() => expect(unit.updateProgress).toHaveBeenCalledWith({ exercises_score: 0 }));
+        // First a short review of what failed, then the set again; nothing is saved as passed
+        fireEvent.click(screen.getByRole('button', { name: 'Ver qué repasar' }));
+        expect(await screen.findByRole('heading', { name: 'Repasa antes de volver a intentarlo' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Intentarlo de nuevo/ }));
         expect(await screen.findByText(`1 de ${exercises.length}`)).toBeInTheDocument();
+        expect(unit.updateProgress).not.toHaveBeenCalledWith({ exercises_score: 0 });
         expect(screen.queryByText('Puntuación: 0%')).toBeNull();
     // Six real exercises with their animations: longer than the default 5 s on a busy machine
     }, 20000);

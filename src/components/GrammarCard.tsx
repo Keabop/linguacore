@@ -9,6 +9,7 @@ import { useUnitProgress } from '../hooks/useUnitProgress';
 import { getGlossaryEntry } from '../data/glossary';
 import { escapeHtml, glossify } from '../lib/glossify';
 import GlossaryPopover from './GlossaryPopover';
+import SpeakButton from './ui/SpeakButton';
 import { useNotebook } from './notebook/NotebookContext';
 
 interface GrammarCardProps {
@@ -125,9 +126,12 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                                         initial={{ opacity: 0, x: -8 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.15 + i * 0.06 }}
-                                        className="bg-[var(--color-background)]/60 border border-[var(--color-outline-subtle)] rounded-xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3"
+                                        className="bg-[var(--color-background)]/60 border border-[var(--color-outline-subtle)] rounded-xl pl-3 pr-5 py-3 flex items-center gap-3"
                                     >
-                                        <span className="font-bold text-accent-blue text-[0.9375rem]">
+                                        {/* Every example can be heard: whoever starts does not know how it sounds */}
+                                        <SpeakButton text={english} />
+                                        <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                        <span className="font-bold text-accent-blue text-[0.9375rem]" lang="en">
                                             {english}
                                         </span>
                                         {spanish && (
@@ -138,6 +142,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                                                 </span>
                                             </>
                                         )}
+                                        </div>
                                     </motion.div>
                                 );
                             })}

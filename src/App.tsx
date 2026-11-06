@@ -37,6 +37,7 @@ function lazyRetry<T extends ComponentType<any>>(
 const Landing = lazyRetry(() => import('./pages/Landing'));
 const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
 const GardenPath = lazyRetry(() => import('./pages/GardenPath'));
+const FirstSteps = lazyRetry(() => import('./pages/FirstSteps'));
 const StoryList = lazyRetry(() => import('./pages/StoryList'));
 const ReviewSession = lazyRetry(() => import('./pages/ReviewSession'));
 const Account = lazyRetry(() => import('./pages/Account'));
@@ -124,6 +125,7 @@ export default function App() {
                     <Route path="/chat" element={<ConversationTutor />} />
                     <Route path="/path" element={<SafeRoute><GardenPath /></SafeRoute>} />
                     <Route path="/path/:unitId" element={<SafeRoute><UnitFlow /></SafeRoute>} />
+                    <Route path="/primeros-pasos" element={<SafeRoute><FirstSteps /></SafeRoute>} />
                     <Route path="/practice" element={<Practice />} />
                     <Route path="/pricing" element={<SafeRoute><Pricing /></SafeRoute>} />
                     <Route path="/admin" element={<SafeRoute><RequireAdmin><AdminDashboard /></RequireAdmin></SafeRoute>} />

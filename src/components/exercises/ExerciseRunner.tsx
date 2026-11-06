@@ -9,10 +9,13 @@ import WordOrderExercise from './WordOrderExercise';
 
 interface ExerciseRunnerProps {
     exercises: GrammarExercise[];
-    onComplete: (score: number) => void;
+    /** The score and the exercises answered wrong, for the review before a retry. */
+    onComplete: (score: number, missed: GrammarExercise[]) => void;
+    /** Under this score the button leads to the review instead of finishing. */
+    passScore?: number;
 }
 
-export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunnerProps) {
+export default function ExerciseRunner({ exercises, onComplete, passScore }: ExerciseRunnerProps) {
     const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [correctCount, setCorrectCount] = useState(0);
@@ -25,11 +28,13 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
     // A double tap on "next" answers the same exercise twice: only the first counts, so no
     // exercise is skipped and the index never goes past the last one
     const answeredRef = useRef(-1);
+    const missedRef = useRef<GrammarExercise[]>([]);
 
     const handleAnswer = (correct: boolean) => {
         if (answeredRef.current === currentIndex) return;
         answeredRef.current = currentIndex;
 
+        if (!correct) missedRef.current.push(exercises[currentIndex]);
         const newCorrectCount = correct ? correctCount + 1 : correctCount;
         if (correct) setCorrectCount(newCorrectCount);
 
@@ -118,10 +123,10 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                     )}
 
                     <button
-                        onClick={() => onComplete(score)}
+                        onClick={() => onComplete(score, missedRef.current)}
                         className="btn-primary w-full py-3.5"
                     >
-                        {score === 0 ? t('exercises.tryAgain') : t('exercises.finish')}
+                        {passScore !== undefined && score < passScore ? t('retry.seeReview') : score === 0 ? t('exercises.tryAgain') : t('exercises.finish')}
                     </button>
                 </div>
             </motion.div>
@@ -141,6 +146,8 @@ export default function ExerciseRunner({ exercises, onComplete }: ExerciseRunner
                     />
                 );
             case 'multiple-choice':
+            case 'meaning-choice':
+            case 'listen-choice':
                 return (
                     <MultipleChoiceExercise
                         key={currentExercise.id}
