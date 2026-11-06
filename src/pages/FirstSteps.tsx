@@ -2,20 +2,23 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Check, ChevronRight, Footprints, Lightbulb } from 'lucide-react';
+import { BookmarkPlus, Check, ChevronRight, Footprints, Lightbulb, MessagesSquare, MicOff, Play } from 'lucide-react';
 import PageHead from '../components/ui/PageHead';
 import BackButton from '../components/ui/BackButton';
 import SpeakButton from '../components/ui/SpeakButton';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
+import SpeakingRunner from '../components/speaking/SpeakingRunner';
 import RetryReview from '../components/RetryReview';
 import { useSessionState } from '../hooks/useSessionState';
 import { firstStepsLessons, FIRST_STEPS_UNIT, type FirstStepsLesson } from '../data/firstSteps';
 import { a1Phonetics } from '../data/vocabulary/phonetics/a1';
 import { useFirstSteps } from '../hooks/useFirstSteps';
-import { comprehensionExercises } from '../lib/comprehension';
+import { comprehensionExercises, guidedWritingExercises } from '../lib/comprehension';
+import { canSpeak, speakLines } from '../lib/speakEnglish';
+import { useCards } from '../hooks/useCards';
 import { PASS_SCORE, fromExercises, retryVerdict, shortReview, type ReviewItem } from '../lib/retryPolicy';
 import { soundsLike } from '../lib/soundsLike';
-import type { GrammarExercise } from '../lib/db';
+import type { GrammarExercise, SpeakingPrompt } from '../lib/db';
 
 /** «Nice to meet you» in Spanish letters, when every word has its IPA in the A1 deck. */
 function phraseSounds(en: string): string {
@@ -24,11 +27,12 @@ function phraseSounds(en: string): string {
     return ipa.every(Boolean) ? ipa.map(soundsLike).join(' ') : '';
 }
 
-type View = { lesson: FirstStepsLesson; mode: 'learn' | 'practice' } | null;
+type View = { lesson: FirstStepsLesson; mode: 'learn' | 'practice' | 'repeat' } | null;
 
 /**
- * «Primeros pasos», the unit 0 for whoever starts from zero: five lessons of phrases to hear,
- * understand and repeat, each practiced by listening and by meaning. Optional, before unit 1.
+ * «Primeros pasos», the unit 0 for whoever starts from zero: five lessons of phrases and a short
+ * dialogue to hear and understand, words for the review, a practice by listening, meaning and
+ * writing, and phrases to say aloud. Optional, before unit 1.
  */
 export default function FirstSteps() {
     const { t } = useTranslation();
@@ -43,9 +47,13 @@ export default function FirstSteps() {
             <LessonPractice
                 lesson={view.lesson}
                 onBack={() => setView({ lesson: view.lesson, mode: 'learn' })}
-                onDone={() => { setView(null); void completeLesson(view.lesson.id); }}
+                // Done once the practice passes; saying it aloud comes after and is optional
+                onDone={() => { setView({ lesson: view.lesson, mode: 'repeat' }); void completeLesson(view.lesson.id); }}
             />
         );
+    }
+    if (view?.mode === 'repeat') {
+        return <LessonRepeat lesson={view.lesson} onDone={() => setView(null)} />;
     }
 
     const next = firstStepsLessons.find(l => !done.includes(l.id));
@@ -125,6 +133,8 @@ function LessonLearn({ lesson, onBack, onPractice }: { lesson: FirstStepsLesson;
                     );
                 })}
             </ul>
+            <LessonDialogue lesson={lesson} />
+            <LessonWords lesson={lesson} />
             {lesson.tip && (
                 <p className="app-sheet p-5 text-sm leading-relaxed flex gap-3">
                     <Lightbulb className="w-5 h-5 shrink-0 text-accent-orange" aria-hidden="true" />
@@ -147,7 +157,10 @@ function LessonPractice({ lesson, onBack, onDone }: { lesson: FirstStepsLesson; 
         onDone();
     };
     const exercises = useMemo<GrammarExercise[]>(
-        () => comprehensionExercises(lesson.items, `${FIRST_STEPS_UNIT}-${lesson.id}-${attempt}`, lesson.practice),
+        () => [
+            ...comprehensionExercises(lesson.items, `${FIRST_STEPS_UNIT}-${lesson.id}-${attempt}`, lesson.practice),
+            ...guidedWritingExercises(lesson.writing, `${FIRST_STEPS_UNIT}-${lesson.id}-${attempt}`),
+        ],
         [lesson, attempt],
     );
 
@@ -177,6 +190,94 @@ function LessonPractice({ lesson, onBack, onDone }: { lesson: FirstStepsLesson; 
             ) : (
                 <ExerciseRunner key={attempt} exercises={exercises} passScore={PASS_SCORE.exercises} onComplete={handleComplete} />
             )}
+        </div>
+    );
+}
+
+/** The lesson's phrases in use: a short dialogue, each line heard and translated, or all in a row. */
+function LessonDialogue({ lesson }: { lesson: FirstStepsLesson }) {
+    const { t } = useTranslation();
+    return (
+        <section className="app-sheet p-5 space-y-4" aria-labelledby={`dialogue-${lesson.id}`}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 id={`dialogue-${lesson.id}`} className="app-h3 flex items-center gap-2">
+                    <MessagesSquare className="w-5 h-5 text-[var(--color-primary)]" aria-hidden="true" />
+                    {t('firstSteps.dialogueTitle')}
+                </h3>
+                {canSpeak() && (
+                    <button type="button" onClick={() => speakLines(lesson.dialogue.map(line => line.en))} className="btn-secondary px-4 py-2 text-sm inline-flex items-center gap-2">
+                        <Play className="w-4 h-4" aria-hidden="true" /> {t('firstSteps.playDialogue')}
+                    </button>
+                )}
+            </div>
+            <ol className="space-y-3">
+                {lesson.dialogue.map((line, i) => (
+                    <li key={i} className="first-steps-line">
+                        <span className="first-steps-who">{line.who}</span>
+                        <SpeakButton text={line.en} />
+                        <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-[var(--color-on-surface)]" lang="en">{line.en}</p>
+                            <p className="text-sm text-[var(--color-on-surface-muted)]">{line.es}</p>
+                        </div>
+                    </li>
+                ))}
+            </ol>
+        </section>
+    );
+}
+
+/** The lesson's words go to the review with one tap (words already there are skipped). */
+function LessonWords({ lesson }: { lesson: FirstStepsLesson }) {
+    const { t } = useTranslation();
+    const { saveStoryWords } = useCards();
+    const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+    if (!lesson.words.length) return null;
+    const add = async () => {
+        setState('saving');
+        try {
+            await saveStoryWords(FIRST_STEPS_UNIT, lesson.words, [], { countLearned: false });
+            setState('saved');
+        } catch {
+            setState('error');
+        }
+    };
+    return (
+        <div className="space-y-1.5">
+            <button
+                type="button"
+                onClick={add}
+                disabled={state === 'saving' || state === 'saved'}
+                className="btn-secondary w-full py-3 text-sm inline-flex items-center justify-center gap-2 disabled:opacity-70"
+            >
+                {state === 'saved' ? <Check className="w-4 h-4" aria-hidden="true" /> : <BookmarkPlus className="w-4 h-4" aria-hidden="true" />}
+                {state === 'saved' ? t('firstSteps.wordsAdded') : t('firstSteps.addWords', { count: lesson.words.length })}
+            </button>
+            <p role="status" className={`text-xs text-center ${state === 'error' ? 'text-[var(--color-error)]' : 'text-[var(--color-on-surface-muted)]'}`}>
+                {state === 'error' ? t('firstSteps.wordsError') : t('firstSteps.wordsHint')}
+            </p>
+        </div>
+    );
+}
+
+/** At the end of a lesson: a few phrases said aloud, compared with what was heard. Optional. */
+function LessonRepeat({ lesson, onDone }: { lesson: FirstStepsLesson; onDone: () => void }) {
+    const { t } = useTranslation();
+    const prompts = useMemo<SpeakingPrompt[]>(() => lesson.repeat.map((text, i) => ({
+        id: `${FIRST_STEPS_UNIT}-${lesson.id}-say-${i}`,
+        unitId: FIRST_STEPS_UNIT,
+        type: 'read-aloud',
+        level: 'A1',
+        instruction: t('firstSteps.repeatInstruction'),
+        targetText: text,
+    })), [lesson, t]);
+    return (
+        <div className="space-y-6">
+            <BackButton onClick={onDone} label={t('firstSteps.allLessons')} />
+            <PageHead title={t('firstSteps.repeatTitle')} lead={t('firstSteps.repeatLead')} />
+            <SpeakingRunner prompts={prompts} level="A1" onComplete={onDone} />
+            <button type="button" onClick={onDone} className="btn-secondary w-full py-3 text-sm inline-flex items-center justify-center gap-2">
+                <MicOff className="w-4 h-4" aria-hidden="true" /> {t('firstSteps.skipRepeat')}
+            </button>
         </div>
     );
 }

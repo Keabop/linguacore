@@ -846,6 +846,17 @@
     "goToUnit1": "Ir a la unidad 1",
     "cardTitle": "¿Empiezas desde cero?",
     "cardBody": "Antes de la unidad 1: saludos, números y frases útiles, con audio y en español.",
-    "cardAction": "Primeros pasos"
+    "cardAction": "Primeros pasos",
+    "dialogueTitle": "Una plática",
+    "playDialogue": "Escuchar la plática",
+    "addWords_one": "Añadir {{count}} palabra a mi repaso",
+    "addWords_other": "Añadir {{count}} palabras a mi repaso",
+    "wordsAdded": "Ya están en tu repaso",
+    "wordsHint": "Te las preguntaremos en «Repasar» para que no se te olviden.",
+    "wordsError": "No se pudieron añadir. Inténtalo otra vez.",
+    "repeatTitle": "Dilo en voz alta",
+    "repeatLead": "Ya terminaste la lección. Si puedes hablar, repite estas frases: así se te quedan mejor.",
+    "repeatInstruction": "Escucha la frase y dila en voz alta.",
+    "skipRepeat": "No puedo hablar ahora"
   }
 }

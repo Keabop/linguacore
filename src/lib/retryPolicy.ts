@@ -98,7 +98,9 @@ export function settleRound(
     attempt: number,
 ): RoundOutcome {
     const results = { ...earlier };
-    for (const result of round) results[result.id] = result;
+    // A retry the free plan could no longer evaluate keeps the score it had: running out of
+    // evaluations never turns a failed prompt into a passed one
+    for (const result of round) results[result.id] = result.score === null && earlier[result.id] ? earlier[result.id] : result;
     const scored = Object.values(results).filter((r): r is PromptResult & { score: number } => r.score !== null);
     const score = scored.length ? Math.round(scored.reduce((sum, r) => sum + r.score, 0) / scored.length) : null;
     const verdict = retryVerdict(part, score, attempt);

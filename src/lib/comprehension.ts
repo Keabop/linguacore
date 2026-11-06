@@ -46,3 +46,36 @@ export function comprehensionExercises(pairs: Pair[], unitId: string, count = { 
     }));
     return [...meaning, ...listen];
 }
+
+/** A sentence to write: built from its shuffled words, or with `blank` typed into its gap. */
+export interface GuidedSentence {
+    en: string;
+    es: string;
+    /** The one word to type; without it the sentence is put in order. */
+    blank?: string;
+}
+
+/**
+ * Guided writing for whoever starts: the Spanish says what to write, and the English is either put
+ * in order from its own words or completed with the one word missing. Graded on the device, no AI.
+ */
+export function guidedWritingExercises(sentences: GuidedSentence[], unitId: string): GrammarExercise[] {
+    return sentences.map((sentence, i): GrammarExercise => sentence.blank
+        ? {
+            id: `${unitId}-write-${i}`,
+            unitId,
+            type: 'fill-blank',
+            question: `${sentence.en.replace(new RegExp(`\\b${sentence.blank}\\b`), '___')} (${sentence.es})`,
+            correctAnswer: sentence.blank,
+            explanation: `«${sentence.en}» = «${sentence.es}».`,
+        }
+        : {
+            id: `${unitId}-write-${i}`,
+            unitId,
+            type: 'word-order',
+            question: `Escríbelo en inglés: «${sentence.es}»`,
+            correctAnswer: sentence.en,
+            scrambledWords: shuffle(sentence.en.split(' ')),
+            explanation: `«${sentence.es}» = «${sentence.en}».`,
+        });
+}

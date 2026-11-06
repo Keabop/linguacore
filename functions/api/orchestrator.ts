@@ -118,6 +118,7 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
             break;
         }
         case 'writing-evaluator': {
+            if (params.retry !== undefined && params.retry !== true) return { valid: false, error: 'Reintento inválido.' };
             if (!isText(params.text, 3000)) {
                 return { valid: false, error: 'El texto a evaluar debe ser texto de máximo 3000 caracteres.' };
             }
@@ -249,7 +250,8 @@ export const onRequestPost: PagesFunction = async (context) => {
             }
         }
 
-        const dailyFeature = DAILY_AGENT_LIMITS[agent];
+        // A retry under the pass mark has a count of its own, so redoing never uses up the day's evaluations
+        const dailyFeature = agent === 'writing-evaluator' && params?.retry === true ? 'evaluation-retries' : DAILY_AGENT_LIMITS[agent];
         if (dailyFeature) {
             const usage = await checkUsageLimit(userId, dailyFeature, userTier);
             if (!usage.allowed) {

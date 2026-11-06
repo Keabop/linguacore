@@ -39,7 +39,16 @@ export async function translateStory(params: { storyId: string }): Promise<Story
     const { sentences, questions } = source;
 
     const prompt = `You translate English stories for Spanish speakers in Mexico who are learning English.
-Translate into natural Mexican Spanish, faithful to the meaning. Keep names as they are.
+Translate into the Spanish a Mexican writer would use: natural and correct, faithful to the meaning, never
+word for word. Keep names as they are.
+
+Write it the way it is said in Spanish:
+- Make every verb agree with its real subject: «Me han encantado casi todos los destinos», never «me ha encantado casi todos los destinos».
+- Use the tense Spanish needs, not a copy of the English one: «I've lived here for two years» → «Vivo aquí desde hace dos años».
+- Say idioms and phrasal verbs by their meaning: «It's raining cats and dogs» → «Está lloviendo a cántaros»; «give up» → «rendirse».
+- Prefer Mexican usage (celular, computadora, departamento, manejar, ¿qué onda? only in casual talk), with «tú» unless the story uses formal address.
+- Spanish punctuation: opening ¿ and ¡, and «comillas» or — for dialogue as the story uses quotes.
+Before answering, reread each sentence in Spanish alone: if it sounds translated, rewrite it.
 
 Return ONLY valid JSON (no markdown) with exactly this shape:
 {"sentences": [...], "questions": [{"question": "...", "options": ["...", "..."]}]}
@@ -53,7 +62,8 @@ ${JSON.stringify(sentences)}
 Questions:
 ${JSON.stringify(questions)}`;
 
-    const text = await generateWithFallback(prompt);
+    // Low temperature: the same story gets the same, careful translation
+    const text = await generateWithFallback(prompt, { temperature: 0.3 });
     const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
     let parsed: StoryTranslationResponse;
     try {

@@ -12,9 +12,11 @@ interface Props {
     /** Average of the evaluated answers (null when none could be evaluated, free plan limit) and each one's result. */
     onComplete: (avgScore: number | null, results: PromptResult[]) => void;
     onFirstAttempt?: () => void;
+    /** A retry of prompts that failed: counted apart from the day's evaluations (`evaluation-retries`). */
+    retry?: boolean;
 }
 
-export default function SpeakingRunner({ prompts, level, onComplete, onFirstAttempt }: Props) {
+export default function SpeakingRunner({ prompts, level, onComplete, onFirstAttempt, retry }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [results, setResults] = useState<PromptResult[]>([]);
 
@@ -59,7 +61,7 @@ export default function SpeakingRunner({ prompts, level, onComplete, onFirstAtte
                     {current.type === 'read-aloud' ? (
                         <ReadAloud instruction={current.instruction} targetText={current.targetText || ''} onComplete={handleExerciseComplete} />
                     ) : (
-                        <OralResponse instruction={current.instruction} targetGrammar={current.targetGrammar || []} level={level} onComplete={handleExerciseComplete} />
+                        <OralResponse instruction={current.instruction} targetGrammar={current.targetGrammar || []} level={level} onComplete={handleExerciseComplete} retry={retry} />
                     )}
                 </motion.div>
             </AnimatePresence>

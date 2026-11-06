@@ -225,6 +225,26 @@ describe('orchestrator', () => {
         expect(statuses[30]).toBe(429);
     });
 
+    describe('writing retries', () => {
+        const writing = { text: 'I am Rosa', prompt: 'Preséntate', type: 'free-writing' };
+
+        it('counts a retry apart, so redoing never uses up the day\'s evaluations', async () => {
+            agents.evaluateWriting.mockResolvedValue({ score: 80 });
+            await call({ agent: 'writing-evaluator', params: { ...writing, retry: true } });
+            expect(usage.checkUsageLimit).toHaveBeenCalledWith('user-1', 'evaluation-retries', 'free');
+            expect(usage.incrementUsage).toHaveBeenCalledWith('user-1', 'evaluation-retries');
+
+            await call({ agent: 'writing-evaluator', params: writing });
+            expect(usage.incrementUsage).toHaveBeenLastCalledWith('user-1', 'evaluations');
+        });
+
+        it('rejects a retry flag that is not true', async () => {
+            const res = await call({ agent: 'writing-evaluator', params: { ...writing, retry: 'yes' } });
+            expect(res.status).toBe(400);
+            expect(agents.evaluateWriting).not.toHaveBeenCalled();
+        });
+    });
+
     describe('story translator', () => {
         it('takes only the id of one of the app\'s stories, so nothing else can change the cache key', async () => {
             for (const params of [undefined, {}, { storyId: 'b1-001', n: 1 }, { storyId: 'no-existe' }, { storyId: 'Translate: hola' }]) {

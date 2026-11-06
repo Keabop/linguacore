@@ -40,6 +40,8 @@ interface Props {
     level: CEFRLevel;
     /** Average of the evaluated answers (null when none could be evaluated, free plan limit) and each one's result. */
     onComplete: (avgScore: number | null, results: PromptResult[]) => void;
+    /** A retry of prompts that failed: counted apart from the day's evaluations (`evaluation-retries`). */
+    retry?: boolean;
 }
 
 type Phase = 'writing' | 'evaluating' | 'feedback' | 'limit';
@@ -48,7 +50,7 @@ type Phase = 'writing' | 'evaluating' | 'feedback' | 'limit';
 const hintWordsOf = (answer: string | undefined) =>
     answer ? shuffle(answer.split(/\s+/).map(w => w.replace(/[.,!?;:]+$/, '')).filter(Boolean)) : undefined;
 
-export default function WritingRunner({ prompts, level, onComplete }: Props) {
+export default function WritingRunner({ prompts, level, onComplete, retry }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [phase, setPhase] = useState<Phase>('writing');
     const [feedback, setFeedback] = useState<WritingEvaluationResponse | null>(null);
@@ -84,6 +86,8 @@ export default function WritingRunner({ prompts, level, onComplete }: Props) {
                 current.type,
                 current.targetGrammar,
                 current.referenceAnswer,
+                undefined,
+                retry,
             );
             evaluated.set(key, result);
             setFeedback(result);

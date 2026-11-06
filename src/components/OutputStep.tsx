@@ -250,7 +250,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                         onContinue={() => goOnAnyway(writing.outcome!, writing.finish)}
                     />
                 ) : (
-                    <WritingRunner key={writing.attempt} prompts={writing.prompts} level={level} onComplete={(_, results) => writing.finishRound(results)} />
+                    <WritingRunner key={writing.attempt} prompts={writing.prompts} level={level} retry={writing.attempt > 1} onComplete={(_, results) => writing.finishRound(results)} />
                 ))}
                 {activeTab === 'writing' && writingDone && (
                     <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
@@ -277,7 +277,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                                     : { label: t('output.cantSpeakNow'), icon: <MicOff className="w-4 h-4" aria-hidden="true" />, onClick: handleDeferSpeaking }}
                             />
                         ) : (
-                            <SpeakingRunner key={speaking.attempt} prompts={speaking.prompts} level={level} onComplete={(_, results) => speaking.finishRound(results)} onFirstAttempt={() => setSpeakingAttempted(true)} />
+                            <SpeakingRunner key={speaking.attempt} prompts={speaking.prompts} level={level} retry={speaking.attempt > 1} onComplete={(_, results) => speaking.finishRound(results)} onFirstAttempt={() => setSpeakingAttempted(true)} />
                         )}
                         {deferError && <p className="text-xs text-center text-[var(--color-error)]">{t('output.deferError')}</p>}
                         {speakingOnly && !speakingAttempted && !speaking.outcome && (

@@ -203,9 +203,11 @@ export async function evaluateWriting(
     targetGrammar: string[],
     referenceAnswer?: string,
     exam?: string,
+    /** Redoing a prompt under the pass mark: it spends the day's retries, not its evaluations. */
+    retry?: boolean,
 ): Promise<WritingEvaluationResponse> {
     return spendsEvaluation(callAgent<WritingEvaluationResponse>('writing-evaluator', {
-        text, prompt, level, type, targetGrammar, referenceAnswer, exam,
+        text, prompt, level, type, targetGrammar, referenceAnswer, exam, ...(retry ? { retry: true } : {}),
     }));
 }
 

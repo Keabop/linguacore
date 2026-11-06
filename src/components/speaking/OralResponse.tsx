@@ -15,9 +15,11 @@ interface Props {
     level: CEFRLevel;
     /** The evaluated score (null when it could not be evaluated, free plan limit) and what to review. */
     onComplete: (score: number | null, review?: ReviewItem[]) => void;
+    /** A retry of prompts that failed: counted apart from the day's evaluations (`evaluation-retries`). */
+    retry?: boolean;
 }
 
-export default function OralResponse({ instruction, targetGrammar, level, onComplete }: Props) {
+export default function OralResponse({ instruction, targetGrammar, level, onComplete, retry }: Props) {
     const { isListening, transcript, interimTranscript, startListening, stopListening, resetTranscript, recognitionSupported } = useSpeech();
     const [phase, setPhase] = useState<'recording' | 'evaluating' | 'result' | 'limit'>('recording');
     const [score, setScore] = useState(0);
@@ -36,7 +38,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
         setPhase('evaluating');
         setError(null);
         try {
-            const result = await evaluateWriting(transcript, instruction, level, 'free-writing', targetGrammar);
+            const result = await evaluateWriting(transcript, instruction, level, 'free-writing', targetGrammar, undefined, undefined, retry);
             setScore(result.score);
             setFeedbackText(result.encouragement);
             setReview(fromWriting(result));

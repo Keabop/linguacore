@@ -632,6 +632,14 @@ describe('content loaded by level', () => {
     });
 });
 
+describe('glosses in context', () => {
+    it('say what a word means there without ending a sentence (no . ? ! … inside)', () => {
+        const glosses = [...a1Stories, ...a2Stories].flatMap(story => [...story.content.matchAll(/data-gloss="([^"]*)"/g)].map(m => [story.id, m[1]]));
+        expect(glosses.length).toBeGreaterThanOrEqual(14);
+        for (const [id, gloss] of glosses) expect(gloss, `${id}: ${gloss}`).not.toMatch(/[.?!…]/);
+    });
+});
+
 describe('story translations', () => {
     // Whoever starts from zero reads A1 and A2 with the Spanish at hand: every story has it, aligned
     const translated: [string, Story[], Record<string, StoryTranslation>][] = [

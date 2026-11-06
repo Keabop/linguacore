@@ -70,4 +70,12 @@ describe('fromWriting', () => {
             .toEqual([{ wrong: 'I is', right: 'I am', why: 'Con I va am.' }]);
         expect(fromWriting({ corrections: [], feedback })).toEqual([{ why: 'Revisa el verbo to be.' }]);
     });
+
+    it('keeps a failed score when the retry could not be evaluated (free plan limit)', () => {
+        const failed = { id: 'a', score: 40, review: [{ why: 'Con I va am.' }] };
+        const first = settleRound('writing', {}, [failed], 1);
+        const second = settleRound('writing', first.results, [{ id: 'a', score: null, review: [] }], 2);
+        expect(second.score).toBe(40);
+        expect(second.verdict).toBe('may-continue');
+    });
 });

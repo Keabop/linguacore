@@ -846,6 +846,17 @@
     "goToUnit1": "Go to unit 1",
     "cardTitle": "Starting from zero?",
     "cardBody": "Before unit 1: greetings, numbers and useful phrases, with audio and in Spanish.",
-    "cardAction": "First steps"
+    "cardAction": "First steps",
+    "dialogueTitle": "A short talk",
+    "playDialogue": "Play the talk",
+    "addWords_one": "Add {{count}} word to my review",
+    "addWords_other": "Add {{count}} words to my review",
+    "wordsAdded": "They're in your review",
+    "wordsHint": "We'll ask you about them in «Review» so you don't forget them.",
+    "wordsError": "Couldn't add them. Try again.",
+    "repeatTitle": "Say it aloud",
+    "repeatLead": "You finished the lesson. If you can speak, repeat these phrases: they stick better.",
+    "repeatInstruction": "Listen to the phrase and say it aloud.",
+    "skipRepeat": "I can't speak right now"
   }
 }
