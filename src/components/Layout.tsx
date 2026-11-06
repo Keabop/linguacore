@@ -505,13 +505,13 @@ export default function Layout() {
                 </nav>
             )}
 
-            {/* ===== FLOATING ADMIN BUTTON (Top-Left, Admin Only) ===== */}
+            {/* ===== ADMIN BUTTON (top-left, admin only): scrolls away with the page so it never covers a title ===== */}
             {isAdmin && (
                 <NavLink
                     to="/admin"
                     aria-label="Admin"
                     className={({ isActive }) =>
-                        `fixed top-4 left-4 z-[55] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 ${
+                        `absolute top-4 left-4 z-[55] w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 ${
                             isActive
                                 ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
                                 : 'bg-[var(--color-card)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-primary)] border border-[var(--color-outline-variant)]'
