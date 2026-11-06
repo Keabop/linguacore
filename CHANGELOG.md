@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/Keabop/linguacore/compare/v1.4.0...v1.5.0) (2026-11-06)
+
+
+### Novedades
+
+* libreta para tomar notas y glosario de términos de gramática ([#47](https://github.com/Keabop/linguacore/issues/47)) ([08217ec](https://github.com/Keabop/linguacore/commit/08217ec7ce8074bd8022caa2cf56f8b30dd5db9f))
+
+
+### Correcciones
+
+* el texto calificado de la lectura en voz alta ya no ensancha la pantalla ([#46](https://github.com/Keabop/linguacore/issues/46)) ([38bf806](https://github.com/Keabop/linguacore/commit/38bf8060a403e75ff6d6f187a5e3d69af0b59db6))
+
 ## [1.4.0](https://github.com/Keabop/linguacore/compare/v1.3.0...v1.4.0) (2026-11-05)
 
 
