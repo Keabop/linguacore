@@ -14,7 +14,7 @@ const writes = vi.hoisted(() => ({
 vi.mock('../lib/AuthContext', () => ({ useAuth: () => ({ user: { id: 'user-1' } }) }));
 vi.mock('../lib/offlineMutation', () => writes);
 vi.mock('../lib/supabase', () => ({
-    supabase: { from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: db.row }) }) }) }) },
+    supabase: { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: db.row }) }) }) }) },
 }));
 
 import { determineStep, useUnitProgress } from './useUnitProgress';

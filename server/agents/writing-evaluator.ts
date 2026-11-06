@@ -76,6 +76,11 @@ ALL feedback text (corrections explanations, notes, encouragement) MUST be in SP
 NOT ERRORS: capital letters, punctuation (commas, periods, a missing final period, question or
 exclamation marks) and spacing. A missing apostrophe in a contraction ("dont") is spelling, so it counts. Never list them as corrections and never lower a score
 for them. Only grammar, word choice and spelling of the words themselves count.
+One exception, as a tip and never in the score: if "I" or a proper noun (a language, day, month,
+country or name) is written in lowercase, say so in one short sentence in the grammar note.
+
+The encouragement must match the result: when there are corrections, never call the answer perfect
+or say something was used "perfectamente". Name what went well and the one thing to fix.
 
 ${exam
     ? exam.rules

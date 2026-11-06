@@ -6,6 +6,7 @@ import { createExercise } from '../../server/agents/exercise-creator.js';
 import { WRITING_TYPES, evaluateWriting } from '../../server/agents/writing-evaluator.js';
 import { generateCareerDeck } from '../../server/agents/career-deck.js';
 import { evaluateSpeaking } from '../../server/agents/speaking-evaluator.js';
+import { translateStory, translatableStory } from '../../server/agents/story-translator.js';
 import { env, setEnv } from '../../server/lib/config.js';
 import { authenticateRequest } from '../../server/lib/auth.js';
 import { isCriteriaExam } from '../../server/lib/examCriteria.js';
@@ -43,6 +44,7 @@ const DAILY_AGENT_LIMITS: Record<string, string> = {
     'vocab-enricher': 'other-ai',
     'exercise-creator': 'other-ai',
     'career-deck': 'other-ai',
+    'story-translator': 'translations',
 };
 
 /** The evaluators take an exam id (its criteria are chosen on the server), or none. */
@@ -119,6 +121,13 @@ function validateInputSize(agent: AgentType, params: any): { valid: boolean; err
                 return { valid: false, error: 'La lista de gramática objetivo no es válida.' };
             }
             if (!validExam(params.exam)) return { valid: false, error: 'Examen desconocido.' };
+            break;
+        }
+        case 'story-translator': {
+            // Only the app's own B1 and B2 stories, looked up by id: never free text
+            if (typeof params.storyId !== 'string' || params.storyId.length > 40 || !translatableStory(params.storyId)) {
+                return { valid: false, error: 'Historia desconocida.' };
+            }
             break;
         }
         case 'career-deck': {
@@ -298,6 +307,9 @@ export const onRequestPost: PagesFunction = async (context) => {
                 break;
             case 'speaking-evaluator':
                 result = await evaluateSpeaking(params);
+                break;
+            case 'story-translator':
+                result = await translateStory({ storyId: params.storyId });
                 break;
         }
 

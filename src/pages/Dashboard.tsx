@@ -24,6 +24,7 @@ import Garden from '../components/garden/Garden';
 import StreakChip from '../components/ui/StreakChip';
 import GoalDrops from '../components/ui/GoalDrops';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
+import FirstStepsCard from '../components/FirstStepsCard';
 import { useLevelUpNotice } from '../hooks/useLevelUpNotice';
 
 // Loaded only the first time a level-up happens
@@ -115,6 +116,9 @@ export default function Dashboard() {
                     meta={[<LevelBadge key="level" level={currentLevel} withStage size="compact" />]}
                 />
             </motion.div>
+
+            {/* Whoever starts from zero: «Primeros pasos» first, while at the start of A1 */}
+            {currentLevel === 'A1' && unitsCompleted < 2 && <motion.div {...fadeIn(1)}><FirstStepsCard /></motion.div>}
 
             {/* Today's spread: the unit on the left page, the daily chores on the right one */}
             <motion.section {...fadeIn(1)} className="nb-spread app-spread" aria-labelledby="today-title">

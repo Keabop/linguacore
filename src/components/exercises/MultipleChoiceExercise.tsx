@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AnswerFeedback from './AnswerFeedback';
 import { motion } from 'framer-motion';
-import { Check, X } from 'lucide-react';
+import { Check, X, Volume2 } from 'lucide-react';
+import SpeakButton from '../ui/SpeakButton';
+import { canSpeak, speakEnglish } from '../../lib/speakEnglish';
 import type { GrammarExercise } from '../../lib/db';
 import { shuffle } from '../../lib/shuffle';
 
@@ -17,6 +19,12 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
     const [status, setStatus] = useState<'pending' | 'correct' | 'incorrect'>('pending');
     // The data lists the right answer early most of the time, so the order is shuffled per exercise
     const options = useMemo(() => shuffle(exercise.options ?? []), [exercise.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    const listening = exercise.type === 'listen-choice';
+
+    // A listening exercise plays its sentence as it appears; it can be heard again any time
+    useEffect(() => {
+        if (listening) speakEnglish(exercise.question);
+    }, [listening, exercise.question]);
 
     const handleSelect = (option: string) => {
         if (status !== 'pending') return;
@@ -74,7 +82,34 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                 animate={{ opacity: 1, y: 0 }}
                 className="app-sheet p-6 text-center"
             >
-                <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
+                {exercise.type === 'multiple-choice' && (
+                    <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.question}</p>
+                )}
+                {exercise.type === 'meaning-choice' && (
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('exercises.whatDoesItMean')}</p>
+                        <div className="flex items-center justify-center gap-3">
+                            <SpeakButton text={exercise.question} />
+                            <p className="text-xl leading-relaxed text-[var(--color-on-surface)]" lang="en">{exercise.question}</p>
+                        </div>
+                    </div>
+                )}
+                {listening && (
+                    <div className="space-y-4">
+                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">
+                            {canSpeak() ? t('exercises.listenAndChoose') : t('exercises.readAndChoose')}
+                        </p>
+                        {canSpeak() && (
+                            <button type="button" onClick={() => speakEnglish(exercise.question)} className="listen-play" aria-label={t('audio.listen')}>
+                                <Volume2 className="size-7" aria-hidden="true" />
+                            </button>
+                        )}
+                        {/* Without a voice there is nothing to hear: the sentence is shown instead */}
+                        {(status !== 'pending' || !canSpeak()) && (
+                            <p className="text-lg text-[var(--color-on-surface)]" lang="en">{exercise.question}</p>
+                        )}
+                    </div>
+                )}
             </motion.div>
 
             {/* Options */}
@@ -91,7 +126,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                             status === 'pending' ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
                         } ${getOptionFeedbackClass(option)}`}
                     >
-                        <span className="text-[var(--color-on-surface)] font-medium">{option}</span>
+                        <span className="text-[var(--color-on-surface)] font-medium" lang={exercise.type === 'meaning-choice' ? 'es' : 'en'}>{option}</span>
                         {getOptionIcon(option)}
                     </motion.button>
                 ))}

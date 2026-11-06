@@ -39,7 +39,7 @@ describe('WritingRunner at the free plan limit', () => {
 
         expect(await screen.findByText('My family is small. I have one sister.')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
-        expect(onComplete).toHaveBeenCalledWith(null);
+        expect(onComplete).toHaveBeenCalledWith(null, [{ id: prompt.id, score: null, review: [] }]);
     });
 
     it('tells a reached limit apart from other errors, so it is not retried', () => {

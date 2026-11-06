@@ -66,7 +66,7 @@
     "allWordsMarked": "Marcaste todas las palabras.",
     "missingTitle_one": "Te falta {{count}} palabra",
     "missingTitle_other": "Te faltan {{count}} palabras",
-    "missingHint": "Marca cada una: añádela a tu mazo o di que ya la sabes. Tócala para abrirla.",
+    "missingHint": "Márcalas todas con un toque, o toca una para abrirla.",
     "savedOnComplete": "Se guardará al completar la historia.",
     "saveFailed": "No se pudieron guardar tus palabras. Inténtalo de nuevo.",
     "tapToTranslate": "Toca una palabra para ver su traducción",
@@ -95,7 +95,15 @@
     "answerEvidence": "La historia dice:",
     "questionsScore": "Acertaste {{right}} de {{total}}.",
     "addedFeedback": "Añadida a tu mazo",
-    "knownFeedback": "Marcada como conocida"
+    "knownFeedback": "Marcada como conocida",
+    "addAllAndFinish": "Añadir todas y terminar",
+    "knowAllAndFinish": "Ya me las sé, terminar",
+    "showSpanish": "Ver en español",
+    "tapToTranslateSentence": "Toca una palabra para traducirla, o una oración para oírla y ver qué significa",
+    "translating": "Traduciendo…",
+    "translateFailed": "No se pudo traer el español de esta historia. Inténtalo más tarde.",
+    "meansHere": "Aquí significa",
+    "inThisSentence": "En esta oración"
   },
   "storyList": {
     "subtitle": "Explora historias por nivel",
@@ -293,9 +301,9 @@
     "alreadyKnown": "Ya la conoces",
     "pendingTitle_one": "Te falta 1 parte de habla",
     "pendingTitle_other": "Te faltan {{count}} partes de habla",
-    "pendingBody": "Antes del examen de fin de nivel, completa la habla de las unidades que dejaste para después.",
+    "pendingBody": "Antes del examen de fin de nivel, completa el habla de las unidades que dejaste para después.",
     "progressError": "No se pudo revisar tu progreso del nivel. Revisa tu conexión e inténtalo de nuevo.",
-    "speakingStillPending": "Te falta la habla de esta unidad: complétala desde la ruta antes del examen de fin de nivel.",
+    "speakingStillPending": "Te falta el habla de esta unidad: complétala desde la ruta antes del examen de fin de nivel.",
     "stepsLabel": "Pasos de la unidad",
     "stepOf": "Paso {{n}} de {{total}}"
   },
@@ -310,7 +318,10 @@
     "finish": "Finalizar",
     "tryAgain": "Volver a intentarlo",
     "zeroHint": "Necesitas al menos una respuesta correcta para pasar al siguiente paso. Repasa la tarjeta de gramática si lo necesitas.",
-    "autoNext": "Si aciertas, pasa sola a la siguiente en unos segundos."
+    "autoNext": "Si aciertas, pasa sola a la siguiente en unos segundos.",
+    "whatDoesItMean": "¿Qué significa?",
+    "listenAndChoose": "Escucha y elige lo que oíste",
+    "readAndChoose": "Elige la oración"
   },
   "practice": {
     "saveToHistory": "Guardar en historial",
@@ -670,21 +681,27 @@
   "output": {
     "pendingTitle": "Habla pendiente",
     "pendingIntro": "Completa la parte de habla que dejaste para después.",
-    "pendingBody": "Puedes terminar la unidad y seguir avanzando. Para presentar el examen de fin de nivel tendrás que completar la habla de esta unidad: la encuentras en la ruta.",
+    "pendingBody": "Puedes terminar la unidad y seguir avanzando. Para presentar el examen de fin de nivel tendrás que completar el habla de esta unidad: la encuentras en la ruta.",
     "pendingTag": "pendiente",
     "evaluationsLeft": "Te quedan {{remaining}} de {{limit}} evaluaciones con IA hoy.",
     "evaluationsUsed": "Ya usaste tus evaluaciones con IA de hoy: verás la respuesta modelo.",
     "deferError": "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.",
     "notNow": "Ahora no, volver a la ruta",
     "backToPath": "Volver a la ruta",
-    "continuePending": "Continuar al checkpoint (habla pendiente)"
+    "continuePending": "Continuar al checkpoint (habla pendiente)",
+    "listenInstead": "Mientras, practica escuchando",
+    "listenIntro": "Escucha cada oración de la unidad y elige la que oíste. No necesitas micrófono.",
+    "listenScore": "Práctica de escuchar: {{score}}%. Puedes repetirla cuando quieras."
   },
   "writing": {
     "perfect": "¡Perfecto! Tu respuesta coincide con la respuesta modelo.",
     "noCorrections": "Sin correcciones: tu respuesta está bien escrita.",
     "unchanged": "Todavía es el texto con errores: corrige las partes que están mal.",
     "yourText": "Lo que escribiste",
-    "improved": "Versión mejorada"
+    "improved": "Versión mejorada",
+    "showHint": "Ver pista",
+    "hideHint": "Ocultar pista",
+    "hintHelp": "Estas son las palabras que necesitas, en desorden. Tócalas para agregarlas y ordénalas tú."
   },
   "garden3d": {
     "unit": "Unidad {{n}}",
@@ -693,7 +710,7 @@
     "done": "Completada",
     "pending": "Falta: Habla",
     "examDone": "Aprobado",
-    "examPending": "Completa la habla de la unidad {{n}}",
+    "examPending": "Completa el habla de la unidad {{n}}",
     "continueUnit": "Continuar: Unidad {{n}}",
     "title": {
       "A1": "Tu jardín está echando raíces",
@@ -703,8 +720,8 @@
     },
     "sub_one": "{{grown}} de {{total}} plantas crecieron. Te falta {{count}} unidad para el examen de {{level}}.",
     "sub_other": "{{grown}} de {{total}} plantas crecieron. Te faltan {{count}} unidades para el examen de {{level}}.",
-    "subPending_one": "Solo te falta la habla de {{count}} unidad para el examen.",
-    "subPending_other": "Solo te falta la habla de {{count}} unidades para el examen."
+    "subPending_one": "Solo te falta el habla de {{count}} unidad para el examen.",
+    "subPending_other": "Solo te falta el habla de {{count}} unidades para el examen."
   },
   "pathView": {
     "levels": "Niveles",
@@ -716,7 +733,7 @@
     "continue": "Continuar",
     "start": "Empezar",
     "review": "Repasar unidad",
-    "finishSpeaking": "Terminar la habla",
+    "finishSpeaking": "Terminar el habla",
     "takeExam": "Presentar examen",
     "seeExam": "Ver examen",
     "goToUnit": "Ir a la unidad {{n}}",
@@ -735,7 +752,7 @@
     },
     "status": {
       "done": "Completada",
-      "pending": "Falta la habla",
+      "pending": "Falta el habla",
       "current": "En curso",
       "locked": "Bloqueada",
       "exam-locked": "Bloqueado",
@@ -790,5 +807,41 @@
     "capture": "Anotar",
     "saveToNotebook": "Guardar en la libreta",
     "glossaryQuote": "{{term}}: {{definition}} Ejemplo: {{example}}"
+  },
+  "retry": {
+    "title": "Repasa antes de volver a intentarlo",
+    "score": "Sacaste {{score}}%. Para seguir necesitas {{pass}}%.",
+    "rules": "La regla, en corto",
+    "mistakes": "Lo que falló",
+    "again": "Intentarlo de nuevo",
+    "againPrompts_one": "Repetir el ejercicio que falló",
+    "againPrompts_other": "Repetir los {{count}} ejercicios que fallaron",
+    "continue": "Seguir de todos modos",
+    "continueNote": "Ya lo intentaste dos veces. Lo que falló queda en tu repaso.",
+    "seeReview": "Ver qué repasar",
+    "missedWords": "No se oyeron: {{words}}. Escucha el audio y repítelas despacio."
+  },
+  "audio": {
+    "listen": "Escuchar",
+    "listenTo": "Escuchar «{{text}}»",
+    "soundsLike": "Suena como"
+  },
+  "firstSteps": {
+    "title": "Primeros pasos",
+    "lead": "Para quien empieza desde cero, antes de la unidad 1. Sin gramática: escucha, entiende y repite.",
+    "count": "{{done}} de {{total}} lecciones",
+    "lessons": "Lecciones",
+    "done": "Lista",
+    "phrases_one": "{{count}} frase",
+    "phrases_other": "{{count}} frases",
+    "allLessons": "Todas las lecciones",
+    "practice": "Practicar",
+    "practiceTitle": "Práctica",
+    "finishedTitle": "¡Terminaste los primeros pasos!",
+    "finishedBody": "Ya conoces los saludos, los números y las frases que más vas a usar. Sigue con la unidad 1.",
+    "goToUnit1": "Ir a la unidad 1",
+    "cardTitle": "¿Empiezas desde cero?",
+    "cardBody": "Antes de la unidad 1: saludos, números y frases útiles, con audio y en español.",
+    "cardAction": "Primeros pasos"
   }
 }

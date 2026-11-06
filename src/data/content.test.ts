@@ -1,5 +1,11 @@
 // Integrity of the teaching content: every item must be answerable as written.
 import { describe, expect, it } from 'vitest';
+import type { Story, StoryTranslation } from '../lib/db';
+import { storySentences } from '../lib/storySentences';
+import { a1Stories } from './stories-a1';
+import { a1StoryTranslations } from './translations/stories-a1';
+import { a2Stories } from './stories-a2';
+import { a2StoryTranslations } from './translations/stories-a2';
 import { audioJobs } from './audio/jobs';
 import { audioFor } from '../lib/audioKey';
 import { allExercises, allGrammarCards, allGrammarSkills, allStories, allUnits } from './index';
@@ -588,7 +594,8 @@ describe('content loaded by level', () => {
         expect(levels.flatMap(l => l.exercises)).toHaveLength(allExercises.length);
         expect(levels.flatMap(l => l.grammarCards)).toHaveLength(allGrammarCards.length);
         expect(levels.flatMap(l => l.skills)).toHaveLength(allGrammarSkills.length);
-        expect(levels.flatMap(l => l.stories)).toEqual(allStories);
+        // The Spanish comes only with the level, so the lists of stories stay light
+        expect(levels.flatMap(l => l.stories).map(({ translation: _, ...story }) => story)).toEqual(allStories);
         for (const [i, l] of levels.entries()) {
             const prefix = ['a1', 'a2', 'b1', 'b2'][i];
             expect(l.exercises.every(e => e.unitId.startsWith(prefix)), prefix).toBe(true);
@@ -622,5 +629,25 @@ describe('content loaded by level', () => {
             .filter(([file, code]) => !allowed.test(file) && specifiers(code).some(whole))
             .map(([file]) => file);
         expect(offenders).toEqual([]);
+    });
+});
+
+describe('story translations', () => {
+    // Whoever starts from zero reads A1 and A2 with the Spanish at hand: every story has it, aligned
+    const translated: [string, Story[], Record<string, StoryTranslation>][] = [
+        ['A1', a1Stories as Story[], a1StoryTranslations],
+        ['A2', a2Stories as Story[], a2StoryTranslations],
+    ];
+
+    it.each(translated)('every %s story has one Spanish sentence per sentence and its questions translated', (_, stories, translations) => {
+        for (const story of stories) {
+            const tr = translations[story.id];
+            expect(tr, story.id).toBeDefined();
+            expect(tr.sentences, story.id).toHaveLength(storySentences(story.content).length);
+            for (const line of tr.sentences) expect(line.trim(), story.id).not.toBe('');
+            expect(tr.questions?.length ?? 0, story.id).toBe(story.questions?.length ?? 0);
+            story.questions?.forEach((q, i) => expect(tr.questions![i].options, `${story.id} q${i + 1}`).toHaveLength(q.options.length));
+        }
+        expect(Object.keys(translations).sort()).toEqual(stories.map(s => s.id).sort());
     });
 });

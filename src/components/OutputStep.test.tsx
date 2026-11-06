@@ -9,12 +9,21 @@ let content: { writingPrompts: unknown[]; speakingPrompts: unknown[] };
 
 vi.mock('../data/levels', () => ({ levelOfId: () => 'A1', useLevelContent: () => content }));
 vi.mock('../hooks/useUsageLimits', () => ({ useUsageLimits: () => ({ data: undefined }) }));
+// What the next writing and speaking rounds score
+const scores = vi.hoisted(() => ({ writing: 80, speaking: 70 }));
+const addErrorCard = vi.hoisted(() => vi.fn(async () => true));
+type Done = (s: number, results: { id: string; score: number; review: { wrong?: string; right?: string; why: string }[] }[]) => void;
 vi.mock('./writing/WritingRunner', () => ({
-    default: ({ onComplete }: { onComplete: (s: number) => void }) => <button onClick={() => onComplete(80)}>escribir</button>,
+    default: ({ onComplete, prompts }: { onComplete: Done; prompts: { id: string }[] }) => (
+        <button onClick={() => onComplete(scores.writing, prompts.map(p => ({ id: p.id, score: scores.writing, review: [{ wrong: 'I is', right: 'I am', why: 'Con I va am.' }] })))}>escribir</button>
+    ),
 }));
 vi.mock('./speaking/SpeakingRunner', () => ({
-    default: ({ onComplete }: { onComplete: (s: number) => void }) => <button onClick={() => onComplete(70)}>hablar</button>,
+    default: ({ onComplete, prompts }: { onComplete: Done; prompts: { id: string }[] }) => (
+        <button onClick={() => onComplete(scores.speaking, prompts.map(p => ({ id: p.id, score: scores.speaking, review: [] })))}>hablar</button>
+    ),
 }));
+vi.mock('../hooks/useErrorCards', () => ({ useErrorCards: () => ({ addErrorCard }) }));
 
 const renderStep = (props: Partial<Parameters<typeof OutputStep>[0]> = {}) => {
     const handlers = { onComplete: vi.fn(), onSpeakingPending: vi.fn().mockResolvedValue(true), onSpeakingDone: vi.fn() };
@@ -24,6 +33,9 @@ const renderStep = (props: Partial<Parameters<typeof OutputStep>[0]> = {}) => {
 
 beforeEach(() => {
     localStorage.clear();
+    scores.writing = 80;
+    scores.speaking = 70;
+    addErrorCard.mockClear();
     content = { writingPrompts: [], speakingPrompts: speaking };
 });
 
@@ -80,5 +92,30 @@ describe('OutputStep', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Saltar' }));
         expect(h.onSpeakingDone).toHaveBeenCalled();
         expect(h.onComplete).toHaveBeenCalled();
+    });
+
+    it('under the pass mark reviews the mistakes, redoes what failed and lets go on after the second try', async () => {
+        content = { writingPrompts: writing, speakingPrompts: [] };
+        scores.writing = 50;
+        const h = renderStep();
+        fireEvent.click(screen.getByRole('button', { name: 'escribir' }));
+        expect(await screen.findByRole('heading', { name: 'Repasa antes de volver a intentarlo' })).toBeInTheDocument();
+        expect(screen.getByText('Sacaste 50%. Para seguir necesitas 75%.')).toBeInTheDocument();
+        expect(screen.getByText('I am')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /Seguir de todos modos/ })).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Repetir el ejercicio que falló' }));
+        fireEvent.click(screen.getByRole('button', { name: 'escribir' }));
+        fireEvent.click(await screen.findByRole('button', { name: /Seguir de todos modos/ }));
+        expect(addErrorCard).toHaveBeenCalledWith({ original: 'I is', corrected: 'I am', explanation: 'Con I va am.' }, 'unit');
+        fireEvent.click(await screen.findByRole('button', { name: 'Continuar al checkpoint' }));
+        expect(h.onComplete).toHaveBeenCalled();
+    });
+
+    it('asks speaking for 70', async () => {
+        scores.speaking = 69;
+        renderStep();
+        fireEvent.click(screen.getByRole('button', { name: 'hablar' }));
+        expect(await screen.findByText('Sacaste 69%. Para seguir necesitas 70%.')).toBeInTheDocument();
     });
 });

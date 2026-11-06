@@ -6,6 +6,8 @@ const CACHEABLE_AGENTS: AgentType[] = [
     'story-generator',
     'vocab-enricher',
     'exercise-creator',
+    // A story's Spanish is the same for everyone: translated once, served from the cache after
+    'story-translator',
 ];
 
 function getSupabaseAdmin() {

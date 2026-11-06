@@ -123,7 +123,7 @@ export default defineConfig({
  */
 function levelChunk(id: string): string | null {
     const n = id.replace(/\\/g, '/');
-    const match = n.match(/\/src\/data\/(?:levels\/(a1|a2|b1|b2)\.ts|curriculum\/(a1|a2|b1|b2)\.ts|curriculum\/skills\/(a1|a2|b1|b2)\.ts|output\/(a1|a2|b1|b2)-output\.ts|stories-(a1|a2|b1|b2)\.ts|curriculum\/b2-(?:units|exercises-\d)\.ts)$/);
+    const match = n.match(/\/src\/data\/(?:levels\/(a1|a2|b1|b2)\.ts|curriculum\/(a1|a2|b1|b2)\.ts|curriculum\/skills\/(a1|a2|b1|b2)\.ts|output\/(a1|a2|b1|b2)-output\.ts|stories-(a1|a2|b1|b2)\.ts|translations\/stories-(a1|a2|b1|b2)(?:-more)?\.ts|curriculum\/b2-(?:units|exercises-\d)\.ts)$/);
     if (!match) return null;
     return `level-${match.slice(1).find(Boolean) ?? 'b2'}`;
 }

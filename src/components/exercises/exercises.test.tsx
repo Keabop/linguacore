@@ -119,7 +119,7 @@ describe('ExerciseRunner', () => {
         answer('am');
         await screen.findByText('Puntuación: 50%', {}, SLOW);
         fireEvent.click(screen.getByRole('button', { name: /Finalizar/ }));
-        expect(onComplete).toHaveBeenCalledWith(50);
+        expect(onComplete).toHaveBeenCalledWith(50, [{ ...choice, id: 'm2' }]);
     });
 
     it('says to try again when no answer was right', async () => {
@@ -129,7 +129,13 @@ describe('ExerciseRunner', () => {
         await screen.findByText('Puntuación: 0%', {}, SLOW);
         expect(screen.getByText(/al menos una respuesta correcta/)).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Volver a intentarlo' }));
-        expect(onComplete).toHaveBeenCalledWith(0);
+        expect(onComplete).toHaveBeenCalledWith(0, [choice]);
+    });
+
+    it('under the pass mark leads to the review', async () => {
+        render(<ExerciseRunner exercises={[choice]} passScore={75} onComplete={vi.fn()} />);
+        answer('am');
+        expect(await screen.findByRole('button', { name: 'Ver qué repasar' }, SLOW)).toBeInTheDocument();
     });
 
     it('counts a double tap on "next" once, without skipping an exercise or going past the last', async () => {
@@ -146,5 +152,27 @@ describe('ExerciseRunner', () => {
         fireEvent.click(again);
         await screen.findByText('3 de 3', {}, SLOW);
         expect(screen.queryByText('Puntuación', { exact: false })).toBeNull();
+    });
+});
+
+describe('comprehension exercises', () => {
+    const meaning: GrammarExercise = { id: 'c1', unitId: 'a1-u1', type: 'meaning-choice', question: 'I am a student.', correctAnswer: 'Yo soy estudiante.', options: ['Yo soy estudiante.', 'Ella es maestra.', 'Estamos cansados.'], explanation: '«I am a student» = «Yo soy estudiante».' };
+    const listen: GrammarExercise = { ...meaning, id: 'c2', type: 'listen-choice', correctAnswer: 'I am a student.', options: ['I am a student.', 'She is a teacher.', 'We are tired.'] };
+
+    it('asks what an English sentence means, with the options in Spanish', () => {
+        const onAnswer = vi.fn();
+        render(<MultipleChoiceExercise exercise={meaning} onAnswer={onAnswer} />);
+        expect(screen.getByText('¿Qué significa?')).toBeInTheDocument();
+        expect(screen.getByText('I am a student.')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Yo soy estudiante.' }));
+        fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
+        expect(onAnswer).toHaveBeenCalledWith(true);
+    });
+
+    it('hides the sentence of a listening exercise until it is answered (or there is no voice to hear it)', () => {
+        render(<MultipleChoiceExercise exercise={listen} onAnswer={vi.fn()} />);
+        // jsdom has no speech synthesis: the sentence shows so it can still be answered
+        expect(screen.getByText('Elige la oración')).toBeInTheDocument();
+        expect(screen.getAllByText('I am a student.').length).toBeGreaterThan(0);
     });
 });

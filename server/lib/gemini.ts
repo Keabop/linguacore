@@ -9,6 +9,7 @@ export const AGENT_TYPES = [
     'writing-evaluator',
     'career-deck',
     'speaking-evaluator',
+    'story-translator',
 ] as const;
 
 export type AgentType = typeof AGENT_TYPES[number];

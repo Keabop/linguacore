@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { ReviewItem } from '../../lib/retryPolicy';
 import { motion } from 'framer-motion';
 import { MicOff, Volume2, RotateCcw } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
@@ -9,7 +11,8 @@ import GradedText, { normalizeSpeech } from './GradedText';
 interface Props {
     instruction: string;
     targetText: string;
-    onComplete: (score: number) => void;
+    /** The score and, when words were not heard, what to review. */
+    onComplete: (score: number, review?: ReviewItem[]) => void;
 }
 
 function compareTexts(target: string, spoken: string): { matches: boolean[]; score: number } {
@@ -40,12 +43,20 @@ function compareTexts(target: string, spoken: string): { matches: boolean[]; sco
 
 export default function ReadAloud({ instruction, targetText, onComplete }: Props) {
     const { isListening, transcript, interimTranscript, startListening, stopListening, resetTranscript, recognitionSupported, speak, isSpeaking } = useSpeech();
+    const { t } = useTranslation();
     const [submitted, setSubmitted] = useState(false);
 
     const result = useMemo(() => {
         if (!submitted || !transcript) return null;
         return compareTexts(targetText, transcript);
     }, [submitted, transcript, targetText]);
+
+    // The words not heard, for the review before a retry
+    const missedReview = (): ReviewItem[] => {
+        if (!result) return [];
+        const words = normalizeSpeech(targetText).split(/\s+/).filter(Boolean).filter((_, i) => !result.matches[i]);
+        return words.length ? [{ right: targetText, why: t('retry.missedWords', { words: [...new Set(words)].join(', ') }) }] : [];
+    };
 
     const handleListen = () => { speak(targetText, 0.85); };
 
@@ -136,7 +147,7 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
                             className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
-                        <button onClick={() => onComplete(result?.score ?? 0)}
+                        <button onClick={() => onComplete(result?.score ?? 0, missedReview())}
                             className="btn-primary flex-1 py-3.5">
                             Continuar
                         </button>

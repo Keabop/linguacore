@@ -1,4 +1,4 @@
-import type { CEFRLevel, Story, Vocabulary } from './db';
+import type { CEFRLevel, Story, StoryTranslation, Vocabulary } from './db';
 import { apiFetch } from './apiFetch';
 import i18n from '../i18n/config';
 
@@ -240,6 +240,11 @@ export interface SpeakingEvaluationResponse {
     vocabularyScore: number;
     detailedFeedback: string;
     criteria?: CriterionScore[];
+}
+
+/** The Spanish of a B1 or B2 story, translated once and served from the cache after. */
+export async function translateStory(storyId: string): Promise<StoryTranslation> {
+    return callAgent<StoryTranslation>('story-translator', { storyId });
 }
 
 export async function evaluateSpeaking(

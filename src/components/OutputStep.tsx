@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { PenLine, Mic, CheckCircle2, Clock, MicOff, WifiOff, BookOpen } from 'lucide-react';
+import { PenLine, Mic, CheckCircle2, Clock, MicOff, WifiOff, BookOpen, Volume2 } from 'lucide-react';
 import type { CEFRLevel, SpeakingPrompt, WritingPrompt } from '../lib/db';
 import PageLoader from './PageLoader';
 import { levelOfId, useLevelContent } from '../data/levels';
 import WritingRunner from './writing/WritingRunner';
 import SpeakingRunner from './speaking/SpeakingRunner';
+import RetryReview from './RetryReview';
+import ExerciseRunner from './exercises/ExerciseRunner';
+import { comprehensionExercises, examplePairs, type Pair } from '../lib/comprehension';
+import { useRetryRounds } from '../hooks/useRetryRounds';
+import { useErrorCards } from '../hooks/useErrorCards';
+import type { ReviewItem, RoundOutcome } from '../lib/retryPolicy';
 
 import { useUsageLimits } from '../hooks/useUsageLimits';
 
@@ -38,11 +44,12 @@ export default function OutputStep(props: Props) {
             {...props}
             writingPrompts={content.writingPrompts.filter(p => p.unitId === props.unitId)}
             speakingPrompts={content.speakingPrompts.filter(p => p.unitId === props.unitId)}
+            pairs={examplePairs(content.grammarCards?.find(c => c.unitId === props.unitId))}
         />
     );
 }
 
-function OutputStepBody({ unitId, level, onComplete, speakingPending = false, onSpeakingPending, onSpeakingDone, speakingOnly = false, writingPrompts, speakingPrompts }: Props & { writingPrompts: WritingPrompt[]; speakingPrompts: SpeakingPrompt[] }) {
+function OutputStepBody({ unitId, level, onComplete, speakingPending = false, onSpeakingPending, onSpeakingDone, speakingOnly = false, writingPrompts, speakingPrompts, pairs = [] }: Props & { writingPrompts: WritingPrompt[]; speakingPrompts: SpeakingPrompt[]; pairs?: Pair[] }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { data: usage } = useUsageLimits();
@@ -71,6 +78,25 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
     const [deferError, setDeferError] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [speakingAttempted, setSpeakingAttempted] = useState(false);
+    // Without a microphone: listening to the unit's sentences meanwhile, so the ear still practices
+    const [listening, setListening] = useState<{ round: number; score: number | null } | null>(null);
+    const listenExercises = useMemo(
+        () => comprehensionExercises(pairs, `${unitId}-listen-${listening?.round ?? 0}`, { meaning: 0, listen: Math.min(4, pairs.length) }),
+        [pairs, unitId, listening?.round],
+    );
+
+    // Under the pass mark, a short review and only the prompts that failed, again
+    const writing = useRetryRounds('writing', writingPrompts, score => handleWritingComplete(score));
+    const speaking = useRetryRounds('speaking', speakingPrompts, score => handleSpeakingComplete(score));
+    const { addErrorCard } = useErrorCards();
+
+    // Going on after the second try: the mistakes with a right form stay in the error review
+    const goOnAnyway = (outcome: RoundOutcome, done: (score: number | null) => void) => {
+        outcome.review
+            .filter((item): item is ReviewItem & { wrong: string; right: string } => !!item.wrong && !!item.right)
+            .forEach(item => { void addErrorCard({ original: item.wrong, corrected: item.right, explanation: item.why }, 'unit').catch(() => undefined); });
+        done(outcome.score);
+    };
 
     const bothDone = speakingOnly
         ? speakingDone
@@ -212,9 +238,20 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
 
             {/* Content */}
             <motion.div key={activeTab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                {activeTab === 'writing' && hasWriting && !writingDone && (
-                    <WritingRunner prompts={writingPrompts} level={level} onComplete={handleWritingComplete} />
-                )}
+                {activeTab === 'writing' && hasWriting && !writingDone && (writing.outcome ? (
+                    <RetryReview
+                        part="writing"
+                        unitId={unitId}
+                        score={writing.outcome.score ?? 0}
+                        items={writing.outcome.review}
+                        retryCount={writing.outcome.failedIds.length}
+                        canContinue={writing.outcome.verdict === 'may-continue'}
+                        onRetry={writing.retry}
+                        onContinue={() => goOnAnyway(writing.outcome!, handleWritingComplete)}
+                    />
+                ) : (
+                    <WritingRunner key={writing.attempt} prompts={writing.prompts} level={level} onComplete={(_, results) => writing.finishRound(results)} />
+                ))}
                 {activeTab === 'writing' && writingDone && (
                     <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">
                         <CheckCircle2 className="w-8 h-8 text-[var(--color-success)] mx-auto" />
@@ -223,7 +260,20 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                 )}
                 {activeTab === 'speaking' && hasSpeaking && !speakingDone && !pending && (
                     <div className="space-y-6">
-                        <SpeakingRunner prompts={speakingPrompts} level={level} onComplete={handleSpeakingComplete} onFirstAttempt={() => setSpeakingAttempted(true)} />
+                        {speaking.outcome ? (
+                            <RetryReview
+                                part="speaking"
+                                unitId={unitId}
+                                score={speaking.outcome.score ?? 0}
+                                items={speaking.outcome.review}
+                                retryCount={speaking.outcome.failedIds.length}
+                                canContinue={speaking.outcome.verdict === 'may-continue'}
+                                onRetry={speaking.retry}
+                                onContinue={() => goOnAnyway(speaking.outcome!, handleSpeakingComplete)}
+                            />
+                        ) : (
+                            <SpeakingRunner key={speaking.attempt} prompts={speaking.prompts} level={level} onComplete={(_, results) => speaking.finishRound(results)} onFirstAttempt={() => setSpeakingAttempted(true)} />
+                        )}
                         {deferError && <p className="text-xs text-center text-[var(--color-error)]">{t('output.deferError')}</p>}
                         {speakingOnly && !speakingAttempted && (
                             <button
@@ -261,7 +311,28 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                         >
                             <Mic className="w-4 h-4" /> Ya puedo hablar
                         </button>
+                        {listenExercises.length > 0 && (!listening || listening.score !== null) && (
+                            <button
+                                onClick={() => setListening(l => ({ round: (l?.round ?? 0) + 1, score: null }))}
+                                className="btn-secondary w-full py-3 text-sm flex items-center justify-center gap-2"
+                            >
+                                <Volume2 className="w-4 h-4" aria-hidden="true" /> {t('output.listenInstead')}
+                            </button>
+                        )}
+                        {listening?.score !== null && listening?.score !== undefined && (
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">{t('output.listenScore', { score: listening.score })}</p>
+                        )}
                     </motion.div>
+                )}
+                {activeTab === 'speaking' && hasSpeaking && !speakingDone && pending && listening && listening.score === null && (
+                    <div className="mt-6 space-y-3">
+                        <p className="text-sm text-[var(--color-on-surface-muted)]">{t('output.listenIntro')}</p>
+                        <ExerciseRunner
+                            key={listening.round}
+                            exercises={listenExercises}
+                            onComplete={score => setListening(l => (l ? { ...l, score } : l))}
+                        />
+                    </div>
                 )}
                 {activeTab === 'speaking' && speakingDone && (
                     <div className="bg-[var(--color-success)]/8 border border-[var(--color-success)]/20 rounded-xl p-6 text-center space-y-2">

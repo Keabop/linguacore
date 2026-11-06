@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Feather } from 'lucide-react';
+import { grammarLabel } from '../../data/grammarLabels';
 
 interface Props {
     instruction: string;
@@ -37,7 +38,7 @@ export default function FreeWriting({ instruction, targetGrammar, wordLimit, onS
             <div className="flex flex-wrap items-center gap-3">
                 {targetGrammar.map((g, i) => (
                     <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">
-                        {g}
+                        {grammarLabel(g)}
                     </span>
                 ))}
                 {wordLimit && (

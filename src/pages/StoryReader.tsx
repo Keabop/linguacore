@@ -9,14 +9,15 @@ import PageLoader from '../components/PageLoader';
 import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { translateStory } from '../lib/ai';
 import { useRecordActivity } from '../hooks/useRecordActivity';
 import { useCards } from '../hooks/useCards';
 import { notice } from '../lib/notice';
 import DOMPurify from 'dompurify';
 import LevelBadge from '../components/ui/LevelBadge';
 import { useSpeech } from '../hooks/useSpeech';
-import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy, Lightbulb, BookOpen, Check } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Mic, Headphones, Trophy, Lightbulb, BookOpen, Check, Languages } from 'lucide-react';
 import BackButton from '../components/ui/BackButton';
 import PlantCircle from '../components/garden/PlantCircle';
 import { useGardenPlant } from '../hooks/useGardenPlant';
@@ -29,6 +30,21 @@ import { SPEECH_RATE, type Accent } from '../lib/voices';
 import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 import { saveGuestStory } from '../lib/guestTrial';
 import { useNoteContext } from '../components/notebook/NotebookContext';
+import { escapeHtml } from '../lib/glossify';
+import SpeakButton from '../components/ui/SpeakButton';
+import { soundsLike } from '../lib/soundsLike';
+
+const SPANISH_KEY = 'voxie-story-spanish';
+
+/** The learner's last choice of showing the Spanish under each sentence; null if never chosen. */
+function readSpanishChoice(): boolean | null {
+    try {
+        const stored = localStorage.getItem(SPANISH_KEY);
+        return stored === null ? null : stored === 'on';
+    } catch {
+        return null;
+    }
+}
 
 /** How long the word card shows the choice before closing: enough to see it was taken. */
 const WORD_CARD_CLOSE_MS = 1100;
@@ -154,14 +170,39 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
     const wordStatus = selectedWord ? wordStatuses.get(selectedWord.id) ?? 'none' : 'none';
     const selectedIsSaved = !!selectedWord && (savedStatuses?.get(selectedWord.id) ?? 'none') !== 'none';
 
+    // The Spanish of each sentence, written by hand in A1 and A2. Shown by default in A1, where
+    // whoever starts from zero reads; the learner's choice is remembered
+    // B1 and B2 have theirs from the AI, only when asked for and once per story (cached on the server)
+    const [spanishChoice, setSpanishChoice] = useState(readSpanishChoice);
+    const translatedByAI = !!staticStory && !staticStory.translation && !!authUser && (staticStory.level === 'B1' || staticStory.level === 'B2');
+    const aiTranslation = useQuery({
+        queryKey: ['story-translation', staticStory?.id],
+        queryFn: () => translateStory(staticStory!.id),
+        enabled: translatedByAI && spanishChoice === true,
+        staleTime: Infinity,
+        gcTime: Infinity,
+        retry: 1,
+    });
+    const translation = staticStory?.translation ?? aiTranslation.data;
+    const showSpanish = !!translation && (spanishChoice ?? story?.level === 'A1');
+    const toggleSpanish = () => {
+        // Asked for while the AI one loads: pressing again turns it off
+        const next = translatedByAI && !translation ? spanishChoice !== true : !showSpanish;
+        setSpanishChoice(next);
+        try { localStorage.setItem(SPANISH_KEY, next ? 'on' : 'off'); } catch { /* not kept */ }
+    };
+
     // --- Sentences: the same split the recording was cut with (src/lib/storySentences.ts) ---
     // Keyed on the text too, so the sentences (and the shadowing effect below) don't change every render
     const { processedHTML, sentences } = useMemo(() => {
         if (!storyContent) return { processedHTML: '', sentences: [] as string[] };
-        const html = wrapStorySentences(storyContent, (part, i) =>
-            `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${i}">${part}</span>`);
+        const html = wrapStorySentences(storyContent, (part, i) => {
+            const spanish = showSpanish && translation?.sentences[i];
+            return `<span class="story-sentence transition-all duration-300 rounded px-0.5 cursor-pointer hover:bg-[var(--color-primary)]/5" data-sentence-idx="${i}">${part}</span>`
+                + (spanish ? `<span class="story-sentence-es" data-sentence-idx="${i}">${escapeHtml(spanish)}</span>` : '');
+        });
         return { processedHTML: html, sentences: storySentences(storyContent) };
-    }, [storyContent]);
+    }, [storyContent, showSpanish, translation]);
 
     // Static stories have a recording (npm run content:audio); AI stories use the browser's voices
     const recording = useMemo(
@@ -245,11 +286,17 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         if (!wordId) return;
 
         const vocab = (isAIStory ? vocabMap.get(wordId) : vocabulary?.get(wordId)) as Vocabulary | undefined;
+        const sentence = parseInt(sentenceElement?.getAttribute('data-sentence-idx') ?? '-1', 10);
+        setWordPlace(sentence >= 0 ? { sentence, gloss: target.getAttribute('data-gloss') } : null);
         if (vocab) setSelectedWord(vocab);
     }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory, vocabulary]);
 
+    // Where the open card's word was tapped: its sentence and what it means there
+    const [wordPlace, setWordPlace] = useState<{ sentence: number; gloss: string | null } | null>(null);
+
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
+        setWordPlace(null);
         if (vocab) setSelectedWord(vocab);
     }, [vocabMap]);
 
@@ -276,14 +323,21 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
     // Every key word must be marked first: the ones left are listed so the learner can finish
     const unmarkedWords = keywords.filter(id => vocabMap.has(id) && wordStatuses.get(id) === 'none');
 
-    const handleComplete = async () => {
+    // `marked`: the words left, all marked at once from the sheet, so one tap finishes the story
+    const handleComplete = async (marked?: { choice: 'deck' | 'known'; ids: string[] }) => {
         if (!storyId || !savedStatuses) return;
-        if (unmarkedWords.length) {
+        const deck = marked?.choice === 'deck' ? new Set([...addedWords, ...marked.ids]) : addedWords;
+        const known = marked?.choice === 'known' ? new Set([...knownWords, ...marked.ids]) : knownWords;
+        if (marked) {
+            setAddedWords(deck);
+            setKnownWords(known);
+            setMissingWords(null);
+        } else if (unmarkedWords.length) {
             setMissingWords(unmarkedWords);
             return;
         }
         if (!authUser) {
-            saveGuestStory(storyId, [...addedWords], [...knownWords]);
+            saveGuestStory(storyId, [...deck], [...known]);
             setCompleted(true);
             return;
         }
@@ -291,13 +345,13 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         const unsaved = (ids: Set<string>) => [...ids].filter(id => savedStatuses.get(id) === 'none');
         setSaving(true);
         try {
-            await saveStoryWords(storyId, unsaved(addedWords), unsaved(knownWords));
+            await saveStoryWords(storyId, unsaved(deck), unsaved(known));
             const { offlineInsert } = await import('../lib/offlineMutation');
             const read = {
                 user_id: authUser.id,
                 story_id: storyId,
                 completed_at: new Date().toISOString(),
-                words_added: addedWords.size,
+                words_added: deck.size,
             };
             // Read once per story: a story read before keeps its first record, and only the first reading counts as study
             const firstReading = !qc.getQueryData<ReadStoryRow[]>(['readStories', authUser.id])?.some(r => r.story_id === storyId);
@@ -426,9 +480,26 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 </div>
             </div>
 
-            {/* Tap hint */}
-            <div className="bg-[var(--color-primary)]/8 text-[var(--color-primary)] text-xs py-3 px-5 rounded-full text-center shadow-[var(--shadow-card)]">
-                <Lightbulb className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t('reader.tapToTranslate')}
+            {/* Tap hint, and the Spanish of every sentence for whoever needs it */}
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="flex-1 min-w-[12rem] bg-[var(--color-primary)]/8 text-[var(--color-primary)] text-xs py-3 px-5 rounded-full text-center shadow-[var(--shadow-card)]">
+                    <Lightbulb className="inline w-4 h-4 -mt-0.5 mr-1" aria-hidden="true" />{t(translation ? 'reader.tapToTranslateSentence' : 'reader.tapToTranslate')}
+                </div>
+                {(translation || translatedByAI) && (
+                    <button
+                        type="button"
+                        onClick={toggleSpanish}
+                        aria-pressed={showSpanish || (translatedByAI && spanishChoice === true)}
+                        aria-busy={aiTranslation.isFetching}
+                        className="story-spanish-toggle"
+                    >
+                        <Languages className="w-4 h-4" aria-hidden="true" />
+                        {aiTranslation.isFetching ? t('reader.translating') : t('reader.showSpanish')}
+                    </button>
+                )}
+                {spanishChoice === true && aiTranslation.isError && (
+                    <p role="alert" className="w-full text-xs text-[var(--color-error)]">{t('reader.translateFailed')}</p>
+                )}
             </div>
 
             {/* Story content */}
@@ -438,12 +509,12 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 tabIndex={0}
                 onClick={handleWordClick}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleWordClick(e as any); }}
-                className="app-sheet p-8 text-lg leading-relaxed tracking-wide focus:outline-none transition-all duration-300 pb-48 sm:pb-36 lg:pb-32"
+                className={`app-sheet p-8 text-lg leading-relaxed tracking-wide focus:outline-none transition-all duration-300 pb-48 sm:pb-36 lg:pb-32 ${showSpanish ? 'story-bilingual' : ''}`}
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(processedHTML, {
                         ALLOWED_TAGS: ['p', 'span', 'br'],
-                        ALLOWED_ATTR: ['data-word', 'class', 'data-sentence-idx'],
+                        ALLOWED_ATTR: ['data-word', 'data-gloss', 'class', 'data-sentence-idx'],
                     })
                 }}
             />
@@ -588,7 +659,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
             </AnimatePresence>
 
             {/* Comprehension questions, answered while reading (completing the story ends the reading) */}
-            {!!story.questions?.length && <StoryQuestions questions={story.questions} />}
+            {!!story.questions?.length && <StoryQuestions questions={story.questions} translation={translation} sentences={sentences} showSpanish={showSpanish} />}
 
             {/* Complete button */}
             <div className="space-y-2">
@@ -598,7 +669,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         : t('reader.allWordsMarked')}
                 </p>
                 <button
-                    onClick={handleComplete}
+                    onClick={() => void handleComplete()}
                     disabled={!savedStatuses || saving}
                     className="btn-primary w-full py-4 text-base tracking-wide disabled:opacity-60 disabled:pointer-events-none"
                 >
@@ -643,9 +714,26 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                                         </button>
                                     ))}
                                 </div>
+                                {/* Every word left with one tap: whoever starts from zero would otherwise open each one */}
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                    <button
+                                        onClick={() => void handleComplete({ choice: 'deck', ids: missingWords })}
+                                        disabled={saving}
+                                        autoFocus
+                                        className="btn-primary py-3 text-sm"
+                                    >
+                                        {t('reader.addAllAndFinish')}
+                                    </button>
+                                    <button
+                                        onClick={() => void handleComplete({ choice: 'known', ids: missingWords })}
+                                        disabled={saving}
+                                        className="btn-secondary py-3 text-sm"
+                                    >
+                                        {t('reader.knowAllAndFinish')}
+                                    </button>
+                                </div>
                                 <button
                                     onClick={() => setMissingWords(null)}
-                                    autoFocus
                                     className="w-full rounded-full border-[1.5px] border-[var(--color-outline-variant)] bg-transparent text-[var(--color-on-surface)] hover:border-[var(--color-on-surface-muted)] py-3 font-bold text-sm"
                                 >
                                     {t('common.close')}
@@ -665,6 +753,12 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         <p className="text-xs text-[var(--color-on-surface)] truncate font-medium">
                             {currentSentenceIdx !== -1 ? sentences[currentSentenceIdx] : 'Selecciona una oración para comenzar'}
                         </p>
+                        {/* A tapped sentence says what it means, also with the Spanish hidden in the text */}
+                        {currentSentenceIdx !== -1 && translation?.sentences[currentSentenceIdx] && (
+                            <p className="text-xs text-[var(--color-on-surface-muted)] line-clamp-2" lang="es">
+                                {translation.sentences[currentSentenceIdx]}
+                            </p>
+                        )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                         {/* Accent Selector */}
@@ -748,11 +842,16 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                             className="fixed bottom-4 left-4 right-4 z-[75]"
                         >
                             <div className="bg-[var(--color-card)] rounded-[var(--radius-lg)] p-7 shadow-[var(--shadow-float)] space-y-4 max-w-lg mx-auto max-h-[55vh] overflow-y-auto">
-                                <div className="flex justify-between items-start">
-                                    <div>
+                                <div className="flex justify-between items-start gap-3">
+                                    <SpeakButton text={selectedWord.id} />
+                                    <div className="flex-1 min-w-0">
                                         <h3 className="text-xl font-black tracking-tight text-accent-blue">{selectedWord.id}</h3>
                                         {selectedWord.phonetic && (
                                             <p className="text-sm text-[var(--color-on-surface-muted)] mt-0.5">{selectedWord.phonetic}</p>
+                                        )}
+                                        {/* Whoever starts can't read IPA yet: the sound in Spanish letters */}
+                                        {selectedWord.cefrLevel === 'A1' && selectedWord.phonetic && (
+                                            <p className="sounds-like">{t('audio.soundsLike')} <b>{soundsLike(selectedWord.phonetic)}</b></p>
                                         )}
                                     </div>
                                     <button
@@ -763,15 +862,32 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                                     </button>
                                 </div>
 
+                                {wordPlace?.gloss && (
+                                    <div className="bg-[var(--color-primary-container)] rounded-2xl p-4">
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.meansHere')}</p>
+                                        <p className="text-base font-bold">{wordPlace.gloss}</p>
+                                    </div>
+                                )}
                                 <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
                                     <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.translation')}</p>
                                     <p className="text-base font-bold">{selectedWord.translations.join(', ')}</p>
                                 </div>
+                                {/* The dictionary meaning can mislead in a phrase: the whole sentence, in Spanish */}
+                                {wordPlace && translation?.sentences[wordPlace.sentence] && (
+                                    <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
+                                        <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.inThisSentence')}</p>
+                                        <p className="text-sm" lang="en">{sentences[wordPlace.sentence]}</p>
+                                        <p className="text-sm text-[var(--color-on-surface-muted)] mt-1">{translation.sentences[wordPlace.sentence]}</p>
+                                    </div>
+                                )}
 
                                 {selectedWord.examples.length > 0 && (
                                     <div className="bg-[var(--color-surface-container)] rounded-2xl p-4">
                                         <p className="text-xs text-[var(--color-on-surface-muted)] mb-1">{t('reader.example')}</p>
-                                        <p className="text-sm text-[var(--color-on-surface-muted)] italic">"{selectedWord.examples[0]}"</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="flex-1 text-sm text-[var(--color-on-surface-muted)] italic" lang="en">"{selectedWord.examples[0]}"</p>
+                                            <SpeakButton text={selectedWord.examples[0]} />
+                                        </div>
                                     </div>
                                 )}
 

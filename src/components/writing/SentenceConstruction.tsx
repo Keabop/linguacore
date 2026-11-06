@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowRight, Languages } from 'lucide-react';
+import { ArrowRight, Languages, Lightbulb } from 'lucide-react';
+import { grammarLabel } from '../../data/grammarLabels';
 
 interface Props {
     instruction: string;
@@ -8,10 +10,15 @@ interface Props {
     targetGrammar: string[];
     onSubmit: (text: string) => void;
     disabled: boolean;
+    /** A1: the words the sentence needs, shuffled, shown on request and added with a tap. */
+    hintWords?: string[];
 }
 
-export default function SentenceConstruction({ instruction, sourceText, targetGrammar, onSubmit, disabled }: Props) {
+export default function SentenceConstruction({ instruction, sourceText, targetGrammar, onSubmit, disabled, hintWords }: Props) {
+    const { t } = useTranslation();
     const [text, setText] = useState('');
+    const [showHint, setShowHint] = useState(false);
+    const addWord = (word: string) => setText(current => (current.trim() ? `${current.trimEnd()} ${word}` : word));
 
     const handleSubmit = () => {
         const trimmed = text.trim();
@@ -47,9 +54,30 @@ export default function SentenceConstruction({ instruction, sourceText, targetGr
                 <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
                         <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">
-                            {g}
+                            {grammarLabel(g)}
                         </span>
                     ))}
+                </div>
+            )}
+
+            {/* Guided writing for whoever starts: the words to build it with */}
+            {hintWords && hintWords.length > 0 && (
+                <div className="space-y-3">
+                    <button type="button" onClick={() => setShowHint(v => !v)} aria-expanded={showHint} className="btn-secondary px-4 py-2 text-sm inline-flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4" aria-hidden="true" /> {showHint ? t('writing.hideHint') : t('writing.showHint')}
+                    </button>
+                    {showHint && (
+                        <div className="space-y-2">
+                            <p className="text-xs text-[var(--color-on-surface-muted)]">{t('writing.hintHelp')}</p>
+                            <div className="flex flex-wrap gap-2">
+                                {hintWords.map((word, i) => (
+                                    <button key={`${word}-${i}`} type="button" onClick={() => addWord(word)} disabled={disabled} className="word-chip" lang="en">
+                                        {word}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

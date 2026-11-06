@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fromWriting, type ReviewItem } from '../../lib/retryPolicy';
 import { motion } from 'framer-motion';
 import { MicOff, Loader2, RotateCcw, MessageCircle } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
@@ -6,13 +7,14 @@ import { evaluateWriting, isLimitReached } from '../../lib/ai';
 import type { CEFRLevel } from '../../lib/db';
 import { MicIcon } from '../icons';
 import EvaluationLimitCard from '../EvaluationLimitCard';
+import { grammarLabel } from '../../data/grammarLabels';
 
 interface Props {
     instruction: string;
     targetGrammar: string[];
     level: CEFRLevel;
-    /** The evaluated score; null when it could not be evaluated (free plan limit). */
-    onComplete: (score: number | null) => void;
+    /** The evaluated score (null when it could not be evaluated, free plan limit) and what to review. */
+    onComplete: (score: number | null, review?: ReviewItem[]) => void;
 }
 
 export default function OralResponse({ instruction, targetGrammar, level, onComplete }: Props) {
@@ -20,6 +22,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
     const [phase, setPhase] = useState<'recording' | 'evaluating' | 'result' | 'limit'>('recording');
     const [score, setScore] = useState(0);
     const [feedbackText, setFeedbackText] = useState('');
+    const [review, setReview] = useState<ReviewItem[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     const handleToggleRecord = () => {
@@ -36,6 +39,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
             const result = await evaluateWriting(transcript, instruction, level, 'free-writing', targetGrammar);
             setScore(result.score);
             setFeedbackText(result.encouragement);
+            setReview(fromWriting(result));
             setPhase('result');
         } catch (err: any) {
             if (isLimitReached(err)) {
@@ -72,7 +76,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
             {targetGrammar.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                     {targetGrammar.map((g, i) => (
-                        <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">{g}</span>
+                        <span key={i} className="text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 px-3 py-1 rounded-full">{grammarLabel(g)}</span>
                     ))}
                 </div>
             )}
@@ -135,7 +139,7 @@ export default function OralResponse({ instruction, targetGrammar, level, onComp
                             className="flex-1 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] hover:bg-[var(--color-card-hover)] text-[var(--color-on-surface)] py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                             <RotateCcw className="w-4 h-4" /> Reintentar
                         </button>
-                        <button onClick={() => onComplete(score)}
+                        <button onClick={() => onComplete(score, review)}
                             className="btn-primary flex-1 py-3.5">
                             Continuar
                         </button>

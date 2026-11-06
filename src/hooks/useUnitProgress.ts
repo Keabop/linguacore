@@ -45,7 +45,8 @@ export function useUnitProgress(unitId: string): UseUnitProgressReturn {
                 .from('unit_progress')
                 .select('*')
                 .eq('unit_id', unitId)
-                .single() as { data: UnitProgressRow | null };
+                // A unit not started has no row: maybeSingle gives null instead of a 406 in the console
+                .maybeSingle() as { data: UnitProgressRow | null };
             return data;
         },
         enabled: !!userId && !!unitId,
