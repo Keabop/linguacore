@@ -171,6 +171,22 @@ export type ErrorCardRow = {
     created_at: string;
 };
 
+/** A note of the learner's notebook. `deleted_at` set means deleted. */
+export type NoteRow = {
+    id: string;
+    user_id: string;
+    body: string;
+    quote: string | null;
+    /** Where it was written: `unit:a1-u2`, `story:…` or `page:/chat`. */
+    context_key: string | null;
+    context_label: string | null;
+    /** The route that takes the learner back there. */
+    context_path: string | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+};
+
 // Supabase Database type for createClient<Database>
 export type Database = {
     public: {
@@ -245,6 +261,12 @@ export type Database = {
                 Row: ErrorCardRow;
                 Insert: Omit<ErrorCardRow, 'id' | 'created_at'>;
                 Update: Partial<Omit<ErrorCardRow, 'id' | 'created_at'>>;
+                Relationships: [];
+            };
+            notes: {
+                Row: NoteRow;
+                Insert: Omit<NoteRow, 'created_at' | 'deleted_at'> & Partial<Pick<NoteRow, 'created_at' | 'deleted_at'>>;
+                Update: Partial<Omit<NoteRow, 'id' | 'user_id'>>;
                 Relationships: [];
             };
         };

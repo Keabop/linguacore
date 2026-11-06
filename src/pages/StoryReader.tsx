@@ -28,6 +28,7 @@ import { audioFor, storyKey } from '../lib/audioKey';
 import { SPEECH_RATE, type Accent } from '../lib/voices';
 import NoEnglishVoices from '../components/ui/NoEnglishVoices';
 import { saveGuestStory } from '../lib/guestTrial';
+import { useNoteContext } from '../components/notebook/NotebookContext';
 
 /** How long the word card shows the choice before closing: enough to see it was taken. */
 const WORD_CARD_CLOSE_MS = 1100;
@@ -104,6 +105,8 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
     const staticStory = levelContent?.stories.find(s => s.id === storyId);
     const story = staticStory ?? (aiStory ? { ...aiStory, level: aiStory.level as any } : undefined);
     const isAIStory = !staticStory && !!aiStory;
+    // Notes written while reading belong to the story
+    useNoteContext(story && storyId ? { key: `story:${storyId}`, label: story.title, path: location.pathname } : null);
 
     // Keyed on the text: an AI story is a new object on every render
     const storyContent = story?.content;

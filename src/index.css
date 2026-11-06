@@ -568,6 +568,155 @@ span[data-word].in-deck {
   color: var(--color-primary-light);
 }
 
+/* === GLOSSARY TERMS — a grammar word with a definition (GlossaryPopover) === */
+.gloss-term {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0.25rem;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted var(--color-tertiary-ink);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.22em;
+  transition: background-color 120ms var(--ease-out);
+}
+.gloss-term:hover,
+.gloss-term[aria-expanded="true"] {
+  background: var(--color-tertiary-container);
+  text-decoration-style: solid;
+}
+
+/* === NOTEBOOK — the learner's field notebook (components/notebook) === */
+.rail-rule { display: block; flex-shrink: 0; background: var(--color-outline-variant); width: 1px; height: 1.5rem; margin: 0 0.375rem; }
+.rail-rule.is-vertical { width: 1.75rem; height: 1px; margin: 0.375rem auto; }
+
+.notebook-dock {
+  position: fixed; z-index: 65; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--color-paper); color: var(--color-on-surface);
+  box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-float);
+}
+.notebook-dock.is-panel { top: 16px; bottom: 16px; width: 400px; border-radius: var(--radius-lg); }
+.notebook-dock.is-panel.side-right { right: 16px; }
+.notebook-dock.is-panel.side-left { left: 16px; }
+.notebook-dock.is-panel.rail-top { top: 108px; }
+.notebook-dock.is-panel.rail-bottom { bottom: 108px; }
+.notebook-dock.is-sheet {
+  left: 0; right: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  transition: height 220ms var(--ease-out);
+}
+.notebook-dock.is-sheet::before {
+  content: ""; position: absolute; top: 6px; left: 50%; width: 36px; height: 4px; margin-left: -18px;
+  border-radius: 999px; background: var(--color-outline);
+}
+
+
+.notebook-icon-button {
+  display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; flex-shrink: 0; border-radius: 999px;
+  color: var(--color-on-surface-muted); transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.notebook-icon-button:hover { background: var(--color-surface-container); color: var(--color-on-surface); }
+
+.notebook-composer {
+  display: grid; gap: 0.75rem; padding: 0.875rem; margin-bottom: 1rem; border-radius: var(--radius-md);
+  background: var(--color-card); box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-card);
+}
+.notebook-place {
+  display: inline-flex; align-items: center; gap: 0.375rem; max-width: 100%; justify-self: start;
+  padding: 0.25rem 0.625rem; border-radius: 999px; background: var(--color-surface-container);
+  font-size: 0.75rem; font-weight: 600; color: var(--color-on-surface-muted);
+}
+.notebook-quote {
+  display: flex; align-items: flex-start; gap: 0.5rem; margin: 0; padding: 0.625rem 0.75rem;
+  border-radius: 0.375rem; background: var(--color-tertiary-container); color: var(--color-on-surface);
+  font-size: 0.875rem; line-height: 1.5; transform: rotate(-0.6deg);
+  box-shadow: 0 1px 2px oklch(30% 0.04 80 / 0.15);
+}
+.notebook-quote blockquote { flex: 1; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.notebook-textarea {
+  width: 100%; min-height: 5.5rem; resize: vertical; padding: 0.75rem 0.875rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline); background: var(--color-card); color: var(--color-on-surface);
+  font-size: 1rem; line-height: 1.55;
+}
+.notebook-textarea::placeholder { color: var(--color-on-surface-variant); }
+.notebook-textarea:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; border-color: transparent; }
+.notebook-tool {
+  display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2.5rem; padding: 0 0.75rem; border-radius: 999px;
+  border: 1px solid var(--color-outline-variant); font-size: 0.8125rem; font-weight: 600; color: var(--color-on-surface-muted);
+  transition: border-color 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.notebook-tool:hover { border-color: var(--color-on-surface-muted); color: var(--color-on-surface); }
+
+.notebook-search {
+  width: 100%; height: 2.75rem; padding: 0 1rem 0 2.5rem; border-radius: 999px;
+  border: 1px solid var(--color-outline-variant); background: var(--color-card); color: var(--color-on-surface); font-size: 0.9375rem;
+}
+.notebook-search:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.notebook-empty { padding: 1.5rem 0.25rem; font-size: 0.9375rem; line-height: 1.6; color: var(--color-on-surface-muted); text-wrap: pretty; }
+
+.notebook-group-head {
+  display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.375rem; margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+.notebook-group-head h3 { flex: 1; font-family: var(--font-display); font-size: 0.9375rem; font-weight: 700; color: var(--color-on-surface); }
+.notebook-go {
+  display: inline-flex; align-items: center; gap: 0.25rem; min-height: 2.25rem; padding: 0 0.625rem; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 700; color: var(--color-primary); white-space: nowrap;
+}
+.notebook-go:hover { background: var(--color-primary-container); }
+.notebook-here { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-on-surface-variant); }
+
+.notebook-note { display: grid; gap: 0.5rem; padding: 0.875rem 0 0.375rem; border-bottom: 1px solid var(--color-outline-subtle); }
+.notebook-note.is-editing { opacity: 0.55; }
+.notebook-note-quote {
+  margin: 0; padding: 0.375rem 0.625rem; border-radius: 0.375rem; background: var(--color-tertiary-container);
+  font-size: 0.8125rem; line-height: 1.5; color: var(--color-on-surface); overflow-wrap: anywhere;
+}
+.notebook-body { display: grid; gap: 0.5rem; font-size: 0.9375rem; line-height: 1.55; color: var(--color-on-surface); overflow-wrap: anywhere; }
+.notebook-bullets { display: grid; gap: 0.25rem; padding: 0; margin: 0; list-style: none; }
+.notebook-bullets li { position: relative; padding-left: 1.125rem; }
+/* A small leaf instead of a dot */
+.notebook-bullets li::before {
+  content: ""; position: absolute; left: 0.125rem; top: 0.55em; width: 0.5rem; height: 0.5rem;
+  border-radius: 0 0.375rem 0 0.375rem; background: var(--color-primary);
+}
+.notebook-rule { border: 0; height: 1px; margin: 0.25rem 0; background: var(--color-outline); }
+.notebook-note-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 2.75rem; }
+.notebook-note-foot time { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-on-surface-variant); }
+.notebook-note-actions { display: flex; transition: opacity 120ms var(--ease-out); }
+@media (hover: hover) {
+  .notebook-note-actions { opacity: 0; }
+  .notebook-note:hover .notebook-note-actions, .notebook-note:focus-within .notebook-note-actions { opacity: 1; }
+}
+.notebook-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem; min-height: 2.75rem; font-size: 0.8125rem; color: var(--color-on-surface-muted); }
+.notebook-confirm button { min-height: 2.75rem; padding: 0 0.5rem; font-weight: 700; }
+
+.notebook-bubble {
+  position: fixed; z-index: 60; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 999px;
+  background: var(--color-card); color: var(--color-primary); touch-action: none; cursor: grab;
+  box-shadow: 0 0 0 1px var(--color-outline-variant), var(--shadow-float);
+}
+.notebook-bubble.is-dragging { cursor: grabbing; }
+
+.notebook-capture {
+  position: fixed; z-index: 70; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 0.375rem;
+  height: 2.5rem; padding: 0 1rem; border-radius: 999px; background: var(--color-primary); color: var(--color-on-primary);
+  font-size: 0.875rem; font-weight: 700; box-shadow: 0 3px 0 var(--color-primary-press), var(--shadow-float);
+  animation: notebook-capture-in 120ms var(--ease-out) both;
+}
+@keyframes notebook-capture-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Desktop: the page moves over to make room for the open notebook */
+@media (min-width: 1025px) {
+  .app-layout.notebook-right .main-content { padding-right: 432px; }
+  .app-layout.notebook-left .main-content { padding-left: 432px; }
+}
+
 /* === VOCABULARY CHIPS — Pill-shaped === */
 .vocab-chip {
   display: inline-flex;
