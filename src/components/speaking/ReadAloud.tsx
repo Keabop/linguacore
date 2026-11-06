@@ -4,6 +4,7 @@ import { MicOff, Volume2, RotateCcw } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
 import { MicIcon } from '../icons';
 import NoEnglishVoices from '../ui/NoEnglishVoices';
+import GradedText, { normalizeSpeech } from './GradedText';
 
 interface Props {
     instruction: string;
@@ -11,10 +12,9 @@ interface Props {
     onComplete: (score: number) => void;
 }
 
-function compareTexts(target: string, spoken: string): { matches: boolean[]; score: number; targetWords: string[] } {
-    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-    const targetWords = normalize(target).split(/\s+/);
-    const spokenWords = normalize(spoken).split(/\s+/);
+function compareTexts(target: string, spoken: string): { matches: boolean[]; score: number } {
+    const targetWords = normalizeSpeech(target).split(/\s+/).filter(Boolean);
+    const spokenWords = normalizeSpeech(spoken).split(/\s+/).filter(Boolean);
 
     const matches = targetWords.map((tw, i) => {
         if (i < spokenWords.length && spokenWords[i] === tw) return true;
@@ -35,7 +35,7 @@ function compareTexts(target: string, spoken: string): { matches: boolean[]; sco
 
     const correctCount = matches.filter(Boolean).length;
     const score = targetWords.length > 0 ? Math.round((correctCount / targetWords.length) * 100) : 0;
-    return { matches, score, targetWords };
+    return { matches, score };
 }
 
 export default function ReadAloud({ instruction, targetText, onComplete }: Props) {
@@ -81,15 +81,9 @@ export default function ReadAloud({ instruction, targetText, onComplete }: Props
             <div className="bg-[var(--color-card-hover)] border border-[var(--color-outline-subtle)] rounded-xl p-5 space-y-3">
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">Lee este texto</p>
                 {!result ? (
-                    <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium">{targetText}</p>
+                    <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium break-words">{targetText}</p>
                 ) : (
-                    <p className="text-lg leading-relaxed font-medium">
-                        {result.targetWords.map((w, i) => (
-                            <span key={i} className={`${result.matches[i] ? 'text-[var(--color-success)]' : 'text-accent-red underline decoration-wavy'} mr-1`}>
-                                {w}
-                            </span>
-                        ))}
-                    </p>
+                    <GradedText text={targetText} matches={result.matches} />
                 )}
                 <button onClick={handleListen} disabled={isSpeaking || isListening}
                     className="flex items-center gap-2 text-xs text-[var(--color-primary)] hover:underline disabled:opacity-40">
