@@ -207,11 +207,7 @@ function NotebookSidePanel({ side, railEdge, onClose }: { side: NotebookSide; ra
             animate={reduceMotion ? { opacity: 1 } : { x: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { x: offscreen }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            onKeyDown={e => {
-                if (e.key !== 'Escape') return;
-                onClose();
-                document.querySelector<HTMLElement>('[data-notebook-toggle]')?.focus();
-            }}
+            onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
         >
             <NotebookPanel onClose={onClose} />
         </motion.aside>
@@ -223,7 +219,14 @@ export default function NotebookDock({ side, railEdge }: { side: NotebookSide; r
     const notebook = useNotebook();
     const isPhone = useMediaQuery(PHONE_QUERY);
     if (!notebook) return null;
-    const { isOpen, open, close } = notebook;
+    const { isOpen, open } = notebook;
+
+    // Closing from inside (Escape, ✕) hands focus back to what opens it: the rail button or the bubble
+    const close = () => {
+        const fromInside = document.activeElement?.closest('[data-notebook]');
+        notebook.close();
+        if (fromInside) requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-notebook-toggle]')?.focus());
+    };
 
     return (
         <>

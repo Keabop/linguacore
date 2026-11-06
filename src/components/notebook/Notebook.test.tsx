@@ -8,6 +8,7 @@ const store = vi.hoisted(() => ({
     saveNote: vi.fn(),
     deleteNote: vi.fn(),
 }));
+const auth = vi.hoisted(() => ({ user: { id: 'u1' } as { id: string } | null }));
 vi.mock('../../hooks/useNotes', () => ({
     useNotes: () => ({ notes: store.notes, isLoading: false, isError: false, saveNote: store.saveNote, deleteNote: store.deleteNote }),
 }));
@@ -37,9 +38,10 @@ function UnitPage() {
 }
 
 function App({ children }: { children?: React.ReactNode }) {
-    const notebook = useNotebookController();
+    const notebook = useNotebookController(auth.user?.id);
     return (
         <NotebookProvider value={notebook}>
+            <button type="button" data-notebook-toggle onClick={notebook.toggle}>abrir</button>
             <main className="main-content">{children}</main>
             <NotebookDock side="right" railEdge={null} />
         </NotebookProvider>
@@ -57,6 +59,7 @@ const note = (over: Partial<Note>): Note => ({
 describe('Notebook', () => {
     beforeEach(() => {
         localStorage.clear();
+        auth.user = { id: 'u1' };
         store.notes = [];
         store.saveNote.mockReset().mockResolvedValue(null);
         store.deleteNote.mockReset().mockResolvedValue(undefined);
@@ -106,7 +109,7 @@ describe('Notebook', () => {
 
         fireEvent.keyDown(window, { key: 'n', code: 'KeyN', altKey: true });
         expect(await screen.findByRole('textbox')).toHaveValue('a medias');
-        expect(JSON.parse(localStorage.getItem('voxie-notebook-draft')!).body).toBe('a medias');
+        expect(JSON.parse(localStorage.getItem('voxie-notebook-draft:u1')!).body).toBe('a medias');
     });
 
     it('on a phone, the bubble opens a sheet and comes back when it closes', async () => {
@@ -194,11 +197,33 @@ describe('Notebook', () => {
         expect(screen.queryByRole('button', { name: 'Anotar' })).not.toBeInTheDocument();
     });
 
-    it('closes with Escape from inside the panel', async () => {
+    it('closes with Escape from inside the panel and gives focus back to its button', async () => {
         renderApp();
         fireEvent.keyDown(window, { key: 'n', code: 'KeyN', altKey: true });
         const text = await screen.findByRole('textbox');
         await act(async () => { fireEvent.keyDown(text, { key: 'Escape' }); });
         await waitFor(() => expect(screen.queryByRole('complementary')).not.toBeInTheDocument());
+        await waitFor(() => expect(screen.getByRole('button', { name: 'abrir' })).toHaveFocus());
+    });
+
+    it('leaves Alt+N alone while typing, where a Mac writes «ñ» with it', async () => {
+        renderApp(<input aria-label="respuesta" />);
+        fireEvent.keyDown(screen.getByRole('textbox', { name: 'respuesta' }), { key: 'n', code: 'KeyN', altKey: true });
+        fireEvent.keyDown(window, { key: 'Dead', code: 'KeyN', altKey: true });
+        await new Promise(r => setTimeout(r, 50));
+        expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    });
+
+    it('keeps each learner’s draft to themselves on a shared device', async () => {
+        localStorage.setItem('voxie-notebook-draft:u1', JSON.stringify({ body: 'privado de u1', quote: null, editingId: null }));
+        const view = renderApp();
+        fireEvent.keyDown(window, { key: 'n', code: 'KeyN', altKey: true });
+        expect(await screen.findByRole('textbox')).toHaveValue('privado de u1');
+
+        auth.user = { id: 'u2' };
+        view.rerender(<MemoryRouter initialEntries={['/path']}><App /></MemoryRouter>);
+        await waitFor(() => expect(screen.queryByRole('complementary')).not.toBeInTheDocument());
+        fireEvent.keyDown(window, { key: 'n', code: 'KeyN', altKey: true });
+        expect(await screen.findByRole('textbox')).toHaveValue('');
     });
 });

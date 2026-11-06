@@ -111,9 +111,13 @@ export default function NotebookPanel({ onClose, headerActions }: NotebookPanelP
     const handleSave = async () => {
         if (!canSave) return;
         setStatus('saving');
+        const sent = draft;
         try {
-            await saveNote({ id: draft.editingId ?? undefined, body: draft.body, quote: draft.quote, context });
-            setDraft(() => ({ body: '', quote: null, editingId: null }));
+            await saveNote({ id: sent.editingId ?? undefined, body: sent.body, quote: sent.quote, context });
+            // Only what was saved is cleared: anything added meanwhile stays to be saved next
+            setDraft(current => current.body === sent.body && current.quote === sent.quote && current.editingId === sent.editingId
+                ? { body: '', quote: null, editingId: null }
+                : { ...current, editingId: null });
             setStatus('saved');
         } catch {
             setStatus('error');
@@ -196,6 +200,7 @@ export default function NotebookPanel({ onClose, headerActions }: NotebookPanelP
                         onChange={e => { setDraft(d => ({ ...d, body: e.target.value })); if (status !== 'idle') setStatus('idle'); }}
                         onKeyDown={handleKeyDown}
                         maxLength={NOTE_MAX_LENGTH}
+                        readOnly={status === 'saving'}
                         rows={4}
                         placeholder={t('notebook.placeholder')}
                         className="notebook-textarea"

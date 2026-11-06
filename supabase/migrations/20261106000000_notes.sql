@@ -1,6 +1,6 @@
 -- Notebook: the learner's own notes, taken from any screen. Each note remembers where it was
--- written (unit, story or page) to take the learner back there. Deleting only marks the row, so a
--- delete queued offline is an ordinary update. Additive: the current app never reads it.
+-- written (unit, story or page) to take the learner back there. Every write is an upsert on the id
+-- (also a delete, which only sets deleted_at), so writes queued offline can be replayed in any order.
 
 CREATE TABLE IF NOT EXISTS notes (
     -- Made by the client, so a note written offline keeps its id once synced
@@ -33,5 +33,31 @@ CREATE POLICY "Users edit own notes" ON notes
     FOR UPDATE TO authenticated
     USING ((select auth.uid()) = user_id)
     WITH CHECK ((select auth.uid()) = user_id);
+
+-- Writes can arrive out of order (the offline queue, two devices): the newest one wins, and a
+-- deleted note stays deleted
+CREATE OR REPLACE FUNCTION public.keep_newest_note()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+DECLARE
+    incoming_delete timestamptz := NEW.deleted_at;
+BEGIN
+    IF NEW.updated_at < OLD.updated_at THEN
+        -- An older write changes nothing, except that a delete still deletes
+        NEW := OLD;
+    END IF;
+    NEW.deleted_at := COALESCE(OLD.deleted_at, incoming_delete);
+    NEW.user_id := OLD.user_id;
+    NEW.created_at := OLD.created_at;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS keep_newest_note ON notes;
+CREATE TRIGGER keep_newest_note
+    BEFORE UPDATE ON notes
+    FOR EACH ROW EXECUTE FUNCTION public.keep_newest_note();
 
 CREATE INDEX IF NOT EXISTS notes_user_updated_idx ON notes (user_id, updated_at DESC) WHERE deleted_at IS NULL;

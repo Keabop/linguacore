@@ -13,7 +13,8 @@ export interface NoteDraft {
 }
 
 const EMPTY_DRAFT: NoteDraft = { body: '', quote: null, editingId: null };
-const DRAFT_KEY = 'voxie-notebook-draft';
+/** Per learner: someone else signing in on this device never sees the draft. */
+export const draftKey = (userId: string | undefined) => `voxie-notebook-draft:${userId ?? 'guest'}`;
 
 export interface NotebookValue {
     isOpen: boolean;
@@ -65,9 +66,9 @@ const ROUTE_LABELS: [prefix: string, labelKey: string][] = [
     ['/account', 'nav.profile'],
 ];
 
-function readDraft(): NoteDraft {
+function readDraft(key: string): NoteDraft {
     try {
-        const stored = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null') as Partial<NoteDraft> | null;
+        const stored = JSON.parse(localStorage.getItem(key) ?? 'null') as Partial<NoteDraft> | null;
         if (stored && typeof stored.body === 'string') {
             return { body: stored.body, quote: stored.quote ?? null, editingId: stored.editingId ?? null };
         }
@@ -77,26 +78,38 @@ function readDraft(): NoteDraft {
     return EMPTY_DRAFT;
 }
 
-/** The notebook's state, owned by the app layout and handed down with `NotebookProvider`. */
-export function useNotebookController(): NotebookValue {
+/**
+ * The notebook's state, owned by the app layout and handed down with `NotebookProvider`. The draft
+ * belongs to `userId`.
+ */
+export function useNotebookController(userId: string | undefined): NotebookValue {
     const { t } = useTranslation();
     const location = useLocation();
+    const storageKey = draftKey(userId);
     const [isOpen, setIsOpen] = useState(false);
-    const [draft, setDraftState] = useState<NoteDraft>(readDraft);
+    const [draft, setDraftState] = useState<NoteDraft>(() => readDraft(storageKey));
     const [pageContext, setPageContext] = useState<NoteContext | null>(null);
+
+    // Another learner on this device: their own draft, and the notebook starts closed
+    const [draftOwner, setDraftOwner] = useState(storageKey);
+    if (draftOwner !== storageKey) {
+        setDraftOwner(storageKey);
+        setDraftState(readDraft(storageKey));
+        setIsOpen(false);
+    }
 
     const setDraft = useCallback((update: (draft: NoteDraft) => NoteDraft) => {
         setDraftState(current => {
             const next = update(current);
             try {
-                if (next.body || next.quote || next.editingId) localStorage.setItem(DRAFT_KEY, JSON.stringify(next));
-                else localStorage.removeItem(DRAFT_KEY);
+                if (next.body || next.quote || next.editingId) localStorage.setItem(storageKey, JSON.stringify(next));
+                else localStorage.removeItem(storageKey);
             } catch {
                 // Storage full or blocked: the draft lives until the page closes
             }
             return next;
         });
-    }, []);
+    }, [storageKey]);
 
     const open = useCallback(() => setIsOpen(true), []);
     const close = useCallback(() => setIsOpen(false), []);
@@ -108,9 +121,12 @@ export function useNotebookController(): NotebookValue {
         setIsOpen(true);
     }, [setDraft]);
 
-    // Alt+N opens and closes it from anywhere (by key position, so it works on every layout)
+    // Alt+N opens and closes it (by key position, so it works on every layout). Not while typing:
+    // on a Mac, Option+N is how «ñ» is written
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (event.key === 'Dead' || target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
             if (event.altKey && !event.ctrlKey && !event.metaKey && event.code === 'KeyN') {
                 event.preventDefault();
                 toggle();

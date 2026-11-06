@@ -171,7 +171,6 @@ export type ErrorCardRow = {
     created_at: string;
 };
 
-// Supabase Database type for createClient<Database>
 /** A note of the learner's notebook. `deleted_at` set means deleted. */
 export type NoteRow = {
     id: string;
@@ -188,6 +187,7 @@ export type NoteRow = {
     deleted_at: string | null;
 };
 
+// Supabase Database type for createClient<Database>
 export type Database = {
     public: {
         Tables: {

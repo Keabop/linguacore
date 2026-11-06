@@ -25,13 +25,15 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
     const level = useLevelContent(levelOfId(unitId));
     const card = level ? level.grammarCards.find(gc => gc.unitId === unitId) ?? null : undefined;
 
-    // The first mention of each grammar term, in the explanation or the rules, opens its definition
+    // The first mention of each grammar term, in the explanation or the rules, opens its definition.
+    // Sanitized again at the end: the glossed HTML is what goes into the page
     const glossed = useMemo(() => {
         if (!card) return null;
         const seen = new Set<string>();
+        const safe = (html: string) => DOMPurify.sanitize(html);
         return {
-            explanation: glossify(DOMPurify.sanitize(card.explanation), seen),
-            rules: card.rules.map(rule => glossify(escapeHtml(rule), seen)),
+            explanation: safe(glossify(safe(card.explanation), seen)),
+            rules: card.rules.map(rule => safe(glossify(escapeHtml(rule), seen))),
         };
     }, [card]);
     const [openTerm, setOpenTerm] = useState<{ id: string; anchor: HTMLElement } | null>(null);

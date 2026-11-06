@@ -38,6 +38,11 @@ export function getPendingCount(): number {
     return memoryQueue.length;
 }
 
+/** Writes still waiting to sync, oldest first. */
+export function getQueuedMutations(): readonly QueuedMutation[] {
+    return [...memoryQueue];
+}
+
 export function isSyncing(): boolean {
     return syncing;
 }
