@@ -28,6 +28,7 @@ import LevelAssessment from './LevelAssessment';
 import BackButton from '../components/ui/BackButton';
 import PageHead from '../components/ui/PageHead';
 import LevelBadge from '../components/ui/LevelBadge';
+import { useNoteContext } from '../components/notebook/NotebookContext';
 
 /* ===== Step metadata ===== */
 
@@ -110,6 +111,12 @@ export default function UnitFlow() {
     const { addSkillCards } = useSkillCards();
 
     const unit = allUnits.find(u => u.id === unitId) ?? null;
+    // Notes written here belong to the unit
+    useNoteContext(unit && {
+        key: `unit:${unit.id}`,
+        label: `${t('path.unit')} ${unit.unitNumber} · ${unit.title}`,
+        path: `/path/${unit.id}`,
+    });
     // Only this unit's level is downloaded (src/data/levels), with its deck from the start
     const content = useLevelContent(levelOfId(unitId));
     useEffect(() => prefetchVocabulary(levelOfId(unitId)), [unitId]);

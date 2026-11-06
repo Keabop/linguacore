@@ -2,7 +2,7 @@ import { useEffect, useId, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { NotebookPen, X } from 'lucide-react';
 import type { GlossaryEntry } from '../data/glossary';
 import { useDialogKeys } from '../hooks/useDialogKeys';
 
@@ -15,13 +15,15 @@ interface GlossaryPopoverProps {
     /** The underlined term that opened it. */
     anchor: HTMLElement;
     onClose: () => void;
+    /** Present inside the app: copies the definition into the notebook. */
+    onSaveToNotebook?: () => void;
 }
 
 /**
  * The definition of a grammar term, next to the term: below it, or above when there is no room.
  * Escape, the close button or a tap outside close it, and focus goes back to the term.
  */
-export default function GlossaryPopover({ entry, anchor, onClose }: GlossaryPopoverProps) {
+export default function GlossaryPopover({ entry, anchor, onClose, onSaveToNotebook }: GlossaryPopoverProps) {
     const { t } = useTranslation();
     const reduceMotion = useReducedMotion();
     const ref = useDialogKeys<HTMLDivElement>(true, onClose);
@@ -125,6 +127,16 @@ export default function GlossaryPopover({ entry, anchor, onClose }: GlossaryPopo
                     <span className="sr-only">{t('glossary.example')}: </span>
                     {entry.example}
                 </p>
+                {onSaveToNotebook && (
+                    <button
+                        type="button"
+                        onClick={onSaveToNotebook}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--color-outline-variant)] px-4 text-sm font-semibold text-[var(--color-on-surface)] transition-colors hover:border-[var(--color-on-surface-muted)]"
+                    >
+                        <NotebookPen className="size-4" aria-hidden="true" />
+                        {t('notebook.saveToNotebook')}
+                    </button>
+                )}
             </div>
         </motion.div>,
         document.body,

@@ -5,6 +5,7 @@ const progress = vi.hoisted(() => ({ markStepComplete: vi.fn(async () => {}) }))
 vi.mock('../hooks/useUnitProgress', () => ({ useUnitProgress: () => progress }));
 
 import GrammarCard from './GrammarCard';
+import { NotebookProvider, type NotebookValue } from './notebook/NotebookContext';
 import { getGrammarCardByUnit } from '../data';
 import { loadLevel } from '../data/levels';
 
@@ -84,6 +85,27 @@ describe('GrammarCard', () => {
         await screen.findByRole('dialog');
         fireEvent.pointerDown(screen.getByRole('heading', { name: 'Artículos y demostrativos' }));
         await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    });
+
+    it('saves a definition to the notebook when the app has one', async () => {
+        const quote = vi.fn();
+        render(
+            <NotebookProvider value={{ quote } as unknown as NotebookValue}>
+                <GrammarCard unitId="a1-u2" onComplete={() => {}} />
+            </NotebookProvider>,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'que se pueden contar' }));
+        const dialog = await screen.findByRole('dialog', { name: 'Sustantivo contable' });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Guardar en la libreta' }));
+        expect(quote).toHaveBeenCalledWith(expect.stringMatching(/^Sustantivo contable: Sustantivo que se cuenta.*Ejemplo: an apple, two apples$/));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    });
+
+    it('has no notebook button outside the app', async () => {
+        render(<GrammarCard unitId="a1-u2" onComplete={() => {}} />);
+        fireEvent.click(screen.getByRole('button', { name: 'sustantivos' }));
+        const dialog = await screen.findByRole('dialog');
+        expect(within(dialog).queryByRole('button', { name: 'Guardar en la libreta' })).not.toBeInTheDocument();
     });
 
     it('shows nothing for a unit without a card (the level assessment)', () => {

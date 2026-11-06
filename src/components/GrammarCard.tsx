@@ -9,6 +9,7 @@ import { useUnitProgress } from '../hooks/useUnitProgress';
 import { getGlossaryEntry } from '../data/glossary';
 import { escapeHtml, glossify } from '../lib/glossify';
 import GlossaryPopover from './GlossaryPopover';
+import { useNotebook } from './notebook/NotebookContext';
 
 interface GrammarCardProps {
     unitId: string;
@@ -36,6 +37,7 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
     const [openTerm, setOpenTerm] = useState<{ id: string; anchor: HTMLElement } | null>(null);
     const openEntry = openTerm ? getGlossaryEntry(openTerm.id) : undefined;
     const closeTerm = useCallback(() => setOpenTerm(null), []);
+    const notebook = useNotebook();
 
     // One listener for every term: they are buttons inside the explanation's HTML
     const handleTermClick = (event: MouseEvent<HTMLElement>) => {
@@ -182,7 +184,19 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
             </motion.button>
 
             {openTerm && openEntry && (
-                <GlossaryPopover entry={openEntry} anchor={openTerm.anchor} onClose={closeTerm} />
+                <GlossaryPopover
+                    entry={openEntry}
+                    anchor={openTerm.anchor}
+                    onClose={closeTerm}
+                    onSaveToNotebook={notebook ? () => {
+                        notebook.quote(t('notebook.glossaryQuote', {
+                            term: openEntry.term,
+                            definition: openEntry.definition,
+                            example: openEntry.example,
+                        }));
+                        closeTerm();
+                    } : undefined}
+                />
             )}
 
             {/* Inline styles for HTML tables in the explanation */}

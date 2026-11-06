@@ -3,7 +3,9 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLevelProgression } from '../hooks/useLevelProgression';
-import { User, GripVertical, GripHorizontal, Shield } from 'lucide-react';
+import { User, GripVertical, GripHorizontal, Shield, NotebookPen } from 'lucide-react';
+import { NotebookProvider, useNotebookController } from './notebook/NotebookContext';
+import NotebookDock from './notebook/NotebookDock';
 import {
     BookOpenIcon, GraduationCapIcon, HouseIcon, MapIcon, MessageCircleIcon, PencilIcon, RefreshCwIcon,
     type AnimatedIcon, type AnimatedIconHandle,
@@ -154,6 +156,61 @@ function RailNavItem({ path, icon: Icon, labelKey, expanded, position, end }: {
     );
 }
 
+/** The notebook in the desktop rail: a button, not a link, that opens the side panel. */
+function RailNotebookButton({ expanded, position, open, onToggle }: {
+    expanded: boolean; position: SidebarPosition; open: boolean; onToggle: () => void;
+}) {
+    const { t } = useTranslation();
+    const [isHovered, setIsHovered] = useState(false);
+    const isVertical = position === 'left' || position === 'right';
+    const label = t('notebook.title');
+    return (
+        <button
+            type="button"
+            data-notebook-toggle
+            onClick={onToggle}
+            aria-expanded={open}
+            aria-keyshortcuts="Alt+N"
+            aria-label={label}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className={`rail-item flex items-center transition-all duration-300 relative select-none ${
+                isVertical
+                    ? `h-12 rounded-xl ${expanded ? 'px-4 justify-start mx-3' : 'px-0 justify-center mx-2.5'}`
+                    : 'h-10 w-10 justify-center mx-0.5 rounded-full'
+            } ${
+                open
+                    ? 'bg-[var(--color-tertiary-container)] text-[var(--color-on-surface)] font-bold'
+                    : 'hover:bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface)]'
+            }`}
+        >
+            <span className={`${isVertical ? 'w-12 h-12' : 'w-10 h-10'} flex items-center justify-center shrink-0`}>
+                <NotebookPen size={22} aria-hidden="true" />
+            </span>
+            {expanded && isVertical && (
+                <span className="text-sm font-semibold whitespace-nowrap text-[var(--color-on-surface)]">{label}</span>
+            )}
+            <AnimatePresence>
+                {isHovered && (!expanded || !isVertical) && (
+                    <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className={`absolute px-2.5 py-1.5 bg-[var(--color-on-surface)] text-[var(--color-background)] text-[9.5px] font-bold rounded-lg shadow-lg whitespace-nowrap z-50 pointer-events-none ${
+                            isVertical
+                                ? 'left-full ml-3.5'
+                                : position === 'top' ? 'top-full mt-2.5 left-1/2 -translate-x-1/2' : 'bottom-full mb-2.5 left-1/2 -translate-x-1/2'
+                        }`}
+                    >
+                        {label} · <span className="font-mono">Alt+N</span>
+                    </motion.span>
+                )}
+            </AnimatePresence>
+        </button>
+    );
+}
+
 export default function Layout() {
     const { t } = useTranslation();
     const location = useLocation();
@@ -250,6 +307,11 @@ export default function Layout() {
         };
     }, [isDragging, position, viewport]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // The notebook goes on the side away from the rail (on the right when the rail is on top or below)
+    const notebook = useNotebookController();
+    const notebookSide = position === 'right' ? 'left' : 'right';
+    const railEdge = position === 'top' || position === 'bottom' ? position : null;
+
     const moveWithKeys = (e: React.KeyboardEvent) => {
         const edge = KEY_TO_EDGE[e.key];
         if (!edge) return;
@@ -258,7 +320,8 @@ export default function Layout() {
     };
 
     return (
-        <div className={`app-layout pos-${position} ${isAdmin ? 'has-admin' : ''}`}>
+        <NotebookProvider value={notebook}>
+        <div className={`app-layout pos-${position} ${isAdmin ? 'has-admin' : ''} ${notebook.isOpen ? `notebook-open notebook-${notebookSide}` : ''}`}>
 
             {/* ===== WHERE THE RAIL WILL LAND WHILE DRAGGING ===== */}
             <AnimatePresence>
@@ -393,6 +456,13 @@ export default function Layout() {
                             end={item.end}
                         />
                     ))}
+                    <span aria-hidden="true" className={`rail-rule ${isVertical ? 'is-vertical' : ''}`} />
+                    <RailNotebookButton
+                        expanded={isNavHovered}
+                        position={railPos}
+                        open={notebook.isOpen}
+                        onToggle={notebook.toggle}
+                    />
                 </nav>
 
                 {/* User area at bottom/right */}
@@ -521,6 +591,9 @@ export default function Layout() {
                     <Shield className="w-5 h-5" aria-hidden="true" />
                 </NavLink>
             )}
+
+            <NotebookDock side={notebookSide} railEdge={railEdge} />
         </div>
+        </NotebookProvider>
     );
 }
