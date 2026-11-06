@@ -206,6 +206,15 @@ describe('Notebook', () => {
         await waitFor(() => expect(screen.getByRole('button', { name: 'abrir' })).toHaveFocus());
     });
 
+    it('closes with Alt+N from its own field and gives focus back to its button', async () => {
+        renderApp();
+        fireEvent.keyDown(window, { key: 'n', code: 'KeyN', altKey: true });
+        const text = await screen.findByRole('textbox');
+        await act(async () => { fireEvent.keyDown(text, { key: 'n', code: 'KeyN', altKey: true }); });
+        await waitFor(() => expect(screen.queryByRole('complementary')).not.toBeInTheDocument());
+        await waitFor(() => expect(screen.getByRole('button', { name: 'abrir' })).toHaveFocus());
+    });
+
     it('leaves Alt+N alone while typing, where a Mac writes «ñ» with it', async () => {
         renderApp(<input aria-label="respuesta" />);
         fireEvent.keyDown(screen.getByRole('textbox', { name: 'respuesta' }), { key: 'n', code: 'KeyN', altKey: true });

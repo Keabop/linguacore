@@ -121,12 +121,14 @@ export function useNotebookController(userId: string | undefined): NotebookValue
         setIsOpen(true);
     }, [setDraft]);
 
-    // Alt+N opens and closes it (by key position, so it works on every layout). Not while typing:
-    // on a Mac, Option+N is how «ñ» is written
+    // Alt+N opens and closes it (by key position, so it works on every layout). Not while typing in
+    // the page: on a Mac, Option+N is how «ñ» is written (a dead key, never taken). In the notebook's
+    // own fields it does close it
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
             const target = event.target as HTMLElement | null;
-            if (event.key === 'Dead' || target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
+            const typingInPage = target?.closest?.('input, textarea, select, [contenteditable="true"]') && !target.closest('[data-notebook]');
+            if (event.key === 'Dead' || typingInPage) return;
             if (event.altKey && !event.ctrlKey && !event.metaKey && event.code === 'KeyN') {
                 event.preventDefault();
                 toggle();

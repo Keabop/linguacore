@@ -58,14 +58,17 @@ export function parseNoteBody(body: string): NoteBlock[] {
     return blocks;
 }
 
+/** The mark a point starts with («• », «- » or «* »), or null on a plain line. */
+const bulletMark = (line: string) => line.match(/^[•\-*] /)?.[0] ?? null;
+
 /** Turns the line under the cursor into a point, or back into plain text. */
 export function toggleBullet(value: string, cursor: number): { value: string; cursor: number } {
     const start = value.lastIndexOf('\n', cursor - 1) + 1;
-    const line = value.slice(start);
-    if (line.startsWith(BULLET)) {
-        return { value: value.slice(0, start) + line.slice(BULLET.length), cursor: Math.max(start, cursor - BULLET.length) };
+    const mark = bulletMark(value.slice(start));
+    if (mark) {
+        return { value: value.slice(0, start) + value.slice(start + mark.length), cursor: Math.max(start, cursor - mark.length) };
     }
-    return { value: value.slice(0, start) + BULLET + line, cursor: cursor + BULLET.length };
+    return { value: value.slice(0, start) + BULLET + value.slice(start), cursor: cursor + BULLET.length };
 }
 
 /** Puts a separator on its own line at the cursor and leaves the cursor on the next line. */
@@ -77,15 +80,16 @@ export function insertSeparator(value: string, cursor: number): { value: string;
     return { value: before + insert + after, cursor: cursor + insert.length };
 }
 
-/** Pressing Enter on a point starts the next point; on an empty point it ends the list. */
+/** Pressing Enter on a point starts the next point with the same mark; on an empty point it ends the list. */
 export function continueBullet(value: string, cursor: number): { value: string; cursor: number } | null {
     const start = value.lastIndexOf('\n', cursor - 1) + 1;
     const line = value.slice(start, cursor);
-    if (!line.startsWith(BULLET)) return null;
-    if (line === BULLET) {
+    const mark = bulletMark(line);
+    if (!mark) return null;
+    if (line === mark) {
         return { value: value.slice(0, start) + value.slice(cursor), cursor: start };
     }
-    const insert = `\n${BULLET}`;
+    const insert = `\n${mark}`;
     return { value: value.slice(0, cursor) + insert + value.slice(cursor), cursor: cursor + insert.length };
 }
 

@@ -25,8 +25,13 @@ import { PageNotice } from '../lib/notice';
 // between any two of these boxes, including the one that follows the pointer while dragging.
 const RAIL_GAP = 24;
 const RAIL_THICK = 68;
-const RAIL_LONG = 540;
+// Long enough for every item plus the notebook button (lying down it needs a little less);
+// never longer than the screen
+const RAIL_TALL = 604;
+const RAIL_WIDE = 584;
 const RAIL_EXPANDED = 260;
+const tallFor = (vh: number) => Math.min(RAIL_TALL, vh - 16);
+const wideFor = (vw: number) => Math.min(RAIL_WIDE, vw - 16);
 
 type RailBox = { left: number; top: number; width: number; height: number };
 
@@ -35,9 +40,11 @@ const isVerticalPos = (pos: SidebarPosition) => pos === 'left' || pos === 'right
 function dockedBox(pos: SidebarPosition, expanded: boolean, vw: number, vh: number): RailBox {
     if (isVerticalPos(pos)) {
         const width = expanded ? RAIL_EXPANDED : RAIL_THICK;
-        return { width, height: RAIL_LONG, top: (vh - RAIL_LONG) / 2, left: pos === 'left' ? RAIL_GAP : vw - RAIL_GAP - width };
+        const height = tallFor(vh);
+        return { width, height, top: (vh - height) / 2, left: pos === 'left' ? RAIL_GAP : vw - RAIL_GAP - width };
     }
-    return { width: RAIL_LONG, height: RAIL_THICK, left: (vw - RAIL_LONG) / 2, top: pos === 'top' ? RAIL_GAP : vh - RAIL_GAP - RAIL_THICK };
+    const width = wideFor(vw);
+    return { width, height: RAIL_THICK, left: (vw - width) / 2, top: pos === 'top' ? RAIL_GAP : vh - RAIL_GAP - RAIL_THICK };
 }
 
 /** The edge closest to the pointer is where the rail will dock. */
@@ -51,8 +58,8 @@ const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min)
 /** While dragging, the rail already has the shape of where it will land and keeps its grip under the pointer. */
 function draggedBox(pos: SidebarPosition, x: number, y: number, vw: number, vh: number): RailBox {
     const vertical = isVerticalPos(pos);
-    const width = vertical ? RAIL_THICK : RAIL_LONG;
-    const height = vertical ? RAIL_LONG : RAIL_THICK;
+    const width = vertical ? RAIL_THICK : wideFor(vw);
+    const height = vertical ? tallFor(vh) : RAIL_THICK;
     // The grip sits at the start of the rail: near the top when vertical, near the left when horizontal
     const left = vertical ? x - width / 2 : x - 40;
     const top = vertical ? y - 32 : y - height / 2;

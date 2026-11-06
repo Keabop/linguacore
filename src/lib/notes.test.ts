@@ -38,6 +38,8 @@ describe('editing marks', () => {
     it('toggles a point on the line under the cursor', () => {
         expect(toggleBullet('uno\ndos', 5)).toEqual({ value: 'uno\n• dos', cursor: 7 });
         expect(toggleBullet('uno\n• dos', 7)).toEqual({ value: 'uno\ndos', cursor: 5 });
+        expect(toggleBullet('uno\n- dos\ntres', 7)).toEqual({ value: 'uno\ndos\ntres', cursor: 5 });
+        expect(toggleBullet('• uno\n• dos', 9)).toEqual({ value: '• uno\ndos', cursor: 7 });
     });
 
     it('puts a separator on its own line', () => {
@@ -49,6 +51,8 @@ describe('editing marks', () => {
         expect(continueBullet('• uno', 5)).toEqual({ value: '• uno\n• ', cursor: 8 });
         expect(continueBullet('• uno\n• ', 8)).toEqual({ value: '• uno\n', cursor: 6 });
         expect(continueBullet('texto', 5)).toBeNull();
+        expect(continueBullet('- uno', 5)).toEqual({ value: '- uno\n- ', cursor: 8 });
+        expect(continueBullet('- uno\n- ', 8)).toEqual({ value: '- uno\n', cursor: 6 });
     });
 });
 

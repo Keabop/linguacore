@@ -212,9 +212,7 @@ export default function NotebookPanel({ onClose, headerActions }: NotebookPanelP
                         <button type="button" onClick={() => editAtCursor(insertSeparator)} className="notebook-tool">
                             <Minus className="size-4" aria-hidden="true" />{t('notebook.separator')}
                         </button>
-                        <p role="status" className={`min-w-0 flex-1 text-xs ${status === 'error' ? 'text-[var(--color-error)]' : 'text-[var(--color-on-surface-variant)]'}`}>
-                            {status === 'saved' && t('notebook.saved')}
-                        </p>
+                        <span className="flex-1" aria-hidden="true" />
                         {editing && (
                             <button
                                 type="button"
@@ -228,7 +226,11 @@ export default function NotebookPanel({ onClose, headerActions }: NotebookPanelP
                             {editing ? t('notebook.saveEdit') : t('notebook.save')}
                         </button>
                     </div>
-                    {status === 'error' && <p role="alert" className="text-xs text-[var(--color-error)]">{t('notebook.saveError')}</p>}
+                    {/* On its own line under the buttons, so it reads easily on every width */}
+                    <p role="status" className="text-sm text-[var(--color-on-surface-variant)]">
+                        {status === 'saved' && t('notebook.saved')}
+                    </p>
+                    {status === 'error' && <p role="alert" className="text-sm text-[var(--color-error)]">{t('notebook.saveError')}</p>}
                 </section>
 
                 {/* Every note */}

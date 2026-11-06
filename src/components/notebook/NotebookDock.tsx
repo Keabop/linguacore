@@ -55,7 +55,8 @@ function readBubblePlace(): BubblePlace {
     } catch {
         // Nothing stored or storage blocked
     }
-    return { side: 'right', y: 0.55 };
+    // Low on the right edge, above the floating bar, where it covers the least
+    return { side: 'right', y: 1 };
 }
 
 const clampY = (y: number, height: number) =>
@@ -218,15 +219,26 @@ function NotebookSidePanel({ side, railEdge, onClose }: { side: NotebookSide; ra
 export default function NotebookDock({ side, railEdge }: { side: NotebookSide; railEdge: 'top' | 'bottom' | null }) {
     const notebook = useNotebook();
     const isPhone = useMediaQuery(PHONE_QUERY);
-    if (!notebook) return null;
-    const { isOpen, open } = notebook;
+    const isOpen = notebook?.isOpen ?? false;
+    const wasOpen = useRef(isOpen);
 
-    // Closing from inside (Escape, ✕) hands focus back to what opens it: the rail button or the bubble
-    const close = () => {
-        const fromInside = document.activeElement?.closest('[data-notebook]');
-        notebook.close();
-        if (fromInside) requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-notebook-toggle]')?.focus());
-    };
+    // However it closes (Escape, ✕, Alt+N), focus left inside it, or lost, goes back to what opens it:
+    // the rail button on desktop, the bubble on a phone (the one of the two on screen)
+    useEffect(() => {
+        const closed = wasOpen.current && !isOpen;
+        wasOpen.current = isOpen;
+        if (!closed) return;
+        const focused = document.activeElement;
+        if (focused && focused !== document.body && !focused.closest('[data-notebook]')) return;
+        const frame = requestAnimationFrame(() => {
+            const toggles = [...document.querySelectorAll<HTMLElement>('[data-notebook-toggle]')];
+            (toggles.find(el => el.getBoundingClientRect().width > 0) ?? toggles[0])?.focus();
+        });
+        return () => cancelAnimationFrame(frame);
+    }, [isOpen]);
+
+    if (!notebook) return null;
+    const { open, close } = notebook;
 
     return (
         <>

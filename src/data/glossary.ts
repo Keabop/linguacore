@@ -415,16 +415,30 @@ export const GLOSSARY: GlossaryEntry[] = [
     {
         id: 'vocal',
         term: 'Sonido vocal',
-        forms: ['sonido de vocal', 'sonido vocal', 'vocal', 'vocales'],
-        definition: 'Los sonidos de a, e, i, o, u. En inglés cuenta cómo suena la palabra, no la letra con que se escribe.',
+        forms: ['sonido de vocal', 'sonido vocal', 'sonidos vocales'],
+        definition: 'Los sonidos de a, e, i, o, u. Para «a» o «an» cuenta cómo suena la palabra, no la letra con que se escribe.',
         example: 'an apple, an hour',
     },
     {
         id: 'consonante',
         term: 'Sonido consonante',
-        forms: ['sonido de consonante', 'consonante', 'consonantes'],
+        forms: ['sonido de consonante', 'sonido consonante', 'sonidos consonantes'],
         definition: 'Cualquier sonido que no es vocal, como b, d, k o y.',
         example: 'a book, a university (suena «yu»)',
+    },
+    {
+        id: 'letra-vocal',
+        term: 'Vocal',
+        forms: ['vocal', 'vocales'],
+        definition: 'Las letras a, e, i, o, u. En las reglas de ortografía cuenta la letra escrita.',
+        example: 'play → plays (vocal + y)',
+    },
+    {
+        id: 'letra-consonante',
+        term: 'Consonante',
+        forms: ['consonante', 'consonantes'],
+        definition: 'Cualquier letra que no es vocal, como b, d, t o y.',
+        example: 'study → studies (consonante + y)',
     },
     {
         id: 'silaba',
