@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2, Award, Calendar, Check, BookOpenCheck, ChevronRight } from 'lucide-react';
+import { Settings, Flame, Layers, RotateCcw, BookOpen, Crown, Lock, Download, Upload, Briefcase, Wand2, ChevronDown, ChevronUp, Loader2, Award, Calendar, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -11,6 +11,7 @@ import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useTier } from '../hooks/useTier';
 import LevelBadge from '../components/ui/LevelBadge';
 import SettingsModal from '../components/SettingsModal';
+import GuideCard from '../components/GuideCard';
 import type { ReadStoryRow, CardRow } from '../lib/database.types';
 import { generateCareerDeck } from '../lib/ai';
 import { loadVocabulary } from '../data/vocabulary/load';
@@ -564,14 +565,7 @@ export default function Account() {
 
                 {/* ===== The guide, always at hand ===== */}
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
-                    <Link to="/guia" className="guide-card">
-                        <BookOpenCheck className="w-6 h-6 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />
-                        <span className="flex-1 min-w-0 text-left">
-                            <span className="block font-semibold text-[var(--color-on-surface)]">{t('guide.title')}</span>
-                            <span className="block text-sm text-[var(--color-on-surface-muted)]">{t('guide.profileBody')}</span>
-                        </span>
-                        <ChevronRight className="w-5 h-5 text-[var(--color-primary)]" aria-hidden="true" />
-                    </Link>
+                    <GuideCard variant="profile" />
                 </motion.div>
 
                 {/* ===== Gestión de Mazos de Vocabulario ===== */}

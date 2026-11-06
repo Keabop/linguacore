@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { FORCED_ATTEMPTS, PASS_SCORE } from '../lib/retryPolicy';
+import { LEVEL_FINAL_PASS } from '../lib/exam/levelFinal';
 import { CHAPTERS, PLAN_GOAL, PLAN_MINUTES, STEP_ORDER, TOOL_ORDER, TOOL_PATHS, guideLanguage, guideText } from './guide';
 
-const marks = { exercises: 75, writing: 75, speaking: 70, checkpoint: 80, exam: 80, tries: 2 };
+const marks = { ...PASS_SCORE, exam: LEVEL_FINAL_PASS, tries: FORCED_ATTEMPTS };
 
 describe('Guía «Cómo aprender con Voxie»', () => {
     it('has every chapter, step and tool in both languages', () => {
@@ -36,10 +38,12 @@ describe('Guía «Cómo aprender con Voxie»', () => {
 
     it('states the pass marks it is given', () => {
         const rules = guideText.es.path.rules(marks).join(' ');
-        expect(rules).toContain('75% en ejercicios');
-        expect(rules).toContain('70% en habla');
-        expect(rules).toContain('80% en el checkpoint');
-        expect(rules).toContain('intento 2');
+        expect(rules).toContain(`${PASS_SCORE.exercises}% en ejercicios`);
+        expect(rules).toContain(`${PASS_SCORE.writing}% en escritura`);
+        expect(rules).toContain(`${PASS_SCORE.speaking}% en habla`);
+        expect(rules).toContain(`${PASS_SCORE.checkpoint}% en el checkpoint`);
+        expect(rules).toContain(`${LEVEL_FINAL_PASS}% o más`);
+        expect(rules).toContain(`intento ${FORCED_ATTEMPTS}`);
     });
 
     it('links every tool to a real place, except the notebook panel and the glossary', () => {

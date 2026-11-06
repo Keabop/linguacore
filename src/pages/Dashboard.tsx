@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useLevelProgression } from '../hooks/useLevelProgression';
@@ -26,7 +26,7 @@ import GoalDrops from '../components/ui/GoalDrops';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import FirstStepsCard from '../components/FirstStepsCard';
 import GuideCard from '../components/GuideCard';
-import { useGuide } from '../hooks/useGuide';
+import { isGuideNewcomer, useGuide } from '../hooks/useGuide';
 import { useLevelUpNotice } from '../hooks/useLevelUpNotice';
 import { unitTitle, unitTopic } from '../data/curriculum/unitTitles';
 
@@ -95,8 +95,13 @@ export default function Dashboard() {
     const unitsTotal = levelUnits?.length ?? 0;
     const firstIncompleteUnit = levelUnits?.find(u => unitProgressMap.get(u.id)?.completed_at == null) ?? null;
     const allUnitsCompleted = unitsTotal > 0 && unitsCompleted === unitsTotal;
-    // A newcomer: no unit finished yet in their level (known only once the progress loads)
-    const isNewcomer = levelUnitProgress !== undefined && unitsCompleted === 0;
+    const isNewcomer = isGuideNewcomer({
+        progressLoaded: levelUnitProgress !== undefined, level: currentLevel, unlockedLevels: user?.unlockedLevels, unitsCompleted,
+    });
+    const showWelcome = isNewcomer && !guide.welcomeSeen && !levelUp.open;
+    // Mounted from the first time it shows, so it can animate out and hand the focus back
+    const [welcomeMounted, setWelcomeMounted] = useState(false);
+    useEffect(() => { if (showWelcome) setWelcomeMounted(true); }, [showWelcome]);
 
     // Loading state: user query hasn't resolved yet
     if (!user || !progressInfo) return <PageLoader />;
@@ -287,9 +292,9 @@ export default function Dashboard() {
             )}
 
             {/* The first visit: a short welcome that leads to the guide, once */}
-            {isNewcomer && !guide.welcomeSeen && !levelUp.open && (
+            {welcomeMounted && (
                 <Suspense fallback={null}>
-                    <GuideWelcome open onDone={guide.markWelcomeSeen} />
+                    <GuideWelcome open={showWelcome} onDone={guide.markWelcomeSeen} />
                 </Suspense>
             )}
         </div>

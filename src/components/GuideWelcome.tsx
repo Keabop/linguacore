@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -16,6 +17,12 @@ export default function GuideWelcome({ open, onDone }: GuideWelcomeProps) {
     const navigate = useNavigate();
     const reduceMotion = useReducedMotion();
     const ref = useDialogKeys(open, onDone);
+    // Closed for later: the focus goes to the guide's card, which stays on the home screen
+    const wasOpen = useRef(open);
+    useEffect(() => {
+        if (wasOpen.current && !open) document.querySelector<HTMLElement>('.guide-card')?.focus();
+        wasOpen.current = open;
+    }, [open]);
     const points = [
         { icon: Map, text: t('guide.welcomePoint1') },
         { icon: Droplet, text: t('guide.welcomePoint2') },

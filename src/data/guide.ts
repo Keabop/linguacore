@@ -98,7 +98,7 @@ const es: GuideText = {
             A2: 'Pláticas sencillas: compras, viajes, planes y lo que hiciste ayer.',
             B1: 'Te defiendes en el trabajo y de viaje: cuentas experiencias y das tu opinión.',
             B2: 'Hablas con soltura de casi cualquier tema y entiendes textos largos.',
-            
+
         },
     },
     start: {
@@ -132,7 +132,7 @@ const es: GuideText = {
         },
         rulesTitle: 'Para avanzar',
         rules: p => [
-            `Necesitas ${p.exercises}% en ejercicios y en escritura, ${p.speaking}% en habla y ${p.checkpoint}% en el checkpoint.`,
+            `Necesitas ${p.exercises}% en ejercicios y ${p.writing}% en escritura, ${p.speaking}% en habla y ${p.checkpoint}% en el checkpoint.`,
             `Si no llegas, Voxie te muestra la regla y lo que fallaste, y lo intentas otra vez. Después del intento ${p.tries} puedes seguir, salvo en el checkpoint.`,
             `El examen de fin de nivel se abre al terminar todas las unidades. Con ${p.exam}% o más abres el siguiente nivel.`,
             'El habla que dejaste para después la tienes que terminar antes del examen.',
@@ -141,7 +141,7 @@ const es: GuideText = {
     day: {
         body: 'Cada día tienes una meta de 1 a 3 actividades. Son las gotas de tu inicio: llénalas y tu jardín queda regado.',
         countsTitle: 'Cuenta como una actividad',
-        counts: ['Un paso de una unidad', 'Un cuento leído', 'Cada 10 tarjetas de repaso', 'Cada 5 mensajes al tutor'],
+        counts: ['Un paso de una unidad', 'Un cuento leído', 'Cada 10 tarjetas de vocabulario repasadas', 'Cada 5 mensajes que le escribes al tutor'],
         streakTitle: 'Tu racha',
         streak: [
             'Cuenta los días seguidos en que estudias.',
@@ -167,7 +167,7 @@ const es: GuideText = {
             },
             lab: {
                 name: 'Laboratorio de errores',
-                body: 'Tus errores de escritura y habla convertidos en práctica: ves el error, armas la frase correcta y te pones a prueba.',
+                body: 'Los errores que te marca la IA en el tutor y en Práctica, y los que te quedan al seguir en una unidad sin aprobar, convertidos en práctica: ves el error, armas la frase correcta y te pones a prueba.',
                 when: 'Cuando tu inicio te avise que tienes errores por repasar.',
             },
             tutor: {
@@ -177,12 +177,12 @@ const es: GuideText = {
             },
             practice: {
                 name: 'Práctica',
-                body: 'Escritura y habla libres, con la corrección de la IA y tu historial.',
-                when: 'Cuando quieras escribir o hablar de lo que tú elijas.',
+                body: 'Escritura libre corregida por la IA, con tu historial, y lectura en voz alta de frases de tu nivel.',
+                when: 'Cuando quieras escribir de lo que tú elijas o practicar tu pronunciación.',
             },
             simulator: {
                 name: 'Simulador',
-                body: 'El test de nivelación y simulacros de TOEFL, IELTS y Cambridge B1 y B2.',
+                body: 'El test de nivelación y, con Pro, simulacros de TOEFL, IELTS y Cambridge B1 y B2.',
                 when: 'Al empezar, para saber tu nivel, y antes de un examen real.',
             },
             notebook: {
@@ -204,7 +204,7 @@ const es: GuideText = {
             { title: 'Primero el repaso', body: 'Las tarjetas que Voxie te pide hoy son las que estás a punto de olvidar. Repasarlas a tiempo las fija.' },
             { title: 'Escucha todo y dilo en voz alta', body: 'Toca la bocina antes de leer una frase y repítela. Tu oído aprende antes que tu boca.' },
             { title: 'El español es apoyo, no muleta', body: 'En A1 lee con «Ver en español». Desde A2, lee primero sin traducción y ábrela sólo para comprobar.' },
-            { title: 'Equivócate sin miedo', body: 'Escribe y habla aunque no estés seguro. Cada error que la IA marca va a tu laboratorio, y lo que fallas es lo que mejor aprendes.' },
+            { title: 'Equivócate sin miedo', body: 'Escribe y habla aunque no estés seguro. Los errores que te marca la IA en el tutor y en Práctica van a tu laboratorio, y lo que fallas es lo que mejor aprendes.' },
             { title: 'No avances sin entender', body: 'Si no pasas un ejercicio, lee el repaso que te muestra Voxie antes de intentarlo otra vez.' },
         ],
         planTitle: 'Tu plan',
@@ -231,7 +231,7 @@ const es: GuideText = {
                     { day: 'Martes', items: ['Repaso', 'Historia', 'Anota la regla en tu libreta'] },
                     { day: 'Miércoles', items: ['Repaso', 'Vocabulario', 'Un cuento'] },
                     { day: 'Jueves', items: ['Repaso', 'Ejercicios', 'Laboratorio de errores'] },
-                    { day: 'Viernes', items: ['Repaso', 'Escritura y habla', '5 mensajes al tutor'] },
+                    { day: 'Viernes', items: ['Repaso', 'Escritura y habla', 'Platica con el tutor'] },
                     { day: 'Sábado', items: ['Repaso', 'Checkpoint', 'Un cuento'] },
                     { day: 'Domingo', items: ['Repaso', 'Relee tu libreta'] },
                 ],
@@ -239,11 +239,11 @@ const es: GuideText = {
             40: {
                 summary: 'Dos pasos al día y práctica libre. Cierras una unidad cada tres días: dos por semana.',
                 days: [
-                    { day: 'Lunes', items: ['Repaso', 'Gramática', 'Historia', '5 mensajes al tutor'] },
+                    { day: 'Lunes', items: ['Repaso', 'Gramática', 'Historia', 'Platica con el tutor'] },
                     { day: 'Martes', items: ['Repaso', 'Vocabulario', 'Ejercicios', 'Un cuento'] },
                     { day: 'Miércoles', items: ['Repaso', 'Escritura y habla', 'Checkpoint', 'Laboratorio de errores'] },
                     { day: 'Jueves', items: ['Repaso', 'Gramática', 'Historia', 'Un cuento'] },
-                    { day: 'Viernes', items: ['Repaso', 'Vocabulario', 'Ejercicios', '5 mensajes al tutor'] },
+                    { day: 'Viernes', items: ['Repaso', 'Vocabulario', 'Ejercicios', 'Platica con el tutor'] },
                     { day: 'Sábado', items: ['Repaso', 'Escritura y habla', 'Checkpoint', 'Práctica libre'] },
                     { day: 'Domingo', items: ['Repaso', 'Relee tu libreta', 'Un cuento'] },
                 ],
@@ -322,7 +322,7 @@ const en: GuideText = {
             A2: 'Simple conversations: shopping, travel, plans and what you did yesterday.',
             B1: 'You get by at work and when travelling: you tell experiences and give your opinion.',
             B2: 'You talk with ease about almost any topic and understand long texts.',
-            
+
         },
     },
     start: {
@@ -356,7 +356,7 @@ const en: GuideText = {
         },
         rulesTitle: 'To move on',
         rules: p => [
-            `You need ${p.exercises}% in exercises and writing, ${p.speaking}% in speaking and ${p.checkpoint}% in the checkpoint.`,
+            `You need ${p.exercises}% in exercises and ${p.writing}% in writing, ${p.speaking}% in speaking and ${p.checkpoint}% in the checkpoint.`,
             `If you fall short, Voxie shows you the rule and what you missed, and you try again. After try ${p.tries} you can move on, except in the checkpoint.`,
             `The end-of-level exam opens when every unit is done. With ${p.exam}% or more you open the next level.`,
             'Speaking you left for later must be finished before the exam.',
@@ -365,7 +365,7 @@ const en: GuideText = {
     day: {
         body: 'Every day you have a goal of 1 to 3 activities. They are the drops on your home screen: fill them and your garden is watered.',
         countsTitle: 'One activity is',
-        counts: ['A step of a unit', 'A story read', 'Every 10 review cards', 'Every 5 messages to the tutor'],
+        counts: ['A step of a unit', 'A story read', 'Every 10 vocabulary cards reviewed', 'Every 5 messages you write to the tutor'],
         streakTitle: 'Your streak',
         streak: [
             'It counts the days in a row you study.',
@@ -391,7 +391,7 @@ const en: GuideText = {
             },
             lab: {
                 name: 'Error lab',
-                body: 'Your writing and speaking mistakes turned into practice: you see the mistake, build the right sentence and test yourself.',
+                body: 'The mistakes the AI marks in the tutor and in Practice, and those left when you move on in a unit without passing, turned into practice: you see the mistake, build the right sentence and test yourself.',
                 when: 'When your home screen says you have mistakes to review.',
             },
             tutor: {
@@ -401,12 +401,12 @@ const en: GuideText = {
             },
             practice: {
                 name: 'Practice',
-                body: 'Free writing and speaking, with the AI\'s correction and your history.',
-                when: 'When you want to write or talk about what you choose.',
+                body: 'Free writing corrected by the AI, with your history, and reading aloud sentences at your level.',
+                when: 'When you want to write about what you choose or practise your pronunciation.',
             },
             simulator: {
                 name: 'Simulator',
-                body: 'The placement test and TOEFL, IELTS and Cambridge B1 and B2 mock exams.',
+                body: 'The placement test and, with Pro, TOEFL, IELTS and Cambridge B1 and B2 mock exams.',
                 when: 'At the start, to learn your level, and before a real exam.',
             },
             notebook: {
@@ -428,7 +428,7 @@ const en: GuideText = {
             { title: 'Review first', body: 'The cards Voxie asks for today are the ones you are about to forget. Reviewing them on time makes them stick.' },
             { title: 'Hear everything and say it aloud', body: 'Tap the speaker before reading a sentence and repeat it. Your ear learns before your mouth.' },
             { title: 'Spanish is support, not a crutch', body: 'In A1 read with «Show Spanish». From A2, read without the translation first and open it only to check.' },
-            { title: 'Make mistakes without fear', body: 'Write and speak even if you are not sure. Every mistake the AI marks goes to your lab, and what you get wrong is what you learn best.' },
+            { title: 'Make mistakes without fear', body: 'Write and speak even if you are not sure. The mistakes the AI marks in the tutor and in Practice go to your lab, and what you get wrong is what you learn best.' },
             { title: 'Don\'t move on without understanding', body: 'If you don\'t pass an exercise, read the review Voxie shows you before trying again.' },
         ],
         planTitle: 'Your plan',
@@ -455,7 +455,7 @@ const en: GuideText = {
                     { day: 'Tuesday', items: ['Review', 'Story', 'Write the rule in your notebook'] },
                     { day: 'Wednesday', items: ['Review', 'Vocabulary', 'A story'] },
                     { day: 'Thursday', items: ['Review', 'Exercises', 'Error lab'] },
-                    { day: 'Friday', items: ['Review', 'Writing and speaking', '5 messages to the tutor'] },
+                    { day: 'Friday', items: ['Review', 'Writing and speaking', 'Talk with the tutor'] },
                     { day: 'Saturday', items: ['Review', 'Checkpoint', 'A story'] },
                     { day: 'Sunday', items: ['Review', 'Reread your notebook'] },
                 ],
@@ -463,11 +463,11 @@ const en: GuideText = {
             40: {
                 summary: 'Two steps a day and free practice. You close a unit every three days: two a week.',
                 days: [
-                    { day: 'Monday', items: ['Review', 'Grammar', 'Story', '5 messages to the tutor'] },
+                    { day: 'Monday', items: ['Review', 'Grammar', 'Story', 'Talk with the tutor'] },
                     { day: 'Tuesday', items: ['Review', 'Vocabulary', 'Exercises', 'A story'] },
                     { day: 'Wednesday', items: ['Review', 'Writing and speaking', 'Checkpoint', 'Error lab'] },
                     { day: 'Thursday', items: ['Review', 'Grammar', 'Story', 'A story'] },
-                    { day: 'Friday', items: ['Review', 'Vocabulary', 'Exercises', '5 messages to the tutor'] },
+                    { day: 'Friday', items: ['Review', 'Vocabulary', 'Exercises', 'Talk with the tutor'] },
                     { day: 'Saturday', items: ['Review', 'Writing and speaking', 'Checkpoint', 'Free practice'] },
                     { day: 'Sunday', items: ['Review', 'Reread your notebook', 'A story'] },
                 ],

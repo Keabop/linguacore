@@ -41,6 +41,8 @@ const TOOL_ICONS: Record<ToolKey, Icon> = {
 };
 
 const chapterId = (id: ChapterId) => `guia-${id}`;
+/** The plan whose goal is this one; any other goal opens the shortest plan. */
+const planFor = (goal: number): PlanMinutes => PLAN_MINUTES.find(n => PLAN_GOAL[n] === goal) ?? 10;
 
 /**
  * «Cómo aprender con Voxie»: everything a newcomer needs, from what Voxie is to what goes in the
@@ -49,11 +51,11 @@ const chapterId = (id: ChapterId) => `guia-${id}`;
 export default function Guide() {
     const { i18n } = useTranslation();
     const text = guideText[guideLanguage(i18n.language)];
-    const { markOpened } = useGuide();
+    const { opened, markOpened } = useGuide();
     const current = useCurrentChapter();
 
-    // Opening the guide is what retires its card on the home screen
-    useEffect(() => { markOpened(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // Opening the guide is what retires its card on the home screen (once the session is known)
+    useEffect(() => { if (!opened) markOpened(); }, [opened, markOpened]);
 
     return (
         <div className="space-y-8">
@@ -297,13 +299,19 @@ function StudyPlan({ text }: { text: GuideText }) {
     const { user } = useLevelProgression();
     const saveGoal = useDailyGoal();
     const currentGoal = user?.dailyGoal ?? 1;
-    const [minutes, setMinutes] = useState<PlanMinutes>(() => PLAN_MINUTES.find(n => PLAN_GOAL[n] === currentGoal) ?? 10);
+    const [minutes, setMinutes] = useState<PlanMinutes>(() => planFor(currentGoal));
     const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+    // The profile may arrive after the page: the plan opens at the real goal unless one was picked
+    const [picked, setPicked] = useState(false);
+    const loadedGoal = user?.dailyGoal;
+    useEffect(() => {
+        if (!picked && loadedGoal !== undefined) setMinutes(planFor(loadedGoal));
+    }, [picked, loadedGoal]);
     const plan = m.plans[minutes];
     const goal = PLAN_GOAL[minutes];
     const stepNames = useMemo(() => new Set(STEP_ORDER.map(k => text.path.steps[k].name)), [text]);
 
-    const choose = (n: PlanMinutes) => { setMinutes(n); setState('idle'); };
+    const choose = (n: PlanMinutes) => { setMinutes(n); setPicked(true); setState('idle'); };
     const adopt = async () => {
         setState('saving');
         setState(await saveGoal(goal) ? 'saved' : 'error');

@@ -6,11 +6,11 @@ const mocks = vi.hoisted(() => ({
     saveGoal: vi.fn(async () => true),
     markOpened: vi.fn(),
     openNotebook: vi.fn(),
-    goal: 1,
+    goal: 1 as number | undefined,
 }));
 vi.mock('../hooks/useDailyGoal', () => ({ useDailyGoal: () => mocks.saveGoal }));
 vi.mock('../hooks/useGuide', () => ({ useGuide: () => ({ opened: false, welcomeSeen: false, markOpened: mocks.markOpened, markWelcomeSeen: vi.fn() }) }));
-vi.mock('../hooks/useLevelProgression', () => ({ useLevelProgression: () => ({ user: { dailyGoal: mocks.goal } }) }));
+vi.mock('../hooks/useLevelProgression', () => ({ useLevelProgression: () => ({ user: mocks.goal === undefined ? undefined : { dailyGoal: mocks.goal } }) }));
 vi.mock('../components/notebook/NotebookContext', () => ({ useNotebook: () => ({ open: mocks.openNotebook }) }));
 
 import Guide from './Guide';
@@ -58,6 +58,15 @@ describe('Guía', () => {
         fireEvent.click(screen.getByRole('tab', { name: '20 min' }));
         fireEvent.click(screen.getByRole('button', { name: /Usar esta meta: 2 actividades/ }));
         await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('No se pudo guardar tu meta.'));
+    });
+
+    it('opens the plan at the goal of a profile that arrives after the page', () => {
+        mocks.goal = undefined;
+        const { rerender } = renderGuide();
+        mocks.goal = 3;
+        rerender(<MemoryRouter><Guide /></MemoryRouter>);
+        expect(screen.getByRole('tab', { name: '40 min' })).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByText('Es tu meta: 3 actividades al día')).toBeInTheDocument();
     });
 
     it('opens the notebook from its tool', () => {
