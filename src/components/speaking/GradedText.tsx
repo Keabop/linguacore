@@ -15,26 +15,20 @@ interface GradedTextProps {
  * them, so a long sentence wraps instead of widening the page.
  */
 export default function GradedText({ text, matches }: GradedTextProps) {
-    let index = 0;
-    const words = text.trim().split(/\s+/).map(word => ({ word, index: normalizeSpeech(word) ? index++ : null }));
+    let next = 0;
+    // A word that normalizes to nothing (a lone «—») is shown but not graded
+    const words = text.trim().split(/\s+/).map(word => ({ word, matchIndex: normalizeSpeech(word) ? next++ : null }));
     return (
         <p className="text-lg leading-relaxed font-medium break-words">
-            {words.map(({ word, index }, i) => (
-                <Fragment key={i}>
-                    {i > 0 && ' '}
-                    <span
-                        className={
-                            index === null
-                                ? 'text-[var(--color-on-surface)]'
-                                : matches[index]
-                                  ? 'text-[var(--color-success)]'
-                                  : 'text-accent-red underline decoration-wavy'
-                        }
-                    >
-                        {word}
-                    </span>
-                </Fragment>
-            ))}
+            {words.map(({ word, matchIndex }, i) => {
+                const tone = matchIndex === null ? 'text-[var(--color-on-surface)]' : matches[matchIndex] ? 'text-[var(--color-success)]' : 'text-accent-red underline decoration-wavy';
+                return (
+                    <Fragment key={i}>
+                        {i > 0 && ' '}
+                        <span className={tone}>{word}</span>
+                    </Fragment>
+                );
+            })}
         </p>
     );
 }

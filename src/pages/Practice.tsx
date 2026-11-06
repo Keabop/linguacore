@@ -383,11 +383,11 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
     const targetText = prompts[currentPrompt];
 
     const compareWords = () => {
-        const targetWords = normalizeSpeech(targetText).split(/\s+/);
-        const spokenWords = normalizeSpeech(transcript).split(/\s+/);
+        const targetWords = normalizeSpeech(targetText).split(/\s+/).filter(Boolean);
+        const spokenWords = normalizeSpeech(transcript).split(/\s+/).filter(Boolean);
         const matches = targetWords.map((tw, i) => i < spokenWords.length && spokenWords[i] === tw);
         const correct = matches.filter(Boolean).length;
-        return { targetWords, matches, score: targetWords.length > 0 ? Math.round((correct / targetWords.length) * 100) : 0 };
+        return { matches, score: targetWords.length > 0 ? Math.round((correct / targetWords.length) * 100) : 0 };
     };
 
     const result = submitted && transcript ? compareWords() : null;

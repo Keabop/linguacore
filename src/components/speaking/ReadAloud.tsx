@@ -12,9 +12,9 @@ interface Props {
     onComplete: (score: number) => void;
 }
 
-function compareTexts(target: string, spoken: string): { matches: boolean[]; score: number; targetWords: string[] } {
-    const targetWords = normalizeSpeech(target).split(/\s+/);
-    const spokenWords = normalizeSpeech(spoken).split(/\s+/);
+function compareTexts(target: string, spoken: string): { matches: boolean[]; score: number } {
+    const targetWords = normalizeSpeech(target).split(/\s+/).filter(Boolean);
+    const spokenWords = normalizeSpeech(spoken).split(/\s+/).filter(Boolean);
 
     const matches = targetWords.map((tw, i) => {
         if (i < spokenWords.length && spokenWords[i] === tw) return true;
@@ -35,7 +35,7 @@ function compareTexts(target: string, spoken: string): { matches: boolean[]; sco
 
     const correctCount = matches.filter(Boolean).length;
     const score = targetWords.length > 0 ? Math.round((correctCount / targetWords.length) * 100) : 0;
-    return { matches, score, targetWords };
+    return { matches, score };
 }
 
 export default function ReadAloud({ instruction, targetText, onComplete }: Props) {
