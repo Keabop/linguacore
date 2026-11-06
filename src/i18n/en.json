@@ -750,5 +750,8 @@
     "body": "Update to get the latest; your progress stays.",
     "action": "Update",
     "later": "Later"
+  },
+  "glossary": {
+    "example": "Example"
   }
 }

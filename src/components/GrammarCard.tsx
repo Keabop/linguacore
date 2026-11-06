@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import DOMPurify from 'dompurify';
 import { BookOpen, CheckCircle2, Lightbulb } from 'lucide-react';
 import { levelOfId, useLevelContent } from '../data/levels';
 import { useUnitProgress } from '../hooks/useUnitProgress';
+import { getGlossaryEntry } from '../data/glossary';
+import { escapeHtml, glossify } from '../lib/glossify';
+import GlossaryPopover from './GlossaryPopover';
 
 interface GrammarCardProps {
     unitId: string;
@@ -19,6 +23,27 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
     // undefined while the level loads, null for a unit without a card (the level assessment)
     const level = useLevelContent(levelOfId(unitId));
     const card = level ? level.grammarCards.find(gc => gc.unitId === unitId) ?? null : undefined;
+
+    // The first mention of each grammar term, in the explanation or the rules, opens its definition
+    const glossed = useMemo(() => {
+        if (!card) return null;
+        const seen = new Set<string>();
+        return {
+            explanation: glossify(DOMPurify.sanitize(card.explanation), seen),
+            rules: card.rules.map(rule => glossify(escapeHtml(rule), seen)),
+        };
+    }, [card]);
+    const [openTerm, setOpenTerm] = useState<{ id: string; anchor: HTMLElement } | null>(null);
+    const openEntry = openTerm ? getGlossaryEntry(openTerm.id) : undefined;
+    const closeTerm = useCallback(() => setOpenTerm(null), []);
+
+    // One listener for every term: they are buttons inside the explanation's HTML
+    const handleTermClick = (event: MouseEvent<HTMLElement>) => {
+        const term = (event.target as Element).closest<HTMLElement>('button[data-term]');
+        if (!term?.dataset.term) return;
+        const id = term.dataset.term;
+        setOpenTerm(current => (current?.anchor === term ? null : { id, anchor: term }));
+    };
 
     const handleUnderstood = async () => {
         if (saving) return;
@@ -41,11 +66,9 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
     }
 
     // No grammar card for this unit (e.g., assessment units)
-    if (card === null) {
+    if (card === null || !glossed) {
         return null;
     }
-
-    const sanitizedExplanation = DOMPurify.sanitize(card.explanation);
 
     return (
         <motion.div
@@ -68,11 +91,15 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
             </div>
 
             {/* Main card */}
-            <div className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-7 space-y-8">
+            {/* Clicks on a glossary term (a real button, so keyboard works) bubble up here */}
+            <div
+                onClick={handleTermClick}
+                className="bg-[var(--color-card)] border border-[var(--color-outline-subtle)] rounded-2xl p-7 space-y-8"
+            >
                 {/* Explanation (HTML content) */}
                 <div
                     className="grammar-explanation text-[var(--color-on-surface-muted)] text-[0.9375rem] leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: sanitizedExplanation }}
+                    dangerouslySetInnerHTML={{ __html: glossed.explanation }}
                 />
 
                 {/* Examples */}
@@ -131,7 +158,10 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
                                     className="flex items-start gap-3 text-[0.9375rem]"
                                 >
                                     <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" />
-                                    <span className="text-[var(--color-on-surface-muted)] leading-relaxed">{rule}</span>
+                                    <span
+                                        className="text-[var(--color-on-surface-muted)] leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: glossed.rules[i] }}
+                                    />
                                 </motion.li>
                             ))}
                         </ul>
@@ -150,6 +180,10 @@ export default function GrammarCard({ unitId, onComplete }: GrammarCardProps) {
             >
                 {saving ? t('common.loading') : t('grammar.understood')}
             </motion.button>
+
+            {openTerm && openEntry && (
+                <GlossaryPopover entry={openEntry} anchor={openTerm.anchor} onClose={closeTerm} />
+            )}
 
             {/* Inline styles for HTML tables in the explanation */}
             <style>{`

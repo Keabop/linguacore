@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const progress = vi.hoisted(() => ({ markStepComplete: vi.fn(async () => {}) }));
@@ -20,7 +20,7 @@ describe('GrammarCard', () => {
         render(<GrammarCard unitId="a1-u1" onComplete={() => {}} />);
         expect(screen.getByRole('heading', { name: card.title })).toBeInTheDocument();
         expect(screen.getByText('Errores típicos')).toBeInTheDocument();
-        for (const rule of card.rules) expect(screen.getByText(rule)).toBeInTheDocument();
+        for (const rule of card.rules) expect(document.body.textContent).toContain(rule);
         expect(card.examples.every(e => document.body.textContent!.includes(e.split(' → ')[0]))).toBe(true);
     });
 
@@ -39,6 +39,51 @@ describe('GrammarCard', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Entendido' }));
         await waitFor(() => expect(screen.getByRole('button', { name: 'Entendido' })).toBeEnabled());
         expect(onComplete).not.toHaveBeenCalled();
+    });
+
+    it('opens the definition of an underlined term and closes it with Escape', async () => {
+        render(<GrammarCard unitId="a1-u2" onComplete={() => {}} />);
+        const term = screen.getByRole('button', { name: 'que se pueden contar' });
+        expect(term).toHaveAttribute('aria-expanded', 'false');
+
+        fireEvent.click(term);
+        const dialog = await screen.findByRole('dialog', { name: 'Sustantivo contable' });
+        expect(dialog).toHaveTextContent('an apple, two apples');
+        expect(term).toHaveAttribute('aria-expanded', 'true');
+
+        fireEvent.keyDown(document, { key: 'Escape' });
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(term).toHaveAttribute('aria-expanded', 'false');
+        expect(term).toHaveFocus();
+    });
+
+    it('switches to another term, and a second tap on the same term closes it', async () => {
+        render(<GrammarCard unitId="a1-u2" onComplete={() => {}} />);
+        fireEvent.click(screen.getByRole('button', { name: 'sustantivos' }));
+        expect(await screen.findByRole('dialog', { name: 'Sustantivo' })).toBeInTheDocument();
+
+        const singular = screen.getByRole('button', { name: 'singulares' });
+        fireEvent.pointerDown(singular);
+        fireEvent.click(singular);
+        expect(await screen.findByRole('dialog', { name: 'Singular' })).toBeInTheDocument();
+        expect(screen.getAllByRole('dialog')).toHaveLength(1);
+
+        fireEvent.pointerDown(singular);
+        fireEvent.click(singular);
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    });
+
+    it('closes the definition with its close button or a tap outside', async () => {
+        render(<GrammarCard unitId="a1-u2" onComplete={() => {}} />);
+        fireEvent.click(screen.getByRole('button', { name: 'sustantivos' }));
+        const dialog = await screen.findByRole('dialog');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Cerrar' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+        fireEvent.click(screen.getByRole('button', { name: 'sustantivos' }));
+        await screen.findByRole('dialog');
+        fireEvent.pointerDown(screen.getByRole('heading', { name: 'Artículos y demostrativos' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     });
 
     it('shows nothing for a unit without a card (the level assessment)', () => {

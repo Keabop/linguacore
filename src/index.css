@@ -568,6 +568,29 @@ span[data-word].in-deck {
   color: var(--color-primary-light);
 }
 
+/* === GLOSSARY TERMS — a grammar word with a definition (GlossaryPopover) === */
+.gloss-term {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0.25rem;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted var(--color-tertiary-ink);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.22em;
+  transition: background-color 120ms var(--ease-out);
+}
+.gloss-term:hover,
+.gloss-term[aria-expanded="true"] {
+  background: var(--color-tertiary-container);
+  text-decoration-style: solid;
+}
+
 /* === VOCABULARY CHIPS — Pill-shaped === */
 .vocab-chip {
   display: inline-flex;

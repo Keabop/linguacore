@@ -750,5 +750,8 @@
     "body": "Actualiza para tener lo último; tu avance se queda.",
     "action": "Actualizar",
     "later": "Más tarde"
+  },
+  "glossary": {
+    "example": "Ejemplo"
   }
 }
