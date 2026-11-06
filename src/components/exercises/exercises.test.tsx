@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MotionGlobalConfig } from 'framer-motion';
 import type { GrammarExercise } from '../../lib/db';
@@ -116,6 +116,9 @@ describe('ExerciseRunner', () => {
         expect(screen.getByText('1 de 2')).toBeInTheDocument();
         answer('is');
         await screen.findByText('2 de 2', {}, SLOW);
+        // The first exercise leaves with an animation: answer once the second one is on screen
+        await waitFor(() => expect(screen.getAllByRole('button', { name: 'am' })).toHaveLength(1), SLOW);
+        await waitFor(() => expect(screen.getByRole('button', { name: 'am' })).toBeEnabled(), SLOW);
         answer('am');
         await screen.findByText('Puntuación: 50%', {}, SLOW);
         fireEvent.click(screen.getByRole('button', { name: /Finalizar/ }));
@@ -173,7 +176,7 @@ describe('comprehension exercises', () => {
         // jsdom has no speech synthesis
         const onAnswer = vi.fn();
         render(<MultipleChoiceExercise exercise={listen} onAnswer={onAnswer} />);
-        expect(screen.getByText('¿Cuál de estas oraciones dice esto?')).toBeInTheDocument();
+        expect(screen.getByText('¿Cuál dice esto en inglés?')).toBeInTheDocument();
         expect(screen.getByText('Yo soy estudiante.')).toBeInTheDocument();
         // The English sentence appears only as one option among three
         expect(screen.getAllByText('I am a student.')).toHaveLength(1);
@@ -198,6 +201,40 @@ describe('comprehension exercises', () => {
         } finally {
             view.unmount();
             delete (window as { speechSynthesis?: unknown }).speechSynthesis;
+        }
+    });
+
+    it('while the voices load, shows neither the listening nor the reading form', () => {
+        vi.useFakeTimers();
+        Object.defineProperty(window, 'speechSynthesis', {
+            configurable: true,
+            value: { getVoices: () => [], speak: vi.fn(), cancel: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn() },
+        });
+        const view = render(<MultipleChoiceExercise exercise={listen} onAnswer={vi.fn()} />);
+        try {
+            expect(screen.queryByText('Escucha y elige lo que oíste')).not.toBeInTheDocument();
+            expect(screen.queryByText('¿Cuál dice esto en inglés?')).not.toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: 'I am a student.' })).not.toBeInTheDocument();
+            act(() => { vi.advanceTimersByTime(1500); });
+            expect(screen.getByText('¿Cuál dice esto en inglés?')).toBeInTheDocument();
+        } finally {
+            view.unmount();
+            vi.useRealTimers();
+            delete (window as { speechSynthesis?: unknown }).speechSynthesis;
+        }
+    });
+});
+
+describe('AnswerFeedback markup', () => {
+    it('puts no block inside a paragraph when the answer is right', async () => {
+        const { default: AnswerFeedback } = await import('./AnswerFeedback');
+        const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const { container } = render(<AnswerFeedback correct explanation="Bien." onNext={vi.fn()} />);
+        try {
+            expect(container.querySelector('p div')).toBeNull();
+            expect(errors.mock.calls.flat().join(' ')).not.toMatch(/cannot be a descendant/);
+        } finally {
+            errors.mockRestore();
         }
     });
 });

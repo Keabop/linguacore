@@ -15,6 +15,7 @@ export interface FirstStepsLesson {
     id: string;
     title: string;
     intro: string;
+    /** `note`: what to notice in how it sounds, shown apart from what it means. */
     items: Pair[];
     tip?: string;
     /** How the practice asks: the sounds lesson is only listened to. */
@@ -42,6 +43,7 @@ export const firstStepsLessons: FirstStepsLesson[] = [
             { en: 'Good morning!', es: '¡Buenos días!' },
             { en: 'Good afternoon!', es: '¡Buenas tardes!' },
             { en: 'Good night!', es: '¡Buenas noches! (al despedirte)' },
+            { en: 'Good evening!', es: '¡Buenas noches! (al saludar)' },
             { en: 'My name is Rosa.', es: 'Me llamo Rosa.' },
             { en: 'What is your name?', es: '¿Cómo te llamas?' },
             { en: 'Nice to meet you.', es: 'Mucho gusto.' },
@@ -50,7 +52,7 @@ export const firstStepsLessons: FirstStepsLesson[] = [
             { en: 'Goodbye!', es: '¡Adiós!' },
             { en: 'See you tomorrow!', es: '¡Nos vemos mañana!' },
         ],
-        tip: 'En inglés «Good night» sólo se usa para despedirse. Para saludar en la noche se dice «Good evening».',
+        tip: 'En inglés hay dos «buenas noches»: «Good evening» para saludar y «Good night» sólo para despedirse.',
         practice: { meaning: 3, listen: 3 },
         dialogue: [
             { who: 'Ana', en: 'Hello! Good morning.', es: '¡Hola! Buenos días.' },
@@ -132,16 +134,16 @@ export const firstStepsLessons: FirstStepsLesson[] = [
         title: 'Cómo suena el inglés',
         intro: 'En inglés las letras no siempre suenan como en español. Escucha cada palabra y fíjate en la letra marcada.',
         items: [
-            { en: 'house', es: 'casa. La «h» suena como una «j» suave.' },
-            { en: 'hello', es: 'hola. La «h» otra vez suena como «j» suave.' },
-            { en: 'yes', es: 'sí. La «y» suena como en español.' },
-            { en: 'job', es: 'trabajo. La «j» suena como «y» fuerte.' },
-            { en: 'water', es: 'agua. La «w» suena como «u».' },
-            { en: 'three', es: 'tres. La «th» suena con la lengua entre los dientes.' },
-            { en: 'see', es: 'ver. La doble «e» suena como una «i» larga.' },
-            { en: 'food', es: 'comida. La doble «o» suena como una «u» larga.' },
-            { en: 'know', es: 'saber. La «k» del principio no suena.' },
-            { en: 'hour', es: 'hora. Aquí la «h» no suena.' },
+            { en: 'house', es: 'casa', note: 'La «h» suena como una «j» suave.' },
+            { en: 'hello', es: 'hola', note: 'La «h» otra vez suena como «j» suave.' },
+            { en: 'yes', es: 'sí', note: 'La «y» suena como en español.' },
+            { en: 'job', es: 'trabajo', note: 'La «j» suena como «y» fuerte, como en «yo».' },
+            { en: 'water', es: 'agua', note: 'La «w» suena como «u».' },
+            { en: 'three', es: 'tres', note: 'La «th» suena con la lengua entre los dientes.' },
+            { en: 'see', es: 'ver', note: 'La doble «e» suena como una «i» larga.' },
+            { en: 'food', es: 'comida', note: 'La doble «o» suena como una «u» larga.' },
+            { en: 'know', es: 'saber', note: 'La «k» del principio no suena.' },
+            { en: 'hour', es: 'hora', note: 'Aquí la «h» no suena.' },
         ],
         tip: 'No te preocupes si al principio suena raro: escuchar y repetir muchas veces es lo que más ayuda.',
         practice: { meaning: 0, listen: 5 },
@@ -194,3 +196,9 @@ export const firstStepsLessons: FirstStepsLesson[] = [
         repeat: ['Thank you.', "I don't understand.", 'Can you repeat, please?'],
     },
 ];
+
+/** Every word of the lessons' phrases and dialogues, in lower case, for their pronunciation. */
+export function firstStepsWords(): string[] {
+    const texts = firstStepsLessons.flatMap(l => [...l.items.map(i => i.en), ...l.dialogue.map(d => d.en)]);
+    return [...new Set(texts.flatMap(text => text.toLowerCase().replace(/[^a-z' ]/g, ' ').split(/\s+/).filter(Boolean)))].sort();
+}

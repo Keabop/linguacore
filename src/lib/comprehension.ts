@@ -1,10 +1,13 @@
-import type { GrammarCard, GrammarExercise } from './db';
+import type { GrammarCard, GrammarExercise, Story } from './db';
 import { shuffle } from './shuffle';
+import { storySentences } from './storySentences';
 
 /** An English sentence and its Spanish, as the grammar cards write their examples («I am → Yo soy»). */
 export interface Pair {
     en: string;
     es: string;
+    /** Something to notice about it, such as how a letter sounds. */
+    note?: string;
 }
 
 export function examplePairs(card: GrammarCard | undefined): Pair[] {
@@ -14,7 +17,29 @@ export function examplePairs(card: GrammarCard | undefined): Pair[] {
     });
 }
 
-const others = (pairs: Pair[], pair: Pair, key: keyof Pair, count: number) =>
+/**
+ * The sentences of stories with their Spanish, from those translated by hand. Only sentences of 3 to
+ * 12 words: long enough to say something, short enough for an option. A story whose translation
+ * does not line up with its sentences gives none.
+ */
+export function storyPairs(stories: Story[]): Pair[] {
+    return stories.flatMap(story => {
+        const spanish = story.translation?.sentences;
+        const english = storySentences(story.content);
+        if (!spanish || spanish.length !== english.length) return [];
+        return english.flatMap((en, i) => {
+            const words = en.split(/\s+/).length;
+            return words >= 3 && words <= 12 && spanish[i]?.trim() ? [{ en, es: spanish[i].trim() }] : [];
+        });
+    });
+}
+
+// The period that ends an explanation, unless the sentence quoted already ends it
+const closing = (text: string) => (/[.!?…)]$/.test(text) ? '' : '.');
+
+const withNote = (text: string, pair: Pair) => (pair.note ? `${text} ${pair.note}` : text);
+
+const others = (pairs: Pair[], pair: Pair, key: 'en' | 'es', count: number) =>
     shuffle(pairs.filter(p => p[key] !== pair[key]).map(p => p[key])).slice(0, count);
 
 /**
@@ -32,7 +57,7 @@ export function comprehensionExercises(pairs: Pair[], unitId: string, count = { 
         question: pair.en,
         correctAnswer: pair.es,
         options: [pair.es, ...others(pairs, pair, 'es', 2)],
-        explanation: `«${pair.en}» = «${pair.es}».`,
+        explanation: withNote(`«${pair.en}» = «${pair.es}»${closing(pair.es)}`, pair),
     }));
     const listen = picked.slice(count.meaning, count.meaning + count.listen).map((pair, i): GrammarExercise => ({
         id: `${unitId}-listen-${i}`,
@@ -41,7 +66,7 @@ export function comprehensionExercises(pairs: Pair[], unitId: string, count = { 
         question: pair.en,
         correctAnswer: pair.en,
         options: [pair.en, ...others(pairs, pair, 'en', 2)],
-        explanation: `Se oye «${pair.en}»: ${pair.es}.`,
+        explanation: withNote(`Se oye «${pair.en}»: ${pair.es}${closing(pair.es)}`, pair),
         meaning: pair.es,
     }));
     return [...meaning, ...listen];

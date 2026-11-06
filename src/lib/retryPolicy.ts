@@ -41,7 +41,8 @@ export interface ReviewItem {
 
 /** Exercises answered wrong: the question, the right answer and its explanation. */
 export function fromExercises(missed: GrammarExercise[]): ReviewItem[] {
-    return missed.map(e => ({ prompt: e.question, right: e.correctAnswer, why: e.explanation }));
+    // A listening item asks with the very sentence it wants: it is shown once, as the answer
+    return missed.map(e => ({ prompt: e.question === e.correctAnswer ? undefined : e.question, right: e.correctAnswer, why: e.explanation }));
 }
 
 /** A writing evaluation: its corrections, or the note of its weakest area when it has none. */

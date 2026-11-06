@@ -29,6 +29,7 @@ import QuestionView from '../components/exam/QuestionView';
 import PassageView from '../components/exam/PassageView';
 import BackButton from '../components/ui/BackButton';
 import NoEnglishVoices from '../components/ui/NoEnglishVoices';
+import { unitTopic } from '../data/curriculum/unitTitles';
 
 interface LevelAssessmentProps {
     level: CEFRLevel;
@@ -180,7 +181,7 @@ export default function LevelAssessment({ level, unitId, onComplete }: LevelAsse
         if (result.passed) {
             setState('passed');
         } else {
-            const topicOf = new Map(units.map(u => [u.id, u.grammarTopic]));
+            const topicOf = new Map(units.map(u => [u.id, unitTopic(u)]));
             setWeakTopics(result.weakUnits.filter(u => topicOf.has(u)).map(u => ({ unitId: u, grammarTopic: topicOf.get(u)! })));
             setState('failed');
         }

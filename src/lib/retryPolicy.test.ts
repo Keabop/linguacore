@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PASS_SCORE, fromWriting, retryVerdict, settleRound, shortReview } from './retryPolicy';
+import { PASS_SCORE, fromExercises, fromWriting, retryVerdict, settleRound, shortReview } from './retryPolicy';
 
 describe('retryVerdict', () => {
     it('passes at the mark of each part', () => {
@@ -77,5 +77,13 @@ describe('fromWriting', () => {
         const second = settleRound('writing', first.results, [{ id: 'a', score: null, review: [] }], 2);
         expect(second.score).toBe(40);
         expect(second.verdict).toBe('may-continue');
+    });
+});
+
+describe('fromExercises', () => {
+    it('shows a listening item once: its sentence is the answer, not also the prompt', () => {
+        const [item] = fromExercises([{ id: 'l', unitId: 'a1-u0', type: 'listen-choice', question: 'three', correctAnswer: 'three', explanation: 'Se oye «three»: tres.' }]);
+        expect(item.prompt).toBeUndefined();
+        expect(item.right).toBe('three');
     });
 });

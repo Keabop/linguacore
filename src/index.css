@@ -722,6 +722,7 @@ span[data-word].in-deck {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   padding: 8px 16px;
   border-radius: 9999px;
   font-size: 0.8125rem;
@@ -1565,7 +1566,7 @@ body.has-garden3d .main-content-inner > * { pointer-events: auto; }
 
 /* A speaker next to English text: every word and example can be heard */
 .speak-button {
-  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: 999px;
   color: var(--color-primary); background: color-mix(in oklch, var(--color-primary) 10%, transparent);
   transition: background-color var(--dur-short) var(--ease-out);
 }

@@ -6,6 +6,7 @@ import { Rating } from '../lib/fsrs';
 import { type ReviewDepth } from '../hooks/useSkillCards';
 import { CheckCircle2, XCircle, Lightbulb, ArrowRight } from 'lucide-react';
 import { answersMatch } from '../lib/normalizeAnswer';
+import { skillPrompt } from '../data/grammarLabels';
 
 interface Props {
     skillCard: SkillCard;
@@ -162,7 +163,7 @@ export default function GrammarReview({ skillCard, skill, depth, onComplete }: P
                     exit={{ opacity: 0, x: -30 }}
                     className="space-y-6"
                 >
-                    <p className="text-base font-semibold leading-relaxed">{currentExercise.prompt}</p>
+                    <p className="text-base font-semibold leading-relaxed">{skillPrompt(currentExercise.prompt, skill.unitId)}</p>
 
                     {/* Options-based exercise */}
                     {currentExercise.options && currentExercise.options.length > 0 ? (

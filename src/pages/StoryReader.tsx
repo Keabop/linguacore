@@ -226,7 +226,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         [staticStory, sentences],
     );
     const playback = useStoryPlayback({ sentences, level: story?.level ?? 'A1', accent, audio: recording });
-    const { isPlaying, currentIndex: currentSentenceIdx, rate: playbackRate, setRate: setPlaybackRate, seek: seekSentence } = playback;
+    const { isPlaying, currentIndex: currentSentenceIdx, rate: playbackRate, setRate: setPlaybackRate, seek: seekSentence, playSentence } = playback;
 
     // --- Sentence Highlighting and Auto-Scroll ---
     useEffect(() => {
@@ -296,19 +296,25 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         
         // Check if sentence span was clicked to jump index
         const sentenceElement = target.closest('.story-sentence');
+        const wordId = target.getAttribute('data-word');
         if (sentenceElement) {
             const sIdx = parseInt(sentenceElement.getAttribute('data-sentence-idx') || '-1', 10);
-            if (sIdx !== -1 && sIdx !== currentSentenceIdx) seekSentence(sIdx);
+            // A sentence is heard when tapped; a word on it opens its card and only moves there
+            if (sIdx !== -1 && !wordId) {
+                // The microphone would take the phone's own voice for the learner's
+                if (isListening) stopListening();
+                playSentence(sIdx);
+            }
+            else if (sIdx !== -1 && sIdx !== currentSentenceIdx) seekSentence(sIdx);
         }
 
-        const wordId = target.getAttribute('data-word');
         if (!wordId) return;
 
         const vocab = (isAIStory ? vocabMap.get(wordId) : vocabulary?.get(wordId)) as Vocabulary | undefined;
         const sentence = parseInt(sentenceElement?.getAttribute('data-sentence-idx') ?? '-1', 10);
         setWordPlace(sentence >= 0 ? { sentence, gloss: target.getAttribute('data-gloss') } : null);
         if (vocab) setSelectedWord(vocab);
-    }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory, vocabulary]);
+    }, [currentSentenceIdx, seekSentence, playSentence, isListening, stopListening, vocabMap, isAIStory, vocabulary]);
 
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
@@ -762,81 +768,91 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                 )}
             </AnimatePresence>, document.body)}
 
-            {/* Floating Audiobook Player Bar */}
-            <div className="fixed bottom-6 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)]/90 rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 pb-8 sm:pb-4">
+            {/* Floating audiobook player: one row of controls, so it covers as little text as it can */}
+            <div className="fixed bottom-4 left-4 right-4 z-[50] max-w-lg mx-auto bg-[var(--color-card)] rounded-[var(--radius-lg)] p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-float)] border border-[var(--color-surface-container-high)] flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
                 {!playback.usingRecording && <NoEnglishVoices />}
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-[var(--color-primary)] font-bold">Modo Audiolibro</p>
-                        <p className="text-xs text-[var(--color-on-surface)] truncate font-medium">
-                            {currentSentenceIdx !== -1 ? sentences[currentSentenceIdx] : 'Selecciona una oración para comenzar'}
+                {/* On a phone the highlighted sentence is the text itself: only what it means, when the text hides it */}
+                <div className={`min-w-0 ${showSpanish ? 'hidden sm:block' : ''}`}>
+                    <p className="hidden sm:block text-xs text-[var(--color-on-surface)] truncate font-medium" lang="en">
+                        {currentSentenceIdx !== -1 ? sentences[currentSentenceIdx] : t('reader.playerHint')}
+                    </p>
+                    {currentSentenceIdx !== -1 && translation?.sentences[currentSentenceIdx] ? (
+                        <p className="text-xs text-[var(--color-on-surface-muted)] line-clamp-2" lang="es">
+                            {translation.sentences[currentSentenceIdx]}
                         </p>
-                        {/* A tapped sentence says what it means, also with the Spanish hidden in the text */}
-                        {currentSentenceIdx !== -1 && translation?.sentences[currentSentenceIdx] && (
-                            <p className="text-xs text-[var(--color-on-surface-muted)] line-clamp-2" lang="es">
-                                {translation.sentences[currentSentenceIdx]}
-                            </p>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Accent Selector */}
+                    ) : (
+                        <p className="sm:hidden text-xs text-[var(--color-on-surface-muted)]">{t('reader.playerHint')}</p>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
                         <button
+                            type="button"
+                            onClick={handlePrevSentence}
+                            disabled={currentSentenceIdx <= 0}
+                            aria-label={t('reader.previousSentence')}
+                            className="size-11 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+                        >
+                            <SkipBack className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handlePlayPause}
+                            aria-label={isPlaying ? t('reader.pause') : t('reader.play')}
+                            className="size-12 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
+                        >
+                            {isPlaying ? <Pause className="w-5 h-5 fill-current" aria-hidden="true" /> : <Play className="w-5 h-5 fill-current translate-x-0.5" aria-hidden="true" />}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleNextSentence}
+                            disabled={currentSentenceIdx === -1 || currentSentenceIdx >= sentences.length - 1}
+                            aria-label={t('reader.nextSentence')}
+                            className="size-11 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+                        >
+                            <SkipForward className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <button
+                            type="button"
                             onClick={() => {
                                 const next = accent === 'US' ? 'UK' : accent === 'UK' ? 'AU' : 'US';
                                 setAccent(next);
                             }}
-                            className="w-14 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
-                            title="Acento del sintetizador"
+                            className="h-11 w-12 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[11px] font-black transition-all cursor-pointer flex items-center justify-center"
+                            aria-label={t('reader.accent', { accent })}
+                            title={t('reader.accent', { accent })}
                         >
                             {accent}
                         </button>
-
                         <button
+                            type="button"
                             onClick={() => {
                                 setPlaybackRate(prev => prev === 0.75 ? 1 : prev === 1 ? 1.25 : 0.75);
                             }}
-                            className="w-8 h-8 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[10px] font-black transition-all cursor-pointer"
-                            title="Velocidad de reproducción"
+                            className="size-11 rounded-xl bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] text-[11px] font-black transition-all cursor-pointer"
+                            aria-label={t('reader.speed', { rate: playbackRate })}
+                            title={t('reader.speed', { rate: playbackRate })}
                         >
                             {playbackRate}x
                         </button>
                         <button
+                            type="button"
                             onClick={handleToggleShadowing}
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-                                showShadowing 
-                                    ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-md' 
+                            aria-pressed={showShadowing}
+                            aria-label={t('reader.shadowing')}
+                            title={t('reader.shadowing')}
+                            className={`size-11 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                                showShadowing
+                                    ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] shadow-md'
                                     : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)]'
                             }`}
-                            title="Practicar Shadowing"
                         >
-                            <Mic className="w-4 h-4" />
+                            <Mic className="w-4 h-4" aria-hidden="true" />
                         </button>
                     </div>
-                </div>
-                
-                <div className="flex items-center justify-center gap-4">
-                    <button
-                        onClick={handlePrevSentence}
-                        disabled={currentSentenceIdx <= 0}
-                        className="p-2.5 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
-                    >
-                        <SkipBack className="w-4 h-4" />
-                    </button>
-                    
-                    <button
-                        onClick={handlePlayPause}
-                        className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center shadow-md active:scale-95 hover:shadow-lg transition-all cursor-pointer"
-                    >
-                        {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current translate-x-0.5" />}
-                    </button>
-                    
-                    <button
-                        onClick={handleNextSentence}
-                        disabled={currentSentenceIdx === -1 || currentSentenceIdx >= sentences.length - 1}
-                        className="p-2.5 rounded-full bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-on-surface)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
-                    >
-                        <SkipForward className="w-4 h-4" />
-                    </button>
                 </div>
             </div>
 

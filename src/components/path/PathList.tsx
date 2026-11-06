@@ -9,6 +9,7 @@ import type { SpeciesId } from '../garden/species';
 import Plant from '../garden/Plant';
 import Garden from '../garden/Garden';
 import UnitDetails, { unitAction, unitSteps } from './UnitDetails';
+import { unitTitle, unitTopic } from '../../data/curriculum/unitTitles';
 
 interface Props {
     level: CEFRLevel;
@@ -96,9 +97,9 @@ export default function PathList({ level, units, states, progress, species, open
                                             {u.isAssessment ? t('garden3d.final') : t('garden3d.unit', { n: u.unitNumber })} · <span className="path-plot-status">{t(`pathView.status.${s}`)}</span>
                                         </span>
                                         <span className="block font-display text-lg font-extrabold leading-snug tracking-[-0.02em]">
-                                            {u.isAssessment ? t('garden3d.examTitle') : u.title}
+                                            {u.isAssessment ? t('garden3d.examTitle') : unitTitle(u)}
                                         </span>
-                                        {!u.isAssessment && <span className="block text-sm text-[var(--color-on-surface-muted)]">{u.grammarTopic}</span>}
+                                        {!u.isAssessment && <span className="block text-sm text-[var(--color-on-surface-muted)]">{unitTopic(u)}</span>}
                                     </span>
                                     {!u.isAssessment && (
                                         <span className="path-pips" role="img" aria-label={t('pathView.stepsDone', { done: steps.filter(x => x.done).length, total: steps.length })}>

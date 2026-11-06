@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, RefreshCw, PenLine, Mic, Trophy, ChevronRight, Sparkles, Check } from 'lucide-react';
 import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db';
 import { allUnits } from '../data/curriculum/units';
+import { skillPrompt } from '../data/grammarLabels';
 import { levelOfId, useLevelContent } from '../data/levels';
 import { savedIdsOf, vocabularyAliases } from '../data/vocabulary/aliases';
 import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
@@ -31,11 +32,12 @@ import LevelBadge from '../components/ui/LevelBadge';
 import { useNoteContext } from '../components/notebook/NotebookContext';
 import RetryReview from '../components/RetryReview';
 import { useSessionState } from '../hooks/useSessionState';
-import { comprehensionExercises, examplePairs } from '../lib/comprehension';
+import { comprehensionExercises, examplePairs, storyPairs } from '../lib/comprehension';
 import SpeakButton from '../components/ui/SpeakButton';
 import { speakEnglish } from '../lib/speakEnglish';
 import { soundsLike } from '../lib/soundsLike';
 import { PASS_SCORE, fromExercises, retryVerdict, shortReview, type ReviewItem } from '../lib/retryPolicy';
+import { unitTitle, unitTopic } from '../data/curriculum/unitTitles';
 
 /* ===== Step metadata ===== */
 
@@ -121,7 +123,7 @@ export default function UnitFlow() {
     // Notes written here belong to the unit
     useNoteContext(unit && {
         key: `unit:${unit.id}`,
-        label: `${t('path.unit')} ${unit.unitNumber} · ${unit.title}`,
+        label: `${t('path.unit')} ${unit.unitNumber} · ${unitTitle(unit)}`,
         path: `/path/${unit.id}`,
     });
     // Only this unit's level is downloaded (src/data/levels), with its deck from the start
@@ -149,14 +151,20 @@ export default function UnitFlow() {
     const [checkpointKey, setCheckpointKey] = useState(0);
 
     // Checkpoint exercise subset — must be above early returns to satisfy Rules of Hooks
-    // The checkpoint checks the unit with items the learner has not just answered: the unit's
-    // review-skill exercises. Units without skills fall back to their own exercises.
+    // The checkpoint checks the unit with items the learner has not just answered: a few of the
+    // unit's review-skill exercises, and above all what sentences of its stories mean. Those are not
+    // on the grammar card, so they are answered by understanding, not by copying its pattern.
+    // Units without skills or translated stories fall back to their own exercises and examples.
     const checkpointExercises = useMemo(() => {
         const fresh = unitId && content ? skillCheckpointExercises(unitId, content.skills) : [];
         const pool = fresh.length >= 5 ? fresh : unitExercises ?? [];
-        const understanding = comprehensionExercises(unitPairs, `${unitId}-checkpoint`, { meaning: 1, listen: 1 });
-        return shuffle([...shuffle(pool).slice(0, Math.min(5, pool.length)), ...understanding]);
-    }, [unitId, unitExercises, unitPairs, content, checkpointKey]); // eslint-disable-line react-hooks/exhaustive-deps
+        const sentences = storyPairs(unitStories);
+        const understanding = sentences.length >= 6
+            ? comprehensionExercises(sentences, `${unitId}-checkpoint`, { meaning: 4, listen: 0 })
+            : comprehensionExercises(unitPairs, `${unitId}-checkpoint`, { meaning: 2, listen: 0 });
+        const grammar = understanding.length >= 4 ? 3 : 5;
+        return shuffle([...shuffle(pool).slice(0, Math.min(grammar, pool.length)), ...understanding]);
+    }, [unitId, unitExercises, unitPairs, unitStories, content, checkpointKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Loading state: the progress, or the content of a lesson unit's level
     if (isLoading || (unit && !unit.isAssessment && !content)) {
@@ -208,7 +216,7 @@ export default function UnitFlow() {
                                 >
                                     <span className="min-w-0">
                                         <span className="block text-xs font-bold text-[var(--color-on-surface-muted)]">{t('path.unit')} {u.unitNumber}</span>
-                                        <span className="block text-sm font-bold truncate">{u.title}</span>
+                                        <span className="block text-sm font-bold truncate">{unitTitle(u)}</span>
                                     </span>
                                     <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-tertiary-ink)]">
                                         <Mic className="w-4 h-4" aria-hidden="true" />{t('path.speakingPending')}
@@ -419,10 +427,10 @@ export default function UnitFlow() {
                 className="space-y-6"
             >
                 <PageHead
-                    title={unit.title}
+                    title={unitTitle(unit)}
                     meta={[
                         `${t('path.unit')} ${unit.unitNumber}`,
-                        unit.grammarTopic,
+                        unitTopic(unit),
                         <LevelBadge key="level" level={unit.level} size="compact" withStage />,
                     ]}
                 />
@@ -469,7 +477,7 @@ function skillCheckpointExercises(unitId: string, skills: GrammarSkill[]): Gramm
             return { id, unitId, type: 'word-order', question: 'Ordena para formar una oración:', correctAnswer: e.answer, scrambledWords: shuffle(e.answer.split(' ')), explanation: e.explanation };
         }
         // Skill fill-blanks come with options, so they are answered by choosing
-        return { id, unitId, type: e.options ? 'multiple-choice' : 'fill-blank', question: e.prompt, correctAnswer: e.answer, options: e.options, explanation: e.explanation };
+        return { id, unitId, type: e.options ? 'multiple-choice' : 'fill-blank', question: skillPrompt(e.prompt, unitId), correctAnswer: e.answer, options: e.options, explanation: e.explanation };
     }));
 }
 

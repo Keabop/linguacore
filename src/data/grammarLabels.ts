@@ -84,3 +84,50 @@ const LABELS: Record<string, string> = {
 
 /** In Spanish when the interface is; with the interface in English, the prompt's own name. */
 export const grammarLabel = (tag: string): string => (i18n.language?.startsWith('en') ? tag : LABELS[tag] ?? tag);
+
+// The instructions of the A1 and A2 review exercises, written in English, in Spanish
+const PROMPTS: Record<string, string> = {
+    'Which is correct?': '¿Cuál es correcta?',
+    'Which sentence is correct?': '¿Qué oración es correcta?',
+    'Which spelling is correct?': '¿Cuál se escribe bien?',
+    'Which is a correct question?': '¿Cuál es una pregunta correcta?',
+    'Which question is correct?': '¿Qué pregunta es correcta?',
+    'Which is a correct imperative?': '¿Cuál es una orden correcta?',
+    'Which is uncountable?': '¿Cuál no se puede contar?',
+    'Which noun is countable?': '¿Qué sustantivo se puede contar?',
+    'Which gives advice?': '¿Cuál da un consejo?',
+    'Which expresses a future plan?': '¿Cuál dice un plan a futuro?',
+    'Which word has an extra syllable when you add -ed?': '¿Qué palabra gana una sílaba al ponerle -ed?',
+    'Where does the adverb go?': '¿Dónde va el adverbio?',
+    'Where is the picture?': '¿Dónde está el cuadro (the picture)?',
+    'A teacher says to the class:': 'Una maestra le dice al grupo:',
+    'You hold two photos. You say:': 'Tienes dos fotos en la mano. Dices:',
+    'You point to a car across the street. You say:': 'Señalas un carro al otro lado de la calle. Dices:',
+};
+
+const PROMPT_PATTERNS: [RegExp, (...parts: string[]) => string][] = [
+    [/^Arrange: (.+)$/, words => `Ordena: ${words}`],
+    [/^How do you answer: "(.+)"\??$/, question => `¿Cómo respondes a «${question}»?`],
+    [/^How is -ed pronounced in "(.+)"\?$/, word => `¿Cómo suena la -ed en «${word}»?`],
+    [/^The -ed in "(.+)" sounds like:$/, word => `La -ed de «${word}» suena como:`],
+    [/^What is the past of "(.+)"\?$/, word => `¿Cuál es el pasado de «${word}»?`],
+    [/^What is the full form of "(.+)"\?$/, word => `¿Cuál es la forma completa de «${word}»?`],
+    [/^Select the correct contraction for "(.+)"$/, words => `Elige la contracción de «${words}»`],
+    [/^Which means the same as "(.+)"\?$/, sentence => `¿Cuál significa lo mismo que «${sentence}»?`],
+    [/^Which means "(.+)"\?$/, meaning => `¿Cuál significa «${meaning}»?`],
+];
+
+/**
+ * The instruction of a review exercise of `unitId`, in Spanish when the interface is and the unit is
+ * A1 or A2; B1 and B2 keep their English. A prompt that is the English sentence itself («She ___ a
+ * teacher.») stays as it is.
+ */
+export function skillPrompt(prompt: string, unitId: string): string {
+    if (i18n.language?.startsWith('en') || !/^a[12]-/.test(unitId)) return prompt;
+    if (PROMPTS[prompt]) return PROMPTS[prompt];
+    for (const [pattern, write] of PROMPT_PATTERNS) {
+        const match = prompt.match(pattern);
+        if (match) return write(...match.slice(1));
+    }
+    return prompt;
+}

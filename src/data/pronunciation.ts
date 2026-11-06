@@ -45,6 +45,14 @@ export const MANUAL_IPA: Record<string, string> = {
     genuine: '/ˈdʒenjuɪn/',
     stomachache: '/ˈstʌməkeɪk/',
     toothache: '/ˈtuːθeɪk/',
+    // Words of the «Primeros pasos» phrases that the dictionary file leaves out
+    "don't": '/doʊnt/',
+    english: '/ˈɪŋɡlɪʃ/',
+    goodbye: '/ɡʊdˈbaɪ/',
+    zero: '/ˈzɪroʊ/',
+    ana: '/ˈænə/',
+    rosa: '/ˈroʊzə/',
+    tom: '/tɑːm/',
 };
 
 const strip = (ipa: string) => ipa.replace(/^\/|\/$/g, '');

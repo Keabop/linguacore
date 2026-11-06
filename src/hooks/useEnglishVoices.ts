@@ -5,18 +5,25 @@ import { englishVoices } from '../lib/voices';
 export const VOICES_WAIT_MS = 1500;
 
 /**
- * Whether the browser has English voices. `ready` turns true once they load or the wait is over,
+ * Whether the browser has English voices. `ready` turns true once the voices load or the wait is over,
  * so a missing voice is only reported when it is really missing; `supported` is false when the
  * browser can't read aloud at all, and then installing a voice won't help.
  */
 export function useEnglishVoices(): { ready: boolean; hasEnglish: boolean; supported: boolean } {
     const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>(() => (supported ? englishVoices(window.speechSynthesis.getVoices()) : []));
+    // Any voice at all means the list has loaded: a phone with only Spanish voices has no English
+    // one to wait for
+    const [loaded, setLoaded] = useState(() => supported && window.speechSynthesis.getVoices().length > 0);
     const [waited, setWaited] = useState(!supported);
 
     useEffect(() => {
         if (!supported) return;
-        const load = () => setVoices(englishVoices(window.speechSynthesis.getVoices()));
+        const load = () => {
+            const all = window.speechSynthesis.getVoices();
+            setVoices(englishVoices(all));
+            if (all.length) setLoaded(true);
+        };
         load();
         window.speechSynthesis.addEventListener('voiceschanged', load);
         const timer = setTimeout(() => {
@@ -29,5 +36,5 @@ export function useEnglishVoices(): { ready: boolean; hasEnglish: boolean; suppo
         };
     }, [supported]);
 
-    return { ready: waited || voices.length > 0, hasEnglish: voices.length > 0, supported };
+    return { ready: waited || loaded, hasEnglish: voices.length > 0, supported };
 }

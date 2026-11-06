@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { comprehensionExercises, examplePairs } from './comprehension';
+import { comprehensionExercises, examplePairs, storyPairs } from './comprehension';
 import { a1GrammarCards } from '../data/curriculum/a1';
 import { allGrammarCards } from '../data';
 
@@ -28,5 +28,28 @@ describe('comprehension exercises', () => {
 
     it('every grammar card has enough examples for them', () => {
         for (const card of allGrammarCards) expect(examplePairs(card).length, card.unitId).toBeGreaterThanOrEqual(4);
+    });
+});
+
+describe('storyPairs', () => {
+    it('gives every A1 and A2 unit with stories enough sentences for its checkpoint', async () => {
+        const levels = [(await import('../data/levels/a1')).default, (await import('../data/levels/a2')).default];
+        for (const level of levels) {
+            const units = new Set(level.stories.map(s => s.unitId).filter(Boolean));
+            for (const unitId of units) {
+                const pairs = storyPairs(level.stories.filter(s => s.unitId === unitId));
+                expect(pairs.length, unitId).toBeGreaterThanOrEqual(6);
+            }
+        }
+    });
+
+    it('leaves out a story whose translation does not line up', () => {
+        const story = { id: 's', level: 'A1', title: 'S', content: '<p>I am Ana. She is my sister. We are at home.</p>', wordCount: 9, estimatedMinutes: 1 } as const;
+        expect(storyPairs([{ ...story, translation: { sentences: ['Soy Ana.', 'Ella es mi hermana.'] } }])).toEqual([]);
+        expect(storyPairs([{ ...story, translation: { sentences: ['Soy Ana.', 'Ella es mi hermana.', 'Estamos en casa.'] } }])).toEqual([
+            { en: 'I am Ana.', es: 'Soy Ana.' },
+            { en: 'She is my sister.', es: 'Ella es mi hermana.' },
+            { en: 'We are at home.', es: 'Estamos en casa.' },
+        ]);
     });
 });

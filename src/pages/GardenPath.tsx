@@ -16,6 +16,7 @@ import FirstStepsCard from '../components/FirstStepsCard';
 import UnitSheet from '../components/path/UnitSheet';
 import UnitDetails, { unitAction } from '../components/path/UnitDetails';
 import PageLoader from '../components/PageLoader';
+import { unitTitle, unitTopic } from '../data/curriculum/unitTitles';
 
 // three.js comes with the garden only
 const Garden3D = lazy(() => import('../components/garden3d/Garden3D'));
@@ -155,8 +156,8 @@ export default function GardenPath() {
             {sel && selected !== null && (
                 <UnitSheet
                     label={sel.isAssessment ? t('garden3d.final') : t('garden3d.unit', { n: sel.unitNumber })}
-                    title={sel.isAssessment ? t('garden3d.examTitle') : sel.title}
-                    subtitle={sel.isAssessment ? undefined : sel.grammarTopic}
+                    title={sel.isAssessment ? t('garden3d.examTitle') : unitTitle(sel)}
+                    subtitle={sel.isAssessment ? undefined : unitTopic(sel)}
                     status={t(`pathView.status.${states[selected]}`)}
                     onClose={closeSheet}
                 >

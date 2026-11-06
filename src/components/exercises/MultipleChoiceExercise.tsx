@@ -25,7 +25,10 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
     // With no English voice there is nothing to hear: it asks which sentence means the Spanish
     // instead, so the answer is neither guessed nor copied from the screen
     const noVoice = listenItem && voices.ready && !voices.hasEnglish && !!exercise.meaning;
-    const listening = listenItem && !noVoice;
+    // Until it is known whether there is a voice, a listening exercise shows neither form: no
+    // flash of «Escucha y elige» that turns into a reading question
+    const waiting = listenItem && !voices.ready;
+    const listening = listenItem && !waiting && !noVoice;
 
     // A listening exercise plays its sentence as it appears; it can be heard again any time
     useEffect(() => {
@@ -111,6 +114,9 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                         )}
                     </div>
                 )}
+                {waiting && (
+                    <p className="text-sm text-[var(--color-on-surface-muted)]" role="status">{t('common.loading')}</p>
+                )}
                 {noVoice && (
                     <div className="space-y-3">
                         <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('exercises.whichMeans')}</p>
@@ -121,7 +127,7 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
 
             {/* Options */}
             <div className="space-y-5">
-                {options.map((option, i) => (
+                {!waiting && options.map((option, i) => (
                     <motion.button
                         key={option}
                         initial={{ opacity: 0, y: 12 }}

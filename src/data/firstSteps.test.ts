@@ -62,3 +62,23 @@ describe('grammar labels', () => {
         for (const tag of tags) expect(grammarLabel(tag), tag).not.toBe(tag);
     });
 });
+
+describe('Primeros pasos, how each phrase sounds', () => {
+    it('has the IPA of every word, generated up to date (npm run content:phonetics)', async () => {
+        const { firstStepsWords } = await import('./firstSteps');
+        const { firstStepsPhonetics } = await import('./vocabulary/phonetics/firstSteps');
+        const { ipaOf } = await import('./pronunciation');
+        const pronunciations = (await import('../../content/reference/pronunciations.json')).default;
+        expect(Object.keys(firstStepsPhonetics).sort()).toEqual(firstStepsWords());
+        for (const word of firstStepsWords()) expect(firstStepsPhonetics[word], word).toBe(ipaOf(word, pronunciations));
+    });
+
+    it('shows how every phrase sounds, numbers and days included', async () => {
+        const { phraseSounds } = await import('../lib/phraseSounds');
+        for (const lesson of firstStepsLessons) for (const item of lesson.items) expect(phraseSounds(item.en), item.en).not.toBe('');
+    });
+
+    it('keeps what a phrase means apart from what to notice in it', () => {
+        for (const lesson of firstStepsLessons) for (const item of lesson.items) expect(item.es, item.en).not.toMatch(/«/);
+    });
+});

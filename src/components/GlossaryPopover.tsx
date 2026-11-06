@@ -125,7 +125,10 @@ export default function GlossaryPopover({ entry, anchor, onClose, onSaveToNotebo
                 </p>
                 <p className="rounded-[var(--radius-sm)] bg-[var(--color-tertiary-container)] px-3 py-2 text-[0.9375rem] font-medium leading-snug text-[var(--color-on-surface)]">
                     <span className="sr-only">{t('glossary.example')}: </span>
-                    {entry.example}
+                    <span lang="en">{entry.example}</span>
+                    {entry.exampleEs && (
+                        <span className="block pt-0.5 text-sm font-normal text-[var(--color-on-surface-muted)]" lang="es">{entry.exampleEs}</span>
+                    )}
                 </p>
                 {onSaveToNotebook && (
                     <button

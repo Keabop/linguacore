@@ -16,8 +16,14 @@ describe('NoEnglishVoices', () => {
     beforeEach(() => vi.useFakeTimers());
     afterEach(() => vi.useRealTimers());
 
-    it('explains how to install a voice once the browser shows it has no English one', () => {
+    it('explains how to install a voice as soon as the loaded voices have no English one', () => {
         mockVoices([voice('Helena', 'es-ES')]);
+        render(<NoEnglishVoices />);
+        expect(screen.getByRole('status')).toHaveTextContent('Windows');
+    });
+
+    it('waits for the voices before saying there is none', () => {
+        mockVoices([]);
         render(<NoEnglishVoices />);
         expect(screen.queryByRole('status')).toBeNull();
         act(() => { vi.advanceTimersByTime(VOICES_WAIT_MS); });

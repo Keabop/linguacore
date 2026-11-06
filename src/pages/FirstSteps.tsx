@@ -11,21 +11,13 @@ import SpeakingRunner from '../components/speaking/SpeakingRunner';
 import RetryReview from '../components/RetryReview';
 import { useSessionState } from '../hooks/useSessionState';
 import { firstStepsLessons, FIRST_STEPS_UNIT, type FirstStepsLesson } from '../data/firstSteps';
-import { a1Phonetics } from '../data/vocabulary/phonetics/a1';
+import { phraseSounds } from '../lib/phraseSounds';
 import { useFirstSteps } from '../hooks/useFirstSteps';
 import { comprehensionExercises, guidedWritingExercises } from '../lib/comprehension';
 import { canSpeak, speakLines } from '../lib/speakEnglish';
 import { useCards } from '../hooks/useCards';
 import { PASS_SCORE, fromExercises, retryVerdict, shortReview, type ReviewItem } from '../lib/retryPolicy';
-import { soundsLike } from '../lib/soundsLike';
 import type { GrammarExercise, SpeakingPrompt } from '../lib/db';
-
-/** «Nice to meet you» in Spanish letters, when every word has its IPA in the A1 deck. */
-function phraseSounds(en: string): string {
-    const words = en.toLowerCase().replace(/[^a-z' ]/g, '').split(/\s+/).filter(Boolean);
-    const ipa = words.map(w => a1Phonetics[w]);
-    return ipa.every(Boolean) ? ipa.map(soundsLike).join(' ') : '';
-}
 
 type View = { lesson: FirstStepsLesson; mode: 'learn' | 'practice' | 'repeat' } | null;
 
@@ -128,6 +120,7 @@ function LessonLearn({ lesson, onBack, onPractice }: { lesson: FirstStepsLesson;
                                 <p className="font-bold text-[1.0625rem] text-[var(--color-on-surface)]" lang="en">{item.en}</p>
                                 {sounds && <p className="sounds-like">{t('audio.soundsLike')} <b>{sounds}</b></p>}
                                 <p className="text-sm text-[var(--color-on-surface-muted)]">{item.es}</p>
+                                {item.note && <p className="text-sm text-[var(--color-on-surface)] mt-1">{item.note}</p>}
                             </div>
                         </motion.li>
                     );
