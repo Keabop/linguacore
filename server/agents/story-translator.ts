@@ -1,7 +1,8 @@
 import { generateWithFallback } from '../lib/gemini.js';
-import { b1Stories } from '../../src/data/stories-b1';
-import { b2Stories } from '../../src/data/stories-b2';
-import { storySentences } from '../../src/lib/storySentences';
+// The stories themselves, so the server translates only them (and knows when one has changed)
+import { b1Stories } from '../../src/data/stories-b1.js';
+import { b2Stories } from '../../src/data/stories-b2.js';
+import { storySentences } from '../../src/lib/storySentences.js';
 
 export interface StoryTranslationResponse {
     sentences: string[];
@@ -14,11 +15,28 @@ export interface StoryTranslationResponse {
  */
 export const translatableStory = (storyId: string) => [...b1Stories, ...b2Stories].find(s => s.id === storyId);
 
+/** What gets translated: the story's sentences and questions, as they are today. */
+function translationSource(storyId: string) {
+    const story = translatableStory(storyId);
+    if (!story) return null;
+    return {
+        sentences: storySentences(story.content),
+        questions: (story.questions ?? []).map(q => ({ question: q.question, options: q.options })),
+    };
+}
+
+/**
+ * The cache key's input: the id plus the text itself, so editing a story makes a new translation
+ * instead of serving the old one under sentences that no longer match. Nothing the client sends.
+ */
+export function translationCacheParams(storyId: string) {
+    return { storyId, source: translationSource(storyId) };
+}
+
 export async function translateStory(params: { storyId: string }): Promise<StoryTranslationResponse> {
-    const story = translatableStory(params.storyId);
-    if (!story) throw new Error('Unknown story');
-    const sentences = storySentences(story.content);
-    const questions = (story.questions ?? []).map(q => ({ question: q.question, options: q.options }));
+    const source = translationSource(params.storyId);
+    if (!source) throw new Error('Unknown story');
+    const { sentences, questions } = source;
 
     const prompt = `You translate English stories for Spanish speakers in Mexico who are learning English.
 Translate into natural Mexican Spanish, faithful to the meaning. Keep names as they are.

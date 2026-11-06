@@ -103,7 +103,8 @@
     "translating": "Translating…",
     "translateFailed": "Couldn't get the Spanish of this story. Try again later.",
     "meansHere": "Here it means",
-    "inThisSentence": "In this sentence"
+    "inThisSentence": "In this sentence",
+    "translateLimit": "You've used today's translations on the free plan. You get more tomorrow, or none of these limits with Pro. Stories you already asked for stay in Spanish."
   },
   "storyList": {
     "subtitle": "Explore stories by level",
@@ -305,7 +306,9 @@
     "progressError": "Your level progress could not be checked. Check your connection and try again.",
     "speakingStillPending": "The speaking of this unit is still left: finish it from the path before the end-of-level exam.",
     "stepsLabel": "Unit steps",
-    "stepOf": "Step {{n}} of {{total}}"
+    "stepOf": "Step {{n}} of {{total}}",
+    "checkpointTitle": "Checkpoint",
+    "checkpointLead": "Show what you know. You need at least {{pass}}% to pass."
   },
   "exercises": {
     "title": "Exercises",
@@ -321,7 +324,7 @@
     "autoNext": "When you get it right, it moves on by itself in a few seconds.",
     "whatDoesItMean": "What does it mean?",
     "listenAndChoose": "Listen and choose what you heard",
-    "readAndChoose": "Choose the sentence"
+    "whichMeans": "Which of these sentences says this?"
   },
   "practice": {
     "saveToHistory": "Save to history",
@@ -691,7 +694,8 @@
     "continuePending": "Go on to the checkpoint (speaking pending)",
     "listenInstead": "Meanwhile, practice listening",
     "listenIntro": "Listen to each sentence of the unit and choose the one you heard. No microphone needed.",
-    "listenScore": "Listening practice: {{score}}%. You can do it again any time."
+    "listenScore": "Listening practice: {{score}}%. You can do it again any time.",
+    "cantSpeakNow": "I can't speak right now"
   },
   "writing": {
     "perfect": "Perfect! Your answer matches the model answer.",

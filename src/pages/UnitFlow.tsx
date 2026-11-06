@@ -6,7 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import type { ReadStoryRow } from '../lib/database.types';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, RefreshCw, PenLine, Mic, Trophy, ChevronRight, Sparkles, RotateCcw, Check } from 'lucide-react';
+import { BookOpen, RefreshCw, PenLine, Mic, Trophy, ChevronRight, Sparkles, Check } from 'lucide-react';
 import type { GrammarExercise, GrammarSkill, Story, Vocabulary } from '../lib/db';
 import { allUnits } from '../data/curriculum/units';
 import { levelOfId, useLevelContent } from '../data/levels';
@@ -30,6 +30,7 @@ import PageHead from '../components/ui/PageHead';
 import LevelBadge from '../components/ui/LevelBadge';
 import { useNoteContext } from '../components/notebook/NotebookContext';
 import RetryReview from '../components/RetryReview';
+import { useSessionState } from '../hooks/useSessionState';
 import { comprehensionExercises, examplePairs } from '../lib/comprehension';
 import SpeakButton from '../components/ui/SpeakButton';
 import { speakEnglish } from '../lib/speakEnglish';
@@ -719,42 +720,42 @@ function VocabStep({
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {visible.map(v => (
                                 <div key={v.id} className="relative">
-                                <button
-                                    onClick={() => { if (!flipped.has(v.id)) speakEnglish(v.id); toggleFlip(v.id); }}
-                                    aria-pressed={flipped.has(v.id)}
-                                    className={`
-                                        relative rounded-2xl p-4 text-left transition-all duration-300 min-h-[72px]
-                                        ${flipped.has(v.id)
-                                            ? 'bg-[var(--color-primary)]/10 shadow-[var(--shadow-card)]'
-                                            : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] hover:-translate-y-0.5'
-                                        }
-                                    `}
-                                >
-                                    {!flipped.has(v.id) ? (
-                                        <div className="flex flex-col gap-1">
-                                            <span className="font-bold text-sm text-[var(--color-on-surface)] pr-8">{v.id}</span>
-                                            {v.phonetic && (
-                                                <span className="text-[10px] text-[var(--color-on-surface-muted)]">{v.phonetic}</span>
-                                            )}
-                                            {v.cefrLevel === 'A1' && v.phonetic && (
-                                                <span className="sounds-like">≈ <b>{soundsLike(v.phonetic)}</b></span>
-                                            )}
-                                            {(saved?.inDeck.has(v.id) || saved?.known.has(v.id)) && (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--color-primary)]">
-                                                    <Check className="h-3 w-3" aria-hidden="true" /> {t(saved.inDeck.has(v.id) ? 'unitFlow.inReview' : 'unitFlow.alreadyKnown')}
+                                    <button
+                                        onClick={() => { if (!flipped.has(v.id)) speakEnglish(v.id); toggleFlip(v.id); }}
+                                        aria-pressed={flipped.has(v.id)}
+                                        className={`
+                                            relative rounded-2xl p-4 text-left transition-all duration-300 min-h-[72px]
+                                            ${flipped.has(v.id)
+                                                ? 'bg-[var(--color-primary)]/10 shadow-[var(--shadow-card)]'
+                                                : 'bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-highest)] hover:shadow-[var(--shadow-card)] hover:-translate-y-0.5'
+                                            }
+                                        `}
+                                    >
+                                        {!flipped.has(v.id) ? (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-bold text-sm text-[var(--color-on-surface)] pr-8">{v.id}</span>
+                                                {v.phonetic && (
+                                                    <span className="text-[10px] text-[var(--color-on-surface-muted)]">{v.phonetic}</span>
+                                                )}
+                                                {v.cefrLevel === 'A1' && v.phonetic && (
+                                                    <span className="sounds-like">≈ <b>{soundsLike(v.phonetic)}</b></span>
+                                                )}
+                                                {(saved?.inDeck.has(v.id) || saved?.known.has(v.id)) && (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--color-primary)]">
+                                                        <Check className="h-3 w-3" aria-hidden="true" /> {t(saved.inDeck.has(v.id) ? 'unitFlow.inReview' : 'unitFlow.alreadyKnown')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-semibold text-xs text-[var(--color-primary)]">{v.translations.join(', ')}</span>
+                                                <span lang="en" className="text-[10px] text-[var(--color-on-surface-muted)] italic leading-tight">
+                                                    {v.examples[0]}
                                                 </span>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-1">
-                                            <span className="font-semibold text-xs text-[var(--color-primary)]">{v.translations.join(', ')}</span>
-                                            <span lang="en" className="text-[10px] text-[var(--color-on-surface-muted)] italic leading-tight">
-                                                {v.examples[0]}
-                                            </span>
-                                        </div>
-                                    )}
-                                </button>
-                                <SpeakButton text={v.id} className="absolute top-2 right-2 !w-8 !h-8" />
+                                            </div>
+                                        )}
+                                    </button>
+                                    <SpeakButton text={v.id} className="absolute top-2 right-2 !w-8 !h-8" />
                                 </div>
                             ))}
                         </div>
@@ -824,16 +825,22 @@ function ExercisesStep({
     exercises: GrammarExercise[];
     onComplete: (score: number) => void;
 }) {
-    const [attempt, setAttempt] = useState(1);
+    // The tries survive a reload: reloading neither resets the count nor the best score
+    const [tries, setTries, forgetTries] = useSessionState(`voxie-tries:${unitId}:exercises`, { attempt: 1, best: 0 });
+    const { attempt } = tries;
     const [review, setReview] = useState<Review | null>(null);
-    const best = useRef(0);
     const round = useMemo(() => (attempt === 1 ? exercises : shuffle(exercises)), [attempt, exercises]);
 
+    const finish = (score: number) => {
+        forgetTries();
+        onComplete(score);
+    };
+
     const handleComplete = (score: number, missed: GrammarExercise[] = []) => {
-        best.current = Math.max(best.current, score);
+        setTries(t => ({ ...t, best: Math.max(t.best, score) }));
         const verdict = retryVerdict('exercises', score, attempt);
         if (verdict === 'pass') {
-            onComplete(score);
+            finish(score);
             return;
         }
         setReview({ score, items: shortReview(fromExercises(missed)), canContinue: verdict === 'may-continue' });
@@ -847,8 +854,8 @@ function ExercisesStep({
                 score={review.score}
                 items={review.items}
                 canContinue={review.canContinue}
-                onRetry={() => { setReview(null); setAttempt(n => n + 1); }}
-                onContinue={() => onComplete(best.current)}
+                onRetry={() => { setReview(null); setTries(t => ({ ...t, attempt: t.attempt + 1 })); }}
+                onContinue={() => finish(Math.max(tries.best, review.score))}
             />
         );
     }
@@ -868,6 +875,7 @@ function CheckpointStep({
     onComplete: (score: number) => void;
     onRetry: () => void;
 }) {
+    const { t } = useTranslation();
     const [review, setReview] = useState<Review | null>(null);
 
     // The checkpoint is the unit's exam: under its mark it always asks again, after the review
@@ -888,8 +896,8 @@ function CheckpointStep({
         <div className="space-y-6">
             <StepHeader
                 icon={Trophy}
-                label="Checkpoint"
-                description={`Demuestra tu dominio. Necesitas al menos ${PASS_SCORE.checkpoint}% para aprobar.`}
+                label={t('unitFlow.checkpointTitle')}
+                description={t('unitFlow.checkpointLead', { pass: PASS_SCORE.checkpoint })}
             />
 
             {review ? (

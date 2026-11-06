@@ -16,8 +16,12 @@ describe('retryVerdict', () => {
         expect(retryVerdict('checkpoint', 60, 5)).toBe('retry');
     });
 
-    it('asks again for nothing right, and passes with no evaluation', () => {
-        expect(retryVerdict('exercises', 0, 4)).toBe('retry');
+    it('asks again for nothing right only on the first try, and passes with no evaluation', () => {
+        expect(retryVerdict('exercises', 0, 1)).toBe('retry');
+        // A 0 never leaves a practice part stuck: after the second try the learner may go on
+        expect(retryVerdict('speaking', 0, 2)).toBe('may-continue');
+        expect(retryVerdict('writing', 0, 4)).toBe('may-continue');
+        expect(retryVerdict('checkpoint', 0, 4)).toBe('retry');
         expect(retryVerdict('writing', null, 1)).toBe('pass');
     });
 });

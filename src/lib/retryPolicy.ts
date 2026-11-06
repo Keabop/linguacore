@@ -18,11 +18,12 @@ export type RetryVerdict = 'pass' | 'retry' | 'may-continue';
 
 /**
  * `attempt` counts from 1. A null score (no AI evaluation left) passes: there is nothing to review.
- * A score of 0 always asks again, since nothing was right.
+ * Even a 0 lets a practice part go on after the second try: a microphone that doesn't understand the
+ * learner, or an answer in Spanish, must never leave them stuck on the step.
  */
 export function retryVerdict(part: RetryPart, score: number | null, attempt: number): RetryVerdict {
     if (score === null || score >= PASS_SCORE[part]) return 'pass';
-    if (part === 'checkpoint' || score === 0 || attempt < FORCED_ATTEMPTS) return 'retry';
+    if (part === 'checkpoint' || attempt < FORCED_ATTEMPTS) return 'retry';
     return 'may-continue';
 }
 

@@ -4,7 +4,8 @@ import AnswerFeedback from './AnswerFeedback';
 import { motion } from 'framer-motion';
 import { Check, X, Volume2 } from 'lucide-react';
 import SpeakButton from '../ui/SpeakButton';
-import { canSpeak, speakEnglish } from '../../lib/speakEnglish';
+import { speakEnglish } from '../../lib/speakEnglish';
+import { useEnglishVoices } from '../../hooks/useEnglishVoices';
 import type { GrammarExercise } from '../../lib/db';
 import { shuffle } from '../../lib/shuffle';
 
@@ -19,7 +20,12 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
     const [status, setStatus] = useState<'pending' | 'correct' | 'incorrect'>('pending');
     // The data lists the right answer early most of the time, so the order is shuffled per exercise
     const options = useMemo(() => shuffle(exercise.options ?? []), [exercise.id]); // eslint-disable-line react-hooks/exhaustive-deps
-    const listening = exercise.type === 'listen-choice';
+    const voices = useEnglishVoices();
+    const listenItem = exercise.type === 'listen-choice';
+    // With no English voice there is nothing to hear: it asks which sentence means the Spanish
+    // instead, so the answer is neither guessed nor copied from the screen
+    const noVoice = listenItem && voices.ready && !voices.hasEnglish && !!exercise.meaning;
+    const listening = listenItem && !noVoice;
 
     // A listening exercise plays its sentence as it appears; it can be heard again any time
     useEffect(() => {
@@ -96,18 +102,19 @@ export default function MultipleChoiceExercise({ exercise, onAnswer }: MultipleC
                 )}
                 {listening && (
                     <div className="space-y-4">
-                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">
-                            {canSpeak() ? t('exercises.listenAndChoose') : t('exercises.readAndChoose')}
-                        </p>
-                        {canSpeak() && (
-                            <button type="button" onClick={() => speakEnglish(exercise.question)} className="listen-play" aria-label={t('audio.listen')}>
-                                <Volume2 className="size-7" aria-hidden="true" />
-                            </button>
-                        )}
-                        {/* Without a voice there is nothing to hear: the sentence is shown instead */}
-                        {(status !== 'pending' || !canSpeak()) && (
+                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('exercises.listenAndChoose')}</p>
+                        <button type="button" onClick={() => speakEnglish(exercise.question)} className="listen-play" aria-label={t('audio.listen')}>
+                            <Volume2 className="size-7" aria-hidden="true" />
+                        </button>
+                        {status !== 'pending' && (
                             <p className="text-lg text-[var(--color-on-surface)]" lang="en">{exercise.question}</p>
                         )}
+                    </div>
+                )}
+                {noVoice && (
+                    <div className="space-y-3">
+                        <p className="text-sm font-semibold text-[var(--color-on-surface-muted)]">{t('exercises.whichMeans')}</p>
+                        <p className="text-xl leading-relaxed text-[var(--color-on-surface)]">{exercise.meaning}</p>
                     </div>
                 )}
             </motion.div>

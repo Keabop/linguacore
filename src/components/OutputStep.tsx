@@ -86,8 +86,8 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
     );
 
     // Under the pass mark, a short review and only the prompts that failed, again
-    const writing = useRetryRounds('writing', writingPrompts, score => handleWritingComplete(score));
-    const speaking = useRetryRounds('speaking', speakingPrompts, score => handleSpeakingComplete(score));
+    const writing = useRetryRounds('writing', writingPrompts, score => handleWritingComplete(score), unitId);
+    const speaking = useRetryRounds('speaking', speakingPrompts, score => handleSpeakingComplete(score), unitId);
     const { addErrorCard } = useErrorCards();
 
     // Going on after the second try: the mistakes with a right form stay in the error review
@@ -247,7 +247,7 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                         retryCount={writing.outcome.failedIds.length}
                         canContinue={writing.outcome.verdict === 'may-continue'}
                         onRetry={writing.retry}
-                        onContinue={() => goOnAnyway(writing.outcome!, handleWritingComplete)}
+                        onContinue={() => goOnAnyway(writing.outcome!, writing.finish)}
                     />
                 ) : (
                     <WritingRunner key={writing.attempt} prompts={writing.prompts} level={level} onComplete={(_, results) => writing.finishRound(results)} />
@@ -269,13 +269,18 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                                 retryCount={speaking.outcome.failedIds.length}
                                 canContinue={speaking.outcome.verdict === 'may-continue'}
                                 onRetry={speaking.retry}
-                                onContinue={() => goOnAnyway(speaking.outcome!, handleSpeakingComplete)}
+                                onContinue={() => goOnAnyway(speaking.outcome!, speaking.finish)}
+                                // Speaking can always be left for later, also from its review: a microphone
+                                // that never understands the learner must not trap them here
+                                otherAction={speakingOnly
+                                    ? { label: t('output.notNow'), onClick: onComplete }
+                                    : { label: t('output.cantSpeakNow'), icon: <MicOff className="w-4 h-4" aria-hidden="true" />, onClick: handleDeferSpeaking }}
                             />
                         ) : (
                             <SpeakingRunner key={speaking.attempt} prompts={speaking.prompts} level={level} onComplete={(_, results) => speaking.finishRound(results)} onFirstAttempt={() => setSpeakingAttempted(true)} />
                         )}
                         {deferError && <p className="text-xs text-center text-[var(--color-error)]">{t('output.deferError')}</p>}
-                        {speakingOnly && !speakingAttempted && (
+                        {speakingOnly && !speakingAttempted && !speaking.outcome && (
                             <button
                                 onClick={onComplete}
                                 className="w-full bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] py-3 rounded-xl text-sm transition-all"
@@ -283,13 +288,13 @@ function OutputStepBody({ unitId, level, onComplete, speakingPending = false, on
                                 {t('output.notNow')}
                             </button>
                         )}
-                        {!speakingAttempted && !speakingOnly && (
+                        {!speakingAttempted && !speakingOnly && !speaking.outcome && (
                             <button
                                 onClick={handleDeferSpeaking}
                                 className="w-full flex items-center justify-center gap-2 bg-[var(--color-card)] border border-[var(--color-outline-subtle)] text-[var(--color-on-surface-muted)] hover:text-[var(--color-on-surface-muted)] py-3 rounded-xl text-sm transition-all"
                             >
-                                <MicOff className="w-4 h-4" />
-                                No puedo hablar ahora
+                                <MicOff className="w-4 h-4" aria-hidden="true" />
+                                {t('output.cantSpeakNow')}
                             </button>
                         )}
                     </div>

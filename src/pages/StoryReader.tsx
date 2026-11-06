@@ -10,7 +10,7 @@ import { prefetchVocabulary, useVocabulary } from '../data/vocabulary/load';
 import StoryQuestions from '../components/StoryQuestions';
 import { useAuth } from '../lib/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { translateStory } from '../lib/ai';
+import { isLimitReached, translateStory } from '../lib/ai';
 import { useRecordActivity } from '../hooks/useRecordActivity';
 import { useCards } from '../hooks/useCards';
 import { notice } from '../lib/notice';
@@ -172,22 +172,38 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
 
     // The Spanish of each sentence, written by hand in A1 and A2. Shown by default in A1, where
     // whoever starts from zero reads; the learner's choice is remembered
-    // B1 and B2 have theirs from the AI, only when asked for and once per story (cached on the server)
+    // B1 and B2 have theirs from the AI, once per story (cached on the server), and only when asked
+    // for in that story: the remembered choice alone never spends one of the day's translations
     const [spanishChoice, setSpanishChoice] = useState(readSpanishChoice);
     const translatedByAI = !!staticStory && !staticStory.translation && !!authUser && (staticStory.level === 'B1' || staticStory.level === 'B2');
+    const [askedAIFor, setAskedAIFor] = useState<string | null>(null);
     const aiTranslation = useQuery({
         queryKey: ['story-translation', staticStory?.id],
         queryFn: () => translateStory(staticStory!.id),
-        enabled: translatedByAI && spanishChoice === true,
+        enabled: translatedByAI && askedAIFor === staticStory?.id,
         staleTime: Infinity,
         gcTime: Infinity,
-        retry: 1,
+        // The day's limit stays reached until tomorrow: asking again only spends the wait
+        retry: (failures, error) => failures < 1 && !isLimitReached(error),
     });
-    const translation = staticStory?.translation ?? aiTranslation.data;
+    // Only a translation that lines up with today's sentences and questions: an old one (the story was
+    // edited since) would show the wrong Spanish under a sentence
+    const fetchedTranslation = staticStory?.translation ?? aiTranslation.data;
+    const translation = fetchedTranslation && storyContent
+        && fetchedTranslation.sentences.length === storySentences(storyContent).length
+        && (fetchedTranslation.questions?.length ?? 0) === (story?.questions?.length ?? 0)
+        ? fetchedTranslation : undefined;
     const showSpanish = !!translation && (spanishChoice ?? story?.level === 'A1');
+    const waitingForAI = translatedByAI && !translation && askedAIFor === staticStory?.id && !aiTranslation.isError;
     const toggleSpanish = () => {
-        // Asked for while the AI one loads: pressing again turns it off
-        const next = translatedByAI && !translation ? spanishChoice !== true : !showSpanish;
+        let next: boolean;
+        if (translatedByAI && !translation) {
+            // Asked for while the AI one loads: pressing again turns it off
+            next = !waitingForAI;
+            setAskedAIFor(next ? staticStory!.id : null);
+        } else {
+            next = !showSpanish;
+        }
         setSpanishChoice(next);
         try { localStorage.setItem(SPANISH_KEY, next ? 'on' : 'off'); } catch { /* not kept */ }
     };
@@ -272,6 +288,9 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         setHasPracticed(true);
     }, [transcript, currentSentenceIdx, sentences]);
 
+    // Where the open card's word was tapped: its sentence and what it means there
+    const [wordPlace, setWordPlace] = useState<{ sentence: number; gloss: string | null } | null>(null);
+
     const handleWordClick = useCallback(async (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         
@@ -290,9 +309,6 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
         setWordPlace(sentence >= 0 ? { sentence, gloss: target.getAttribute('data-gloss') } : null);
         if (vocab) setSelectedWord(vocab);
     }, [currentSentenceIdx, seekSentence, vocabMap, isAIStory, vocabulary]);
-
-    // Where the open card's word was tapped: its sentence and what it means there
-    const [wordPlace, setWordPlace] = useState<{ sentence: number; gloss: string | null } | null>(null);
 
     const handleChipClick = useCallback((wordId: string) => {
         const vocab = vocabMap?.get(wordId);
@@ -489,7 +505,7 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                     <button
                         type="button"
                         onClick={toggleSpanish}
-                        aria-pressed={showSpanish || (translatedByAI && spanishChoice === true)}
+                        aria-pressed={showSpanish || waitingForAI}
                         aria-busy={aiTranslation.isFetching}
                         className="story-spanish-toggle"
                     >
@@ -497,8 +513,10 @@ export default function StoryReader({ trialStoryId }: StoryReaderProps = {}) {
                         {aiTranslation.isFetching ? t('reader.translating') : t('reader.showSpanish')}
                     </button>
                 )}
-                {spanishChoice === true && aiTranslation.isError && (
-                    <p role="alert" className="w-full text-xs text-[var(--color-error)]">{t('reader.translateFailed')}</p>
+                {askedAIFor === staticStory?.id && aiTranslation.isError && (
+                    <p role="alert" className="w-full text-xs text-[var(--color-error)]">
+                        {t(isLimitReached(aiTranslation.error) ? 'reader.translateLimit' : 'reader.translateFailed')}
+                    </p>
                 )}
             </div>
 

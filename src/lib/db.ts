@@ -151,6 +151,8 @@ export interface GrammarExercise {
   options?: string[];
   scrambledWords?: string[];
   explanation: string;
+  /** Of a `listen-choice`: the sentence's Spanish, asked for instead when there is no English voice to hear it. */
+  meaning?: string;
 }
 
 export interface UnitProgress {

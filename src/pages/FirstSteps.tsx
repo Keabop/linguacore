@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -8,6 +8,7 @@ import BackButton from '../components/ui/BackButton';
 import SpeakButton from '../components/ui/SpeakButton';
 import ExerciseRunner from '../components/exercises/ExerciseRunner';
 import RetryReview from '../components/RetryReview';
+import { useSessionState } from '../hooks/useSessionState';
 import { firstStepsLessons, FIRST_STEPS_UNIT, type FirstStepsLesson } from '../data/firstSteps';
 import { a1Phonetics } from '../data/vocabulary/phonetics/a1';
 import { useFirstSteps } from '../hooks/useFirstSteps';
@@ -42,7 +43,7 @@ export default function FirstSteps() {
             <LessonPractice
                 lesson={view.lesson}
                 onBack={() => setView({ lesson: view.lesson, mode: 'learn' })}
-                onDone={async () => { await completeLesson(view.lesson.id); setView(null); }}
+                onDone={() => { setView(null); void completeLesson(view.lesson.id); }}
             />
         );
     }
@@ -139,19 +140,21 @@ function LessonLearn({ lesson, onBack, onPractice }: { lesson: FirstStepsLesson;
 
 function LessonPractice({ lesson, onBack, onDone }: { lesson: FirstStepsLesson; onBack: () => void; onDone: () => void }) {
     const { t } = useTranslation();
-    const [attempt, setAttempt] = useState(1);
+    const [attempt, setAttempt, forgetAttempt] = useSessionState(`voxie-tries:${FIRST_STEPS_UNIT}:${lesson.id}`, 1);
     const [review, setReview] = useState<{ score: number; items: ReviewItem[]; canContinue: boolean } | null>(null);
-    const best = useRef(0);
+    const finish = () => {
+        forgetAttempt();
+        onDone();
+    };
     const exercises = useMemo<GrammarExercise[]>(
         () => comprehensionExercises(lesson.items, `${FIRST_STEPS_UNIT}-${lesson.id}-${attempt}`, lesson.practice),
         [lesson, attempt],
     );
 
     const handleComplete = (score: number, missed: GrammarExercise[] = []) => {
-        best.current = Math.max(best.current, score);
         const verdict = retryVerdict('exercises', score, attempt);
         if (verdict === 'pass') {
-            onDone();
+            finish();
             return;
         }
         setReview({ score, items: shortReview(fromExercises(missed)), canContinue: verdict === 'may-continue' });
@@ -169,7 +172,7 @@ function LessonPractice({ lesson, onBack, onDone }: { lesson: FirstStepsLesson; 
                     items={review.items}
                     canContinue={review.canContinue}
                     onRetry={() => { setReview(null); setAttempt(n => n + 1); }}
-                    onContinue={onDone}
+                    onContinue={finish}
                 />
             ) : (
                 <ExerciseRunner key={attempt} exercises={exercises} passScore={PASS_SCORE.exercises} onComplete={handleComplete} />

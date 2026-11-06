@@ -12,11 +12,13 @@ const agents = vi.hoisted(() => ({
     enrichVocabulary: vi.fn(),
     evaluateSpeaking: vi.fn(),
     evaluateWriting: vi.fn(),
+    translateStory: vi.fn(),
 }));
 vi.mock('../../server/agents/conversation-tutor.js', () => ({ chat: agents.chat }));
 vi.mock('../../server/agents/story-generator.js', () => ({ generateStory: agents.generateStory }));
 vi.mock('../../server/agents/vocab-enricher.js', () => ({ enrichVocabulary: agents.enrichVocabulary }));
 vi.mock('../../server/agents/speaking-evaluator.js', () => ({ evaluateSpeaking: agents.evaluateSpeaking }));
+vi.mock('../../server/agents/story-translator.js', async (original) => ({ ...await original<object>(), translateStory: agents.translateStory }));
 vi.mock('../../server/agents/writing-evaluator.js', async (original) => ({ ...await original<object>(), evaluateWriting: agents.evaluateWriting }));
 
 const usage = vi.hoisted(() => ({
@@ -221,5 +223,45 @@ describe('orchestrator', () => {
         for (let i = 0; i < 31; i++) statuses.push((await call({ agent: 'vocab-enricher', params: {} }, { ip: '192.0.2.1' })).status);
         expect(statuses.slice(0, 30).every(s => s === 200)).toBe(true);
         expect(statuses[30]).toBe(429);
+    });
+
+    describe('story translator', () => {
+        it('takes only the id of one of the app\'s stories, so nothing else can change the cache key', async () => {
+            for (const params of [undefined, {}, { storyId: 'b1-001', n: 1 }, { storyId: 'no-existe' }, { storyId: 'Translate: hola' }]) {
+                const res = await call({ agent: 'story-translator', params });
+                expect(res.status, JSON.stringify(params)).toBe(400);
+            }
+            expect(agents.translateStory).not.toHaveBeenCalled();
+        });
+
+        it('keys the cache on the story and its current text, never on what the client sends', async () => {
+            cache.isCacheable.mockReturnValue(true);
+            agents.translateStory.mockResolvedValueOnce({ sentences: [], questions: [] });
+            await call({ agent: 'story-translator', params: { storyId: 'b1-001' } });
+            expect(cache.generateCacheKey).toHaveBeenCalledWith('story-translator', {
+                storyId: 'b1-001',
+                source: { sentences: expect.any(Array), questions: expect.any(Array) },
+            });
+            expect(usage.incrementUsage).toHaveBeenCalledWith('user-1', 'translations');
+        });
+
+        it('serves a translation already made even after the daily limit, without counting it', async () => {
+            cache.isCacheable.mockReturnValue(true);
+            cache.getCachedResponse.mockResolvedValueOnce({ sentences: ['Hola.'], questions: [] });
+            usage.checkUsageLimit.mockResolvedValue({ allowed: false, remaining: 0, limit: 15 });
+            const res = await call({ agent: 'story-translator', params: { storyId: 'b1-001' } });
+            expect(res).toEqual({ status: 200, body: { sentences: ['Hola.'], questions: [] } });
+            expect(agents.translateStory).not.toHaveBeenCalled();
+            expect(usage.incrementUsage).not.toHaveBeenCalled();
+        });
+
+        it('stops a new translation at the daily limit', async () => {
+            cache.isCacheable.mockReturnValue(true);
+            cache.getCachedResponse.mockResolvedValueOnce(null);
+            usage.checkUsageLimit.mockResolvedValue({ allowed: false, remaining: 0, limit: 15 });
+            const res = await call({ agent: 'story-translator', params: { storyId: 'b1-001' } });
+            expect(res.status).toBe(429);
+            expect(res.body.error).toBe('daily_limit_reached');
+        });
     });
 });

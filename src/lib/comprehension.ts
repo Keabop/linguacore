@@ -42,6 +42,7 @@ export function comprehensionExercises(pairs: Pair[], unitId: string, count = { 
         correctAnswer: pair.en,
         options: [pair.en, ...others(pairs, pair, 'en', 2)],
         explanation: `Se oye «${pair.en}»: ${pair.es}.`,
+        meaning: pair.es,
     }));
     return [...meaning, ...listen];
 }

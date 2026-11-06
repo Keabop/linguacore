@@ -118,4 +118,38 @@ describe('OutputStep', () => {
         fireEvent.click(screen.getByRole('button', { name: 'hablar' }));
         expect(await screen.findByText('Sacaste 69%. Para seguir necesitas 70%.')).toBeInTheDocument();
     });
+
+    it('with a 0 in speaking, the review still lets the speaking be left for later', async () => {
+        scores.speaking = 0;
+        const h = renderStep();
+        fireEvent.click(screen.getByRole('button', { name: 'hablar' }));
+        expect(await screen.findByText('Sacaste 0%. Para seguir necesitas 70%.')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /No puedo hablar ahora/ }));
+        expect(h.onSpeakingPending).toHaveBeenCalled();
+    });
+
+    it('after two tries with a 0 the learner may go on', async () => {
+        content = { writingPrompts: writing, speakingPrompts: [] };
+        scores.writing = 0;
+        renderStep();
+        fireEvent.click(screen.getByRole('button', { name: 'escribir' }));
+        fireEvent.click(await screen.findByRole('button', { name: 'Repetir el ejercicio que falló' }));
+        fireEvent.click(screen.getByRole('button', { name: 'escribir' }));
+        expect(await screen.findByRole('button', { name: /Seguir de todos modos/ })).toBeInTheDocument();
+    });
+
+    it('remembers the tries after a reload, without asking again for what passed', async () => {
+        content = { writingPrompts: writing, speakingPrompts: [] };
+        scores.writing = 50;
+        const first = render(<MemoryRouter><OutputStep unitId="a1-u1" level="A1" onComplete={vi.fn()} /></MemoryRouter>);
+        fireEvent.click(screen.getByRole('button', { name: 'escribir' }));
+        await screen.findByRole('heading', { name: 'Repasa antes de volver a intentarlo' });
+        first.unmount();
+
+        renderStep();
+        expect(screen.getByRole('heading', { name: 'Repasa antes de volver a intentarlo' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Repetir el ejercicio que falló' }));
+        fireEvent.click(screen.getByRole('button', { name: 'escribir' }));
+        expect(await screen.findByRole('button', { name: /Seguir de todos modos/ })).toBeInTheDocument();
+    });
 });

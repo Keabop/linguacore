@@ -103,7 +103,8 @@
     "translating": "Traduciendo…",
     "translateFailed": "No se pudo traer el español de esta historia. Inténtalo más tarde.",
     "meansHere": "Aquí significa",
-    "inThisSentence": "En esta oración"
+    "inThisSentence": "En esta oración",
+    "translateLimit": "Ya usaste las traducciones de hoy del plan gratis. Mañana tienes más, o con Pro no hay límite. Las historias que ya pediste siguen en español."
   },
   "storyList": {
     "subtitle": "Explora historias por nivel",
@@ -305,7 +306,9 @@
     "progressError": "No se pudo revisar tu progreso del nivel. Revisa tu conexión e inténtalo de nuevo.",
     "speakingStillPending": "Te falta el habla de esta unidad: complétala desde la ruta antes del examen de fin de nivel.",
     "stepsLabel": "Pasos de la unidad",
-    "stepOf": "Paso {{n}} de {{total}}"
+    "stepOf": "Paso {{n}} de {{total}}",
+    "checkpointTitle": "Checkpoint",
+    "checkpointLead": "Demuestra tu dominio. Necesitas al menos {{pass}}% para aprobar."
   },
   "exercises": {
     "title": "Ejercicios",
@@ -321,7 +324,7 @@
     "autoNext": "Si aciertas, pasa sola a la siguiente en unos segundos.",
     "whatDoesItMean": "¿Qué significa?",
     "listenAndChoose": "Escucha y elige lo que oíste",
-    "readAndChoose": "Elige la oración"
+    "whichMeans": "¿Cuál de estas oraciones dice esto?"
   },
   "practice": {
     "saveToHistory": "Guardar en historial",
@@ -691,7 +694,8 @@
     "continuePending": "Continuar al checkpoint (habla pendiente)",
     "listenInstead": "Mientras, practica escuchando",
     "listenIntro": "Escucha cada oración de la unidad y elige la que oíste. No necesitas micrófono.",
-    "listenScore": "Práctica de escuchar: {{score}}%. Puedes repetirla cuando quieras."
+    "listenScore": "Práctica de escuchar: {{score}}%. Puedes repetirla cuando quieras.",
+    "cantSpeakNow": "No puedo hablar ahora"
   },
   "writing": {
     "perfect": "¡Perfecto! Tu respuesta coincide con la respuesta modelo.",

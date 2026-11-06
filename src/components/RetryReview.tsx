@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, useReducedMotion } from 'framer-motion';
 import { RotateCcw, ArrowRight } from 'lucide-react';
@@ -19,13 +19,15 @@ interface Props {
     canContinue: boolean;
     onRetry: () => void;
     onContinue?: () => void;
+    /** Another way out, shown on every try (speaking: «No puedo hablar ahora»). */
+    otherAction?: { label: string; icon?: ReactNode; onClick: () => void };
 }
 
 /**
  * Below the pass mark: a short review before trying again, not the whole grammar card. The unit's
  * rule in a few lines and what the learner got wrong, with the right form and why.
  */
-export default function RetryReview({ part, unitId, score, items, retryCount, canContinue, onRetry, onContinue }: Props) {
+export default function RetryReview({ part, unitId, score, items, retryCount, canContinue, onRetry, onContinue, otherAction }: Props) {
     const { t } = useTranslation();
     const reduceMotion = useReducedMotion();
     const level = useLevelContent(levelOfId(unitId));
@@ -96,6 +98,11 @@ export default function RetryReview({ part, unitId, score, items, retryCount, ca
                         </button>
                         <p className="text-xs text-center text-[var(--color-on-surface-muted)]">{t('retry.continueNote')}</p>
                     </>
+                )}
+                {otherAction && (
+                    <button type="button" onClick={otherAction.onClick} className="btn-secondary w-full py-3 flex items-center justify-center gap-2">
+                        {otherAction.icon}{otherAction.label}
+                    </button>
                 )}
             </div>
         </motion.section>

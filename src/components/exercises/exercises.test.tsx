@@ -157,7 +157,7 @@ describe('ExerciseRunner', () => {
 
 describe('comprehension exercises', () => {
     const meaning: GrammarExercise = { id: 'c1', unitId: 'a1-u1', type: 'meaning-choice', question: 'I am a student.', correctAnswer: 'Yo soy estudiante.', options: ['Yo soy estudiante.', 'Ella es maestra.', 'Estamos cansados.'], explanation: '«I am a student» = «Yo soy estudiante».' };
-    const listen: GrammarExercise = { ...meaning, id: 'c2', type: 'listen-choice', correctAnswer: 'I am a student.', options: ['I am a student.', 'She is a teacher.', 'We are tired.'] };
+    const listen: GrammarExercise = { ...meaning, id: 'c2', type: 'listen-choice', correctAnswer: 'I am a student.', options: ['I am a student.', 'She is a teacher.', 'We are tired.'], meaning: 'Yo soy estudiante.' };
 
     it('asks what an English sentence means, with the options in Spanish', () => {
         const onAnswer = vi.fn();
@@ -169,10 +169,35 @@ describe('comprehension exercises', () => {
         expect(onAnswer).toHaveBeenCalledWith(true);
     });
 
-    it('hides the sentence of a listening exercise until it is answered (or there is no voice to hear it)', () => {
-        render(<MultipleChoiceExercise exercise={listen} onAnswer={vi.fn()} />);
-        // jsdom has no speech synthesis: the sentence shows so it can still be answered
-        expect(screen.getByText('Elige la oración')).toBeInTheDocument();
-        expect(screen.getAllByText('I am a student.').length).toBeGreaterThan(0);
+    it('without an English voice, asks which sentence means the Spanish: nothing to guess, nothing to copy', () => {
+        // jsdom has no speech synthesis
+        const onAnswer = vi.fn();
+        render(<MultipleChoiceExercise exercise={listen} onAnswer={onAnswer} />);
+        expect(screen.getByText('¿Cuál de estas oraciones dice esto?')).toBeInTheDocument();
+        expect(screen.getByText('Yo soy estudiante.')).toBeInTheDocument();
+        // The English sentence appears only as one option among three
+        expect(screen.getAllByText('I am a student.')).toHaveLength(1);
+        fireEvent.click(screen.getByRole('button', { name: 'I am a student.' }));
+        fireEvent.click(screen.getByRole('button', { name: /Siguiente/ }));
+        expect(onAnswer).toHaveBeenCalledWith(true);
+    });
+
+    it('with an English voice, plays the sentence and hides it until answered', () => {
+        const speak = vi.fn();
+        const voice = { lang: 'en-US', name: 'Samantha', localService: true, default: true, voiceURI: 'x' };
+        Object.defineProperty(window, 'speechSynthesis', {
+            configurable: true,
+            value: { getVoices: () => [voice], speak, cancel: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn() },
+        });
+        (globalThis as Record<string, unknown>).SpeechSynthesisUtterance = class { constructor(public text: string) {} };
+        const view = render(<MultipleChoiceExercise exercise={listen} onAnswer={vi.fn()} />);
+        try {
+            expect(screen.getByText('Escucha y elige lo que oíste')).toBeInTheDocument();
+            expect(speak).toHaveBeenCalled();
+            expect(screen.getAllByText('I am a student.')).toHaveLength(1);
+        } finally {
+            view.unmount();
+            delete (window as { speechSynthesis?: unknown }).speechSynthesis;
+        }
     });
 });

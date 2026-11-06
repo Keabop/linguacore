@@ -1,3 +1,5 @@
+import i18n from '../i18n/config';
+
 // What a writing or speaking task practices, in Spanish: the A1 and A2 prompts name their
 // grammar in English («subject pronoun»), which whoever starts can't read yet. B1 and B2 keep
 // the English names, as their learners do.
@@ -80,4 +82,5 @@ const LABELS: Record<string, string> = {
     "will/won't": "will / won't",
 };
 
-export const grammarLabel = (tag: string): string => LABELS[tag] ?? tag;
+/** In Spanish when the interface is; with the interface in English, the prompt's own name. */
+export const grammarLabel = (tag: string): string => (i18n.language?.startsWith('en') ? tag : LABELS[tag] ?? tag);
