@@ -10,6 +10,7 @@ import { evaluateWriting } from '../lib/ai';
 import type { WritingEvaluationResponse } from '../lib/ai';
 import WritingFeedback from '../components/writing/WritingFeedback';
 import { useSpeech } from '../hooks/useSpeech';
+import GradedText, { normalizeSpeech } from '../components/speaking/GradedText';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -382,9 +383,8 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
     const targetText = prompts[currentPrompt];
 
     const compareWords = () => {
-        const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-        const targetWords = normalize(targetText).split(/\s+/);
-        const spokenWords = normalize(transcript).split(/\s+/);
+        const targetWords = normalizeSpeech(targetText).split(/\s+/);
+        const spokenWords = normalizeSpeech(transcript).split(/\s+/);
         const matches = targetWords.map((tw, i) => i < spokenWords.length && spokenWords[i] === tw);
         const correct = matches.filter(Boolean).length;
         return { targetWords, matches, score: targetWords.length > 0 ? Math.round((correct / targetWords.length) * 100) : 0 };
@@ -417,13 +417,9 @@ function SpeakingPractice({ level }: { level: CEFRLevel }) {
             <div className="bg-[var(--color-surface-container-low)] rounded-[var(--radius-lg)] p-6 space-y-3 shadow-[var(--shadow-card)]">
                 <p className="text-xs text-[var(--color-on-surface-muted)] font-semibold">Lee en voz alta</p>
                 {!result ? (
-                    <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium">{targetText}</p>
+                    <p className="text-[var(--color-on-surface)] text-lg leading-relaxed font-medium break-words">{targetText}</p>
                 ) : (
-                    <p className="text-lg leading-relaxed font-medium">
-                        {result.targetWords.map((w, i) => (
-                            <span key={i} className={`${result.matches[i] ? 'text-[var(--color-success)]' : 'text-accent-red underline decoration-wavy'} mr-1`}>{w}</span>
-                        ))}
-                    </p>
+                    <GradedText text={targetText} matches={result.matches} />
                 )}
                 <button onClick={() => speak(targetText, 0.85)} disabled={isSpeaking || isListening}
                     className="flex items-center gap-2 text-xs text-accent-blue hover:text-accent-blue/80 transition-colors disabled:opacity-40">
