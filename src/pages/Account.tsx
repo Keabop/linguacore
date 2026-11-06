@@ -11,6 +11,7 @@ import { useLevelProgression } from '../hooks/useLevelProgression';
 import { useTier } from '../hooks/useTier';
 import LevelBadge from '../components/ui/LevelBadge';
 import SettingsModal from '../components/SettingsModal';
+import GuideCard from '../components/GuideCard';
 import type { ReadStoryRow, CardRow } from '../lib/database.types';
 import { generateCareerDeck } from '../lib/ai';
 import { loadVocabulary } from '../data/vocabulary/load';
@@ -560,6 +561,11 @@ export default function Account() {
                     <StatCard icon={<Layers className="w-5 h-5" />} value={(totalCards ?? 0) + (knownCount ?? 0)} label={t('dashboard.wordsLearned')} color="text-[var(--color-level-a1)]" />
                     <StatCard icon={<BookOpen className="w-5 h-5" />} value={readStories?.length ?? 0} label={t('dashboard.storiesRead')} color="text-[var(--color-primary)]" />
                     <StatCard icon={<RotateCcw className="w-5 h-5" />} value={totalReviews} label={t('stats.totalReviews')} color="text-[var(--color-primary)]" />
+                </motion.div>
+
+                {/* ===== The guide, always at hand ===== */}
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}>
+                    <GuideCard variant="profile" />
                 </motion.div>
 
                 {/* ===== Gestión de Mazos de Vocabulario ===== */}

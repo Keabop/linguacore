@@ -868,5 +868,18 @@
     "repeatLead": "You finished the lesson. If you can speak, repeat these phrases: they stick better.",
     "repeatInstruction": "Listen to the phrase and say it aloud.",
     "skipRepeat": "I can't speak right now"
+  },
+  "guide": {
+    "title": "How to learn with Voxie",
+    "welcomeTitle": "Welcome to Voxie",
+    "welcomePoint1": "Your path goes from A1 to B2, one unit at a time.",
+    "welcomePoint2": "A few minutes every day go further than one long session.",
+    "welcomePoint3": "The guide explains every part of the app and sets up a study plan for you.",
+    "welcomeOpen": "See the guide",
+    "welcomeLater": "Not now",
+    "cardTitle": "New to Voxie?",
+    "cardBody": "How learning works here: where to start, how to study and your week plan.",
+    "cardAction": "Read the guide",
+    "profileBody": "Every part of the app, the study method and your plan."
   }
 }

@@ -868,5 +868,18 @@
     "repeatLead": "Ya terminaste la lección. Si puedes hablar, repite estas frases: así se te quedan mejor.",
     "repeatInstruction": "Escucha la frase y dila en voz alta.",
     "skipRepeat": "No puedo hablar ahora"
+  },
+  "guide": {
+    "title": "Cómo aprender con Voxie",
+    "welcomeTitle": "Te damos la bienvenida a Voxie",
+    "welcomePoint1": "Tu ruta va de A1 a B2, una unidad a la vez.",
+    "welcomePoint2": "Unos minutos cada día rinden más que una sesión larga.",
+    "welcomePoint3": "En la guía te explicamos cada parte de la app y te armamos un plan de estudio.",
+    "welcomeOpen": "Ver la guía",
+    "welcomeLater": "Ahora no",
+    "cardTitle": "¿Nuevo en Voxie?",
+    "cardBody": "Así se aprende aquí: por dónde empezar, cómo estudiar y tu plan de la semana.",
+    "cardAction": "Leer la guía",
+    "profileBody": "Cada parte de la app, el método de estudio y tu plan."
   }
 }
