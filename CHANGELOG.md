@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/Keabop/linguacore/compare/v1.5.0...v1.6.0) (2026-11-06)
+
+
+### Novedades
+
+* aprender desde cero con cuentos traducidos, audio, primeros pasos y repaso antes de repetir ([#51](https://github.com/Keabop/linguacore/issues/51)) ([5669ab7](https://github.com/Keabop/linguacore/commit/5669ab7cd5223bbfd4c22f825bd2431a819619a5))
+
 ## [1.5.0](https://github.com/Keabop/linguacore/compare/v1.4.0...v1.5.0) (2026-11-06)
 
 
