@@ -4,19 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sun, Moon, Globe, CreditCard, LogOut, Loader2, AlertTriangle, Crown, User, BookOpen, Droplet, Scale, Trash2 } from 'lucide-react';
 import { clear as clearIdb } from 'idb-keyval';
-import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../lib/ThemeContext';
 import { useAuth } from '../lib/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTier } from '../hooks/useTier';
 import { useLevelProgression } from '../hooks/useLevelProgression';
 import { supabase } from '../lib/supabase';
-import { offlineUpdate } from '../lib/offlineMutation';
 import { apiFetch } from '../lib/apiFetch';
 import { LEGAL_OWNER } from '../data/legalOwner';
 import PlantPicker from './garden/PlantPicker';
 import GardenStylePicker from './garden/GardenStylePicker';
-import type { Profile } from '../lib/database.types';
+import { useDailyGoal } from '../hooks/useDailyGoal';
 import { version } from '../../package.json';
 
 interface SettingsModalProps {
@@ -55,20 +53,10 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
         }
     };
 
-    const qc = useQueryClient();
     const { user: progress } = useLevelProgression();
-
     // Saved silently: the drops on the home screen show the new goal
-    const handleGoalChange = async (goal: number) => {
-        if (!user) return;
-        const key = ['profile', user.id];
-        qc.setQueryData<Profile | null>(key, prev => prev && { ...prev, daily_goal: goal });
-        try {
-            await offlineUpdate('profiles', { daily_goal: goal }, { id: user.id });
-        } catch {
-            qc.invalidateQueries({ queryKey: ['profile'] });
-        }
-    };
+    const saveGoal = useDailyGoal();
+    const handleGoalChange = (goal: number) => { void saveGoal(goal); };
 
     const [currentLang, setCurrentLang] = useState(localStorage.getItem('voxie-display-language') || 'es');
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);

@@ -25,11 +25,14 @@ import StreakChip from '../components/ui/StreakChip';
 import GoalDrops from '../components/ui/GoalDrops';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import FirstStepsCard from '../components/FirstStepsCard';
+import GuideCard from '../components/GuideCard';
+import { useGuide } from '../hooks/useGuide';
 import { useLevelUpNotice } from '../hooks/useLevelUpNotice';
 import { unitTitle, unitTopic } from '../data/curriculum/unitTitles';
 
 // Loaded only the first time a level-up happens
 const LevelUpModal = lazy(() => import('../components/ui/LevelUpModal'));
+const GuideWelcome = lazy(() => import('../components/GuideWelcome'));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getContextualGreeting(t: any, dueCards: number, streak: number): string {
@@ -49,6 +52,7 @@ export default function Dashboard() {
     const { dueErrorCards, totalErrorCards } = useErrorCards();
     const { user: authUser } = useAuth();
     const levelUp = useLevelUpNotice(user?.currentLevel);
+    const guide = useGuide();
 
     const { data: readStories } = useQuery({
         queryKey: ['readStories', authUser?.id],
@@ -91,6 +95,8 @@ export default function Dashboard() {
     const unitsTotal = levelUnits?.length ?? 0;
     const firstIncompleteUnit = levelUnits?.find(u => unitProgressMap.get(u.id)?.completed_at == null) ?? null;
     const allUnitsCompleted = unitsTotal > 0 && unitsCompleted === unitsTotal;
+    // A newcomer: no unit finished yet in their level (known only once the progress loads)
+    const isNewcomer = levelUnitProgress !== undefined && unitsCompleted === 0;
 
     // Loading state: user query hasn't resolved yet
     if (!user || !progressInfo) return <PageLoader />;
@@ -117,6 +123,9 @@ export default function Dashboard() {
                     meta={[<LevelBadge key="level" level={currentLevel} withStage size="compact" />]}
                 />
             </motion.div>
+
+            {/* A newcomer: the guide first, until they open it or finish a unit */}
+            {isNewcomer && !guide.opened && <motion.div {...fadeIn(1)}><GuideCard /></motion.div>}
 
             {/* Whoever starts from zero: «Primeros pasos» first, while at the start of A1 */}
             {currentLevel === 'A1' && unitsCompleted < 2 && <motion.div {...fadeIn(1)}><FirstStepsCard /></motion.div>}
@@ -274,6 +283,13 @@ export default function Dashboard() {
             {levelUp.mounted && (
                 <Suspense fallback={null}>
                     <LevelUpModal level={levelUp.newLevel} isOpen={levelUp.open} onClose={levelUp.close} />
+                </Suspense>
+            )}
+
+            {/* The first visit: a short welcome that leads to the guide, once */}
+            {isNewcomer && !guide.welcomeSeen && !levelUp.open && (
+                <Suspense fallback={null}>
+                    <GuideWelcome open onDone={guide.markWelcomeSeen} />
                 </Suspense>
             )}
         </div>
