@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/Keabop/linguacore/compare/v1.6.0...v1.7.0) (2026-11-06)
+
+
+### Novedades
+
+* guía «Cómo aprender con Voxie» con plan de estudio y bienvenida ([#53](https://github.com/Keabop/linguacore/issues/53)) ([a0ba19c](https://github.com/Keabop/linguacore/commit/a0ba19c10502dfdb2dfa884dbb326177618eb67e))
+
 ## [1.6.0](https://github.com/Keabop/linguacore/compare/v1.5.0...v1.6.0) (2026-11-06)
 
 
